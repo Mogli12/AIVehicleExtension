@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Traktor]]></description>
+
+	<texts>
+		<!--AutoTractor helpPanel text-->
+		<text name="AUTO_TRACTOR_START"                    text="Alternativer Helfer" />
+		<text name="AUTO_TRACTOR_STOP"                     text="Normaler Helfer" />
+		<text name="AUTO_TRACTOR_WORKWIDTH"                text="Arbeitsbreite:" />
+		<text name="AUTO_TRACTOR_ACTIVESIDELEFT"           text="Aktive Seite: LINKS" />
+		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT"          text="Aktive Seite: RECHTS" />		
+		
+		<text name="AUTO_TRACTOR_UTURN_ON_OFF"             text="AutoTractor-Modus wechseln"/>
+		<text name="AUTO_TRACTOR_STEERING"                 text="Manueller Lenkeingriff"/>
+		<text name="AUTO_TRACTOR_STEERING_ON"              text="Manueller Lenkeingriff [an]"/>
+		<text name="AUTO_TRACTOR_STEERING_OFF"             text="Manueller Lenkeingriff [aus]"/>
+		<text name="AUTO_TRACTOR_CONTINUE"                 text="Weiter fahren"/>
+		<text name="AUTO_TRACTOR_RAISE"                    text="Alle Geräte heben/senken"/>
+
+		<text name="AUTO_TRACTOR_WAITMODE_ON"              text="Abtankmodus [stehend]" />	
+		<text name="AUTO_TRACTOR_WAITMODE_OFF"             text="Abtankmodus [fahrend]" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON"  text="Abstandshalter ist AN " />	
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" text="Abstandshalter ist AUS" />
+		<!--AutoTractor help text-->
+		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF"         text="AutoTractor-Info ausschalten" />	
+		<text name="AUTO_TRACTOR_TEXTHELPPANELON"          text="AutoTractor-Info einschalten" />		
+		<!--AutoTractor inputbinding text-->
+		<text name="AUTO_TRACTOR_COLLISION_OTHER"          text="Kollision vorne" />
+		<text name="AUTO_TRACTOR_COLLISION_BACK"           text="Kollision hinten" />
+		<text name="AUTO_TRACTOR_UTURN_ON"                 text="AutoTractor-Modus [auf/ab]" />	
+		<text name="AUTO_TRACTOR_UTURN_OFF"                text="AutoTractor-Modus [Kreisfahrt]" />
+		<text name="AUTO_TRACTOR_REVERSE_ON"               text="Wendemodus [rückwärts]		" />	
+		<text name="AUTO_TRACTOR_REVERSE_OFF"              text="Wendemodus [vorwärts]" />
+		<text name="AUTO_TRACTOR_INVERTED_ON"              text="Arbeitsmodus [rückwärts]" />	
+		<text name="AUTO_TRACTOR_INVERTED_OFF"             text="Arbeitsmodus [vorwärts]" />
+		<text name="AUTO_TRACTOR_WIDTH_OFFSET"             text="Offset (Breite)" />	
+		<text name="AUTO_TRACTOR_TURN_OFFSET"              text="Offset (Wendemanöver)" />
+		<text name="AUTO_TRACTOR_ANGLE_OFFSET"             text="Lenkwinkel" />
+		<text name="AUTO_TRACTOR_SAFETY_FACTOR"            text="Sicherheitsabstand" />
+		<text name="AUTO_TRACTOR_ERROR"                    text="Fehler" />
+		<text name="AUTO_TRACTOR_NEXTTURNSTAGE"            text="Springe zum nächsten Schritt" />
+		<text name="AUTO_TRACTOR_CP_ON"                    text="Courseplay-Modus [aus]" />
+		<text name="AUTO_TRACTOR_CP_OFF"                   text="Courseplay-Modus [an]" />
+		<text name="AUTO_TRACTOR_STEER_ON"                 text="Autom. Lenkung [aus]" />
+		<text name="AUTO_TRACTOR_STEER_OFF"                text="Autom. Lenkung [an]" />
+		<text name="AUTO_TRACTOR_HEADLAND_ON"              text="Vorgewende [aus]" />
+		<text name="AUTO_TRACTOR_HEADLAND_OFF"             text="Vorgewende [an]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_ON"          text="Front Packer [an]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF"         text="Front Packer [aus]" />		
+		<text name="AUTO_TRACTOR_COLLISION_ON"             text="Kollisionsprüfung [an]" />
+		<text name="AUTO_TRACTOR_COLLISION_OFF"            text="Kollisionsprüfung [aus]" />
+		<text name="AUTO_TRACTOR_HIRE_ON"                  text="Saatgutverbrauch [aus]" />
+		<text name="AUTO_TRACTOR_HIRE_OFF"                 text="Saatgutverbrauch [an]" />
+		<text name="AUTO_TRACTOR_HEADLAND"                 text="Vorgewende" />
+		<text name="AUTO_TRACTOR_TURN_MODE_O"              text="180° Wende ohne Rückwärts" />
+		<text name="AUTO_TRACTOR_TURN_MODE_A"              text="Kleine 180° Wende" />
+		<text name="AUTO_TRACTOR_TURN_MODE_Y"              text="Mittlere 180° Wende" />
+		<text name="AUTO_TRACTOR_TURN_MODE_T"              text="Große 180° Wende" />
+		<text name="AUTO_TRACTOR_TURN_MODE_C"              text="90° Wende ohne Rückwärts" />
+		<text name="AUTO_TRACTOR_TURN_MODE_L"              text="Kleine 90° Wende" />
+		<text name="AUTO_TRACTOR_TURN_MODE_K"              text="Große 90° Wende" />
+		<text name="AUTO_TRACTOR_TURN_MODE_8"              text="180° Wende ohne Rückwärts" />
+		<text name="AUTO_TRACTOR_PAUSE_ON"                 text="Pause [an]" />
+		<text name="AUTO_TRACTOR_PAUSE_OFF"                text="Pause [aus]" />
+		<text name="AUTO_TRACTOR_STEER_RAISE"              text="Geräte hoch/aus" />
+		<text name="AUTO_TRACTOR_STEER_LOWER"              text="Geräte runter/an" />
+		<text name="AUTO_TRACTOR_TRACE"                    text="Spur anzeigen" />
+		<text name="AUTO_TRACTOR_MAGIC"                    text="Feld neu erkennen" />
+		
+		<text name="AUTO_TRACTOR_1"                        text="Geschwindigkeitsstufe 1" />
+		<text name="AUTO_TRACTOR_2"                        text="Geschwindigkeitsstufe 2" />
+		<text name="AUTO_TRACTOR_3"                        text="Geschwindigkeitsstufe 3" />
+		<text name="AUTO_TRACTOR_4"                        text="Geschwindigkeitsstufe 4" />
+	</texts>
+</l10n>

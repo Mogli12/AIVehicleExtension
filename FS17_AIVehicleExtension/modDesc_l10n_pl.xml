@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Tractor]]></description>
+
+	<texts>
+		<!--AutoTractor helpPanel text-->
+		<text name="AUTO_TRACTOR_START" text="AutoTractor wł." />
+		<text name="AUTO_TRACTOR_STOP" text="AutoTractor wył." />
+		<text name="AUTO_TRACTOR_WORKWIDTH" text="szerokość robocza:" />
+		<text name="AUTO_TRACTOR_ACTIVESIDELEFT" text="aktywna strona: LEWA" />
+		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT" text="aktywna strona: PRAWA" />
+
+		<text name="AUTO_TRACTOR_UTURN_ON_OFF"             text="zmiana trybu AutoTractora"/>
+		<text name="AUTO_TRACTOR_STEERING"                 text="ręczne sterowanie"/>
+		<text name="AUTO_TRACTOR_STEERING_ON"              text="ręczne sterowanie [wł.]"/>
+		<text name="AUTO_TRACTOR_STEERING_OFF"             text="ręczne sterowanie [wył.]"/>
+		<text name="AUTO_TRACTOR_CONTINUE"                 text="wznów"/>
+		
+		<text name="AUTO_TRACTOR_WAITMODE_ON" text="tryb rozładunku [postój]" />
+		<text name="AUTO_TRACTOR_WAITMODE_OFF" text="tryb rozładunku [jazda]" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON" text="utrzymywanie odległości jest WŁ." />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" text="utrzymywanie odległości jest WYŁ." />
+		<!--AutoTractor help text-->
+		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF" text="ukryj informacje AutoTractora" />
+		<text name="AUTO_TRACTOR_TEXTHELPPANELON" text="pokaż informacje AutoTractora" />
+		<!--AutoTractor inputbinding text-->
+		<text name="AUTO_TRACTOR_COLLISION_OTHER" text="przednia kolizja" />
+		<text name="AUTO_TRACTOR_COLLISION_BACK" text="tylna kolizja" />
+		<text name="AUTO_TRACTOR_UTURN_ON" text="AutoTractor w trybie [góra/dół]" />
+		<text name="AUTO_TRACTOR_UTURN_OFF" text="AutoTractor w trybie [na około]" />
+		<text name="AUTO_TRACTOR_REVERSE_ON" text="tryb zawracania [z cofaniem]" />
+		<text name="AUTO_TRACTOR_REVERSE_OFF" text="tryb zawracania [do przodu]" />
+		<text name="AUTO_TRACTOR_INVERTED_ON" text="tryb pracy [z cofaniem]" />
+		<text name="AUTO_TRACTOR_INVERTED_OFF" text="tryb pracy [normalny]" />
+		<text name="AUTO_TRACTOR_WIDTH_OFFSET" text="przesunięcie szerokości" />
+		<text name="AUTO_TRACTOR_TURN_OFFSET" text="przesunięcie nawrotów" />
+		<text name="AUTO_TRACTOR_ANGLE_OFFSET" text="kąt zawracania" />
+		<text name="AUTO_TRACTOR_ERROR" text="błąd" />
+		<text name="AUTO_TRACTOR_NEXTTURNSTAGE" text="przejdź do następnego manewru" />
+		<text name="AUTO_TRACTOR_CP_ON" text="tryb courseplay [wył.]" />
+		<text name="AUTO_TRACTOR_CP_OFF" text="tryb courseplay [wł.]" />
+		<text name="AUTO_TRACTOR_STEER_ON" text="automatyczne sterowanie [wył.]" />
+		<text name="AUTO_TRACTOR_STEER_OFF" text="automatyczne sterowanie [wł.]" />
+		<text name="AUTO_TRACTOR_HEADLAND_ON" text="odstęp [wył.]" />
+		<text name="AUTO_TRACTOR_HEADLAND_OFF" text="odstęp [wł.]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_ON" text="przedni agregat [wł.]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF" text="przedni agregat [wył.]" />
+		<text name="AUTO_TRACTOR_COLLISION_ON" text="sprawdzanie kolizji [wł.]" />
+		<text name="AUTO_TRACTOR_COLLISION_OFF" text="sprawdzanie kolizji [wył.]" />
+		<text name="AUTO_TRACTOR_HIRE_ON" text="zużywanie nasion [wył.]" /> <!--Shouldn't be replaced with below?-->
+		<text name="AUTO_TRACTOR_HIRE_OFF" text="zużywanie nasion [wł.]" /> <!--Shouldn't be replaced with above?-->
+		<text name ="AUTO_TRACTOR_HEADLAND" text="odstęp" />
+		<text name="AUTO_TRACTOR_TURN_MODE_O" text="nawrót bez cofania" />
+		<text name="AUTO_TRACTOR_TURN_MODE_A" text="mały nawrót" />
+		<text name="AUTO_TRACTOR_TURN_MODE_Y" text="średni nawrót" />
+		<text name="AUTO_TRACTOR_TURN_MODE_T" text="duży nawrót" />
+		<text name="AUTO_TRACTOR_TURN_MODE_C" text="skręt o 90° bez cofania" />
+		<text name="AUTO_TRACTOR_TURN_MODE_L" text="mały skręt o 90°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_K" text="duży skręt o 90°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_8" text="nawrót bez cofania" /> <!--The same description as MODE 0?-->
+		
+		<text name="AUTO_TRACTOR_1" text="prędkość poziom 1" />
+		<text name="AUTO_TRACTOR_2" text="prędkość poziom 2" />
+		<text name="AUTO_TRACTOR_3" text="prędkość poziom 3" />
+		<text name="AUTO_TRACTOR_4" text="prędkość poziom 4" />
+	</texts>
+</l10n>

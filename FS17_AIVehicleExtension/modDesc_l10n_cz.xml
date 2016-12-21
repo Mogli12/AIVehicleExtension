@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Traktor]]></description>
+
+	<texts>
+		<!--AutoTractor helpPanel text-->
+		<text name="AUTO_TRACTOR_START"                    text="AutoTractor pomocník" />
+		<text name="AUTO_TRACTOR_STOP"                     text="Normální pomocník" />
+		<text name="AUTO_TRACTOR_WORKWIDTH"                text="Pracovní šířka:" />
+		<text name="AUTO_TRACTOR_ACTIVESIDELEFT"           text="Aktivní strana: LEVÁ" />
+		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT"          text="Aktivní strana: PRAVÁ" />		
+		
+		<text name="AUTO_TRACTOR_UTURN_ON_OFF"             text="Změna AutoTractor módu"/>
+		<text name="AUTO_TRACTOR_STEERING"                 text="Ruční řízení"/>
+		<text name="AUTO_TRACTOR_STEERING_ON"              text="Ruční řízení: ON"/>
+		<text name="AUTO_TRACTOR_STEERING_OFF"             text="Ruční řízení: OFF"/>
+		<text name="AUTO_TRACTOR_CONTINUE"                 text="Pokračovat"/>
+		<text name="AUTO_TRACTOR_RAISE"                    text="Zvednout/položit veškeré vybavení"/>
+
+		<text name="AUTO_TRACTOR_WAITMODE_ON"              text="Vysypávání: STÁNÍ" />	
+		<text name="AUTO_TRACTOR_WAITMODE_OFF"             text="Vysypávání: JÍZDA" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON"  text="Bezpečná vzdálenost: ON" />	
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" text="Bezpečná vzdálenost: OFF" />
+		<!--AutoTractor help text-->
+		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF"         text="Skrýt AutoTractor info" />	
+		<text name="AUTO_TRACTOR_TEXTHELPPANELON"          text="Zobrazit AutoTractor info" />		
+		<!--AutoTractor inputbinding text-->
+		<text name="AUTO_TRACTOR_COLLISION_OTHER"          text="Kolize vpředu" />
+		<text name="AUTO_TRACTOR_COLLISION_BACK"           text="Kolize vzadu" />
+		<text name="AUTO_TRACTOR_UTURN_ON"                 text="AutoTractor mód: ŘÁDKY" />	
+		<text name="AUTO_TRACTOR_UTURN_OFF"                text="AutoTractor mód: KRUH" />
+		<text name="AUTO_TRACTOR_REVERSE_ON"               text="Otáčení: COUVÁNÍ" />	
+		<text name="AUTO_TRACTOR_REVERSE_OFF"              text="Otáčení: JÍZDA VPŘED" />
+		<text name="AUTO_TRACTOR_INVERTED_ON"              text="Pracovní režim: COUVÁNÍ" />	
+		<text name="AUTO_TRACTOR_INVERTED_OFF"             text="Pracovní režim: JÍZDA VPŘED" />
+		<text name="AUTO_TRACTOR_WIDTH_OFFSET"             text="Šíře otáčení" />	
+		<text name="AUTO_TRACTOR_TURN_OFFSET"              text="TURN_OFFSET" /> !!! Zbývá přeložit
+		<text name="AUTO_TRACTOR_ANGLE_OFFSET"             text="Úhel otáčení" />
+		<text name="AUTO_TRACTOR_ERROR"                    text="Chyba" />
+		<text name="AUTO_TRACTOR_NEXTTURNSTAGE"            text="Jet na další bod otáčení" />
+		<text name="AUTO_TRACTOR_CP_ON"                    text="CoursePlay mód: OFF" />
+		<text name="AUTO_TRACTOR_CP_OFF"                   text="CoursePlay mód: ON" />
+		<text name="AUTO_TRACTOR_STEER_ON"                 text="Autom. řízení: OFF" />
+		<text name="AUTO_TRACTOR_STEER_OFF"                text="Autom. řízení: ON" />
+		<text name="AUTO_TRACTOR_HEADLAND_ON"              text="Úvrať: OFF" />
+		<text name="AUTO_TRACTOR_HEADLAND_OFF"             text="Úvrať: ON" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_ON"          text="Front Packer: ON" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF"         text="Front Packer: OFF" />		
+		<text name="AUTO_TRACTOR_COLLISION_ON"             text="Kontrola kolize: ON" />
+		<text name="AUTO_TRACTOR_COLLISION_OFF"            text="Kontrola kolize: OFF" />
+		<text name="AUTO_TRACTOR_HIRE_ON"                  text="Spotřeba osiva: ON" />
+		<text name="AUTO_TRACTOR_HIRE_OFF"                 text="Spotřeba osiva: OFF" />
+		<text name="AUTO_TRACTOR_HEADLAND"                 text="Úvrať" />
+		<text name="AUTO_TRACTOR_TURN_MODE_O"              text="Otočit o 180° bez couvání" />
+		<text name="AUTO_TRACTOR_TURN_MODE_A"              text="Malé otočení o 180°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_Y"              text="Střední otočení o 180°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_T"              text="Velké otočení o 180°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_C"              text="Otočit o 90° bez couvání" />
+		<text name="AUTO_TRACTOR_TURN_MODE_L"              text="Malé otočení o 90°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_K"              text="Velké otočení o 90°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_8"              text="Otočit o 180° bez couvání" />
+		<text name="AUTO_TRACTOR_PAUSE_ON"                 text="Pauza: ON" />
+		<text name="AUTO_TRACTOR_PAUSE_OFF"                text="Pauza: OFF" />
+		<text name="AUTO_TRACTOR_STEER_RAISE"              text="Zařízení: ZVEDNOUT/ON" />
+		<text name="AUTO_TRACTOR_STEER_LOWER"              text="Zařízení: POLOŽIT/OFF" />
+		
+		<text name="AUTO_TRACTOR_1"                        text="Speed level: 1" />
+		<text name="AUTO_TRACTOR_2"                        text="Speed level: 2" />
+		<text name="AUTO_TRACTOR_3"                        text="Speed level: 3" />
+		<text name="AUTO_TRACTOR_4"                        text="Speed level: 4" />
+	</texts>
+</l10n>

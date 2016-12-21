@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Tractor - French traduction by Waylan]]></description>
+
+	<texts>
+		<!--AutoTractor helpPanel text-->
+		<text name="AUTO_TRACTOR_START" text="AutoTractor On" />
+		<text name="AUTO_TRACTOR_STOP" text="AutoTractor Off" />
+		<text name="AUTO_TRACTOR_WORKWIDTH" text="Larg. travail:" />
+		<text name="AUTO_TRACTOR_ACTIVESIDELEFT" text="Côté actif: Gauche" />
+		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT" text="Côté actif: Droit" />		
+
+		<text name="AUTO_TRACTOR_WAITMODE_ON" text="Déchargement [A l'arrêt]" />	
+		<text name="AUTO_TRACTOR_WAITMODE_OFF" text="Déchargement [En marche]" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON" text="Distance de sécurité On" />	
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" text="Distance de sécurité Off" />
+		<!--AutoTractor help text-->
+		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF" text="Masquer Infos AutoTractor" />	
+		<text name="AUTO_TRACTOR_TEXTHELPPANELON" text="Afficher Infos AutoTractor" />		
+		<!--AutoTractor inputbinding text-->
+		<text name="AUTO_TRACTOR_COLLISION_OTHER" text="Collision frontale" />
+		<text name="AUTO_TRACTOR_COLLISION_BACK" text="Collision arrière" />
+		<text name="AUTO_TRACTOR_UTURN_ON" text="Mode AutoTractor [Haut/Bas]" />	
+		<text name="AUTO_TRACTOR_UTURN_OFF" text="Mode AutoTractor [cercle]" />
+		<text name="AUTO_TRACTOR_REVERSE_ON" text="Virage [manoeuvre]" />	
+		<text name="AUTO_TRACTOR_REVERSE_OFF" text="Virage [En avançant]" />
+		<text name="AUTO_TRACTOR_INVERTED_ON" text="Mode travail [inversé]" />	
+		<text name="AUTO_TRACTOR_INVERTED_OFF" text="Mode travail [normal]" />
+		<text name="AUTO_TRACTOR_WIDTH_OFFSET" text="Décalage Largeur" />	
+		<text name="AUTO_TRACTOR_TURN_OFFSET" text="Décalage virage" />
+		<text name="AUTO_TRACTOR_ANGLE_OFFSET" text="Angle virage" />
+		<text name="AUTO_TRACTOR_SAFETY_FACTOR" text="Distance de sécurité" />
+		<text name="AUTO_TRACTOR_ERROR" text="Erreur" />
+		<text name="AUTO_TRACTOR_NEXTTURNSTAGE" text="Point virage suivant" />
+		<text name="AUTO_TRACTOR_CP_ON" text="courseplay mode [off]" />
+		<text name="AUTO_TRACTOR_CP_OFF" text="courseplay mode [on]" />
+		<text name="AUTO_TRACTOR_STEER_ON" text="Pilotage auto [off]" />
+		<text name="AUTO_TRACTOR_STEER_OFF" text="Pilotage auto [on]" />
+		<text name="AUTO_TRACTOR_HEADLAND_ON" text="Headland Off" />
+		<text name="AUTO_TRACTOR_HEADLAND_OFF" text="Headland On" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_ON" text="Compacteur frontal On" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF" text="Compacteur frontal Off" />		
+		<text name="AUTO_TRACTOR_COLLISION_ON" text="Vérif. collision On" />
+		<text name="AUTO_TRACTOR_COLLISION_OFF" text="Vérif. collision Off" />
+		<text name="AUTO_TRACTOR_HIRE_ON" text="Conso. semences On" />
+		<text name="AUTO_TRACTOR_HIRE_OFF" text="Conso. semences Off" />
+		<text name ="AUTO_TRACTOR_HEADLAND" text="Headland" />
+		<text name="AUTO_TRACTOR_TURN_MODE_O" text="Virage U sans marche arrière" />
+		<text name="AUTO_TRACTOR_TURN_MODE_A" text="Virage U serré" />
+		<text name="AUTO_TRACTOR_TURN_MODE_Y" text="Virage U moyen" />
+		<text name="AUTO_TRACTOR_TURN_MODE_T" text="Virage U large" />
+		<text name="AUTO_TRACTOR_TURN_MODE_C" text="Virage 90° sans marche arrière" />
+		<text name="AUTO_TRACTOR_TURN_MODE_L" text="Virage serré 90°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_K" text="Large virage 90°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_8" text="Virage U sans marche arrière" />
+		
+		<text name="AUTO_TRACTOR_1" text="Limiteur vit. 1" />
+		<text name="AUTO_TRACTOR_2" text="Limiteur vit. 2" />
+		<text name="AUTO_TRACTOR_3" text="Limiteur vit. 3" />
+		<text name="AUTO_TRACTOR_4" text="Limiteur vit. 4" />
+	</texts>
+</l10n>
