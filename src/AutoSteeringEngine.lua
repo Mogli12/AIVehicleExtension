@@ -1997,7 +1997,7 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getNoReverseIndex( vehicle )
 
-	return Utils.getNoNil( vehicle.aiveNoReverseIndex, 0 )
+	return Utils.getNoNil( vehicle.aiveChain.noReverseIndex, 0 )
 
 	--local noReverseIndex = 0
 	--
@@ -6122,8 +6122,8 @@ elseif AIVEGlobals.devFeatures <= 0 then
   if tool.hasWorkAreas    then vehicle.aiveHas.workAreas     = true end
   if tool.isTurnOnVehicle then vehicle.aiveHas.turnOnVehicle = true end
 		
-	if tool.aiForceTurnNoBackward and ( vehicle.aiveNoReverseIndex == nil or vehicle.aiveNoReverseIndex < 1 ) then 
-		vehicle.aiveNoReverseIndex = i 
+	if tool.aiForceTurnNoBackward and ( vehicle.aiveChain.noReverseIndex == nil or vehicle.aiveChain.noReverseIndex < 1 ) then 
+		vehicle.aiveChain.noReverseIndex = i 
 	end 
 	
 	vehicle.aiveChain.toolCount = i
@@ -6143,20 +6143,23 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.deleteTools( vehicle )
 
-	if vehicle ~= nil and vehicle.aiveChain.tools ~= nil and vehicle.aiveChain.toolCount > 0 then
-		for _,tool in pairs( vehicle.aiveChain.tools ) do
-			if tool.extraNodes ~= nil and table.getn( tool.extraNodes ) > 0 then
-				for _,n in pairs( tool.extraNodes ) do
-					AutoSteeringEngine.deleteNode( n )
+	if vehicle ~= nil and vehicle.aiveChain ~= nil then
+		if vehicle.aiveChain.tools ~= nil and vehicle.aiveChain.toolCount > 0 then
+			for _,tool in pairs( vehicle.aiveChain.tools ) do
+				if tool.extraNodes ~= nil and table.getn( tool.extraNodes ) > 0 then
+					for _,n in pairs( tool.extraNodes ) do
+						AutoSteeringEngine.deleteNode( n )
+					end
 				end
 			end
 		end
+		vehicle.aiveChain.toolCount      = 0
+		vehicle.aiveChain.tools          = nil
+		vehicle.aiveChain.toolParams     = nil
+		vehicle.aiveChain.noReverseIndex = 0
 	end
 	
-	vehicle.aiveHas            = {}
-	vehicle.aiveNoReverseIndex = 0
-	vehicle.aiveChain.toolCount      = 0
-	vehicle.aiveChain.tools          = nil
+	vehicle.aiveHas = {}
 end
 
 ------------------------------------------------------------------------
