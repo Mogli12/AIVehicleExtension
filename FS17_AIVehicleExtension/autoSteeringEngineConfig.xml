@@ -6,7 +6,6 @@
     <artSteeringD type="float" value="-0.250000" />
     <!--angleSafety type="float" value="0.800000" /-->
     <angleSafety type="float" value="0.8" />
-    <artAxisMode value="5" />
     <artAxisRot type="float" value="1.000000" />
     <artAxisShift type="float" value="1.000000" />
     <average type="float" value="1" />

@@ -48,7 +48,7 @@ function AIVehicleExtension:debugPrint( ... )
 	end	
 end
 
-AIVehicleExtension.saveAttributesMapping = { enabled				 = { xml = "acEnabled",		 tp = "B", default = true, always = true },
+AIVehicleExtension.saveAttributesMapping = { enabled				 = { xml = "acEnabled",		 tp = "B", default = false, always = true },
 																			upNDown				 = { xml = "acUTurn",			 tp = "B", default = true, always = true },
 																			rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false },
 																			headland				= { xml = "acHeadland",		tp = "B", default = false },
@@ -62,7 +62,7 @@ AIVehicleExtension.saveAttributesMapping = { enabled				 = { xml = "acEnabled",	
 																			widthOffset		 = { xml = "acWidthOffset", tp = "F", default = 0 },
 																			turnOffset			= { xml = "acTurnOffset",	tp = "F", default = 0 },
 																			safetyFactor		= { xml = "acSafetyFactor",tp = "I", default = AIVEGlobals.safetyFactor },
-																			angleFactor		 = { xml = "acAngleFactorN",tp = "F", default = 1.0 },
+																			angleFactor		 = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
 																			speedFactor		 = { xml = "acSpeedFactor", tp = "F", default = 0.8 },																															
 																			noSteering			= { xml = "acNoSteering",	tp = "B", default = false } };																															
 AIVehicleExtension.turnStageNoNext = { 21, 22, 23 } --{ 0 }
@@ -161,21 +161,10 @@ function AIVehicleExtension:load(saveGame)
 		tempNode = self.components[1].node
 	end
 	if			self.articulatedAxis ~= nil 
-			and AIVEGlobals.artAxisMode > 0 
 			and self.articulatedAxis.componentJoint ~= nil
 			and self.articulatedAxis.anchorActor ~= nil
 			and self.articulatedAxis.componentJoint.jointNode ~= nil then				
 		tempNode = getParent( self.articulatedAxis.componentJoint.jointNode )
-		
-		if AIVEGlobals.artAxisMode == 2 or AIVEGlobals.artAxisMode == 3 then
-			local _,_,z1 = AutoSteeringEngine.getRelativeTranslation( self.steeringAxleNode, self.components[self.articulatedAxis.componentJoint.componentIndices[1]].node )
-			local _,_,z2 = AutoSteeringEngine.getRelativeTranslation( self.steeringAxleNode, self.components[self.articulatedAxis.componentJoint.componentIndices[2]].node )
-			if z1 < z2 then
-				tempNode = self.components[self.articulatedAxis.componentJoint.componentIndices[1]].node
-			else
-				tempNode = self.components[self.articulatedAxis.componentJoint.componentIndices[2]].node
-			end
-		end
 	end
 	
 	self.acRefNode = createTransformGroup( "acNewRefNode" )
@@ -876,47 +865,29 @@ function AIVehicleExtension:update(dt)
 		self.acParameters.inverted = self.isReverseDriving
 	end		
 
-	if			self.articulatedAxis ~= nil 
-			and AIVEGlobals.artAxisMode > 0
-			and self.articulatedAxis.componentJoint ~= nil
+	if			self.articulatedAxis                          ~= nil 
+			and self.articulatedAxis.componentJoint           ~= nil
 			and self.articulatedAxis.componentJoint.jointNode ~= nil 
-			and self.acDimensions ~= nil 
-			and self.acDimensions.wheelBase ~= nil then	
-		if		 AIVEGlobals.artAxisMode == 1 or AIVEGlobals.artAxisMode == 3 then			
-			local _,angle,_ = getRotation( self.articulatedAxis.componentJoint.jointNode );
-			angle = 0.5 * angle
-			setRotation( self.acRefNode, 0, AIVEGlobals.artAxisRot * angle, 0 )
-			setTranslation( self.acRefNode, AIVEGlobals.artAxisShift * self.acDimensions.wheelBase * math.sin( angle ), 0, 0 )
-		elseif AIVEGlobals.artAxisMode == 4 then			
-			local linked = false
-			for _, implement in pairs(vehicle.attachedImplements) do
-				if implement.object ~= nil and implement.object.attacherJoint ~= nil and implement.object.attacherJoint.node ~= nil then
-					linked = true
-					link( implement.object.attacherJoint.node, self.acRefNode )
-				end
-			end	
-			
-			if not linked then
-				link( self.articulatedAxis.componentJoint.jointNode, self.acRefNode )
-			end			
-		elseif AIVEGlobals.artAxisMode == 5 then
-			local node = getParent( self.acRefNode )
-			local dx = 0
-			local dz = 0
-			local dn = 0
-			for n,i in pairs( self.acDimensions.wheelParents ) do
-				local x,_,z	=AutoSteeringEngine.getRelativeTranslation( node, n )
-				dx = dx + x
-				dz = dz + z
-				dn = dn + i
-			end
-			dx = dx / dn
-			dz = dz / dn
-			local _,angle,_ = getRotation( self.articulatedAxis.componentJoint.jointNode );
-			angle = 0.5 * angle
-			setRotation( self.acRefNode, 0, AIVEGlobals.artAxisRot * angle, 0 )
-			setTranslation( self.acRefNode, AIVEGlobals.artAxisShift * dx, 0, AIVEGlobals.artAxisShift * dz )			
-		end			
+			and self.acDimensions                             ~= nil 
+			and self.acDimensions.wheelBase                   ~= nil 
+			and self.acDimensions.acRefNodeZ                  ~= nil then	
+		
+		local node = getParent( self.acRefNode )
+		local dx = 0
+		local dz = 0
+		local dn = 0
+		for n,i in pairs( self.acDimensions.wheelParents ) do
+			local x,_,z	=AutoSteeringEngine.getRelativeTranslation( node, n )
+			dx = dx + x
+			dz = dz + z
+			dn = dn + i
+		end
+		dx = dx / dn
+		dz = dz / dn
+		local _,angle,_ = getRotation( self.articulatedAxis.componentJoint.jointNode );
+		angle = 0.5 * angle
+		setRotation( self.acRefNode, 0, AIVEGlobals.artAxisRot * angle, 0 )				
+		setTranslation( self.acRefNode, AIVEGlobals.artAxisShift * dx, 0, AIVEGlobals.artAxisShift * dz + self.acDimensions.acRefNodeZ )			
 	end
 
 	if atDump and self:getIsActiveForInput(false) then
@@ -1095,7 +1066,6 @@ function AIVehicleExtension:updateTick( dt )
 
 		if			self.aiTractorDirectionNode ~= nil
 				and not ( self.articulatedAxis ~= nil 
-							and AIVEGlobals.artAxisMode > 0 
 							and self.articulatedAxis.componentJoint ~= nil
 							and self.articulatedAxis.anchorActor ~= nil
 							and self.articulatedAxis.componentJoint.jointNode ~= nil )
@@ -1350,6 +1320,9 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:onStartAiVehicle()
 
+	AutoSteeringEngine.invalidateField( self )		
+	AutoSteeringEngine.checkTools1( self, true )
+
 	self.acClearTraceAfterTurn = true
 	AIVehicleExtension.resetAIMarker( self )
 	
@@ -1511,39 +1484,6 @@ function AIVehicleExtension:resetAIMarker()
 		end 		
 	end 		
 end 
-
-------------------------------------------------------------------------
--- AIVehicle.canStartAIVehicle
-------------------------------------------------------------------------
-function AIVehicleExtension:newCanStartAIVehicle( superFunc, ...	)
-
-	if self.acParameters ~= nil and self.acParameters.enabled then
-		if self.aiVehicleDirectionNode == nil then
-			return false;
-		end
-		if g_currentMission.disableAIVehicle then
-			return false;
-		end
-		if AIVehicle.numHirablesHired >= g_currentMission.maxNumHirables then
-			return false;
-		end
-		if not self.isMotorStarted then
-			return false;
-		end
-		if self.isConveyorBelt then
-			return false;
-		end;
-
-		AIVehicleExtension.checkState( self )
-		if not AutoSteeringEngine.hasTools( self ) then
-			return false;
-		end;
-		
-		return true;
-	end
-
-	return superFunc( self, ... );	
-end
 
 ------------------------------------------------------------------------
 -- AIVehicle:setAIImplementsMoveDown(moveDown)
@@ -1893,7 +1833,12 @@ function AIVehicleExtension.calculateDimensions( self )
 	self.acDimensions.radius					 = 5;
 	self.acDimensions.maxSteeringAngle = math.rad(25);
 	self.acDimensions.wheelBase				= self.acDimensions.radius * math.tan( self.acDimensions.maxSteeringAngle )
-	self.acDimensions.zOffset					= -0.5 * self.acDimensions.wheelBase;
+	self.acDimensions.zOffset					= 0 
+	self.acDimensions.acRefNodeZ   		= -0.5 * self.acDimensions.wheelBase;
+	
+	
+	local refNodeParent = getParent( self.acRefNode )
+	
 	
 	if			self.articulatedAxis ~= nil 
 			and self.articulatedAxis.componentJoint ~= nil
@@ -1901,7 +1846,7 @@ function AIVehicleExtension.calculateDimensions( self )
 			and self.articulatedAxis.rotMax then
 			
 		self.acDimensions.wheelParents = {}
-		_,_,self.acDimensions.zOffset = AutoSteeringEngine.getRelativeTranslation(self.acRefNode,self.articulatedAxis.componentJoint.jointNode);
+		_,_,self.acDimensions.acRefNodeZ = AutoSteeringEngine.getRelativeTranslation(refNodeParent,self.articulatedAxis.componentJoint.jointNode);
 		local n=0;
 		for _,wheel in pairs(self.wheels) do
 			local temp1 = { getRotation(wheel.driveNode) }
@@ -1944,7 +1889,7 @@ function AIVehicleExtension.calculateDimensions( self )
 			local temp2 = { getRotation(wheel.repr) }
 			setRotation(wheel.driveNode, 0, 0, 0)
 			setRotation(wheel.repr, 0, 0, 0)
-			local x,y,z = AutoSteeringEngine.getRelativeTranslation(self.acRefNode,wheel.driveNode);
+			local x,y,z = AutoSteeringEngine.getRelativeTranslation(refNodeParent,wheel.driveNode);
 			setRotation(wheel.repr, unpack(temp2))
 			setRotation(wheel.driveNode, unpack(temp1))
 
@@ -2001,14 +1946,14 @@ function AIVehicleExtension.calculateDimensions( self )
 		end
 				
 		if nl0 > 0 or nr0 > 0 then
-			self.acDimensions.zOffset = ( zl0 + zr0 ) / ( nl0 + nr0 );
+			self.acDimensions.acRefNodeZ = ( zl0 + zr0 ) / ( nl0 + nr0 );
 		
 			if		 zlm > -98 then
-				self.acDimensions.wheelBase = zlm - self.acDimensions.zOffset;
-				self.acDimensions.maxSteeringAngle = alm;
+				self.acDimensions.wheelBase = zlm - self.acDimensions.acRefNodeZ
+				self.acDimensions.maxSteeringAngle = alm
 			elseif zlmi < 98 then
-				self.acDimensions.wheelBase = self.acDimensions.zOffset - zlmi;
-				self.acDimensions.maxSteeringAngle = almi;
+				self.acDimensions.wheelBase = self.acDimensions.acRefNodeZ -zlmi
+				self.acDimensions.maxSteeringAngle = almi
 			else
 				self.acDimensions.wheelBase = 0;
 			end
@@ -2018,18 +1963,20 @@ function AIVehicleExtension.calculateDimensions( self )
 			local t1 = math.tan( alm );
 			local t2 = math.tan( almi );
 			
-			self.acDimensions.zOffset	 = ( t1 * zlmi - t2 * zlm ) / ( t1 - t2 );
-			self.acDimensions.wheelBase = zlm - self.acDimensions.zOffset;
+			self.acDimensions.acRefNodeZ	 = ( t1 * zlmi - t2 * zlm ) / ( t1 - t2 );
+			self.acDimensions.wheelBase = zlm - self.acDimensions.acRefNodeZ;
 		else
 			self.acDimensions.maxSteeringAngle = math.abs( alm )
 			self.acDimensions.wheelBase				= 4;
-			self.acDimensions.zOffset					= 0;
+			self.acDimensions.acRefNodeZ					= 0;
 		end
 	end
 	
 	if self.acParameters.inverted then
 		self.acDimensions.wheelBase = -self.acDimensions.wheelBase 
 	end
+	
+	setTranslation( self.acRefNode, 0, 0, self.acDimensions.acRefNodeZ )
 	
 	--adjusted steering
 	if self.as ~= nil and self.as.radI ~= nil and self.as.radO ~= nil and 0 < self.as.radO and self.as.radO < self.as.radI then
@@ -2048,7 +1995,7 @@ function AIVehicleExtension.calculateDimensions( self )
 	end
 	
 	if AIVEGlobals.devFeatures > 0 then
-		print(string.format("wb: %0.3fm, r: %0.3fm, z: %0.3fm", self.acDimensions.wheelBase, self.acDimensions.radius, self.acDimensions.zOffset ))
+		print(string.format("wb: %0.3fm, r: %0.3fm, z: %0.3fm", self.acDimensions.wheelBase, self.acDimensions.radius, self.acDimensions.acRefNodeZ ))
 	end
 	
 end
@@ -2109,7 +2056,6 @@ function AIVehicleExtension.calculateDistances( self )
 	self.acDimensions.distance		 = 99;
 	self.acDimensions.toolDistance = 99;
 	
-	local zo = self.acDimensions.zOffset;
 	local wb = self.acDimensions.wheelBase;
 	local ms = self.acDimensions.maxSteeringAngle;
 	
@@ -2119,16 +2065,15 @@ function AIVehicleExtension.calculateDistances( self )
 	-- Roue mode
 	------------------------------------------------------------------------
 	AIVehicleExtension.roueSet( self, nil, self.acDimensions.maxLookingAngle )
-	AutoSteeringEngine.checkChain( self, self.acRefNode, zo, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.acParameters.inverted, self.acParameters.frontPacker, self.acParameters.speedFactor );
+	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.acParameters.inverted, self.acParameters.frontPacker, self.acParameters.speedFactor );
 
 	self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack = AutoSteeringEngine.checkTools( self );
 	
 	if self.aiIsStarted and self.acParameters.enabled and self.acHasRoueSpec and self.acTurnStage <= 0 and self.acDimensions.zBack < 0 and	AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then 
 		local zShift, ms = AIVehicleExtension.roueSet( self, self.acDimensions.zBack, self.acDimensions.maxLookingAngle );
 		if math.abs( zShift ) > 1E-3 then
-			--zo = zo - zShift;
 			wb = wb + zShift;
-			AutoSteeringEngine.checkChain( self, self.acRefNode, zo, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.acParameters.inverted, self.acParameters.frontPacker );
+			AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.acParameters.inverted, self.acParameters.frontPacker );
 			self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack = AutoSteeringEngine.checkTools( self );
 		end
 	end
@@ -2667,6 +2612,4 @@ function AIVehicleExtension.test4( self )
 end
 
 AIVehicle.updateTick = Utils.overwrittenFunction( AIVehicle.updateTick, AIVehicleExtension.newUpdateTick );
-AIVehicle.canStartAIVehicle = Utils.overwrittenFunction( AIVehicle.canStartAIVehicle, AIVehicleExtension.newCanStartAIVehicle )
---AIVehicle.getIsAITractorAllowed = Utils.overwrittenFunction( AIVehicle.getIsAITractorAllowed, AIVehicleExtension.newGetIsAITractorAllowed );
 
