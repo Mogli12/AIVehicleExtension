@@ -259,6 +259,8 @@ function AIVehicleExtensionRegister:add()
 	g_i18n.globalI18N.texts["AUTO_TRACTOR_TRACE"]                    = g_i18n:getText("AUTO_TRACTOR_TRACE"); 
 	g_i18n.globalI18N.texts["AUTO_TRACTOR_MAGIC"]                    = g_i18n:getText("AUTO_TRACTOR_MAGIC"); 
 	
+	g_i18n.globalI18N.texts["AUTO_TRACTOR_START_AIVE"]               = g_i18n:getText("AUTO_TRACTOR_START_AIVE"); 
+	
 end;
 
 addModEventListener(AIVehicleExtensionRegister);

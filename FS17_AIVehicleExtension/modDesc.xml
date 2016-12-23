@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="34">
 	<author>Mogli</author>
-	<version>0.1.0.2</version>
+	<version>0.1.0.3</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AUTO_TRACTOR_VERSION">
-			<en>AIVehicleExtension v0.1.0.2</en>
-			<de>AIVehicleExtension v0.1.0.2</de>
+			<en>AIVehicleExtension v0.1.0.3</en>
+			<de>AIVehicleExtension v0.1.0.3</de>
 		</text>
 	</l10n>
 	<title>
@@ -48,5 +48,6 @@
 		<input name="AUTO_TRACTOR_UTURN_ON_OFF"    category="VEHICLE" key1="KEY_lalt KEY_5"   key2="" button="" device="0" mouse="" />
 		<input name="AUTO_TRACTOR_STEERING"        category="VEHICLE" key1="KEY_lalt KEY_6"   key2="" button="" device="0" mouse="" />
 		<input name="AUTO_TRACTOR_RAISE"           category="VEHICLE" key1="KEY_lalt KEY_v"   key2="" button="" device="0" mouse="" />
+		<input name="AUTO_TRACTOR_START_AIVE"      category="VEHICLE" key1="KEY_lshift KEY_h" key2="" button="" device="0" mouse="" />
 	</inputBindings>
 </modDesc>

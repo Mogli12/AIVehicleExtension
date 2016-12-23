@@ -49,7 +49,7 @@ function AIVehicleExtension:debugPrint( ... )
 end
 
 AIVehicleExtension.saveAttributesMapping = { enabled				 = { xml = "acEnabled",		 tp = "B", default = false, always = true },
-																			upNDown				 = { xml = "acUTurn",			 tp = "B", default = true, always = true },
+																			upNDown				 = { xml = "acUTurn",			 tp = "B", default = false, always = true },
 																			rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false },
 																			headland				= { xml = "acHeadland",		tp = "B", default = false },
 																			collision			 = { xml = "acCollision",	 tp = "B", default = false },
@@ -370,9 +370,9 @@ function AIVehicleExtension.showGui(self,on)
 end;
 
 function AIVehicleExtension:evalUTurn()
-	if not self.acParameters.enabled then 
-		return false 
-	end 
+--if not self.acParameters.enabled then 
+--	return false 
+--end 
 	return not self.acParameters.upNDown;
 end;
 
@@ -387,11 +387,8 @@ end
 function AIVehicleExtension:setHeadland(enabled)
 	if not enabled then
 		self.acParameters.headland = enabled;
-	elseif	( self.acParameters.upNDown 
-				 or not self.acParameters.enabled )
-			and ( not self.aiIsStarted
-				 or not self.acParameters.enabled
-				 or self.acTurnStage == 0 ) then
+	elseif	self.acParameters.upNDown 				 
+			and ( not self.aiIsStarted or self.acTurnStage == 0 ) then
 		self.acParameters.headland = enabled;
 	end
 end
@@ -561,7 +558,7 @@ function AIVehicleExtension:evalAngleUp()
 	if not self.acParameters.enabled then 
 		return true 
 	end 
-	local enabled = self.acParameters.angleFactor <= 0.95;
+	local enabled = self.acParameters.angleFactor < 1;
 	return enabled
 end
 
@@ -574,11 +571,11 @@ function AIVehicleExtension:evalAngleDown()
 end
 
 function AIVehicleExtension:setAngleUp(enabled)
-	if enabled then self.acParameters.angleFactor = self.acParameters.angleFactor + 0.05 end
+	if enabled then self.acParameters.angleFactor = Utils.clamp( self.acParameters.angleFactor + 0.05, 0.1, 1 ) end
 end
 
 function AIVehicleExtension:setAngleDown(enabled)
-	if enabled then self.acParameters.angleFactor = self.acParameters.angleFactor - 0.05 end
+	if enabled then self.acParameters.angleFactor = Utils.clamp( self.acParameters.angleFactor - 0.05, 0.1, 1 ) end
 end
 
 function AIVehicleExtension:getMaxLookingAngleValue( noScale )
@@ -626,10 +623,10 @@ function AIVehicleExtension:evalTurnStage()
 				end
 			end
 			return true
-		else
-			if self.turnStage > 0 and self.turnStage < 4 then
-				return true;
-			end
+	--else
+	--	if self.turnStage > 0 and self.turnStage < 4 then
+	--		return true;
+	--	end
 		end
 	end
 	
@@ -902,7 +899,15 @@ function AIVehicleExtension:update(dt)
 			end
 			AIVehicleExtension.showGui( self, not guiActive );
 		end;
-		if AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_SWAP_SIDE" ) then
+		if      AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_START_AIVE" )
+				and not self.aiIsStarted 
+				and AIVehicle.canStartAIVehicle(self) then
+			if not self.acParameters.enabled then
+				self.acParameters.enabled = true
+				AIVehicleExtension.sendParameters(self);
+			end
+			self:startAIVehicle()
+		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_SWAP_SIDE" ) then
 			self.acParameters.leftAreaActive	= self.acParameters.rightAreaActive
 			self.acParameters.rightAreaActive = not self.acParameters.leftAreaActive
 			AIVehicleExtension.sendParameters(self);
@@ -1322,6 +1327,7 @@ function AIVehicleExtension:onStartAiVehicle()
 
 	AutoSteeringEngine.invalidateField( self )		
 	AutoSteeringEngine.checkTools1( self, true )
+	AutoSteeringEngine.saveDirection( self, false, true )
 
 	self.acClearTraceAfterTurn = true
 	AIVehicleExtension.resetAIMarker( self )
