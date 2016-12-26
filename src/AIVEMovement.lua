@@ -195,14 +195,6 @@ function AIVehicleExtension:newUpdateAIMovement( dt )
 		self.acNoSneakTimer  = nil
 	end
 	
-	for _, v in pairs(self.numCollidingVehicles) do
-		if v > 0 then
-			AIVehicleExtension.setStatus( self, 3 )
-			allowedToDrive = false
-			break
-		end
-	end
-	
 	if self.waitForTurnTime > g_currentMission.time then
 		if self.acLastSteeringAngle ~= nil then
 			local a = AutoSteeringEngine.currentSteeringAngle( self, self.acParameters.inverted )
@@ -2645,10 +2637,6 @@ function AIVehicleExtension:newUpdateAIMovement( dt )
 	if self.acParameters.inverted then
 		colDirX = -colDirX;
 		colDirZ = -colDirZ;
-	end
-
-	for triggerId, _ in pairs(self.numCollidingVehicles) do
-		AIVehicleUtil.setCollisionDirection(self.aiTractorDirectionNode, triggerId, colDirX, colDirZ)
 	end
 
 end
