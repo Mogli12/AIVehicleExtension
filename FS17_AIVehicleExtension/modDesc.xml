@@ -6,7 +6,8 @@
 		<text name="AUTO_TRACTOR_VERSION">
 			<en>AIVehicleExtension v0.1.0.4</en>
 			<de>AIVehicleExtension v0.1.0.4</de>
-		</text>
+			<cs>车辆助手 v0.1.0.4</cs>
+</text>
 	</l10n>
 	<title>
 		<en>AI Vehicle</en>
@@ -16,7 +17,8 @@
 		<ru>AI Vehicle</ru>
 		<cz>AI Vehicle</cz>
 		<pl>AI Vehicle</pl>
-	</title>
+		<cs>车辆助手</cs>	
+</title>
 	<description>
 		<en>
 			<![CDATA[AI Vehicle]]></en>
@@ -32,6 +34,7 @@
 			<![CDATA[AI Vehicle - český překlad by Albi]]></cz>
 		<pl>
 			<![CDATA[AI Vehicle - Polskie tłumaczenie Dzi4d3k]]></pl>
+		<cs>  <![CDATA[车辆助手，可以圆圈行走。]]></cs>
 	</description>
 	<iconFilename>dds/store.dds</iconFilename>
 	<multiplayer supported="true"/>
