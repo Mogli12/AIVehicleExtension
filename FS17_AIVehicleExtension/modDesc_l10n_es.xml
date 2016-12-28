@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Tractor]]></description>
+
+	<texts>
+		<!--AutoTractor helpPanel text-->
+		<text name="AUTO_TRACTOR_START"						text="AutoTractor On" />
+		<text name="AUTO_TRACTOR_STOP"						text="AutoTractor Off" />
+		<text name="AUTO_TRACTOR_WORKWIDTH"					text="Ancho Trabajo:" />
+		<text name="AUTO_TRACTOR_ACTIVESIDELEFT"			text="Cambiar Lado: Izq." />
+		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT"			text="Cambiar Lado: Der." />
+
+		<text name="AUTO_TRACTOR_UTURN_ON_OFF"             text="AutoTractor On/Off"/>
+		<text name="AUTO_TRACTOR_STEERING"                 text="Dirección Manual"/>
+		<text name="AUTO_TRACTOR_STEERING_ON"              text="Dirección Manual [ON]"/>
+		<text name="AUTO_TRACTOR_STEERING_OFF"             text="Dirección Manual[OFF]"/>
+		<text name="AUTO_TRACTOR_CONTINUE"                 text="Continuar"/>
+		
+		<text name="AUTO_TRACTOR_WAITMODE_ON"				text="Modo Descarga [En Pie]" />
+		<text name="AUTO_TRACTOR_WAITMODE_OFF"				text="Modo Descarga [Conduciendo]" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON"	text="Guardar Distancia ON" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF"	text="Guardar Distancia OFF" />
+		<!--AutoTractor help text-->
+		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF" text="Ocultar Info AutoTractor" />
+		<text name="AUTO_TRACTOR_TEXTHELPPANELON" text="Mostrar Info AutoTractor" />
+		<!--AutoTractor inputbinding text-->
+		<text name="AUTO_TRACTOR_COLLISION_OTHER" text="Colisión Delantera" />
+		<text name="AUTO_TRACTOR_COLLISION_BACK" text="Colisión Trasera" />
+		<text name="AUTO_TRACTOR_UTURN_ON" text="AutoTractor Modo [ZigZag]" />
+		<text name="AUTO_TRACTOR_UTURN_OFF" text="AutoTractor Modo [Circulos]" />
+		<text name="AUTO_TRACTOR_REVERSE_ON" text="Modo Giro [Hacia atrás]" />
+		<text name="AUTO_TRACTOR_REVERSE_OFF" text="Modo Giro [Conduciendo]" />
+		<text name="AUTO_TRACTOR_INVERTED_ON" text="Modo Trabajo [Hacia atrás]" />
+		<text name="AUTO_TRACTOR_INVERTED_OFF" text="Modo Trabajo [Normal]" />
+		<text name="AUTO_TRACTOR_WIDTH_OFFSET" text="Resetear Ancho" />
+		<text name="AUTO_TRACTOR_TURN_OFFSET" text="Resetear Giro" />
+		<text name="AUTO_TRACTOR_ANGLE_OFFSET" text="Resetear Ángulo" />
+		<text name="AUTO_TRACTOR_SAFETY_FACTOR" text="Distancia Seguridad" />
+		<text name="AUTO_TRACTOR_ERROR" text="Error" />
+		<text name="AUTO_TRACTOR_NEXTTURNSTAGE" text="Ir a siguiente pantalla giro" />
+		<text name="AUTO_TRACTOR_CP_ON" text="Modo Courseplay [Off]" />
+		<text name="AUTO_TRACTOR_CP_OFF" text="courseplay mode [On]" />
+		<text name="AUTO_TRACTOR_STEER_ON" text="Auto Dirección [Off]" />
+		<text name="AUTO_TRACTOR_STEER_OFF" text="Auto Dirección [On]" />
+		<text name="AUTO_TRACTOR_HEADLAND_ON" text="Cabecera [Off]" />
+		<text name="AUTO_TRACTOR_HEADLAND_OFF" text="Cabecera [On]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_ON" text="Empacador Delantero [On]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF" text="Empacador Delantero [Off]" />
+		<text name="AUTO_TRACTOR_COLLISION_ON" text="Chequear Colisión [On]" />
+		<text name="AUTO_TRACTOR_COLLISION_OFF" text="Chequear Colisión [Off]" />
+		<text name="AUTO_TRACTOR_HIRE_ON" text="Usar Semilla [Off]" />
+		<text name="AUTO_TRACTOR_HIRE_OFF" text="Usar Semilla [On]" />
+		<text name ="AUTO_TRACTOR_HEADLAND" text="Cabecera" />
+		<text name="AUTO_TRACTOR_TURN_MODE_O" text="Giro 180º sin retroceder" />
+		<text name="AUTO_TRACTOR_TURN_MODE_A" text="Giro pequeño" />
+		<text name="AUTO_TRACTOR_TURN_MODE_Y" text="Giro medio" />
+		<text name="AUTO_TRACTOR_TURN_MODE_T" text="Giro grande" />
+		<text name="AUTO_TRACTOR_TURN_MODE_C" text="Giro 90° sin retroceder" />
+		<text name="AUTO_TRACTOR_TURN_MODE_L" text="Giro pequeño 90°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_K" text="Giro grande 90°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_8" text="Giro 180º sin retroceder" />
+		<text name="AUTO_TRACTOR_PAUSE_ON"                 text="Pausa [On]" />
+		<text name="AUTO_TRACTOR_PAUSE_OFF"                text="Pausa [Off]" />
+		<text name="AUTO_TRACTOR_STEER_RAISE"              text="Levantar todos los implementos" />
+		<text name="AUTO_TRACTOR_STEER_LOWER"              text="Bajar todos los implementos" />
+		<text name="AUTO_TRACTOR_TRACE"                    text="Mostrar Rastro" />
+		<text name="AUTO_TRACTOR_MAGIC"                    text="Refrescar Campo" />
+		
+		<text name="AUTO_TRACTOR_1" text="Veloc. Nivel 1" />
+		<text name="AUTO_TRACTOR_2" text="Veloc. Nivel 2" />
+		<text name="AUTO_TRACTOR_3" text="Veloc. Nivel 3" />
+		<text name="AUTO_TRACTOR_4" text="Veloc. Nivel 4" />
+	</texts>
+</l10n>
