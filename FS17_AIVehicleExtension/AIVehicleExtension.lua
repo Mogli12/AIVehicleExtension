@@ -1371,8 +1371,6 @@ function AIVehicleExtension:onStartAiVehicle()
 	
 		AIVehicleExtension.processImplementsOfImplement(self,self,true)
 		AutoSteeringEngine.setToolsAreTurnedOn( self, true, false )
-	
-		self.checkSpeedLimit = false;		
 	end;
 	
 	AIVehicleExtension.roueInitWheels( self );

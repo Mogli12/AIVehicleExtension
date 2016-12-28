@@ -1095,64 +1095,8 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then	
 		for i,tool in pairs(vehicle.aiveChain.tools) do
-			local self = tool.obj
-			
-			if     tool.specialType == "Horsch SW3500 S" then
-				vehicle.aiveChain.tools[i].aiProhibitedFruitType      = self.currentFillType
-				if vehicle.aiveChain.tools[i].aiProhibitedFruitType ~= FruitUtil.FRUITTYPE_UNKNOWN then
-					vehicle.aiveChain.tools[i].aiProhibitedMinGrowthState = 0
-					vehicle.aiveChain.tools[i].aiProhibitedMaxGrowthState = FruitUtil.fruitIndexToDesc[vehicle.aiveChain.tools[i].aiProhibitedFruitType].maxHarvestingGrowthState			
-				end
-			elseif tool.isSowingMachine then
-				vehicle.aiveChain.tools[i].aiTerrainDetailChannel1 = g_currentMission.cultivatorChannel
-				vehicle.aiveChain.tools[i].aiTerrainDetailChannel2 = g_currentMission.ploughChannel
-				if self.useDirectPlanting and currentSeed ~= nil then
-					vehicle.aiveChain.tools[i].aiTerrainDetailChannel3       = g_currentMission.sowingChannel
-					vehicle.aiveChain.tools[i].aiTerrainDetailProhibitedMask = 0
-					vehicle.aiveChain.tools[i].aiProhibitedFruitType         = currentSeed
-					vehicle.aiveChain.tools[i].aiProhibitedMinGrowthState    = 0
-					vehicle.aiveChain.tools[i].aiProhibitedMaxGrowthState    = FruitUtil.fruitIndexToDesc[vehicle.aiveChain.tools[i].aiProhibitedFruitType].maxHarvestingGrowthState
-				else
-					vehicle.aiveChain.tools[i].aiTerrainDetailChannel3       = -1
-					vehicle.aiveChain.tools[i].aiTerrainDetailProhibitedMask = bitOR(2^g_currentMission.sowingChannel, 2^g_currentMission.sowingWidthChannel)
-					vehicle.aiveChain.tools[i].aiProhibitedFruitType         = FruitUtil.FRUITTYPE_UNKNOWN
-					vehicle.aiveChain.tools[i].aiProhibitedMinGrowthState    = 0
-					vehicle.aiveChain.tools[i].aiProhibitedMaxGrowthState    = 0
-				end
-			elseif tool.isAITool then
-				vehicle.aiveChain.tools[i].aiTerrainDetailChannel1       = Utils.getNoNil( tool.obj.aiTerrainDetailChannel1      ,-1 )
-				vehicle.aiveChain.tools[i].aiTerrainDetailChannel2       = Utils.getNoNil( tool.obj.aiTerrainDetailChannel2      ,-1 )
-				vehicle.aiveChain.tools[i].aiTerrainDetailChannel3       = Utils.getNoNil( tool.obj.aiTerrainDetailChannel3      ,-1 )
-				vehicle.aiveChain.tools[i].aiTerrainDetailChannel4       = Utils.getNoNil( tool.obj.aiTerrainDetailChannel4      ,-1 )
-				vehicle.aiveChain.tools[i].aiTerrainDetailProhibitedMask = Utils.getNoNil( tool.obj.aiTerrainDetailProhibitedMask,0 )
-				vehicle.aiveChain.tools[i].aiRequiredFruitType           = Utils.getNoNil( tool.obj.aiRequiredFruitType          ,FruitUtil.FRUITTYPE_UNKNOWN )
-				vehicle.aiveChain.tools[i].aiRequiredMinGrowthState      = Utils.getNoNil( tool.obj.aiRequiredMinGrowthState     ,0 )
-				vehicle.aiveChain.tools[i].aiRequiredMaxGrowthState      = Utils.getNoNil( tool.obj.aiRequiredMaxGrowthState     ,0 )
-				vehicle.aiveChain.tools[i].aiProhibitedFruitType         = Utils.getNoNil( tool.obj.aiProhibitedFruitType        ,FruitUtil.FRUITTYPE_UNKNOWN )
-				vehicle.aiveChain.tools[i].aiProhibitedMinGrowthState    = Utils.getNoNil( tool.obj.aiProhibitedMinGrowthState   ,0 )
-				vehicle.aiveChain.tools[i].aiProhibitedMaxGrowthState    = Utils.getNoNil( tool.obj.aiProhibitedMaxGrowthState   ,0 )
-			end
-			
 			if tool.obj.aiForceTurnNoBackward then
 				vehicle.aiveChain.tools[i].aiForceTurnNoBackward = true
-			end
-			
-			if      vehicle.aiveHas.cultivator 
-					and not tool.isCultivator
-					and not tool.isSowingMachine
-					and not tool.isSprayer then
-				AutoSteeringEngine.removeTerrainDetailChannel( vehicle.aiveChain.tools[i], g_currentMission.cultivatorChannel )
-			end 
-			if      currentSeed ~= nil
-					and ( AIVEFrontPackerT[tool.obj]
-						or ( vehicle.aiveHas.sowingMachine
-						 and not tool.isSowingMachine
-						 and not tool.isSprayer ) ) then
-				AutoSteeringEngine.removeTerrainDetailChannel( vehicle.aiveChain.tools[i], g_currentMission.sowingChannel )
-				AutoSteeringEngine.removeTerrainDetailChannel( vehicle.aiveChain.tools[i], g_currentMission.sowingWidthChannel )
-			--vehicle.aiveChain.tools[i].aiProhibitedFruitType         = currentSeed
-			--vehicle.aiveChain.tools[i].aiProhibitedMinGrowthState    = 0
-			--vehicle.aiveChain.tools[i].aiProhibitedMaxGrowthState    = FruitUtil.fruitIndexToDesc[vehicle.aiveChain.tools[i].aiProhibitedFruitType].maxHarvestingGrowthState
 			end
 		end
 	
@@ -1175,22 +1119,12 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 					 then
 				skip      = true
 				skipOther = true
-		--elseif  vehicle.aiveHas.plough
-		--		and not ( vehicle.aiveChain.tools[i].isPlough )
-		--		and vehicle.aiveChain.tools[i].isCultivator then
-		--	skip      = true
-		--	skipOther = true
+			elseif  vehicle.aiveHas.plough
+					and not ( vehicle.aiveChain.tools[i].isPlough )
+					and vehicle.aiveChain.tools[i].isCultivator then
+				skip      = true
+				skipOther = true
 			end
-			
-		--if      not ( vehicle.aiveChain.tools[i].isCombine )
-		--		and not ( vehicle.aiveChain.tools[i].isMower )
-		--		and not ( vehicle.aiveChain.tools[i].isWindrower )
-		--		and not ( vehicle.aiveChain.tools[i].isTedder )
-		--		and vehicle.aiveChain.tools[i].aiTerrainDetailRequiredMask <= 0
-		--		and vehicle.aiveChain.tools[i].aiRequiredFruitType         == FruitUtil.FRUITTYPE_UNKNOWN then
-		--	skip      = true
-		--	skipOther = true
-		--end
 			
 			if not skip or not skipOther then
 				for j=1,vehicle.aiveChain.toolCount do
