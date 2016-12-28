@@ -23,6 +23,8 @@ _G[g_currentModName..".mogliHud"].newClass( "AIVEHud", "atHud" )
 source(Utils.getFilename("FieldBitmap.lua", AtDirectory));
 source(Utils.getFilename("FrontPacker.lua", AtDirectory));
 source(Utils.getFilename("AutoSteeringEngine.lua", AtDirectory));
+--source(Utils.getFilename("AITurnStrategyMogli.lua", AtDirectory));
+--source(Utils.getFilename("AIDriveStrategyMogli.lua", AtDirectory));
 
 ------------------------------------------------------------------------
 -- statEvent
@@ -1023,7 +1025,7 @@ function AIVehicleExtension:updateTick( dt )
 	local lastIamDetecting = self.acIamDetecting
 	self.acIamDetecting = false
 
-	if self.acParameters ~= nil and self.acParameters.enabled then
+	if self.isServer and self.acParameters ~= nil and self.acParameters.enabled then
 		AIVehicleExtension.checkState( self )
 		
 		local statDt			= 0
@@ -1651,7 +1653,7 @@ function AIVehicleExtension:checkState( onlyMaxLooking )
 		maxLooking = self.acDimensions.maxSteeringAngle
 	end
 	
-	if self.acParameters.enabled then 
+	if self.isServer and self.acParameters.enabled then 
 		AutoSteeringEngine.initTools( self, maxLooking, self.acParameters.leftAreaActive, self.acParameters.widthOffset, self.acParameters.safetyFactor, h, c, self.acTurnMode );
 	end
 end

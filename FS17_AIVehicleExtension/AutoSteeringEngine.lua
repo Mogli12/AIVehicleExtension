@@ -142,22 +142,22 @@ function AutoSteeringEngine.globalsLoad( file )
 			if bool ~= nil then
 				if bool then AIVEGlobals[name] = 1 else AIVEGlobals[name] = 0 end
 			end
-				print(file..": "..name.." = "..AIVEGlobals[name])
+		--print(file..": "..name.." = "..AIVEGlobals[name])
 		elseif tp == "float" then
 			local float = getXMLFloat( xmlFile, "AIVEGlobals." .. name .. "#value" )
 			if float ~= nil then AIVEGlobals[name] = float end
-				print(file..": "..name.." = "..AIVEGlobals[name])
+		--print(file..": "..name.." = "..AIVEGlobals[name])
 		elseif tp == "degree" then
 			local float = getXMLFloat( xmlFile, "AIVEGlobals." .. name .. "#value" )
 			if float ~= nil then AIVEGlobals[name] = math.rad( float ) end
-				print(file..": "..name.." = "..AIVEGlobals[name])
+		--print(file..": "..name.." = "..AIVEGlobals[name])
 		elseif tp == "int" then
 			local int = getXMLInt( xmlFile, "AIVEGlobals." .. name .. "#value" )
 			if int ~= nil then AIVEGlobals[name] = int end
-				print(file..": "..name.." = "..AIVEGlobals[name])
+		--print(file..": "..name.." = "..AIVEGlobals[name])
 		elseif tp == "vector" then
 			local str = getXMLString( xmlFile, "AIVEGlobals." .. name .. "#value" )
-			print('<name type="'..tp..'" value="'..tostring(str)..'"/>')
+		--print('<name type="'..tp..'" value="'..tostring(str)..'"/>')
 			if str ~= nil then AIVEGlobals[name] = { Utils.getVectorFromString( str ) } end
 		else
 			print(file..": "..name..": invalid XML type : "..tp)
@@ -550,25 +550,25 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField )
 		end 
 	end
 	
---if AIVEGlobals.straightTA > 0 and vehicle.aiveChain.inField then
---	local xw1,yw1,zw1 = getWorldTranslation( vehicle.aiveChain.nodes[1].index );
---	local xw2,yw2,zw2 = getWorldTranslation( vehicle.aiveChain.nodes[j+1].index );		
---	local dirx,_,dirz = worldDirectionToLocal( vehicle.aiveChain.refNode, xw2-xw1, yw2-yw1, zw2-zw1 );
---	local d = dirx*dirx + dirz*dirz
---	if d > 1E-3 then
---		angle = math.atan( 2 * dirx * vehicle.aiveChain.wheelBase / d )
---	else
---		print("Error: distance too small: "..tostring(j)..tostring(d))
---		angle = 0
---	end
---else
-		angle = vehicle.aiveChain.nodes[1].steering
-		for i=2,j do
-			if math.abs( angle ) < math.abs( vehicle.aiveChain.nodes[j].steering ) then
-				angle = vehicle.aiveChain.nodes[j].steering
-			end
+	angle = vehicle.aiveChain.nodes[1].steering
+	for i=2,j do
+		if math.abs( angle ) < math.abs( vehicle.aiveChain.nodes[j].steering ) then
+			angle = vehicle.aiveChain.nodes[j].steering
 		end
---end
+	end
+
+
+	local wx,wy,wz 
+	if math.abs( vehicle.aiveChain.nodes[1].angle ) < 1e-6 then
+		wx,wy,wz = localToWorld( vehicle.aiveChain.refNode, 0, 0, 5 )
+	else
+		local i = best[2]
+		if vehicle.aiveChain.nodes[1].angle > 0 then
+			i = best[3]
+		end
+		wx,wy,wz = getWorldTranslation( vehicle.aiveChain.nodes[i+1].index )
+	end
+	vehicle.aiveChain.lastWorldTarget = { wx, wy, wz }
 	
 	AutoSteeringEngine.processIsAtEnd( vehicle, a )	
 --print(tostring(best[1]).." / "..tostring(j).." / "..tostring(indexMax).." / "..tostring(a).." / "..tostring(math.floor( math.deg( angle ) + 0.5 ) ).." / "..tostring(border).." / "..tostring(detected))
@@ -588,7 +588,7 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField )
 	vehicle.aiveChain.completeTrace   = nil	
 	vehicle.aiveChain.lastAngleFactor = a
 	
-	return detected, angle, border
+	return detected, angle, border, wx, wy, wz
 end
 
 ------------------------------------------------------------------------
@@ -2290,6 +2290,18 @@ function AutoSteeringEngine.steerDirect( vehicle, dt, angle, aiSteeringSpeed, di
 end
 
 ------------------------------------------------------------------------
+-- getWorldTargetFromSteeringAngle
+------------------------------------------------------------------------
+function AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
+
+	local lz = math.cos( angle )
+	local lx = math.sin( angle )
+	tX,_,tZ = localToWorld( vehicle.aiveChain.refNode, lx, 0, lz )
+
+	return tX, tZ
+end
+
+------------------------------------------------------------------------
 -- drive
 ------------------------------------------------------------------------
 function AutoSteeringEngine.drive( vehicle, ... )
@@ -2302,66 +2314,12 @@ function AutoSteeringEngine.driveContinued( vehicle )
 	end
 end
 function AutoSteeringEngine.driveDirect( vehicle, dt, acceleration, allowedToDrive, moveForwards, speedLevel, useReduceSpeed, slowMaxRpmFactor )
-
-	if moveForwards ~= nil then
-		if vehicle.aiveChain.isInverted then
-			moveForwards = not moveForwards
-		end
-		if vehicle.isReverseDriving then
-			moveForwards = not moveForwards
-		end
-	end
-	
 	
   if vehicle.firstTimeRun then
-    local acc = acceleration
-		local disableChangingDirection = false
-		local doHandBrake = false
-
-		local wantedSpeed = AutoSteeringEngine.getWantedSpeed( vehicle, speedLevel )
-    if useReduceSpeed then
-      acc         = acc * slowMaxRpmFactor
-			wantedSpeed = wantedSpeed * slowMaxRpmFactor
-    end
-		
-    if not moveForwards then
-      acc = -acc
-    end
-		
-    if not allowedToDrive then
-      acc = 0
-		end
-			
-		if vehicle.acLastAcc == nil then
-			vehicle.acLastAcc = 0
-		end
-		if vehicle.acLastWantedSpeed == nil then
-			vehicle.acLastWantedSpeed = 2
-		end
-			
-		if     math.abs( acc ) < 1E-4
-				or ( acc > 0 and vehicle.acLastAcc < 0 )
-				or ( acc < 0 and vehicle.acLastAcc > 0 ) then
-			vehicle.acLastAcc = 0
-			wantedSpeed       = 0
-			vehicle.acLastWantedSpeed = 0
-		else
-			vehicle.acLastAcc = vehicle.acLastAcc + Utils.clamp( acc - vehicle.acLastAcc, - dt * 0.0005, dt * 0.0005)
-		end
-				
-		if     wantedSpeed < 2 then
-			allowedToDrive            = false
-			vehicle.acLastWantedSpeed = 2
-		elseif wantedSpeed < 5 then
-			vehicle.acLastWantedSpeed = wantedSpeed
-		else
-			vehicle.acLastWantedSpeed = vehicle.acLastWantedSpeed + Utils.clamp( wantedSpeed - vehicle.acLastWantedSpeed, -0.0015 * dt, 0.0015 * dt )
-		end
-		vehicle.motor:setSpeedLimit( vehicle.acLastWantedSpeed )
+		vehicle.motor:setSpeedLimit( AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDrive, moveForwards, speedLevel, useReduceSpeed, slowMaxRpmFactor ) )
 		
 		WheelsUtil.updateWheelsPhysics(vehicle, dt, vehicle.lastSpeed, vehicle.acLastAcc, not allowedToDrive, vehicle.requiredDriveMode)
   end
-	
 	
 	if vehicle.aiveCurrentWorkArea ~= nil and allowedToDrive and vehicle.acTurnStage <= 0 and vehicle.aiveChain.toolParams ~= nil then
 		for _,tp in pairs( vehicle.aiveChain.toolParams ) do
@@ -2376,6 +2334,67 @@ function AutoSteeringEngine.driveDirect( vehicle, dt, acceleration, allowedToDri
 		end
 	end
 end
+
+------------------------------------------------------------------------
+-- getMaxSpeed
+------------------------------------------------------------------------
+function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDrive, moveForwards, speedLevel, useReduceSpeed, slowMaxRpmFactor )
+
+	if moveForwards ~= nil then
+		if vehicle.aiveChain.isInverted then
+			moveForwards = not moveForwards
+		end
+		if vehicle.isReverseDriving then
+			moveForwards = not moveForwards
+		end
+	end
+	
+  local acc = acceleration
+	local disableChangingDirection = false
+	local doHandBrake = false
+
+	local wantedSpeed = AutoSteeringEngine.getWantedSpeed( vehicle, speedLevel )
+  if useReduceSpeed then
+    acc         = acc * slowMaxRpmFactor
+		wantedSpeed = wantedSpeed * slowMaxRpmFactor
+  end
+	
+  if not moveForwards then
+    acc = -acc
+  end
+	
+  if not allowedToDrive then
+    acc = 0
+	end
+		
+	if vehicle.acLastAcc == nil then
+		vehicle.acLastAcc = 0
+	end
+	if vehicle.acLastWantedSpeed == nil then
+		vehicle.acLastWantedSpeed = 2
+	end
+		
+	if     math.abs( acc ) < 1E-4
+			or ( acc > 0 and vehicle.acLastAcc < 0 )
+			or ( acc < 0 and vehicle.acLastAcc > 0 ) then
+		vehicle.acLastAcc = 0
+		wantedSpeed       = 0
+		vehicle.acLastWantedSpeed = 0
+	else
+		vehicle.acLastAcc = vehicle.acLastAcc + Utils.clamp( acc - vehicle.acLastAcc, - dt * 0.0005, dt * 0.0005)
+	end
+			
+	if     wantedSpeed < 2 then
+		allowedToDrive            = false
+		vehicle.acLastWantedSpeed = 2
+	elseif wantedSpeed < 5 then
+		vehicle.acLastWantedSpeed = wantedSpeed
+	else
+		vehicle.acLastWantedSpeed = vehicle.acLastWantedSpeed + Utils.clamp( wantedSpeed - vehicle.acLastWantedSpeed, -0.0015 * dt, 0.0015 * dt )
+	end
+	
+	return vehicle.acLastWantedSpeed
+ end
 
 ------------------------------------------------------------------------
 -- drawMarker
@@ -2464,9 +2483,12 @@ function AutoSteeringEngine.drawLines( vehicle )
 	local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 	drawDebugLine(  x, y, z,0,1,0, x, y+4, z,0,1,0)
 	drawDebugPoint( x, y+4, z	, 1, 1, 1, 1 )
-	local x1,_,z1 = localToWorld( vehicle.aiveChain.refNode ,0,0,2 )
-	drawDebugLine(  x1, y+3, z1,0,1,0, x, y+3, z,0,1,0)
-
+	
+	if vehicle.aiveChain.lastWorldTarget ~= nil then
+		local x1,y1,z1 = unpack( vehicle.aiveChain.lastWorldTarget )
+		drawDebugLine(  x1, y1+4, z1,0,1,0, x, y+4, z,0,1,0)
+	end
+	
 	if vehicle.aiveChain.respectStartNode then
 		x,_,z = getWorldTranslation( vehicle.aiveChain.startNode )
 		y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)

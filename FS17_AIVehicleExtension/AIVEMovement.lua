@@ -683,17 +683,20 @@ function AIVehicleExtension:newUpdateAIMovement( dt )
 		
 --==============================================================				
 	elseif self.acTurnStage == 7 then
-		if     turnAngle > 90 then
-			angle = AIVehicleExtension.getMaxAngleWithTool( self, self.acTurn2Outside )
-		else
-			if noReverseIndex > 0 then
-				local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( self );			
-				angle = turn75.alpha
+		if noReverseIndex <= 0 then
+			if self.acTurn2Outside then
+				angle = -self.acDimensions.maxSteeringAngle
 			else
 				angle = self.acDimensions.maxSteeringAngle
 			end
+		elseif turnAngle > 90 then
+			angle = AIVehicleExtension.getMaxAngleWithTool( self, self.acTurn2Outside )
+		else		
+			local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( self );			
 			if self.acTurn2Outside then
-				angle = -angle 
+				angle = -turn75.alpha
+			else
+				angle = turn75.alpha
 			end
 		end
 		
@@ -709,7 +712,13 @@ function AIVehicleExtension:newUpdateAIMovement( dt )
 		
 --==============================================================						
 	elseif self.acTurnStage == 8 then
-		angle = AIVehicleExtension.getMaxAngleWithTool( self, self.acTurn2Outside )
+		if noReverseIndex > 0 then
+			angle = AIVehicleExtension.getMaxAngleWithTool( self, self.acTurn2Outside )
+		elseif self.acTurn2Outside then
+			angle = -self.acDimensions.maxSteeringAngle
+		else
+			angle = self.acDimensions.maxSteeringAngle
+		end
 		
 		if detected or fruitsDetected then
 			self.acTurnStage   = -1;					
@@ -1516,11 +1525,11 @@ function AIVehicleExtension:newUpdateAIMovement( dt )
 		--if turnAngle < angleOffset and x < Utils.getNoNil( self.aseActiveX, 0 ) then
 			if turnAngle < angleOffset then
 				self.acTurnStage     = self.acTurnStage + 2;					
-				self.waitForTurnTime = self.acDeltaTimeoutRun + g_currentMission.time
+			--self.waitForTurnTime = self.acDeltaTimeoutRun + g_currentMission.time
 				angle                = turn75.alpha --AIVehicleExtension.getMaxAngleWithTool( self, false )
 			else
 				self.acTurnStage     = self.acTurnStage + 1;					
-				self.waitForTurnTime = self.acDeltaTimeoutRun + g_currentMission.time
+			--self.waitForTurnTime = self.acDeltaTimeoutRun + g_currentMission.time
 				angle                = AIVehicleExtension.getMaxAngleWithTool( self, false )
 			end
 		end
@@ -1533,7 +1542,7 @@ function AIVehicleExtension:newUpdateAIMovement( dt )
 		
 		if turnAngle < angleOffset then
 			self.acTurnStage     = self.acTurnStage + 1;					
-			self.waitForTurnTime = self.acDeltaTimeoutRun + g_currentMission.time
+		--self.waitForTurnTime = self.acDeltaTimeoutRun + g_currentMission.time
 			local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( self );
 			angle                = turn75.alpha 
 		end

@@ -17,15 +17,15 @@ end
 function AIVEParametersEvent:readStream(streamId, connection)
   local id = streamReadInt32(streamId)
   self.object = networkGetObject(id)
-	self.parameters = AIVEehicleExtension.readStreamHelper(streamId);
+	self.parameters = AIVehicleExtension.readStreamHelper(streamId);
   self:run(connection)
 end
 function AIVEParametersEvent:writeStream(streamId, connection)
   streamWriteInt32(streamId, networkGetObjectId(self.object))
-	AIVEehicleExtension.writeStreamHelper(streamId, self.parameters);
+	AIVehicleExtension.writeStreamHelper(streamId, self.parameters);
 end
 function AIVEParametersEvent:run(connection)
-  AIVEehicleExtension.setParameters(self.object,self.parameters);
+  AIVehicleExtension.setParameters(self.object,self.parameters);
   if not connection:getIsServer() then
     g_server:broadcastEvent(AIVEParametersEvent:new(self.object, self.parameters), nil, connection, self.object)
   end
@@ -55,7 +55,7 @@ function AIVENextTSEvent:writeStream(streamId, connection)
   streamWriteInt32(streamId, networkGetObjectId(self.object))
 end
 function AIVENextTSEvent:run(connection)
-  AIVEehicleExtension.setNextTurnStage(self.object,true);
+  AIVehicleExtension.setNextTurnStage(self.object,true);
   if not connection:getIsServer() then
     g_server:broadcastEvent(AIVENextTSEvent:new(self.object), nil, connection, self.object)
   end
@@ -105,7 +105,7 @@ function AIVehicleExtension:setInt32Value( name, value, noEventSend )
 		if AIVESetInt32ValueLog < 10 then
 			AIVESetInt32ValueLog = AIVESetInt32ValueLog + 1;
 			print("------------------------------------------------------------------------");
-			print("AIVEehicleExtension:setInt32Value: self == nil ( "..tostring(name).." / "..tostring(value).." )");
+			print("AIVehicleExtension:setInt32Value: self == nil ( "..tostring(name).." / "..tostring(value).." )");
 			AIVEHud.printCallstack();
 			print("------------------------------------------------------------------------");
 		end
@@ -173,7 +173,7 @@ function AIVEInt32Event:writeStream(streamId, connection)
   streamWriteInt32(streamId, self.value)
 end
 function AIVEInt32Event:run(connection)
-  AIVEehicleExtension.setInt32Value( self.object, self.name, self.value, true )
+  AIVehicleExtension.setInt32Value( self.object, self.name, self.value, true )
   if not connection:getIsServer() then
     g_server:broadcastEvent(AIVEInt32Event:new(self.object,self.name,self.value), nil, connection, self.object)
   end
