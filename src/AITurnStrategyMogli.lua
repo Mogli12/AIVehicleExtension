@@ -1,3 +1,17 @@
+local function degToString( d )
+	if d == nil then
+		return "nil"
+	end
+	return tostring(math.floor( d + 0.5 )).."°"
+end
+local function radToString( r )
+	if r == nil then
+		return "nil"
+	end
+	return degToString( math.deg( r ))
+end
+
+
 --
 -- AITurnStrategyMogli
 --

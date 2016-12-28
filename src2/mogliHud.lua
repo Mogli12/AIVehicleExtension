@@ -431,7 +431,7 @@ else
 				self[_level0_].GuiActive = false
 			end
 			if old ~= self[_level0_].GuiActive then
-				g_mouseControlsHelp.active = not on;
+			--g_mouseControlsHelp.active = not on;
 				InputBinding.setShowMouseCursor(on);		
 			end
 		end;
@@ -446,7 +446,7 @@ else
 				end
 				local showTitle
 				if self[_level0_].GuiActive then
-					g_mouseControlsHelp.active = false;
+				--g_mouseControlsHelp.active = false;
 					InputBinding.setShowMouseCursor(true);		
 					titlePosY = self[_level0_].BtnPosY  + self[_level0_].Border + self[_level0_].BtnHeight
 					showTitle = true
@@ -510,7 +510,7 @@ else
 		------------------------------------------------------------------------
 		function _newClass_:onLeave()
 			if self.isClient and self[_level0_] ~= nil and self[_level0_].GuiActive then
-				g_mouseControlsHelp.active = true;
+			--g_mouseControlsHelp.active = true;
 				InputBinding.setShowMouseCursor(false);		
 			end
 		end;
@@ -522,7 +522,7 @@ else
 			if self[_level0_] ~= nil then
 				_newClass_.showGui(self, self[_level0_].GuiActive);
 				if self.isClient and self[_level0_].GuiActive then
-					g_mouseControlsHelp.active = false
+				--g_mouseControlsHelp.active = false
 					InputBinding.setShowMouseCursor(true);		
 				end
 			end

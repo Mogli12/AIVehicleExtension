@@ -1,3 +1,17 @@
+local function degToString( d )
+	if d == nil then
+		return "nil"
+	end
+	return tostring(math.floor( d + 0.5 )).."°"
+end
+local function radToString( r )
+	if r == nil then
+		return "nil"
+	end
+	return degToString( math.deg( r ))
+end
+
+
 --
 -- AIDriveStrategyMogli
 --
@@ -30,7 +44,64 @@ end
 function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	AIDriveStrategyMogli:superClass().setAIVehicle(self, vehicle)
 	
-	self.turnLeft = not ( vehicle.acParameters.rightAreaActive )
+--==============================================================				
+--==============================================================					
+	AutoSteeringEngine.invalidateField( vehicle )		
+	AutoSteeringEngine.checkTools1( vehicle, true )
+	AutoSteeringEngine.saveDirection( vehicle, false, true )
+
+	vehicle.acClearTraceAfterTurn = true
+	AIVehicleExtension.resetAIMarker( vehicle )	
+	AIVehicleExtension.initMogliHud(vehicle)
+	
+	if not ( vehicle.acSpeedFactorVerified ) then
+		vehicle.acSpeedFactorVerified = true
+		local maxSpeed = 3.6 * AutoSteeringEngine.getToolsSpeedLimit( vehicle )
+		local cs = math.min( math.floor( 0.5 + maxSpeed * vehicle.acParameters.speedFactor ), 3.6 * AIVEGlobals.maxSpeed )
+		vehicle.acParameters.speedFactor = cs / maxSpeed
+	end
+		
+	vehicle.acDtSum					 = 0
+	vehicle.acCCSpeed				 = vehicle.cruiseControl.speed
+	vehicle.realForceAiDriven = true
+
+	AutoSteeringEngine.invalidateField( vehicle )
+	
+		AutoSteeringEngine.checkTools1( vehicle, true )
+	
+		AutoSteeringEngine.setToolsAreTurnedOn( vehicle, true, false )
+	
+	AIVehicleExtension.roueInitWheels( vehicle );
+	
+	vehicle.acHighPrec		= false
+	vehicle.acDimensions	= nil;
+	vehicle.acTurnStage	 = -3;
+	vehicle.turnTimer		 = vehicle.acDeltaTimeoutWait;
+	vehicle.aiRescueTimer = vehicle.acDeltaTimeoutStop;
+	vehicle.waitForTurnTime = 0;
+	vehicle.acLastAcc			 = 0;
+	vehicle.acLastWantedSpeed = 0;
+	
+	AIVehicleExtension.setInt32Value( vehicle, "speed2Level", 2 )
+	
+	if AIVehicleUtil.invertsMarkerOnTurn( vehicle, vehicle.acParameters.leftAreaActive ) then
+		if vehicle.acParameters.leftAreaActive then
+			AIVehicle.aiRotateLeft(vehicle);
+		else
+			AIVehicle.aiRotateRight(vehicle);
+		end			
+	end
+	
+	AIVehicleExtension.sendParameters(vehicle);
+	
+	vehicle.acStat = nil		
+	vehicle.acLast = nil
+--==============================================================				
+--==============================================================				
+		
+	
+	
+	self.turnLeft = not ( self.vehicle.acParameters.rightAreaActive )
 	self.turnStrategies = { AITurnStrategyMogli:new() }
 	
 	for _,turnStrategy in pairs(self.turnStrategies) do
@@ -39,10 +110,46 @@ function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	self.activeTurnStrategy = nil
 end
 
+function AIDriveStrategyMogli:delete()
+		
+--==============================================================				
+--==============================================================				
+	local veh = self.vehicle 
+	
+	veh.aiveIsStarted = false
+	
+	if veh.acStat ~= nil then
+		for n,s in pairs(veh.acStat) do 
+			print(string.format("%s: %.0f (%.0f / %.0f)", n, s.t/s.n, s.t, s.n))
+		end
+	end
+	AutoSteeringEngine.invalidateField( veh )		
+	AIVehicleExtension.roueReset( veh )
+	if veh.acCCSpeed ~= nil then
+		veh:setCruiseControlMaxSpeed( veh.acCCSpeed )
+	end
+	
+	AIVehicleExtension.resetAIMarker( veh )
+	veh.acImplementsMoveDown = false
+--==============================================================				
+--==============================================================				
+		
+	AIDriveStrategyMogli:superClass().delete(self);
+
+	self.vehicle:aiTurnOff();
+	for _,implement in pairs(self.vehicle.aiImplementList) do
+		if implement.object ~= nil then
+			implement.object:aiTurnOff();
+			implement.object:aiRaise();
+		end
+	end
+end
+
 function AIDriveStrategyMogli:update(dt)
 	for _,turnStrategy in pairs(self.turnStrategies) do
 		turnStrategy:update(dt)
 	end
+	self.turnLeft = not ( self.vehicle.acParameters.rightAreaActive )
 end
 
 function AIDriveStrategyMogli:draw()
@@ -55,43 +162,30 @@ function AIDriveStrategyMogli:addDebugText( s )
 end
 
 function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
-	if not ( self.vehicle.aiveState.enabled ) then
-		return nil, nil, nil, nil, nil
-  end
-
-	self.position = { vX,vY,vZ }
+	local veh = self.vehicle 
 	
-	if veh.acTurnStage <= 0 then
-		self.activeTurnStrategy = self.turnStrategies[1]
+	veh.acAiPos = { vX,vY,vZ }
+	
+	if self.activeTurnStrategy ~= nil then
 		local tX, tZ, moveForwards, maxSpeed, distanceToStop = self.activeTurnStrategy:getDriveData(dt, vX,vY,vZ, self.turnData)
-		if veh.acTurnStage > 0 then
-			self:addDebugText( "===> distanceToStop = "..distanceToStop )
-			return tX, tZ, moveForwards, maxSpeed, distanceToStop
-		else
+		if veh.acTurnStage <= 0 then
 			for _,turnStrategy in pairs(self.turnStrategies) do
 				turnStrategy:onEndTurn(self.activeTurnStrategy.turnLeft)
 			end
 			self.activeTurnStrategy = nil
 		end
+		return tX, tZ, moveForwards, maxSpeed, distanceToStop
 	end
 	
 		
-	local tX, tZ, maxSpeed, distanceToStop = nil, nil, 0, 0		
-		
-	local veh = self.vehicle 
-	
-	
+	local tX, tZ, maxSpeed, distanceToStop = nil, nil, 0, 0			
 	local dt = veh.acDtSum
 
 	AIVehicleExtension.statEvent( veh, "t0", dt )
 
 	AIVehicleExtension.checkState( veh )
 	if not AutoSteeringEngine.hasTools( veh ) then
-		veh:stopAIVehicle()
-		return;
-	end
-	
-	if not AIVehicleExtension.checkIsCorrectField( veh ) then
+		print("no tools")
 		veh:stopAIVehicle()
 		return;
 	end
@@ -105,7 +199,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 	
 	self.noSneak       = false
 	self.isAnimPlaying = false
-	if AIVehicleExtension.waitForAnimTurnStage( veh ) then
+	if veh.acTurnStage < 0 or AIVEGlobals.raiseNoFruits > 0 then
 		local isPlaying, noSneak = AutoSteeringEngine.checkIsAnimPlaying( veh, veh.acImplementsMoveDown )
 		
 		if isPlaying then
@@ -144,9 +238,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 	end
 	
 	local speedLevel = 2;
-	if veh.speed2Level ~= nil and 0 <= veh.speed2Level and veh.speed2Level <= 4 then
-		speedLevel = veh.speed2Level;
-	end
+--if veh.speed2Level ~= nil and 0 <= veh.speed2Level and veh.speed2Level <= 4 then
+--	speedLevel = veh.speed2Level;
+--end
 	-- 20 km/h => lastSpeed = 5.555E-3 => speedLevelFactor = 234 * 5.555E-3 = 1.3
 	-- 10 km/h =>                         speedLevelFactor                  = 0.7
 	local speedLevelFactor = math.min( veh.lastSpeed * 234, 0.5 ) 
@@ -154,7 +248,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 	if not allowedToDrive or speedLevel == 0 then
 		AIVehicleExtension.statEvent( veh, "tS", dt )
 		veh.isHirableBlocked = true		
-		return 0, 1, true, 0, 0
+		print("not allowed to drive")
+		return vX, vZ, true, 0, 0
 	end
 	
 	veh.isHirableBlocked = false
@@ -166,7 +261,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 		offsetOutside = 1;
 	end;
 	
-	self.turnOutsideTimer = self.turnOutsideTimer - dt;
+	veh.acTurnOutsideTimer = veh.acTurnOutsideTimer - dt;
 
 --==============================================================				
 	
@@ -177,10 +272,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 	end
 	
 	if veh.aiRescueTimer < 0 then
-		veh:stopAIVehicle()
-		return
-	end
-	if veh.acTurnStage > 0 and AutoSteeringEngine.getTurnDistanceSq( veh ) > AIVEGlobals.aiRescueDistSq then
+		print("aiRescueTimer")
 		veh:stopAIVehicle()
 		return
 	end
@@ -199,11 +291,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 	local turn2Outside = veh.acTurn2Outside;
 --==============================================================		
 --==============================================================		
-	local turnAngle = math.deg(AutoSteeringEngine.getTurnAngle(veh));
-
-	if AIVEGlobals.devFeatures > 0 then
-		veh.atHud.InfoText = string.format( "Turn stage: %2i, angle: %3i",veh.acTurnStage,turnAngle )
-	end
+	local turnAngle2 = AutoSteeringEngine.getTurnAngle(veh)
+	local turnAngle  = math.deg(turnAngle2)
 
 	if veh.acParameters.leftAreaActive then
 		turnAngle = -turnAngle;
@@ -226,159 +315,128 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 	noReverseIndex  = AutoSteeringEngine.getNoReverseIndex( veh );
 	
 --==============================================================				
-		local smooth       = 0
-		
-		if  veh.acTurnStage < 0 or veh.acTraceSmoothOffset == nil or not fruitsDetected then
-			veh.acTraceSmoothOffset = AutoSteeringEngine.getTraceLength(veh) + 1
-		elseif AIVEGlobals.smoothFactor > 0 and AIVEGlobals.smoothMax > 0 and AutoSteeringEngine.getTraceLength(veh) > 3 then --and fruitsDetected then
-			smooth = Utils.clamp( AIVEGlobals.smoothFactor * ( AutoSteeringEngine.getTraceLength(veh) - veh.acTraceSmoothOffset ), 0, AIVEGlobals.smoothMax ) * Utils.clamp( speedLevelFactor, 0.7, 1.3 ) 
-		end
+	local smooth       = 0
+	
+	if  veh.acTurnStage < 0 or veh.acTraceSmoothOffset == nil or not fruitsDetected then
+		veh.acTraceSmoothOffset = AutoSteeringEngine.getTraceLength(veh) + 1
+	elseif AIVEGlobals.smoothFactor > 0 and AIVEGlobals.smoothMax > 0 and AutoSteeringEngine.getTraceLength(veh) > 3 then --and fruitsDetected then
+		smooth = Utils.clamp( AIVEGlobals.smoothFactor * ( AutoSteeringEngine.getTraceLength(veh) - veh.acTraceSmoothOffset ), 0, AIVEGlobals.smoothMax ) * Utils.clamp( speedLevelFactor, 0.7, 1.3 ) 
+	end
 
-		detected, angle2, border, tX, _, tZ = AIVehicleExtension.detectAngle( veh, smooth, veh.acTurnStage == -13 )
+	detected, angle2, border, tX, _, tZ = AutoSteeringEngine.processChain( veh, smooth, true, self.acTurnStage == 0 )
+	
+	if border > 0 then
+		turn2Outside = true
+		speedLevel = 4
+		if AutoSteeringEngine.hasLeftFruits( veh ) then
+			detected = false
+		else
+			detected = true
+		end
+	else
+		turn2Outside           = false
+		veh.acTurnInTheMiddle = nil
+	end		
+	
+			
+	if      veh.acTurnStage            == 0 
+			and AutoSteeringEngine.getIsAtEnd( veh ) 
+			and AutoSteeringEngine.getTraceLength(veh) > 5 then
 		
-		if border > 0 then
-			turn2Outside = true
-			speedLevel = 4
-			if AutoSteeringEngine.hasLeftFruits( veh ) then
-				detected = false
-			else
-				detected = true
+		speedLevel = 4
+		
+		local ta = math.min( math.max( math.rad( 0.5 * turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
+		
+		if noReverseIndex <= 0 then
+			ta = 0
+		end
+		
+		if veh.acParameters.leftAreaActive then
+			angle = angle2 
+		else
+			angle = -angle2		
+		end	
+		angle   = math.max( angle, ta )
+		
+		AIVehicleExtension.debugPrint( veh, radToString(angle2).." => "..radToString(angle).." ("..tostring(veh.acParameters.leftAreaActive)..")")
+		
+		angle2    = nil
+	elseif  detected then
+	-- everything is ok
+	elseif  veh.acTurnStage == -3 or veh.acTurnStage == -13 or veh.acTurnStage == -23 then
+	-- start of hired worker
+		if turn2Outside then
+			angle =  veh.acDimensions.maxSteeringAngle
+		else
+			angle = 0
+		end
+	elseif  turn2Outside
+			and veh.acTurnStage < 0
+			and fruitsDetected then
+	-- retry after failed turn
+		if     veh.acTurnMode == "C" 
+				or veh.acTurnMode == "8" 
+				or veh.acTurnMode == "O" then
+			if veh.acTurnStage == -2 or veh.acTurnStage == -12 or veh.acTurnStage == -22 then
+				AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
+				veh.acTurnStage = 105
 			end
 		else
-			turn2Outside           = false
-			veh.acTurnInTheMiddle = nil
-		end		
-		
-				
-		if      veh.acTurnStage            == 0 
-				and AutoSteeringEngine.getIsAtEnd( veh ) 
-				and AutoSteeringEngine.getTraceLength(veh) > 5 then
-			
-			speedLevel = 4
-			
-			local ta = math.min( math.max( math.rad( 0.5 * turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
-			
-			if noReverseIndex <= 0 then
-				ta = 0
-			end
-			
-			if veh.acParameters.leftAreaActive then
-				angle = angle2 
+			if veh.acTurnStage == -2 or veh.acTurnStage == -12 or veh.acTurnStage == -22 then
+				AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
+				veh.acTurnStage = 110
 			else
-				angle = -angle2		
+				AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
+				veh.acTurnStage = 115
+			end
+		end
+		veh.turnTimer = veh.acDeltaTimeoutWait;
+	
+	else
+	-- we are still ahead of the field
+		veh.acTraceSmoothOffset = nil
+		
+		if     veh.acTurnStage == -2 or veh.acTurnStage == -12 or veh.acTurnStage == -22 then
+		-- after U-turn
+			local a, o = AutoSteeringEngine.navigateToSavePoint( veh, 3, AIVehicleExtension.navigationFallbackRetry )
+			if not o then
+				if turn2Outside then
+					angle =  veh.acDimensions.maxSteeringAngle
+				else
+					angle = -veh.acDimensions.maxLookingAngle 
+				end
+			elseif veh.acParameters.leftAreaActive then
+				angle = a
+			else
+				angle = -a
 			end	
-			angle   = math.max( angle, ta )
-			
-			AIVehicleExtension.debugPrint( veh, radToString(angle2).." => "..radToString(angle).." ("..tostring(veh.acParameters.leftAreaActive)..")")
-			
-			angle2    = nil
-		elseif  detected then
-		-- everything is ok
-		elseif  veh.acTurnStage == -3 or veh.acTurnStage == -13 or veh.acTurnStage == -23 then
-		-- start of hired worker
-			if turn2Outside then
-				angle =  veh.acDimensions.maxSteeringAngle
-			else
+		elseif turn2Outside then
+	
+			if     veh.acTurnStage < 0 then 
+				angle = veh.acDimensions.maxSteeringAngle
+			elseif noReverseIndex > 0 then 
+				angle = veh.acDimensions.maxLookingAngle 
+			else 
 				angle = 0
-			end
-		elseif  turn2Outside
-				and veh.acTurnStage < 0
-				and fruitsDetected then
-		-- retry after failed turn
-			if     veh.acTurnMode == "C" 
-					or veh.acTurnMode == "8" 
-					or veh.acTurnMode == "O" then
-				if veh.acTurnStage == -2 or veh.acTurnStage == -12 or veh.acTurnStage == -22 then
-					AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
-					veh.acTurnStage = 105
-				end
+			end 
+		elseif veh.acTurnStage == -1 or veh.acTurnStage == -11 or veh.acTurnStage == -21 then
+		-- after 90° turn
+			a = AutoSteeringEngine.navigateToSavePoint( veh, 4, AIVehicleExtension.navigationFallbackRotateMinus )
+			if veh.acParameters.leftAreaActive then
+				angle = a
 			else
-				if veh.acTurnStage == -2 or veh.acTurnStage == -12 or veh.acTurnStage == -22 then
-					AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
-					veh.acTurnStage = 110
-				else
-					AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
-					veh.acTurnStage = 115
-				end
-			end
-			veh.turnTimer = veh.acDeltaTimeoutWait;
-		
+				angle = -a
+			end	
 		else
-		-- we are still ahead of the field
-			veh.acTraceSmoothOffset = nil
-			
-			if     veh.acTurnStage == -2 or veh.acTurnStage == -12 or veh.acTurnStage == -22 then
-			-- after U-turn
-				local a, o = AutoSteeringEngine.navigateToSavePoint( veh, 3, AIVehicleExtension.navigationFallbackRetry )
-				if not o then
-					if turn2Outside then
-						angle =  veh.acDimensions.maxSteeringAngle
-					else
-						angle = -veh.acDimensions.maxLookingAngle 
-					end
-				elseif veh.acParameters.leftAreaActive then
-					angle = a
-				else
-					angle = -a
-				end	
-			elseif turn2Outside then
-		
-				if     veh.acTurnStage < 0 then 
-					angle = veh.acDimensions.maxSteeringAngle
-				elseif noReverseIndex > 0 then 
-					angle = veh.acDimensions.maxLookingAngle 
-				else 
-					angle = 0
-				end 
-			elseif veh.acTurnStage == -1 or veh.acTurnStage == -11 or veh.acTurnStage == -21 then
-			-- after 90° turn
-				a = AutoSteeringEngine.navigateToSavePoint( veh, 4, AIVehicleExtension.navigationFallbackRotateMinus )
-				if veh.acParameters.leftAreaActive then
-					angle = a
-				else
-					angle = -a
-				end	
-			else
-				angle = math.min( math.max( math.rad( 0.5 * turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
-			end
+			angle = math.min( math.max( math.rad( 0.5 * turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
 		end
+	end
 	
 	
 --==============================================================				
---==============================================================				
--- searching...
-	if     ( -3 <= veh.acTurnStage and veh.acTurnStage < 0 )
-			or (-13 <= veh.acTurnStage and veh.acTurnStage < -10 )then
-
-		if veh.acTurnStage >= -3 then
-			veh.acTurnStage = veh.acTurnStage -20;
-			veh.turnTimer   = veh.acDeltaTimeoutNoTurn;
-		
-		elseif  fruitsAll 
-				and detected 
-				and veh.acTurnInTheMiddle == nil
-				and not ( veh.acFullAngle ) then
-			if veh.acClearTraceAfterTurn then
-				AutoSteeringEngine.clearTrace( veh );
-				AutoSteeringEngine.saveDirection( veh, false, not turn2Outside );
-			end
-			AutoSteeringEngine.ensureToolIsLowered( veh, true )
-			veh.acTurnStage        = 0;
-			veh.acTurn2Outside     = false;
-			veh.turnTimer          = veh.acDeltaTimeoutNoTurn;
-			veh.acTurnOutsideTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutNoTurn );
-			veh.aiRescueTimer      = veh.acDeltaTimeoutStop;
-		end;
-		
---==============================================================				
-	elseif -23 <= veh.acTurnStage and veh.acTurnStage < -20 then
-		--AutoSteeringEngine.ensureToolIsLowered( veh, true )
-		AIVehicleExtension.setAIImplementsMoveDown(veh,true);
-		veh.acTurnStage = veh.acTurnStage + 10;					
-				
 --==============================================================				
 -- threshing...					
-	elseif veh.acTurnStage == 0 then		
+	if     veh.acTurnStage == 0 then		
 		
 		local doTurn = false;
 		local uTurn  = false;
@@ -467,6 +525,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 				end
 						
 				if stop then
+					print("stop")
 					veh:stopAIVehicle()
 					return
 				end
@@ -543,14 +602,47 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 				veh.acTurnStage = 30;
 				veh.turnTimer = veh.acDeltaTimeoutWait;
 			end
+			
+			self.activeTurnStrategy = self.turnStrategies[1]
+			
 		elseif detected or fruitsDetected then
 			AutoSteeringEngine.saveDirection( veh, true, not turn2Outside );
 		end
 		
 --==============================================================				
+	elseif -23 <= veh.acTurnStage and veh.acTurnStage < -20 then
+		--AutoSteeringEngine.ensureToolIsLowered( veh, true )
+		AIVehicleExtension.setAIImplementsMoveDown(veh,true);
+		veh.acTurnStage = veh.acTurnStage + 10;					
+				
+--==============================================================				
+-- searching...
+	else
+
+		if veh.acTurnStage >= -3 then
+			veh.acTurnStage = veh.acTurnStage -20;
+			veh.turnTimer   = veh.acDeltaTimeoutNoTurn;
+		
+		elseif  fruitsAll 
+				and detected 
+				and veh.acTurnInTheMiddle == nil
+				and not ( veh.acFullAngle ) then
+			if veh.acClearTraceAfterTurn then
+				AutoSteeringEngine.clearTrace( veh );
+				AutoSteeringEngine.saveDirection( veh, false, not turn2Outside );
+			end
+			AutoSteeringEngine.ensureToolIsLowered( veh, true )
+			veh.acTurnStage        = 0;
+			veh.acTurn2Outside     = false;
+			veh.turnTimer          = veh.acDeltaTimeoutNoTurn;
+			veh.acTurnOutsideTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutNoTurn );
+			veh.aiRescueTimer      = veh.acDeltaTimeoutStop;
+		end;
+		
+		
+--==============================================================				
 --==============================================================				
 	end
-	
 	
 	
 	if angle ~= nil then
@@ -558,10 +650,13 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 			angle = -angle 
 		end
 		tX,tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
+	elseif tX == nil and angle2 ~= nil then
+		tX,tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle2 )
 	end
 
-	maxSpeed = AutoSteeringEngine.getMaxSpeed( veh, dt, 1, allowedToDrive, true, speedLevel, false, 0.7 )
+	maxSpeed = AutoSteeringEngine.getMaxSpeed( veh, dt, 1, true, true, speedLevel, false, 0.7 )
 			
+	print("normal: "..tostring(tX).." "..tostring(tZ).." "..tostring(speedLevel).." "..tostring(maxSpeed))
 	return tX, tZ, true, maxSpeed, distanceToStop
 end
 

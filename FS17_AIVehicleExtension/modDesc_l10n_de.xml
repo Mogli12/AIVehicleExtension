@@ -5,8 +5,8 @@
 
 	<texts>
 		<!--AutoTractor helpPanel text-->
-		<text name="AUTO_TRACTOR_START"                    text="Alternativer Helfer" />
-		<text name="AUTO_TRACTOR_STOP"                     text="Normaler Helfer" />
+		<text name="AUTO_TRACTOR_START"                    text="Alternativen Helfer einstellen" />
+		<text name="AUTO_TRACTOR_STOP"                     text="Alternativen Helfer entlassen" />
 		<text name="AUTO_TRACTOR_WORKWIDTH"                text="Arbeitsbreite:" />
 		<text name="AUTO_TRACTOR_ACTIVESIDELEFT"           text="Aktive Seite: LINKS" />
 		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT"          text="Aktive Seite: RECHTS" />		

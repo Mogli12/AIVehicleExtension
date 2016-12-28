@@ -648,9 +648,11 @@ end
 -- getAiWorldPosition
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getAiWorldPosition( vehicle )
-	if      vehicle.acAiPos ~= nil
+	if      vehicle.acAiPos      ~= nil
+			and vehicle.acParameters ~= nil 
+			and vehicle.acParameters.enabled 
 			and vehicle.isServer 
-			and vehicle.aiIsStarted then
+			and vehicle.isAITractorActivated then
 		return unpack( vehicle.acAiPos )
 	end
 	return getWorldTranslation( vehicle.aiveChain.refNode )
@@ -2314,12 +2316,7 @@ end
 function AutoSteeringEngine.driveDirect( vehicle, dt, acceleration, allowedToDrive, moveForwards, speedLevel, useReduceSpeed, slowMaxRpmFactor )
 	
   if vehicle.firstTimeRun then
-		maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDrive, moveForwards, speedLevel, useReduceSpeed, slowMaxRpmFactor )
-		if maxSpeed <= 0 then
-			allowedToDrive = false 
-			maxSpeed       = 2
-		end
-		vehicle.motor:setSpeedLimit( maxSpeed )
+		vehicle.motor:setSpeedLimit( AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDrive, moveForwards, speedLevel, useReduceSpeed, slowMaxRpmFactor ) )
 		
 		WheelsUtil.updateWheelsPhysics(vehicle, dt, vehicle.lastSpeed, vehicle.acLastAcc, not allowedToDrive, vehicle.requiredDriveMode)
   end
@@ -2387,9 +2384,9 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
 		vehicle.acLastAcc = vehicle.acLastAcc + Utils.clamp( acc - vehicle.acLastAcc, - dt * 0.0005, dt * 0.0005)
 	end
 			
-	if     wantedSpeed < 2 then		
+	if     wantedSpeed < 2 then
+		allowedToDrive            = false
 		vehicle.acLastWantedSpeed = 2
-		return 0
 	elseif wantedSpeed < 5 then
 		vehicle.acLastWantedSpeed = wantedSpeed
 	else
@@ -6340,6 +6337,24 @@ function AutoSteeringEngine.checkAllowedToDrive( vehicle, checkFillLevel )
 	if vehicle.aiveChain.tools == nil or table.getn(vehicle.aiveChain.tools) < 1 then
 		if AIVEGlobals.devFeatures > 0 then print("not allowed to drive III") end
 		return false
+	end
+	
+	if vehicle.driveStrategies ~= nil and #vehicle.driveStrategies > 0 then
+		local vX,vY,vZ = getWorldTranslation(vehicle.aiVehicleDirectionNode);
+		
+		local tX, tZ, moveForwards, maxSpeed, distanceToStop;
+		for i=1,#vehicle.driveStrategies do
+			local driveStrategy = vehicle.driveStrategies[i];
+			if not driveStrategy:isa(AIDriveStrategyStraight) then
+				local tX, tZ, moveForwards, maxSpeed, distanceToStop = driveStrategy:getDriveData(dt, vX,vY,vZ)
+				if tX ~= nil then
+					if maxSpeed <= 0 then
+						return false
+					end
+					break
+				end
+			end
+		end
 	end
 	
   local allowedToDrive = true
