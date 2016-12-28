@@ -1,75 +1,75 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <l10n>
 	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
-	<description><![CDATA[Auto Tractor]]></description>
+	<description><![CDATA[自动驾驶]]></description>
 
 	<texts>
 		<!--AutoTractor helpPanel text-->
-		<text name="AUTO_TRACTOR_START" text="AutoTractor on" />
-		<text name="AUTO_TRACTOR_STOP" text="AutoTractor off" />
-		<text name="AUTO_TRACTOR_WORKWIDTH" text="workwidth:" />
-		<text name="AUTO_TRACTOR_ACTIVESIDELEFT" text="active side: LEFT" />
-		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT" text="active side: RIGHT" />
+		<text name="AUTO_TRACTOR_START" 										text="自动驾驶开" />
+		<text name="AUTO_TRACTOR_STOP" 											text="自动驾驶关" />
+		<text name="AUTO_TRACTOR_WORKWIDTH" 								text="工作面:" />
+		<text name="AUTO_TRACTOR_ACTIVESIDELEFT" 						text="基准边: 左" />
+		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT" 					text="基准边: 右" />
 
-		<text name="AUTO_TRACTOR_UTURN_ON_OFF"             text="change AutoTractor mode"/>
-		<text name="AUTO_TRACTOR_STEERING"                 text="manual steering"/>
-		<text name="AUTO_TRACTOR_STEERING_ON"              text="manual steering [on]"/>
-		<text name="AUTO_TRACTOR_STEERING_OFF"             text="manual steering [off]"/>
-		<text name="AUTO_TRACTOR_CONTINUE"                 text="continue"/>
+		<text name="AUTO_TRACTOR_UTURN_ON_OFF"             text="切换自动驾驶模式"/>
+		<text name="AUTO_TRACTOR_STEERING"                 text="手动转向"/>
+		<text name="AUTO_TRACTOR_STEERING_ON"              text="手动转向 [开]"/>
+		<text name="AUTO_TRACTOR_STEERING_OFF"             text="手动转向 [关]"/>
+		<text name="AUTO_TRACTOR_CONTINUE"                 text="继续"/>
 		
-		<text name="AUTO_TRACTOR_WAITMODE_ON" text="unload mode [standing]" />
-		<text name="AUTO_TRACTOR_WAITMODE_OFF" text="unload mode [driving]" />
-		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON" text="distance keeper is ON" />
-		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" text="distance keeper is OFF" />
+		<text name="AUTO_TRACTOR_WAITMODE_ON"								text="卸载模式 [停车]" />
+		<text name="AUTO_TRACTOR_WAITMODE_OFF" 							text="卸载模式 [行驶]" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON" 	text="保持距离 开" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" 	text="保持距离 关" />
 		<!--AutoTractor help text-->
-		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF" text="hide AutoTractor info" />
-		<text name="AUTO_TRACTOR_TEXTHELPPANELON" text="show AutoTractor info" />
+		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF" 					text="隐藏自动驾驶面板" />
+		<text name="AUTO_TRACTOR_TEXTHELPPANELON" 					text="显示自动驾驶面板" />
 		<!--AutoTractor inputbinding text-->
-		<text name="AUTO_TRACTOR_COLLISION_OTHER" text="front collision" />
-		<text name="AUTO_TRACTOR_COLLISION_BACK" text="back collision" />
-		<text name="AUTO_TRACTOR_UTURN_ON" text="AutoTractor mode [up/down]" />
-		<text name="AUTO_TRACTOR_UTURN_OFF" text="AutoTractor mode [circle]" />
-		<text name="AUTO_TRACTOR_REVERSE_ON" text="turn mode [reverse]" />
-		<text name="AUTO_TRACTOR_REVERSE_OFF" text="turn mode [driving]" />
-		<text name="AUTO_TRACTOR_INVERTED_ON" text="working mode [reverse]" />
-		<text name="AUTO_TRACTOR_INVERTED_OFF" text="working mode [normal]" />
-		<text name="AUTO_TRACTOR_WIDTH_OFFSET" text="width offset" />
-		<text name="AUTO_TRACTOR_TURN_OFFSET" text="turn offset" />
-		<text name="AUTO_TRACTOR_ANGLE_OFFSET" text="turn angle" />
-		<text name="AUTO_TRACTOR_SAFETY_FACTOR" text="safety distance" />
-		<text name="AUTO_TRACTOR_ERROR" text="error" />
-		<text name="AUTO_TRACTOR_NEXTTURNSTAGE" text="go to next turn stage" />
-		<text name="AUTO_TRACTOR_CP_ON" text="courseplay mode [off]" />
-		<text name="AUTO_TRACTOR_CP_OFF" text="courseplay mode [on]" />
-		<text name="AUTO_TRACTOR_STEER_ON" text="auto steer [off]" />
-		<text name="AUTO_TRACTOR_STEER_OFF" text="auto steer [on]" />
-		<text name="AUTO_TRACTOR_HEADLAND_ON" text="headland [off]" />
-		<text name="AUTO_TRACTOR_HEADLAND_OFF" text="headland [on]" />
-		<text name="AUTO_TRACTOR_FRONT_PACKER_ON" text="front packer [on]" />
-		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF" text="front packer [off]" />
-		<text name="AUTO_TRACTOR_COLLISION_ON" text="collision check [on]" />
-		<text name="AUTO_TRACTOR_COLLISION_OFF" text="collision check [off]" />
-		<text name="AUTO_TRACTOR_HIRE_ON" text="seed usage [off]" />
-		<text name="AUTO_TRACTOR_HIRE_OFF" text="seed usage [on]" />
-		<text name ="AUTO_TRACTOR_HEADLAND" text="headland" />
-		<text name="AUTO_TRACTOR_TURN_MODE_O" text="U-turn without going back" />
-		<text name="AUTO_TRACTOR_TURN_MODE_A" text="small U-turn" />
-		<text name="AUTO_TRACTOR_TURN_MODE_Y" text="medium U-turn" />
-		<text name="AUTO_TRACTOR_TURN_MODE_T" text="big U-turn" />
-		<text name="AUTO_TRACTOR_TURN_MODE_C" text="90° turn without going back" />
-		<text name="AUTO_TRACTOR_TURN_MODE_L" text="small 90° turn" />
-		<text name="AUTO_TRACTOR_TURN_MODE_K" text="big 90° turn" />
-		<text name="AUTO_TRACTOR_TURN_MODE_8" text="U-turn without going back" />
-		<text name="AUTO_TRACTOR_PAUSE_ON"                 text="pause [on]" />
-		<text name="AUTO_TRACTOR_PAUSE_OFF"                text="pause [off]" />
-		<text name="AUTO_TRACTOR_STEER_RAISE"              text="raise all implements" />
-		<text name="AUTO_TRACTOR_STEER_LOWER"              text="lower all implements" />
-		<text name="AUTO_TRACTOR_TRACE"                    text="show trace" />
-		<text name="AUTO_TRACTOR_MAGIC"                    text="refresh field" />
+		<text name="AUTO_TRACTOR_COLLISION_OTHER" 					text="前碰撞" />
+		<text name="AUTO_TRACTOR_COLLISION_BACK" 						text="后碰撞" />
+		<text name="AUTO_TRACTOR_UTURN_ON" 									text="自动驾驶 [up/down]" />
+		<text name="AUTO_TRACTOR_UTURN_OFF" 								text="自动驾驶模式 [圆圈]" />
+		<text name="AUTO_TRACTOR_REVERSE_ON" 								text="转向模式 [倒车]" />
+		<text name="AUTO_TRACTOR_REVERSE_OFF" 							text="转向模式 [前进]" />
+		<text name="AUTO_TRACTOR_INVERTED_ON" 							text="工作模式 [倒车1]" />
+		<text name="AUTO_TRACTOR_INVERTED_OFF" 							text="工作模式 [正常]" />
+		<text name="AUTO_TRACTOR_WIDTH_OFFSET" 							text="横向调整" />
+		<text name="AUTO_TRACTOR_TURN_OFFSET" 							text="转向调整" />
+		<text name="AUTO_TRACTOR_ANGLE_OFFSET" 							text="转角" />
+		<text name="AUTO_TRACTOR_SAFETY_FACTOR" 						text="安全距离" />
+		<text name="AUTO_TRACTOR_ERROR" 										text="错误" />
+		<text name="AUTO_TRACTOR_NEXTTURNSTAGE" 						text="跳到下一个转弯" />
+		<text name="AUTO_TRACTOR_CP_ON" 										text="支持CP [关]" />
+		<text name="AUTO_TRACTOR_CP_OFF"										text="支持CP [开]" />
+		<text name="AUTO_TRACTOR_STEER_ON" 									text="自动转向 [关]" />
+		<text name="AUTO_TRACTOR_STEER_OFF" 								text="自动转向 [开]" />
+		<text name="AUTO_TRACTOR_HEADLAND_ON" 							text="地块内转向 [关]" />
+		<text name="AUTO_TRACTOR_HEADLAND_OFF" 							text="地块内转向 [开]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_ON" 					text="前方障碍 [开]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF" 					text="前方障碍 [关]" />
+		<text name="AUTO_TRACTOR_COLLISION_ON" 							text="障碍检查 [开]" />
+		<text name="AUTO_TRACTOR_COLLISION_OFF" 						text="障碍检查 [关]" />
+		<text name="AUTO_TRACTOR_HIRE_ON"										text="种子使用 [关]" />
+		<text name="AUTO_TRACTOR_HIRE_OFF" 									text="种子使用 [开]" />
+		<text name ="AUTO_TRACTOR_HEADLAND" 								text="田间转向" />
+		<text name="AUTO_TRACTOR_TURN_MODE_O" 							text="U型弯" />
+		<text name="AUTO_TRACTOR_TURN_MODE_A" 							text="小U型弯" />
+		<text name="AUTO_TRACTOR_TURN_MODE_Y" 							text="中U型弯" />
+		<text name="AUTO_TRACTOR_TURN_MODE_T" 							text="大U型弯" />
+		<text name="AUTO_TRACTOR_TURN_MODE_C" 							text="90°转弯" />
+		<text name="AUTO_TRACTOR_TURN_MODE_L" 							text="小90°转弯" />
+		<text name="AUTO_TRACTOR_TURN_MODE_K" 							text="大90°转弯" />
+		<text name="AUTO_TRACTOR_TURN_MODE_8" 							text="8字形弯" />
+		<text name="AUTO_TRACTOR_PAUSE_ON"                 text="暂停 [开]" />
+		<text name="AUTO_TRACTOR_PAUSE_OFF"                text="暂停 [关]" />
+		<text name="AUTO_TRACTOR_STEER_RAISE"              text="提升工具" />
+		<text name="AUTO_TRACTOR_STEER_LOWER"              text="降低工具" />
+		<text name="AUTO_TRACTOR_TRACE"                    text="显示辅助线" />
+		<text name="AUTO_TRACTOR_MAGIC"                    text="重置地块" />
 		
-		<text name="AUTO_TRACTOR_1" text="speed level 1" />
-		<text name="AUTO_TRACTOR_2" text="speed level 2" />
-		<text name="AUTO_TRACTOR_3" text="speed level 3" />
-		<text name="AUTO_TRACTOR_4" text="speed level 4" />
+		<text name="AUTO_TRACTOR_1" 											text="速度 1" />
+		<text name="AUTO_TRACTOR_2"												text="速度 2" />
+		<text name="AUTO_TRACTOR_3" 											text="速度 3" />
+		<text name="AUTO_TRACTOR_4" 											text="速度 4" />
 	</texts>
 </l10n>
