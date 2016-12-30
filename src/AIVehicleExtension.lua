@@ -20,11 +20,12 @@ _G[g_currentModName..".mogliBase"].newClass( "AIVehicleExtension", "acParameters
 source(Utils.getFilename("mogliHud.lua", g_currentModDirectory));
 _G[g_currentModName..".mogliHud"].newClass( "AIVEHud", "atHud" )
 ------------------------------------------------------------------------
-source(Utils.getFilename("FieldBitmap.lua", AtDirectory));
-source(Utils.getFilename("FrontPacker.lua", AtDirectory));
-source(Utils.getFilename("AutoSteeringEngine.lua", AtDirectory));
-source(Utils.getFilename("AITurnStrategyMogli.lua", AtDirectory));
-source(Utils.getFilename("AIDriveStrategyMogli.lua", AtDirectory));
+source(Utils.getFilename("AIVEEvents.lua", g_currentModDirectory));
+------------------------------------------------------------------------
+source(Utils.getFilename("FieldBitmap.lua", g_currentModDirectory));
+source(Utils.getFilename("FrontPacker.lua", g_currentModDirectory));
+source(Utils.getFilename("AutoSteeringEngine.lua", g_currentModDirectory));
+source(Utils.getFilename("AIDriveStrategyMogli.lua", g_currentModDirectory));
 
 ------------------------------------------------------------------------
 -- statEvent
@@ -222,9 +223,9 @@ function AIVehicleExtension:initMogliHud()
 	AIVEHud.addButton(self, "dds/off.dds",						"dds/on.dds",					 AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,		1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage );
 	AIVEHud.addButton(self, "dds/ai_combine.dds",		 "dds/auto_combine.dds", AIVehicleExtension.onEnable,			AIVehicleExtension.evalEnable,		 2,1, "AUTO_TRACTOR_STOP", "AUTO_TRACTOR_START" );
 	AIVEHud.addButton(self, "dds/no_uturn2.dds",			"dds/uturn.dds",				AIVehicleExtension.setUTurn,			AIVehicleExtension.evalUTurn,			3,1, "AUTO_TRACTOR_UTURN_OFF", "AUTO_TRACTOR_UTURN_ON") ;
-	AIVEHud.addButton(self, "dds/next.dds",					 "dds/no_next.dds",			AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,	4,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
+--AIVEHud.addButton(self, "dds/next.dds",					 "dds/no_next.dds",			AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,	4,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
 	AIVEHud.addButton(self, "dds/no_pause.dds",			 "dds/pause.dds",				AIVehicleExtension.setPause,			AIVehicleExtension.evalPause,			5,1, "AUTO_TRACTOR_PAUSE_OFF", "AUTO_TRACTOR_PAUSE_ON", nil, AIVehicleExtension.getPauseImage );
-	AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds",AIVehicleExtension.onAutoSteer,	 AIVehicleExtension.evalAutoSteer,	6,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" );
+--AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds",AIVehicleExtension.onAutoSteer,	 AIVehicleExtension.evalAutoSteer,	6,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" );
 
 	AIVEHud.addButton(self, "dds/noHeadland.dds",		 "dds/headland.dds",		 AIVehicleExtension.setHeadland,	 AIVehicleExtension.evalHeadland,	 1,2, "AUTO_TRACTOR_HEADLAND_ON", "AUTO_TRACTOR_HEADLAND_OFF" );
 	AIVEHud.addButton(self, nil,											nil,										AIVehicleExtension.setBigHeadland,nil,												2,2, "AUTO_TRACTOR_HEADLAND", nil, AIVehicleExtension.getBigHeadlandText, AIVehicleExtension.getBigHeadlandImage );
@@ -2036,8 +2037,6 @@ function AIVehicleExtension:sendParameters(noEventSend)
 	end
 end;
 
-source(Utils.getFilename("AIVEEvents.lua", AtDirectory));
-
 
 if AIVEGlobals.devFeatures > 0 then
 	addConsoleCommand("acReset", "Reset global AIVehicleExtension variables to defaults.", "acReset", AIVehicleExtension);
@@ -2175,38 +2174,7 @@ end
 -- AIVehicleExtension:detectAngle
 ------------------------------------------------------------------------
 function AIVehicleExtension:detectAngle( smooth )
-	if self.acHighPrec == nil then
-		self.acHighPrec = true
-	end
-	
-	local d, a, b = AutoSteeringEngine.processChain( self, smooth, not ( self.acHighPrec ), ( self.acTurnStage == 0 or self.acTurnStage == 199 ) )
-
-	if      self.acTurnStage == 0 
-			and b                <= 0
-			and math.abs( a )    <  AIVEGlobals.maxDtAngle * self.acDimensions.maxLookingAngle then
-		self.acHighPrec = false --AutoSteeringEngine.getIsAtEnd( self )
-	elseif  self.acTurnStage <  0 
-			and b                <= 0 then
-		self.acHighPrec = false
-	else
-		self.acHighPrec = true
-	end
-
-	local oldFullAngle = self.acFullAngle
-	self.acFullAngle = false
-	
-	if     b > 0 then
-		d = false
-		self.acFullAngle = true
-	elseif self.acTurnStage > 0 then
-		self.acFullAngle = true
-	elseif oldFullAngle then
-		if math.abs( a ) > self.acDimensions.maxLookingAngle then
-			self.acFullAngle = true
-		end
-	end
-	
-	return d, a, b
+	return AutoSteeringEngine.processChain( self, smooth, true, ( self.acTurnStage == 0 or self.acTurnStage == 199 ) )
 end
 
 ------------------------------------------------------------------------
@@ -2354,7 +2322,7 @@ function AIVehicleExtension:getStraighBackwardsAngle( iTarget )
 	local ta  = turnAngle
 	turnAngle = AutoSteeringEngine.normalizeAngle( turnAngle - target )
 	
-	AIVehicleExtension.debugPrint( self, "gSBA init: target: "..degToString( iTarget ).." current: "..radToString( ta ).." delta: "..radToString( turnAngle ))
+	AIVehicleExtension.debugPrint( self, "gSBA init: target: "..AutoSteeringEngine.degToString( iTarget ).." current: "..AutoSteeringEngine.radToString( ta ).." delta: "..AutoSteeringEngine.radToString( turnAngle ))
 	
 	return AIVehicleExtension.getStraighBackwardsAngle2( self, turnAngle, target )
 end
@@ -2369,7 +2337,7 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 	if 	 	 AutoSteeringEngine.tableGetN( taJoints  ) < 1
 			or self.aseDirectionBeforeTurn   == nil
 			or self.aseDirectionBeforeTurn.a == nil then
-		AIVehicleExtension.debugPrint( self, "gSBA: no tools with joint found: "..radToString( -turnAngle ))
+		AIVehicleExtension.debugPrint( self, "gSBA: no tools with joint found: "..AutoSteeringEngine.radToString( -turnAngle ))
 		return -turnAngle
 	end
 
@@ -2410,7 +2378,7 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 		angle = -angle 
 	end
 	
-	AIVehicleExtension.debugPrint( self, "gSBA: current: "..radToString( yt ).." target: "..radToString( yv ).." => angle: "..radToString( angle ).." ("..tostring( self.acParameters.leftAreaActive ).." / "..tostring( iTarget ).." / "..radToString( self.aseDirectionBeforeTurn.a )..")")
+	AIVehicleExtension.debugPrint( self, "gSBA: current: "..AutoSteeringEngine.radToString( yt ).." target: "..AutoSteeringEngine.radToString( yv ).." => angle: "..AutoSteeringEngine.radToString( angle ).." ("..tostring( self.acParameters.leftAreaActive ).." / "..tostring( iTarget ).." / "..AutoSteeringEngine.radToString( self.aseDirectionBeforeTurn.a )..")")
 	
 	return angle 
 end
@@ -2439,7 +2407,7 @@ function AIVehicleExtension:getStraighForwardsAngle( iTarget )
 		angle = turnAngle 
 	end
 	
-	AIVehicleExtension.debugPrint( self, "gSFA: "..degToString( iTarget ).." "..radToString( toolAngle ).." "..radToString( turnAngle ).." => "..radToString( angle ))
+	AIVehicleExtension.debugPrint( self, "gSFA: "..AutoSteeringEngine.degToString( iTarget ).." "..AutoSteeringEngine.radToString( toolAngle ).." "..AutoSteeringEngine.radToString( turnAngle ).." => "..AutoSteeringEngine.radToString( angle ))
 	
 	angle = Utils.clamp( angle, -self.acDimensions.maxSteeringAngle, self.acDimensions.maxSteeringAngle )
 
@@ -2489,6 +2457,13 @@ function AIVehicleExtension:afterSetDriveStrategies()
 end
 
 AIVehicle.setDriveStrategies = Utils.appendedFunction( AIVehicle.setDriveStrategies, AIVehicleExtension.afterSetDriveStrategies )
+
+function AIVehicleExtension:afterStopAIVehicle(reason, noEventSend)
+	print("Stop AI Vehicle: "..tostring(reason))
+	AIVehicleExtension.printCallStack( self, 15 )
+end
+
+AIVehicle.stopAIVehicle = Utils.appendedFunction( AIVehicle.stopAIVehicle, AIVehicleExtension.afterStopAIVehicle )
 --==============================================================				
 --==============================================================				
 

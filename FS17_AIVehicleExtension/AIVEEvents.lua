@@ -96,6 +96,49 @@ end
 
 
 ------------------------------------------------------------------------
+-- AIVEPauseEvent
+------------------------------------------------------------------------
+AIVEStartEvent = {}
+AIVEStartEvent_mt = Class(AIVEStartEvent, Event)
+InitEventClass(AIVEStartEvent, "AIVEStartEvent")
+function AIVEStartEvent:emptyNew()
+  local self = Event:new(AIVEStartEvent_mt)
+  return self
+end
+function AIVEStartEvent:new(object,enabled)
+  local self = AIVEStartEvent:emptyNew()
+  self.object     = object;
+	self.enabled    = enabled
+  return self
+end
+function AIVEStartEvent:readStream(streamId, connection)
+  local id = streamReadInt32(streamId)
+  self.object  = networkGetObject(id)
+	self.enabled = streamReadBool(streamId)
+  self:run(connection)
+end
+function AIVEStartEvent:writeStream(streamId, connection)
+  streamWriteInt32(streamId, networkGetObjectId(self.object))
+	streamWriteBool(streamId, self.enabled)
+end
+function AIVEStartEvent:run(connection)
+	if self.enabled then
+		self.object.aiveIsStarted = true
+		self.object:startAIVehicle()
+	else
+		if self.object.aiIsStarted then
+			self.object:stopAIVehicle()
+		end
+		self.object.aiveIsStarted = false
+	end
+	
+  if not connection:getIsServer() then
+    g_server:broadcastEvent(AIVEStartEvent:new(self.object,self.enabled), nil, connection, self.object)
+  end
+end
+
+
+------------------------------------------------------------------------
 -- AIVEInt32Event
 ------------------------------------------------------------------------
 local AIVESetInt32ValueLog = 0

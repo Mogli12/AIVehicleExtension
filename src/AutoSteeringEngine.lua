@@ -588,6 +588,10 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField )
 	vehicle.aiveChain.completeTrace   = nil	
 	vehicle.aiveChain.lastAngleFactor = a
 	
+	if detected and border > 0 then
+		detected = false 
+	end
+	
 	return detected, angle, border, wx, wy, wz
 end
 
@@ -1845,7 +1849,7 @@ function AutoSteeringEngine.hasFruits( vehicle, widthFactor )
 				else
 					fruitsDetected = true				
 				end
-			elseif tool.lowerStateOnFruits and AIVEGlobals.lowerAdvance > 0 then
+			elseif tool.targetLowerState and not ( tool.currentLowerState ) and AIVEGlobals.lowerAdvance > 0 then
 				-- lower tool in advance
 				
 				xw1 = xw1 + AIVEGlobals.lowerAdvance * dx
@@ -1890,10 +1894,13 @@ function AutoSteeringEngine.hasFruits( vehicle, widthFactor )
 			--vehicle.aiveFruitAreas[i] = { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits }
 			end
 			
-			if      AIVEGlobals.raiseNoFruits > 0
-					and not ( gotFruits )
+			if      gotFruits then
+				AutoSteeringEngine.ensureToolIsLowered( vehicle, true, i )
+			elseif  AIVEGlobals.raiseNoFruits > 0
 					and not ( gotField )
-					and vehicle.acTurnStage <= 0
+					and vehicle.aiveChain.inField
+					and tool.currentLowerState
+					and not ( vehicle.aiveHas.combine )
 					and ( tool.isSowingMachine
 						 or tool.isCultivator
 						 or tool.isSprayer
@@ -1902,8 +1909,6 @@ function AutoSteeringEngine.hasFruits( vehicle, widthFactor )
 						 or tool.isWindrower ) then
 				AutoSteeringEngine.raiseToolNoFruits( vehicle, tool.obj )
 			end
-
-			AutoSteeringEngine.ensureToolIsLowered( vehicle, gotFruits, i )
 		end
 	end
 	
@@ -2089,7 +2094,7 @@ function AutoSteeringEngine.isSetAngleZero( vehicle )
 	if AIVEGlobals.zeroAngle > 0 then
 		return true
 	end
-	if vehicle.acTurnStage ~= nil and vehicle.acTurnStage > 0 then
+	if not ( vehicle.aiveChain.inField ) then
 		return true
 	end
 	return false
@@ -2267,19 +2272,6 @@ function AutoSteeringEngine.driveDirect( vehicle, dt, acceleration, allowedToDri
 		
 		WheelsUtil.updateWheelsPhysics(vehicle, dt, vehicle.lastSpeed, vehicle.acLastAcc, not allowedToDrive, vehicle.requiredDriveMode)
   end
-	
-	if vehicle.aiveCurrentWorkArea ~= nil and allowedToDrive and vehicle.acTurnStage <= 0 and vehicle.aiveChain.toolParams ~= nil then
-		for _,tp in pairs( vehicle.aiveChain.toolParams ) do
-			local lx1,_,lz1 = getWorldTranslation( tp.nodeLeft )
-			local lx2,_,lz2 = getWorldTranslation( tp.nodeRight )
-			
-			local dx, dz = localDirectionToWorld( vehicle.aiveChain.refNode, 0, 0, - 1 )
-			local lx3 = lx1 + dx
-			local lz3 = lz1 + dz
-			
-			vehicle.aiveCurrentWorkArea.cutArea( lx1,lz1,lx2,lz2,lx3,lz3 )
-		end
-	end
 end
 
 ------------------------------------------------------------------------
@@ -2313,7 +2305,9 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
   if not allowedToDrive then
     acc = 0
 	end
-		
+	
+--print("dt: "..tostring(dt)..", wantedSpeed: "..tostring(wantedSpeed).."("..tostring(speedLevel).."), acc:"..tostring(acc).."("..tostring(allowedToDrive)..")")
+			
 	if vehicle.acLastAcc == nil then
 		vehicle.acLastAcc = 0
 	end
@@ -2445,10 +2439,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 		drawDebugLine(  x1, y+3, z1,0,1,0, x, y+3, z,0,1,0)
 	end
 	
-	if      vehicle.aiveChain.trace   ~= nil 
-			and vehicle.acTurnStage              ~= nil
-			and vehicle.acTurnStage              ~= 0
-			and vehicle.acTurnStage               < 197 then
+	if  vehicle.aiveChain.trace   ~= nil then
 			
 		if vehicle.aiveChain.trace.itv1 ~= nil then
 			local lx1,lz1,lx2,lz2,lx3,lz3 = unpack( vehicle.aiveChain.trace.itv1 )
@@ -3106,7 +3097,6 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 		vehicle.aiveChain.lastZ = nil 
 		vehicle.aiveCurrentFieldCo = nil
 		vehicle.aiveCurrentFieldCS = 'dead'
-		vehicle.aiveCurrentWorkArea = nil
 	
 		if vehicle.aiveCurrentField ~= nil then
 			local x1,_,z1 = localToWorld( vehicle.aiveChain.refNode, 0.5 * ( vehicle.aiveChain.activeX + vehicle.aiveChain.otherX ), 0, 0 )
@@ -5677,18 +5667,10 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		tool.ploughTransport = true
 	end
 		
---if      useAI 
---		and object.aiLeftMarker  ~= nil 
---		and object.aiRightMarker ~= nil 
---		and object.aiLower			 ~= nil
---		and object.aiRaise			 ~= nil
---		and object.aiTurnOn			 ~= nil
---		and object.aiTurnOff		 ~= nil
---		then
 	if tool.ignoreAI then
 		marker[1] = reference
 		marker[2] = reference
-	elseif true then
+	else
 -- tool with AI support		
 		tool.isAITool = true
 		tool.useAIMarker = true
@@ -5724,211 +5706,6 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 				tool.specialType = "poettingerServo650"
 			end
 		end
-		
-	else
-		local areas = nil	
-		if     SpecializationUtil.hasSpecialization(Sprayer, object.specializations) then
-		-- sprayer	
-			if AtResetCounter == nil or AtResetCounter < 1 then
-				--print("object is sprayer")
-			end
-			
-			tool.isSprayer                     = true
-			tool.aiTerrainDetailChannel1       = g_currentMission.cultivatorChannel
-			tool.aiTerrainDetailChannel2       = g_currentMission.sowingChannel
-			tool.aiTerrainDetailChannel3       = g_currentMission.sowingWidthChannel
-			tool.aiTerrainDetailProhibitedMask = 2 ^ g_currentMission.sprayChannel
-			tool.outTerrainDetailChannel       = g_currentMission.sprayChannel
-		elseif SpecializationUtil.hasSpecialization(Combine, object.specializations) then
-		-- Combine
-			if AtResetCounter == nil or AtResetCounter < 1 then
-				--print("object is combine")
-			end
-			
-			tool.isCombine = true
-			
-			if object.aiLeftMarker ~= nil and object.aiRightMarker ~= nil and object.aiBackMarker ~= nil then
-				tool.useAIMarker = true
-				local tempArea = {}
-				tempArea.start  = object.aiLeftMarker
-				tempArea.width  = object.aiRightMarker
-				tempArea.height = object.aiBackMarker		
-				areas    = {}
-				areas[1] = tempArea
-			end
-			
-		elseif SpecializationUtil.hasSpecialization(Mower, object.specializations) then
-		-- Mower
-			if AtResetCounter == nil or AtResetCounter < 1 then
-				--print("object is mower")
-			end
-			
-			tool.isMower = true			
-			if object.workAreaByType ~= nil then
-				areas = object.workAreaByType[8]
-			end
-
-		elseif SpecializationUtil.hasSpecialization(FruitPreparer, object.specializations) then
-		-- FruitPreparer
-			if AtResetCounter == nil or AtResetCounter < 1 then
-				--print("object is fruit preparer")
-			end
-			
-			local fruitDesc = FruitUtil.fruitIndexToDesc[object.fruitPreparerFruitType]
-			if fruitDesc == nil then return 0 end
-			
-			if object.workAreaByType ~= nil then
-				areas = object.workAreaByType[5]
-			end
-			
-			tool.aiRequiredFruitType        = object.fruitPreparerFruitType
-      tool.aiRequiredMinGrowthState   = fruitDesc.minPreparingGrowthState
-      tool.aiRequiredMaxGrowthState   = fruitDesc.maxPreparingGrowthState 
-		elseif SpecializationUtil.hasSpecialization(Plough, object.specializations) then
-		-- Plough
-			if AtResetCounter == nil or AtResetCounter < 1 then
-				--print("object is plough")
-			end
-			
-			tool.isPlough = true			
-			tool.outTerrainDetailChannel = g_currentMission.ploughChannel
-
-		elseif SpecializationUtil.hasSpecialization(Cultivator, object.specializations) then
-		-- Cultivator
-			if AtResetCounter == nil or AtResetCounter < 1 then
-				--print("object is cultivator")
-			end
-			
-			tool.outTerrainDetailChannel = g_currentMission.cultivatorChannel
-
-		elseif SpecializationUtil.hasSpecialization(Tedder, object.specializations) then
-		-- Tedder
-			if AtResetCounter == nil or AtResetCounter < 1 then
-				--print("object is tedder")
-			end
-			
-			tool.isTedder = true			
-		
-----------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------
-elseif AIVEGlobals.devFeatures <= 0 then
-	return 0
-----------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------
-						
-		elseif SpecializationUtil.hasSpecialization(Windrower, object.specializations) then
-		-- Windrower
-			if AIVEGlobals.devFeatures > 0 and ( AtResetCounter == nil or AtResetCounter < 1 ) then
-				print("object is windrower")
-			end
-			
-			tool.isWindrower = true			
-						
-    --------------------------------------------------------
-		-- Poettinger X8
-		elseif  object.customEnvironment ~= nil
-				and SpecializationUtil.hasSpecialization(SpecializationUtil.getSpecialization( object.customEnvironment ..".poettingerX8" ), object.specializations) 
-				and object.mowerCutAreasSend ~= nil 
-				then
-
-			tool.specialType = "Poettinger X8"
-			tool.isMower     = true
-			areas = object.mowerCutAreasSend
-    --------------------------------------------------------
-		-- Poettinger AlphaMotion
-		elseif  object.customEnvironment   ~= nil
-				and SpecializationUtil.hasSpecialization(SpecializationUtil.getSpecialization( object.customEnvironment ..".poettingerAlpha" ), object.specializations) 
-				and object.alpMot              ~= nil
-				and object.alpMot.cuttingAreas ~= nil
-				then
-
-			tool.specialType = "Poettinger AlphaMotion"
-			tool.isMower     = true
-			areas = object.alpMot.cuttingAreas
-    --------------------------------------------------------
-		-- Taarup Mower Cut
-		elseif  object.customEnvironment ~= nil
-				and ( SpecializationUtil.hasSpecialization(SpecializationUtil.getSpecialization( object.customEnvironment ..".TaarupMowerCut" ), object.specializations) 
-				   or SpecializationUtil.hasSpecialization(SpecializationUtil.getSpecialization( object.customEnvironment ..".KevCond240" ), object.specializations)  
-				   or SpecializationUtil.hasSpecialization(SpecializationUtil.getSpecialization( object.customEnvironment ..".KevMT" ), object.specializations)  
-				   or SpecializationUtil.hasSpecialization(SpecializationUtil.getSpecialization( object.customEnvironment ..".Taarup3532" ), object.specializations) ) 
-				and object.mowerCutAreas     ~= nil
-				then
-
-			tool.specialType = "Taarup Mower"
-			tool.isMower     = true
-			areas = object.mowerCutAreas
-    --------------------------------------------------------
-		elseif  object.customEnvironment ~= nil
-				and ( SpecializationUtil.hasSpecialization(SpecializationUtil.getSpecialization( object.customEnvironment ..".HorschSW3500S" ), object.specializations) ) 
-				then
-
-			tool.specialType = "Horsch SW3500 S"
-			areas = {} --object.cuttingAreas
-			local tempArea = {}
-			tempArea.start  = object.aiLeftMarker
-			tempArea.width  = object.aiRightMarker
-		--tempArea.height = object.aiBackMarker		
-			tempArea.height = createTransformGroup( "acBackNew" )
-			extraNodes[#extraNodes+1] = tempArea.height
-			link( tempArea.start, tempArea.height )
-			setTranslation( tempArea.height, 0, 0, -4 )
-			areas[1] = tempArea
-			
-			tool.aiForceTurnNoBackward   = true
-			tool.isSowingMachine         = true
-			tool.outTerrainDetailChannel = g_currentMission.sowingChannel
-    --------------------------------------------------------
-		else
-			return 0
-		end
-		
-		if areas == nil and object.workAreas ~= nil then areas = object.workAreas end
-		if areas == nil then return 0 end		
-
-		local zBack 
-		
-		--print(tostring(table.getn(areas)))
-		
-		for _, area in pairs(areas) do
-			local xx, zz, x1, z1 = 0,0,0,0
-			local backIndex      = area.height
-
-			xx,_,z1 = AutoSteeringEngine.getRelativeTranslation( area.start, area.height )
-			x1,_,zz = AutoSteeringEngine.getRelativeTranslation( area.start, area.width )
-			
-			if tool.isCombine or math.abs( xx ) < 1E-2 and zz < 1E-2 then
-				marker[#marker+1] = area.start
-				marker[#marker+1] = area.width
-			elseif math.abs( x1 ) < 1E-2 and z1 < 1E-2 then
-				marker[#marker+1] = area.start
-				marker[#marker+1] = area.height
-				backIndex         = area.width
-			else
-				marker[#marker+1] = area.start
-				marker[#marker+1] = area.width
-				marker[#marker+1] = area.height
-				marker[#marker+1] = createTransformGroup( "additionalMarker" )
-			  extraNodes[#extraNodes+1] = marker[#marker]
-				link( area.start, marker[#marker] )
-				setTranslation( marker[#marker], xx+x1, 0, zz+z1 )
-				if zz < 0 and z1 < 0 then
-					backIndex = marker[#marker]
-				elseif zz < z1 then
-					backIndex = area.width
-				end
-			end
-			
-			if backIndex ~= nil then
-				local _,_,zzBack = AutoSteeringEngine.getRelativeTranslation( tool.steeringAxleNode, backIndex )
-				if zBack == nil or zzBack > zBack then
-					zBack = zzBack
-					tool.aiBackMarker = backIndex
-				end
-			end
-		end					
-
-		--print(tostring(table.getn(marker)))
 	end
 
 	if #marker < 1 then 
@@ -6100,6 +5877,11 @@ elseif AIVEGlobals.devFeatures <= 0 then
 		tool.ignoreAI = true
 	end
 	
+	if SpecializationUtil.hasSpecialization(Combine, vehicle.specializations) then
+		vehicle.aiveHas.combine = true 
+		vehicle.aiveHas.combineVehicle = true
+	end
+	
 	if not ( tool.ignoreAI ) then
 		if tool.isCombine       then vehicle.aiveHas.combine       = true end
 		if tool.isPlough        then vehicle.aiveHas.plough        = true end
@@ -6152,107 +5934,6 @@ function AutoSteeringEngine.deleteTools( vehicle )
 	end
 	
 	vehicle.aiveHas = {}
-end
-
-------------------------------------------------------------------------
--- checkCombineAllowedToDrive
-------------------------------------------------------------------------
-function AutoSteeringEngine.checkCombineAllowedToDrive( vehicle, combine )
-
-	local allowedToDrive = true
-	local isTurning      = false
-	if vehicle.acTurnStage ~= nil and vehicle.acTurnStage > 0 and vehicle.acTurnStage < 198 then
-		isTurning = true
-	end
-	
-	if not combine:getIsThreshingAllowed() then
-		allowedToDrive = false
-	end
-	
-	local fillType = combine:getUnitLastValidFillType(combine.overloading.fillUnitIndex);
-	local fillLevel = combine:getUnitFillLevel(combine.overloading.fillUnitIndex);
-	local capacity = combine:getUnitCapacity(combine.overloading.fillUnitIndex);
-
-	local validTrailer;
-	for trailer,value in pairs(combine.overloading.trailersInRange) do
-		if value > 0 then
-			if trailer:allowFillType(fillType) then
-				if trailer:getFillLevel(fillType) < trailer:getCapacity(fillType) then
-					validTrailer = trailer;
-					break;
-				end
-			end
-		end
-	end
-
-
-	if capacity == 0 then
-		if combine.pipeTargetState ~= 2 then
-			combine:setPipeState(2);
-		end
-		if isTurning then
-			allowedToDrive = true;
-		else
-			allowedToDrive = validTrailer ~= nil and ( combine:getIsOverloadingAllowed() or (self.lastValidInputFruitType == FruitUtil.FRUITTYPE_UNKNOWN) );
-		end
-	else
-		local pipeState = combine.pipeTargetState; --1;
-
-		if fillLevel > (0.8*capacity) then
-			if vehicle.beaconLightsActive == false then
-				vehicle:setBeaconLightsVisibility(true, false);
-			end
-		else
-			if vehicle.beaconLightsActive == true then
-				vehicle:setBeaconLightsVisibility(false, false);
-			end
-		end
-		
-		if fillLevel == capacity then
-			pipeState = 2;
-			combine.aseWasCompletelyFull = true;
-		--if self.notificationFullGrainTankShown ~= true then
-		--	g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, string.format(g_i18n:getText(AIVehicle.REASON_TEXT_MAPPING[AIVehicle.STOP_REASON_GRAINTANK_IS_FULL]), vehicle.currentHelper.name) )
-		--	self.notificationFullGrainTankShown = true;
-		--end
-		else
-		--self.notificationFullGrainTankShown = false;
-		end
-
-		if validTrailer and fillLevel > 0 then
-			pipeState = 2;
-		else
-			if fillLevel < capacity then
-				combine.aseWasCompletelyFull = false;
-			end
-		end
-		
-		if validTrailer == nil then
-			pipeState = 1;
-		end
-
-		if combine.pipeTargetState ~= pipeState then
-			combine:setPipeState(pipeState);
-		end
-		
-		allowedToDrive = fillLevel < capacity;
-		
-		if pipeState == 2 and combine.aseWasCompletelyFull then
-			allowedToDrive = false;
-		end
-
-		if isTurning and validTrailer ~= nil then
-			if combine.trailerFound ~= 0 then
-				allowedToDrive = fillLevel == 0;
-			end
-		end
-	end
-
-	if isTurning and combine.isStrawEnabled and combine.strawPSenabled then
-		allowedToDrive = false
-	end
-
-	return allowedToDrive
 end
 
 ------------------------------------------------------------------------
@@ -6309,10 +5990,8 @@ function AutoSteeringEngine.checkAllowedToDrive( vehicle, checkFillLevel )
 			end
 		end
 		
-		if      tool.isCombine 
-				then --and not AutoSteeringEngine.checkCombineAllowedToDrive( vehicle, tool.obj ) then
-			allowedToDrive = false
-		elseif  checkFillLevel
+		if  not ( tool.isCombine )
+				and checkFillLevel
 				and self.capacity  ~= nil
 				and self.capacity  > 0 
 				and self.fillLevel ~= nil
@@ -6344,6 +6023,14 @@ function AutoSteeringEngine.checkIsAnimPlaying( vehicle, moveDown )
 		return false, false
 	end
 	
+	if      moveDown 
+			and vehicle.aiveHas.combineVehicle
+			and vehicle:getCanBeTurnedOn( )
+			and not vehicle:getIsTurnedOn( ) then
+		vehicle:setIsTurnedOn( true )
+		vehicle:aiTurnOn()
+	end
+	
 	for _,tool in pairs(vehicle.aiveChain.tools) do
 		--if moveDown and tool.obj.startActivationTime ~= nil and tool.obj.startActivationTime <= g_currentMission.time then
 		--	return true
@@ -6371,27 +6058,30 @@ function AutoSteeringEngine.checkIsAnimPlaying( vehicle, moveDown )
       end
  		end
 		
-		if moveDown and tool.lowerStateOnFruits == nil then		
+		if moveDown and tool.targetLowerState then
 			if      tool.isTurnOnVehicle
 					and tool.obj:getCanBeTurnedOn( )
 					and not tool.obj:getIsTurnedOn( ) then
-				tool.obj:setIsTurnedOn( true )
+				tool.obj:setIsTurnedOn()
+				tool.obj:aiTurnOn()
 			end
 			
-			local isReady, noSneak = AutoSteeringEngine.checkToolIsReady( tool ) 
-			
-			if isReady == false and noSneak then
-				if AIVEGlobals.devFeatures > 0 then print("tool is not yet ready I") end
-				if tool.ignoreAI then
+			if tool.currentLowerState then
+				local isReady, noSneak = AutoSteeringEngine.checkToolIsReady( tool ) 
+				
+				if isReady == false and noSneak then
+					if AIVEGlobals.devFeatures > 0 then print("tool is not yet ready I") end
+					if tool.ignoreAI then
+						isPlaying = true
+					else
+						return true, true
+					end
+				elseif  isReady                   == nil 
+						and tool.waitUntilIsLowered ~= nil 
+						and tool.waitUntilIsLowered > g_currentMission.time then
+					if AIVEGlobals.devFeatures > 0 then print("tool is not yet ready II") end
 					isPlaying = true
-				else
-					return true, true
 				end
-			elseif  isReady                   == nil 
-					and tool.acWaitUntilIsLowered ~= nil 
-					and tool.acWaitUntilIsLowered > g_currentMission.time then
-				if AIVEGlobals.devFeatures > 0 then print("tool is not yet ready II") end
-				isPlaying = true
 			end
 		end
 		--if moveDown and tool.isFoldable then
@@ -7059,12 +6749,16 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 										score[k+1].angle = score[k].angle
 										score[k+1].dist  = score[k].dist 
 										score[k+1].beta  = score[k].beta 
+										score[k+1].tX    = score[k].tX   
+										score[k+1].tZ    = score[k].tZ
 									end
 								end
 								score[j].score = s
 								score[j].angle = a
 								score[j].dist  = d
 								score[j].beta  = b
+								score[j].tX    = p.x
+								score[j].tZ    = p.z
 								break
 							end
 						end
@@ -7077,6 +6771,9 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 		angle = nil
 		bestD = nil
 		bestB = nil
+		bestX = nil
+		bestZ = nil
+		
 	--for k=1,2 do
 		for k=2,2 do
 			for j=1,table.getn( score ) do
@@ -7088,11 +6785,15 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 						angle = angle + score[j].angle
 						bestD = bestD + score[j].dist 
 						bestB = bestB + score[j].beta 
+						bestX = bestX + score[j].tX
+						bestZ = bestZ + score[j].tZ
 					else
 						n     = 1
 						angle = score[j].angle
 						bestD = score[j].dist 
 						bestB = score[j].beta 						
+						bestX = score[j].tX
+						bestZ = score[j].tZ
 					--if k == 1 then break end
 					end
 				end
@@ -7106,6 +6807,8 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 			angle = angle / n
 			bestD = bestD / n
 			bestB = bestB / n
+			bestX = bestX / n
+			bestZ = bestZ / n
 		end
 		
 		if debugOutput then
@@ -7147,7 +6850,7 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 	
 	angle = math.min( math.max( angle, -vehicle.aiveChain.maxSteering  ), vehicle.aiveChain.maxSteering  )
 	
-	return angle, onTrack
+	return angle, onTrack, bestX, bestZ
 end
 
 ------------------------------------------------------------------------
@@ -7158,19 +6861,9 @@ function AutoSteeringEngine.setToolsAreTurnedOn( vehicle, isTurnedOn, immediate,
 		return
 	end
 	
-	local vehIsCombine = SpecializationUtil.hasSpecialization(Combine, vehicle.specializations)
-	
-	if isTurnedOn then
-		if vehIsCombine then
-			vehicle:startThreshing( true )
-		end
-		vehicle:aiLower( )
-	else
-		vehicle:aiRaise( )
-		if vehIsCombine then
-			vehicle:stopThreshing( true )
-			vehicle.aseWasCompletelyFull = nil
-		end
+	if vehicle.aiveHas.combineVehicle then
+		vehicle:setIsTurnedOn(isTurnedOn)
+		vehicle:aiTurnOn()
 	end
 	
 	AutoSteeringEngine.setToolsAreLowered( vehicle, isTurnedOn, immediate, objectFilter )
@@ -7200,39 +6893,19 @@ function AutoSteeringEngine.setToolsAreTurnedOn( vehicle, isTurnedOn, immediate,
 				if self.turnOn ~= isTurnedOn then
 					self:setStateEvent("turnOn", false, isTurnedOn)
 				end
-			elseif vehicle.aiveChain.tools[i].isCombine then
-				if self.setIsTurnedOn ~= nil then
+			elseif vehicle.aiveChain.tools[i].isAITool then
+				if vehicle.aiveChain.tools[i].isTurnOnVehicle then
 					self:setIsTurnedOn( isTurnedOn )
 				end
-				if isTurnedOn then
-					self:startThreshing( true )
-					self:aiLower( )
-				else
-					self:aiRaise( )
-					self:stopThreshing( true )
-					self.aseWasCompletelyFull = nil
-				end
-			elseif vehicle.aiveChain.tools[i].isAITool then
-				if isTurnedOn then
+				if isTurnedOn then				
 					self:aiTurnOn()
 				else
 					self:aiTurnOff()
 				end
-			else
+			elseif vehicle.aiveChain.tools[i].isTurnOnVehicle then
 				if self.setIsTurnedOn ~= nil then
-					self:setIsTurnedOn(isTurnedOn, true)
+					self:setIsTurnedOn( isTurnedOn )
 				end
-				--if vehicle.aiveChain.tools[i].isFoldable and self:getIsFoldAllowed() then
-				--	if isTurnedOn then
-				--		if self.turnOnFoldDirection ~= 0 then
-				--			self:setFoldDirection(self.turnOnFoldDirection)
-				--		end
-				--	else
-				--		if self.foldMiddleAIRaiseDirection ~= 0 then
-				--			self:setFoldState(-self.foldMiddleAIRaiseDirection, true)
-				--		end
-				--	end
-				--end
 				if self.setAIImplementsMoveDown ~= nil then
 					self:setAIImplementsMoveDown( isTurnedOn )
 				end
@@ -7244,105 +6917,59 @@ end
 ------------------------------------------------------------------------
 -- setToolIsLowered
 ------------------------------------------------------------------------
-function AutoSteeringEngine.setToolIsLowered( tool, isLowered )
+function AutoSteeringEngine.setToolIsLowered( vehicle, tool, isLowered )
+
+	tool.targetLowerState   = isLowered  
+	tool.currentLowerState  = isLowered
+	tool.waitUntilIsLowered = g_currentMission.time + vehicle.acDeltaTimeoutStart
+
+	for _,implement in pairs(vehicle.attachedImplements) do
+		if implement.object == tool.obj and ( implement.object.needsLowering or implement.object.aiNeedsLowering ) then
+			vehicle.setJointMoveDown( vehicle, implement.jointDescIndex, isLowered, true )
+		end
+	end
+	
+	if isLowered and vehicle.aiveHas.combineVehicle and vehicle:getCanBeTurnedOn() and not vehicle:getIsTurnedOn() then
+		vehicle:setIsTurnedOn( true )
+		vehicle:aiTurnOn()
+	end
+		
 	local self = tool.obj
-	if     tool.isCombine                               then
-		if self.setIsTurnedOn ~= nil then
-			self:setIsTurnedOn( isLowered )
+	if isLowered then
+		if tool.isTurnOnVehicle and self:getCanBeTurnedOn() and not self:getIsTurnedOn() then
+			self:setIsTurnedOn( true )
+			self:aiTurnOn()
 		end
-		if isLowered then
-			self:aiLower( )
-		else
-			self:aiRaise( )
-		end
-		if isLowered and not self.isThreshing then
-			self:startThreshing( true )
-		end
-	elseif tool.isSprayer                               then
-		self:setIsTurnedOn( isLowered, true )
-	elseif tool.specialType == "Poettinger X8"          then
-		local idx = self.x8.selectionIdx
-		self:setSelection( 3 )
-		self:setLiftUp( not isLowered )
-		self:setSelection( idx )
-	elseif tool.specialType == "Poettinger AlphaMotion" then
-		self:setLiftUp( not isLowered )
-	elseif tool.specialType == "Taarup Mower"           then
-		if self.setTransRot ~= nil then
-			self:setTransRot( isLowered )
-		end
-		if      self.mowerFoldingParts ~= nil 
-				and self.setIsArmDown      ~= nil then
-			for k, part in pairs(self.mowerFoldingParts) do
-				self:setIsArmDown( k, isLowered )
-			end
-		end
-	elseif tool.specialType == "Horsch SW3500 S"        then
-		if self.Go.down ~= isLowered then
-			if isLowered then
-				self:aiLower( )
-			else
-				self:aiRaise( )
-			end
-		end
-	elseif self.setAIImplementsMoveDown ~= nil then
-		self:setAIImplementsMoveDown( isLowered )
-	elseif self.aiLower ~= nil and self.aiRaise ~= nil then 
-		if isLowered then
-			self:aiLower( )
-		else
-			self:aiRaise( )
-		end
-	--elseif tool.isFoldable then
-	--	if self:getIsFoldAllowed() and self.foldMiddleAIRaiseDirection ~= 0 then
-	--		if isLowered then
-	--			self:setFoldState(-self.foldMiddleAIRaiseDirection, true )
-	--		else
-	--			self:setFoldState(self.foldMiddleAIRaiseDirection, true )
-	--		end
-	--	end
-	end			
+		self:aiLower()
+	else
+		self:aiRaise()
+	end
 end
 
 ------------------------------------------------------------------------
 -- setToolsAreLowered
 ------------------------------------------------------------------------
 function AutoSteeringEngine.setToolsAreLowered( vehicle, isLowered, immediate, objectFilter )
-	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
+	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolParams ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
 		return
 	end
 	
-	local doItNow = false
-	for i=1,vehicle.aiveChain.toolCount do
-		if      isLowered 
-				and vehicle.aiveChain.tools[i].isCombine then
-			doItNow = true
+	local doItNow = vehicle.aiveHas.combine
+	
+	for i=1,vehicle.aiveChain.toolCount do		
+		if vehicle.aiveChain.tools[i].currentLowerState == nil then
+			doItNow = true			
 		end
-		vehicle.aiveChain.tools[i].lowerStateOnFruits = isLowered
+		vehicle.aiveChain.tools[i].targetLowerState = isLowered
 	end	
 	
-	if isLowered and SpecializationUtil.hasSpecialization(Combine, vehicle.specializations)	then
-		if vehicle.setIsTurnedOn ~= nil then
-			vehicle:setIsTurnedOn( isLowered )
-		end
-		if not vehicle.isThreshing then
-			vehicle:startThreshing( true )
-		end
-	end
-	
-	if isLowered then
-		vehicle:aiLower( )
-	else
-		vehicle:aiRaise( )
+	if isLowered and vehicle.aiveHas.combineVehicle and not vehicle:getIsTurnedOn() then
+		vehicle:setIsTurnedOn( true )
 	end
 	
 	if doItNow or immediate or objectFilter ~= nil then
 		for i=1,table.getn( vehicle.aiveChain.toolParams ) do
-			if     immediate
-					or vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].obj == objectFilter
-					or ( isLowered
-					 and vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].isCombine 
-					 and vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].obj.lastValidInputFruitType == FruitUtil.FRUITTYPE_UNKNOWN ) then
+			if immediate or vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].obj == objectFilter then
 				AutoSteeringEngine.ensureToolIsLowered( vehicle, isLowered, i )
 			end
 		end
@@ -7358,11 +6985,10 @@ function AutoSteeringEngine.raiseToolNoFruits( vehicle, objectFilter )
 	end
 	
 	for i=1,table.getn( vehicle.aiveChain.toolParams ) do
-		if  not vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].isCombine
-				and vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].obj == objectFilter then
-			vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].lowerStateOnFruits = false
+		if vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].obj == objectFilter then
+			vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].targetLowerState = false
 			AutoSteeringEngine.ensureToolIsLowered( vehicle, false, i )
-			vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].lowerStateOnFruits = true
+			vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].targetLowerState = true
 		end
 	end
 end
@@ -7420,29 +7046,18 @@ function AutoSteeringEngine.ensureToolIsLowered( vehicle, isLowered, indexFilter
 	
 	for i=1,table.getn( vehicle.aiveChain.toolParams ) do
 		local doit = false
-		if indexFilter == nil or indexFilter <= 0 then
-			if vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].lowerStateOnFruits ~= nil then
+		if     indexFilter == nil or indexFilter <= 0 then
+			doit = true
+		elseif i == indexFilter and vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].targetLowerState ~= nil then
+			if vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].targetLowerState == isLowered then
 				doit = true
 			end
-		elseif i == indexFilter then
-			if      vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].lowerStateOnFruits ~= nil 
-					and vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].lowerStateOnFruits == isLowered then
-				doit = true
-			end
+		else
+			doit = true
 		end
-		if doit then
-		--if AIVEGlobals.devFeatures > 0 then AIVehicleExtension.printCallstack() end
 		
-			vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].lowerStateOnFruits   = nil 
-			vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].acWaitUntilIsLowered = g_currentMission.time + vehicle.acDeltaTimeoutStart -- vehicle.acDeltaTimeoutRun
-			for _,implement in pairs(vehicle.attachedImplements) do
-				if      implement.object == vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].obj
-						and ( implement.object.needsLowering or implement.object.aiNeedsLowering )
-						then
-					vehicle.setJointMoveDown( vehicle, implement.jointDescIndex, isLowered, true )
-				end
-			end
-			AutoSteeringEngine.setToolIsLowered( vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i], isLowered )
+		if doit then
+			AutoSteeringEngine.setToolIsLowered( vehicle, vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i], isLowered )			
 		end
 	end
 	
@@ -7792,4 +7407,17 @@ end
 Cultivator.updateTick    = Utils.overwrittenFunction( Cultivator.updateTick, AutoSteeringEngine.updateTickCultivator )
 --SowingMachine.updateTick = Utils.overwrittenFunction( SowingMachine.updateTick, AutoSteeringEngine.updateTickSowingMachine )
 
+
+function AutoSteeringEngine.degToString( d )
+	if d == nil then
+		return "nil"
+	end
+	return tostring(math.floor( d + 0.5 )).."°"
+end
+function AutoSteeringEngine.radToString( r )
+	if r == nil then
+		return "nil"
+	end
+	return AutoSteeringEngine.degToString( math.deg( r ))
+end
 

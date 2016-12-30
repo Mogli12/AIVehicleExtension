@@ -20,11 +20,12 @@ _G[g_currentModName..".mogliBase"].newClass( "AIVehicleExtension", "acParameters
 source(Utils.getFilename("mogliHud.lua", g_currentModDirectory));
 _G[g_currentModName..".mogliHud"].newClass( "AIVEHud", "atHud" )
 ------------------------------------------------------------------------
-source(Utils.getFilename("FieldBitmap.lua", AtDirectory));
-source(Utils.getFilename("FrontPacker.lua", AtDirectory));
-source(Utils.getFilename("AutoSteeringEngine.lua", AtDirectory));
---source(Utils.getFilename("AITurnStrategyMogli.lua", AtDirectory));
---source(Utils.getFilename("AIDriveStrategyMogli.lua", AtDirectory));
+source(Utils.getFilename("AIVEEvents.lua", g_currentModDirectory));
+------------------------------------------------------------------------
+source(Utils.getFilename("FieldBitmap.lua", g_currentModDirectory));
+source(Utils.getFilename("FrontPacker.lua", g_currentModDirectory));
+source(Utils.getFilename("AutoSteeringEngine.lua", g_currentModDirectory));
+source(Utils.getFilename("AIDriveStrategyMogli.lua", g_currentModDirectory));
 
 ------------------------------------------------------------------------
 -- statEvent
@@ -50,7 +51,7 @@ function AIVehicleExtension:debugPrint( ... )
 	end	
 end
 
-AIVehicleExtension.saveAttributesMapping = { enabled				 = { xml = "acEnabled",		 tp = "B", default = false, always = true },
+AIVehicleExtension.saveAttributesMapping = { 
 																			upNDown				 = { xml = "acUTurn",			 tp = "B", default = false, always = true },
 																			rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false },
 																			headland				= { xml = "acHeadland",		tp = "B", default = false },
@@ -103,11 +104,6 @@ AIVehicleExtension.turnStageEnd	= { { 4, -1 },
 															{114, -2 },
 															{119, -2 },
 															{124, -1 }}
-
-------------------------------------------------------------------------
--- AICombine:updateAIMovement
-------------------------------------------------------------------------
-source(Utils.getFilename("AIVEMovement.lua", AtDirectory));
 
 ------------------------------------------------------------------------
 -- prerequisitesPresent
@@ -224,12 +220,12 @@ function AIVehicleExtension:initMogliHud()
 		AIVEHud.addButton(self, nil, nil, AIVehicleExtension.test4, nil, mogliCols,4, "Points" );
 	end
 
-	AIVEHud.addButton(self, "dds/off.dds",						"dds/on.dds",					 AIVehicleExtension.onStart,			 AIVehicleExtension.evalStart,			1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage );
+	AIVEHud.addButton(self, "dds/off.dds",						"dds/on.dds",					 AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,		1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage );
 	AIVEHud.addButton(self, "dds/ai_combine.dds",		 "dds/auto_combine.dds", AIVehicleExtension.onEnable,			AIVehicleExtension.evalEnable,		 2,1, "AUTO_TRACTOR_STOP", "AUTO_TRACTOR_START" );
 	AIVEHud.addButton(self, "dds/no_uturn2.dds",			"dds/uturn.dds",				AIVehicleExtension.setUTurn,			AIVehicleExtension.evalUTurn,			3,1, "AUTO_TRACTOR_UTURN_OFF", "AUTO_TRACTOR_UTURN_ON") ;
-	AIVEHud.addButton(self, "dds/next.dds",					 "dds/no_next.dds",			AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,	4,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
+--AIVEHud.addButton(self, "dds/next.dds",					 "dds/no_next.dds",			AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,	4,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
 	AIVEHud.addButton(self, "dds/no_pause.dds",			 "dds/pause.dds",				AIVehicleExtension.setPause,			AIVehicleExtension.evalPause,			5,1, "AUTO_TRACTOR_PAUSE_OFF", "AUTO_TRACTOR_PAUSE_ON", nil, AIVehicleExtension.getPauseImage );
-	AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds",AIVehicleExtension.onAutoSteer,	 AIVehicleExtension.evalAutoSteer,	6,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" );
+--AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds",AIVehicleExtension.onAutoSteer,	 AIVehicleExtension.evalAutoSteer,	6,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" );
 
 	AIVEHud.addButton(self, "dds/noHeadland.dds",		 "dds/headland.dds",		 AIVehicleExtension.setHeadland,	 AIVehicleExtension.evalHeadland,	 1,2, "AUTO_TRACTOR_HEADLAND_ON", "AUTO_TRACTOR_HEADLAND_OFF" );
 	AIVEHud.addButton(self, nil,											nil,										AIVehicleExtension.setBigHeadland,nil,												2,2, "AUTO_TRACTOR_HEADLAND", nil, AIVehicleExtension.getBigHeadlandText, AIVehicleExtension.getBigHeadlandImage );
@@ -267,7 +263,6 @@ function AIVehicleExtension:draw()
 	if self.atMogliInitDone then
 		local alwaysDrawTitle = false
 		if			self.acParameters ~= nil
-				and self.acParameters.enabled 
 				and ( self.aiIsStarted or self.acTurnStage >= 197 ) then
 			alwaysDrawTitle = true
 		end
@@ -276,13 +271,7 @@ function AIVehicleExtension:draw()
 		g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_TEXTHELPPANELON"), InputBinding.AUTO_TRACTOR_HELPPANEL);
 	end
 
-	if self.acLCtrlPressed then
-		if self.acParameters.enabled then
-			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_START"), InputBinding.AUTO_TRACTOR_ENABLE)
-		else
-			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_STOP"), InputBinding.AUTO_TRACTOR_ENABLE)
-		end
-
+	if     self.acLCtrlPressed then
 		if AIVehicleExtension.evalAutoSteer(self) then
 			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_STEER_ON"), InputBinding.AUTO_TRACTOR_STEER);
 		elseif self.acTurnStage >= 198 then
@@ -300,10 +289,18 @@ function AIVehicleExtension:draw()
 			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_STEERING_ON"), InputBinding.AUTO_TRACTOR_STEERING)
 		end
 	else
-		if self.acParameters.rightAreaActive then
-			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDERIGHT"), InputBinding.AUTO_TRACTOR_SWAP_SIDE)
+		if self.aiIsStarted then
+			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_STOP"), InputBinding.AUTO_TRACTOR_START_AIVE);
 		else
-			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDELEFT"), InputBinding.AUTO_TRACTOR_SWAP_SIDE)
+			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_START"), InputBinding.AUTO_TRACTOR_START_AIVE);
+		end
+
+		if not ( self.acLShiftPressed ) then
+			if self.acParameters.rightAreaActive then
+				g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDERIGHT"), InputBinding.AUTO_TRACTOR_SWAP_SIDE)
+			else
+				g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDELEFT"), InputBinding.AUTO_TRACTOR_SWAP_SIDE)
+			end
 		end
 	end	
 	
@@ -372,9 +369,6 @@ function AIVehicleExtension.showGui(self,on)
 end;
 
 function AIVehicleExtension:evalUTurn()
---if not self.acParameters.enabled then 
---	return false 
---end 
 	return not self.acParameters.upNDown;
 end;
 
@@ -383,7 +377,7 @@ function AIVehicleExtension:setUTurn(enabled)
 end;
 
 function AIVehicleExtension:evalHeadland()
-	return not ( ( self.acParameters.upNDown or not self.acParameters.enabled ) and self.acParameters.headland );
+	return not ( self.acParameters.upNDown and self.acParameters.headland );
 end
 
 function AIVehicleExtension:setHeadland(enabled)
@@ -404,9 +398,6 @@ function AIVehicleExtension:setIsHired(enabled)
 end 
 
 function AIVehicleExtension:evalCollision()
-	if not self.acParameters.enabled then 
-		return true 
-	end 
 	return not ( self.acParameters.upNDown and self.acParameters.collision );
 end
 
@@ -419,9 +410,6 @@ function AIVehicleExtension:setCollision(enabled)
 end
 
 function AIVehicleExtension:evalInverted()
-	if not self.acParameters.enabled then 
-		return true 
-	end 
 	return not self.acParameters.inverted
 end
 
@@ -438,9 +426,6 @@ function AIVehicleExtension:setFrontPacker(enabled)
 end
 
 function AIVehicleExtension:evalAreaLeft()
-	if not self.acParameters.enabled then 
-		return true 
-	end 
 	return not self.acParameters.leftAreaActive;
 end;
 
@@ -451,9 +436,6 @@ function AIVehicleExtension:setAreaLeft(enabled)
 end;
 
 function AIVehicleExtension:evalAreaRight()
-	if not self.acParameters.enabled then 
-		return true 
-	end 
 	return not self.acParameters.rightAreaActive;
 end;
 
@@ -467,14 +449,6 @@ function AIVehicleExtension:evalStart()
 	return not self.aiIsStarted or not AIVehicle.canStartAIVehicle(self);
 end;
 
-function AIVehicleExtension:onStart(enabled)
-	if self.aiIsStarted and not enabled then
-		self:stopAIVehicle()
-	elseif AIVehicle.canStartAIVehicle(self) and enabled then
-		self:startAIVehicle()
-	end
-end;
-
 function AIVehicleExtension:getStartImage()
 	if self.aiIsStarted then
 		return "dds/on.dds"
@@ -485,13 +459,10 @@ function AIVehicleExtension:getStartImage()
 end
 
 function AIVehicleExtension:evalEnable()
-	return not self.acParameters.enabled;
+	return not self.aiveIsStarted;
 end;
 
 function AIVehicleExtension:onEnable(enabled)
-	if not self.aiIsStarted then
-		self.acParameters.enabled = enabled;
-	end;
 end;
 
 function AIVehicleExtension:setWidthUp()
@@ -533,17 +504,11 @@ function AIVehicleExtension:getTurnIndexComp()
 end
 
 function AIVehicleExtension:evalSafetyUp()
-	if not self.acParameters.enabled then 
-		return true 
-	end 
 	local enabled = self.acParameters.safetyFactor < 10
 	return enabled
 end
 
 function AIVehicleExtension:evalSafetyDown()
-	if not self.acParameters.enabled then 
-		return true 
-	end 
 	local enabled = self.acParameters.safetyFactor > 0
 	return enabled
 end
@@ -557,17 +522,11 @@ function AIVehicleExtension:setSafetyDown(enabled)
 end
 
 function AIVehicleExtension:evalAngleUp()
-	if not self.acParameters.enabled then 
-		return true 
-	end 
 	local enabled = self.acParameters.angleFactor < 1;
 	return enabled
 end
 
 function AIVehicleExtension:evalAngleDown()
-	if not self.acParameters.enabled then 
-		return true 
-	end 
 	local enabled = self.acParameters.angleFactor >= 0.1;
 	return enabled
 end
@@ -618,7 +577,7 @@ end
 
 function AIVehicleExtension:evalTurnStage()
 	if self.aiIsStarted then
-		if self.acParameters.enabled then
+		if self.aiveIsStarted then
 			for _,ts in pairs( AIVehicleExtension.turnStageNoNext ) do
 				if self.acTurnStage == ts then
 					return false
@@ -640,7 +599,7 @@ function AIVehicleExtension:nextTurnStage()
 end
 
 function AIVehicleExtension:evalPause()
-	if not self.acParameters.enabled then 
+	if not self.aiveIsStarted then 
 		return true 
 	end 
 	if not self.aiIsStarted then
@@ -653,7 +612,7 @@ function AIVehicleExtension:evalPause()
 end
 
 function AIVehicleExtension:setPause(enabled)
-	if not self.acParameters.enabled then 
+	if not self.aiveIsStarted then 
 		return	
 	end 
 	if not self.aiIsStarted then
@@ -676,8 +635,28 @@ function AIVehicleExtension:setPause(enabled)
 end
 
 
+function AIVehicleExtension:setAIVEStarted(enabled)
+	if enabled and not self.aiIsStarted and AIVehicle.canStartAIVehicle(self) then
+		self.aiveIsStarted = true 
+		if g_server ~= nil then
+			g_server:broadcastEvent(AIVEStartEvent:new(self,enabled), nil, nil, self)
+		else
+			g_client:getServerConnection():sendEvent(AIVEStartEvent:new(self,enabled))
+		end
+		AIVehicleExtension.setInt32Value( self, "speed2Level", 2 )
+		self:startAIVehicle()
+	elseif not enabled and self.aiveIsStarted then
+		if self.aiIsStarted then
+			self:stopAIVehicle()
+		else
+			self.aiveIsStarted = false 
+		end
+	end
+end
+
+
 function AIVehicleExtension:getPauseImage()
-	if not self.acParameters.enabled then 
+	if not self.aiveIsStarted then 
 		return "empty.dds"
 	end 
 	if not self.aiIsStarted then
@@ -690,9 +669,6 @@ function AIVehicleExtension:getPauseImage()
 end
 
 function AIVehicleExtension:evalAutoSteer()
-	if not self.acParameters.enabled then 
-		return true 
-	end 
 	return self.aiIsStarted or self.acTurnStage < 198
 end
 
@@ -723,8 +699,7 @@ end
 
 function AIVehicleExtension:onRaiseImpl(enabled)
 	if		 self.aiIsStarted 
-			or self.acParameters == nil
-			or not self.acParameters.enabled then
+			or self.acParameters == nil then
 	-- do nothing
 	else
 		AIVehicleExtension.setAIImplementsMoveDown(self,enabled,true)
@@ -745,8 +720,7 @@ end
 
 function AIVehicleExtension:getRaiseImplImage()
 	if		 self.aiIsStarted 
-			or self.acParameters == nil
-			or not self.acParameters.enabled then
+			or self.acParameters == nil then
 		return "empty.dds"
 	elseif self.acImplementsMoveDown then
 		return "dds/raise_impl.dds"
@@ -767,9 +741,7 @@ end
 function AIVehicleExtension:getTurnModeImage()
 	local img = "empty.dds"
 	
-	if not ( self.acParameters.enabled ) then 
-		--img = "dds/bigUTurn.dds"
-	elseif self.acTurnMode == "8" then
+	if     self.acTurnMode == "8" then
 		img = "dds/bigUTurn8.dds"
 	elseif self.acTurnMode == "O" then
 		img = "dds/noRevUTurn.dds"
@@ -800,14 +772,11 @@ function AIVehicleExtension:getTurnModeImage()
 end
 
 function AIVehicleExtension:getTurnModeText(old)
-	if not self.acParameters.enabled then
-		return "" 
-	end 
 	return AIVEHud.getText("AUTO_TRACTOR_TURN_MODE_"..self.acTurnMode)
 end
 
 function AIVehicleExtension:setBigHeadland()
-	if self.acParameters.upNDown or not self.acParameters.enabled then
+	if self.acParameters.upNDown then
 		self.acParameters.bigHeadland = not self.acParameters.bigHeadland
 	end
 end
@@ -815,7 +784,7 @@ end
 function AIVehicleExtension:getBigHeadlandImage()
 	local img = "empty.dds"
 	
-	if self.acParameters ~= nil and ( self.acParameters.upNDown or not self.acParameters.enabled ) and self.acParameters.headland then
+	if self.acParameters ~= nil and self.acParameters.upNDown and self.acParameters.headland then
 		if self.acParameters.bigHeadland then		
 			img = "dds/big_headland.dds"
 		else
@@ -829,7 +798,7 @@ end
 function AIVehicleExtension:getBigHeadlandText(old)
 	if			self.acDimensions ~= nil 
 			and self.acDimensions.headlandDist ~= nil
-			and ( self.acParameters.upNDown or not self.acParameters.enabled ) then
+			and self.acParameters.upNDown then
 		new = string.format(old..": %0.2fm",self.acDimensions.headlandDist );
 	else
 		new = old
@@ -845,6 +814,9 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:keyEvent(unicode, sym, modifier, isDown)
 	if self.isEntered and self.isClient then
+		if sym == Input.KEY_lshift then
+			self.acLShiftPressed = isDown
+		end
 		if sym == Input.KEY_lctrl then
 			self.acLCtrlPressed = isDown
 		end
@@ -859,6 +831,10 @@ end
 ------------------------------------------------------------------------
 
 function AIVehicleExtension:update(dt)
+
+	if self.aiveIsStarted and not self.aiIsStarted then
+		self.aiveIsStarted = false
+	end
 
 	if self.setIsReverseDriving ~= nil then
 		self.acParameters.inverted = self.isReverseDriving
@@ -901,21 +877,20 @@ function AIVehicleExtension:update(dt)
 			end
 			AIVehicleExtension.showGui( self, not guiActive );
 		end;
-		if      AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_START_AIVE" )
-				and not self.aiIsStarted 
-				and AIVehicle.canStartAIVehicle(self) then
-			if not self.acParameters.enabled then
-				self.acParameters.enabled = true
-				AIVehicleExtension.sendParameters(self);
+		if      AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_START_AIVE" ) then
+			if self.aiIsStarted then
+				if self.aiveIsStarted then
+					self:stopAIVehicle()
+				end
+			elseif AIVehicle.canStartAIVehicle(self) and self.acParameters ~= nil then
+				AIVehicleExtension.setAIVEStarted( self, true )
 			end
-			self:startAIVehicle()
 		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_SWAP_SIDE" ) then
 			self.acParameters.leftAreaActive	= self.acParameters.rightAreaActive
 			self.acParameters.rightAreaActive = not self.acParameters.leftAreaActive
 			AIVehicleExtension.sendParameters(self);
 			if self.isServer then AutoSteeringEngine.setChainStraight( self ) end
 			if			self.acParameters ~= nil
-					and self.acParameters.enabled
 					and not ( self.aiIsStarted ) then
 				if self.acParameters.leftAreaActive then
 					AIVehicle.aiRotateLeft(self);
@@ -935,8 +910,6 @@ function AIVehicleExtension:update(dt)
 		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_STEERING" ) then
 			self.acParameters.noSteering = not self.acParameters.noSteering
 			AIVehicleExtension.sendParameters(self);
-		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_ENABLE" ) then
-			AIVehicleExtension.onEnable( self, not self.acParameters.enabled )
 		elseif AIVehicleExtension.mbHasInputEvent( "IMPLEMENT_EXTRA" ) then
 			self.acCheckPloughSide = true
 		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_RAISE" ) then
@@ -963,7 +936,7 @@ function AIVehicleExtension:update(dt)
 				end
 				self.acParameters.speedFactor = Utils.clamp( cs / maxSpeed, 0.1, 1.1 )
 			end
-			if self.acParameters ~= nil and self.acParameters.enabled and self.aiIsStarted then
+			if self.aiveIsStarted then
 				self:setCruiseControlMaxSpeed( self.acParameters.speedFactor * AutoSteeringEngine.getToolsSpeedLimit( self ) )
 			end
 				
@@ -993,7 +966,7 @@ function AIVehicleExtension:update(dt)
 			and self.atMogliInitDone 
 			and self.atHud.GuiActive then	
 
-		if self.acParameters ~= nil and self.acParameters.enabled then			
+		if self.acParameters ~= nil and self.aiveIsStarted then			
 			if			AIVEGlobals.showTrace > 0 
 					and self.acDimensions ~= nil
 					and ( self.aiIsStarted or self.acTurnStage >= 198 ) then	
@@ -1018,417 +991,6 @@ function AIVehicleExtension:update(dt)
 end
 
 ------------------------------------------------------------------------
--- updateTick
-------------------------------------------------------------------------
-function AIVehicleExtension:updateTick( dt )
-
-	local lastIamDetecting = self.acIamDetecting
-	self.acIamDetecting = false
-
-	if self.isServer and self.acParameters ~= nil and self.acParameters.enabled then
-		AIVehicleExtension.checkState( self )
-		
-		local statDt			= 0
-		local statEventID = "updateAIMovement"
-		local prevHook
-
-		if AIVEGlobals.showStat > 0 then
-			prevHook = { debug.gethook() }
-			local function hook()
-				statDt = statDt + 1
-			end
-			debug.sethook( hook, "l", 1000 )
-		end
-		
-		local function closeEvent( name )
-			if prevHook ~= nil then
-				debug.sethook( prevHook[1], prevHook[2], prevHook[3] )		
-				prevHook = nil
-				AIVehicleExtension.statEvent( self, name, statDt )
-			end
-		end
-
-		local doGreenDirectCut = false
-		if not ( self:getIsActive() ) or AIVehicleExtension.noGreenDirectCut then
-		-- nothing
-		elseif ZZZ_greenDirectCut == nil then
-			AIVehicleExtension.noGreenDirectCut = true
-		else
-			doGreenDirectCut = AutoSteeringEngine.greenDirectCut( self )
-		end
-	
-	
-		if			self.isEntered 
-				and self.isClient 
-				and self:getIsActive() 
-				and not self.acParameters.noSteering
-				and ( self.aiIsStarted or self.acTurnStage >= 198 ) then
-			self.acAxisSide = InputBinding.getDigitalInputAxis(InputBinding.AXIS_MOVE_SIDE_VEHICLE)
-			if InputBinding.isAxisZero(self.acAxisSide) then
-				self.acAxisSide = InputBinding.getAnalogInputAxis(InputBinding.AXIS_MOVE_SIDE_VEHICLE)
-			end
-		else
-			self.acAxisSide = 0
-		end
-
-		if			self.aiTractorDirectionNode ~= nil
-				and not ( self.articulatedAxis ~= nil 
-							and self.articulatedAxis.componentJoint ~= nil
-							and self.articulatedAxis.anchorActor ~= nil
-							and self.articulatedAxis.componentJoint.jointNode ~= nil )
-				and getParent( self.acRefNode ) ~= self.aiTractorDirectionNode then				
-			link( self.aiTractorDirectionNode, self.acRefNode )
-			self.acDimensions = nil
-			AutoSteeringEngine.checkTools1( self, true )
-		end
-		
-		local inverted = self.acParameters.inverted
-	--if self.isReverseDriving then
-	--	inverted = not inverted
-	--end
-		if self.acRefNodeIsInverted ~= inverted then
-			self.acRefNodeIsInverted = inverted
-			if inverted then
-				setRotation( self.acRefNode, 0, math.pi, 0 )
-			else
-				setRotation( self.acRefNode, 0, 0, 0 )
-			end
-			self.acDimensions = nil
-			AutoSteeringEngine.checkTools1( self, true )
-		end
-		
-		if not ( ( self.aiIsStarted and self.acParameters.enabled )
-					or self.acTurnStage>= 198 ) then
-			AIVehicleExtension.setStatus( self, 0 )
-		end
-		
-		if			not self.aiIsStarted 
-				and math.abs(self.acAxisSide) <= 0.1
-				and self.isServer
-				and self.acTurnStage				>= 198 then
-			AIVehicleExtension.autoSteer(self,dt)
-		end
-		
-		if self.aiIsStarted then
-			self.realForceAiDriven = true
-			if self.acPause then
-				self:setCruiseControlState(Drivable.CRUISECONTROL_STATE_OFF);		
-			else
-				self:setCruiseControlState(Drivable.CRUISECONTROL_STATE_ACTIVE);		
-			end
-		elseif self.acCheckPloughSide then
-			self.acCheckPloughSide = nil
-			for _,implement in pairs(self.attachedImplements) do
-				AIVehicleExtension.getLeftRightFromImplement( self, implement )
-			end
-		end
-		
-		if self.isServer then
-			if self.aiIsStarted then
-				if self.isHired and not self.isHirableBlocked then
-					local difficultyMultiplier = g_currentMission.missionInfo.buyPriceMultiplier;
-					g_currentMission:addSharedMoney(-dt*difficultyMultiplier*self.pricePerMS, "wagePayment");
-					g_currentMission:addMoneyChange(-dt*difficultyMultiplier*self.pricePerMS, FSBaseMission.MONEY_TYPE_AI)
-				end
-						
-				if self.isBroken then
-					self:stopAIVehicle()
-				end
-				self.acDtSum = self.acDtSum + dt
-				
-				local wx, wy, wz = getWorldTranslation( self.acRefNode )
-				local doit = false
-				
-				if		 AIVEGlobals.maxDtSum <= 0 then
-					doit = true
-				elseif self.aseCurrentFieldCo ~= nil then
-					doit = true
-				elseif self.acHighPrec and self.acDtSum + self.acDtSum > AIVEGlobals.maxDtSum then 
-					doit = true
-				elseif self.acDtSum > AIVEGlobals.maxDtSum then 
-					doit = true
-				else
-					if		 self.acAiPos == nil
-							or Utils.vector2LengthSq( self.acAiPos[1] - wx, self.acAiPos[3] - wz ) > AIVEGlobals.maxDtDist then
-						doit = true
-					end
-				end 
-				
-				if doit then
-					self.acAiNextDtIsAfter = true
-					self.acAiPos = { wx, wy, wz }
-					statEventID = "updateAIMovement_X"
-					
-					if AIVEGlobals.devFeatures <= 0 then
-						AIVEHud.setInfoText( self )
-						if self.acDimensions ~= nil and self.acDimensions.distance ~= nil then
-							AIVEHud.setInfoText( self, AIVEHud.getText( "AUTO_TRACTOR_WORKWIDTH" ) .. string.format(" %0.2fm", self.acDimensions.distance+self.acDimensions.distance) )
-						end
-						if self.acTurnStage ~= nil and self.acTurnStage ~= 0 and self.acTurnStage < 197 then
-							AIVEHud.setInfoText( self, AIVEHud.getInfoText(self) .. string.format(" (%i)", self.acTurnStage) )
-						end
-					end
-					
-					AIVehicleExtension.newUpdateAIMovement( self, self.acDtSum )
-					if self.aseSafetyFactor ~= nil then
-						self.acParameters.safetyFactor = self.aseSafetyFactor
-					end
-					
-					if AIVEGlobals.maxDtSum > 0 then
-						self.acDtSum = Utils.clamp( self.acDtSum - AIVEGlobals.maxDtSum, 0, AIVEGlobals.maxDtSum )
-					else
-						self.acDtSum = 0
-					end
-				else
-					AutoSteeringEngine.steerContinued( self )
-					AutoSteeringEngine.driveContinued( self )
-					self.acIamDetecting = lastIamDetecting
-				end
-			else
-				self.acDtSum = 0
-			end
-		end
-		
-		if self.acTurnStageSent ~= self.acTurnStage then
-			self.acLast = nil
-			AIVehicleExtension.setInt32Value( self, "turnStage", self.acTurnStage )
-		end		
-		
-		if doGreenDirectCut then
-			AutoSteeringEngine.greenDirectCut( self, true )
-		end
-		
-		closeEvent( statEventID )
-	end	
-end
-
-------------------------------------------------------------------------
--- AIVehicle:updateTick
-------------------------------------------------------------------------
-function AIVehicleExtension:newUpdateTick( superFunc, dt )
-	if self.acParameters ~= nil and self.acParameters.enabled then
-	-- do nothing
-		AIVehicleExtension.resetAIMarker( self )
-	else
-	--if self.aiIsStarted and self.acParameters ~= nil and not ( self.acParameters.isHired ) then 
-	--	if			self.capacity	~= nil
-	--			and self.capacity	> 0 
-	--			and self.fillLevel ~= nil
-	--			and self.fillLevel <= 0 then
-	--		self:stopAIVehicle( )
-	--	elseif self.attachedImplements ~= nil and table.getn( self.attachedImplements ) > 0 then
-	--		for _,implement in pairs(self.attachedImplements) do
-	--			local obj = implement.object
-	--			if			obj					 ~= nil
-	--					and obj.capacity	~= nil
-	--					and obj.capacity	> 0 
-	--					and obj.fillLevel ~= nil
-	--					and obj.fillLevel <= 0 then
-	--				self:stopAIVehicle( )
-	--				break 
-	--			end
-	--		end 
-	--	end
-	--end 
-	
-		AIVehicleExtension.shiftAIMarker(self)	
-		
-		return superFunc( self, dt )
-	end
-end
-
-------------------------------------------------------------------------
--- processImplementsOfImplement
-------------------------------------------------------------------------
-function AIVehicleExtension.processImplementsOfImplement(self,object,turnOn)
-	if object.attachedImplements ~= nil and table.getn( object.attachedImplements ) > 0 then
-		for _,implement in pairs(object.attachedImplements) do
-			local obj = implement.object
-			if obj ~= nil then
-			--if turnOn then
-			--	AIVehicle.addCollisionTrigger(self, obj);
-			--else
-			--	AIVehicle.removeCollisionTrigger(self, obj);
-			--end
-
-				AIVehicleExtension.processImplementsOfImplement(self,obj,turnOn)
-			end
-		end
-	end
-end
-
-------------------------------------------------------------------------
--- AIVehicle:attachImplement
-------------------------------------------------------------------------
---function AIVehicleExtension:newAttachImplement(implement)
-function AIVehicleExtension:attachImplement(implement)
-	self.acSpeedFactorVerified = false
-	if self.acParameters ~= nil and self.acParameters.enabled then 
-		local object = implement.object
-		if object ~= nil and self.aiIsStarted then
-			AIVehicleExtension.processImplementsOfImplement(self,object,true)
-			AutoSteeringEngine.setToolsAreTurnedOn( self, true, true, object )
-		end
-		self.aiToolsDirty = true		
-		self.acCheckPloughSide = true
-	else
-		AIVehicleExtension.resetAIMarker( self )	
-	end 
-end
-
-------------------------------------------------------------------------
--- AIVehicle:detachImplement
-------------------------------------------------------------------------
---function AIVehicleExtension:newDetachImplement(implementIndex)
-function AIVehicleExtension:detachImplement(implementIndex)
-	self.acSpeedFactorVerified = false
-	if self.acParameters ~= nil and self.acParameters.enabled then 
-		local object = self.attachedImplements[implementIndex].object
-		if object ~= nil and self.aiIsStarted then
-			AIVehicleExtension.processImplementsOfImplement(self,object,false)
-			AutoSteeringEngine.setToolsAreTurnedOn( self, false, true, object )
-		end
-		self.aiToolsDirty = true
-	else
-		AIVehicleExtension.resetAIMarker( self )	
-	end
-end
-
-------------------------------------------------------------------------
--- getLeftRightFromImplement
-------------------------------------------------------------------------
-function AIVehicleExtension:getLeftRightFromImplement( implement )
-
-	if		 implement				== nil
-			or implement.object ==	nil then
-		return 
-	end
-
-	local invertActive = false
-	for _, spec in pairs(implement.object.specializations) do		
-		if spec.aiInvertsMarkerOnTurn ~= nil then		
-			if spec.aiInvertsMarkerOnTurn(implement.object, self.acParameters.leftAreaActive) then
-				invertActive = true
-				break
-			end	
-		end	
-	end
-	
-	if invertActive then
-		self.acParameters.leftAreaActive	= self.acParameters.rightAreaActive
-		self.acParameters.rightAreaActive = not self.acParameters.leftAreaActive
-		AIVehicleExtension.sendParameters(self);
-		if self.isServer then AutoSteeringEngine.setChainStraight( self ) end
-	end
-end
-
-------------------------------------------------------------------------
--- AIVehicle:startAIVehicle
-------------------------------------------------------------------------
-function AIVehicleExtension:onStartAiVehicle()
-
-	AutoSteeringEngine.invalidateField( self )		
-	AutoSteeringEngine.checkTools1( self, true )
-	AutoSteeringEngine.saveDirection( self, false, true )
-
-	self.acClearTraceAfterTurn = true
-	AIVehicleExtension.resetAIMarker( self )
-	
-	-- just to be safe...
-	if not ( self.acParameters ~= nil and self.acParameters.enabled ) then
-		return 
-	end
-	
-	AIVehicleExtension.initMogliHud(self)
-	if not ( self.acSpeedFactorVerified ) then
-		self.acSpeedFactorVerified = true
-		local maxSpeed = 3.6 * AutoSteeringEngine.getToolsSpeedLimit( self )
-		local cs = math.min( math.floor( 0.5 + maxSpeed * self.acParameters.speedFactor ), 3.6 * AIVEGlobals.maxSpeed )
-		self.acParameters.speedFactor = cs / maxSpeed
-	end
-		
-	self.acDtSum					 = 0
-	self.acCCSpeed				 = self.cruiseControl.speed
-	self.realForceAiDriven = true
-
-	AutoSteeringEngine.invalidateField( self )
-	
-	if not self.aiIsStarted then
-		g_currentMission.missionStats:updateStats("workersHired", 1);		
-		self.aiIsStarted = true;
-	
-		local hotspotX, _, hotspotZ = getWorldTranslation(self.rootNode);		
-		self.mapAIHotspot = g_currentMission.ingameMap:createMapHotspot("mapAIHotspot", "dataS2/menu/hud/hud_pda_spot_helper.png", hotspotX, hotspotZ, nil, nil, false, false, false, self.rootNode);		
-		
-		self:setCruiseControlState(Drivable.CRUISECONTROL_STATE_ACTIVE);		
-		
-		if self.isServer then		
-			self.mapAIHotspot.enabled = false;		
-			AIVehicle.addCollisionTrigger(self, self);
-		end;
-	
-		AutoSteeringEngine.checkTools1( self, true )
-	
-		AIVehicleExtension.processImplementsOfImplement(self,self,true)
-		AutoSteeringEngine.setToolsAreTurnedOn( self, true, false )
-	end;
-	
-	AIVehicleExtension.roueInitWheels( self );
-	
-	self.acHighPrec		= false
-	self.acDimensions	= nil;
-	self.acTurnStage	 = -3;
-	self.turnTimer		 = self.acDeltaTimeoutWait;
-	self.aiRescueTimer = self.acDeltaTimeoutStop;
-	self.waitForTurnTime = 0;
-	self.acLastAcc			 = 0;
-	self.acLastWantedSpeed = 0;
-	
-	AIVehicleExtension.setInt32Value( self, "speed2Level", 2 )
-	
-	if AIVehicleUtil.invertsMarkerOnTurn( self, self.acParameters.leftAreaActive ) then
-		if self.acParameters.leftAreaActive then
-			AIVehicle.aiRotateLeft(self);
-		else
-			AIVehicle.aiRotateRight(self);
-		end			
-	end
-	
-	AIVehicleExtension.sendParameters(self);
-	
-	self.acStat = nil		
-	self.acLast = nil
-		
-end
-
-------------------------------------------------------------------------
--- AIVehicle:stopAIVehicle
-------------------------------------------------------------------------
---local showOnce17 = true
-function AIVehicleExtension:onStopAiVehicle()
---if AIVEGlobals.devFeatures > 0 then AIVEHud.printCallstack() end
-	
-	if self.acParameters ~= nil and self.acParameters.enabled then
-		self.realForceAiDriven = false
-				
-		if self.acStat ~= nil then
-			for n,s in pairs(self.acStat) do 
-				print(string.format("%s: %.0f (%.0f / %.0f)", n, s.t/s.n, s.t, s.n))
-			end
-		end
-		AutoSteeringEngine.invalidateField( self )		
-		AIVehicleExtension.roueReset( self )
-		if self.acCCSpeed ~= nil then
-			self:setCruiseControlMaxSpeed( self.acCCSpeed )
-		end
-	end
-	
-	AIVehicleExtension.resetAIMarker( self )
-	self.acImplementsMoveDown = false
-	
-end
-
-------------------------------------------------------------------------
 -- AIVehicleExtension.shiftAIMarker
 ------------------------------------------------------------------------
 function AIVehicleExtension:shiftAIMarker()
@@ -1439,7 +1001,7 @@ function AIVehicleExtension:shiftAIMarker()
 			and self.turnStage		 == 0 
 			and self.acParameters ~= nil 
 			and self.acParameters.headland 
-			and not ( self.acParameters.enabled ) then 
+			and not ( self.aiveIsStarted ) then 
 		if self.acDimensions == nil then
 			AIVehicleExtension.calculateDimensions( self )
 		end
@@ -1543,9 +1105,7 @@ function AIVehicleExtension:checkAvailableTurnModes( noEventSend )
 
 	self.acTurnModes = {}
 	
-	if not ( self.acParameters.enabled ) then 
-		table.insert( self.acTurnModes, "T" )
-	elseif self.acParameters.upNDown then
+	if self.acParameters.upNDown then
 		if rev	then
 			if AIVEGlobals.enableAUTurn > 0 and sut then
 				table.insert( self.acTurnModes, "A" )
@@ -1651,7 +1211,7 @@ function AIVehicleExtension:checkState( onlyMaxLooking )
 		maxLooking = self.acDimensions.maxSteeringAngle
 	end
 	
-	if self.isServer and self.acParameters.enabled then 
+	if self.isServer and self.aiveIsStarted then 
 		AutoSteeringEngine.initTools( self, maxLooking, self.acParameters.leftAreaActive, self.acParameters.widthOffset, self.acParameters.safetyFactor, h, c, self.acTurnMode );
 	end
 end
@@ -2075,15 +1635,6 @@ function AIVehicleExtension.calculateDistances( self )
 
 	self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack = AutoSteeringEngine.checkTools( self );
 	
-	if self.aiIsStarted and self.acParameters.enabled and self.acHasRoueSpec and self.acTurnStage <= 0 and self.acDimensions.zBack < 0 and	AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then 
-		local zShift, ms = AIVehicleExtension.roueSet( self, self.acDimensions.zBack, self.acDimensions.maxLookingAngle );
-		if math.abs( zShift ) > 1E-3 then
-			wb = wb + zShift;
-			AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.acParameters.inverted, self.acParameters.frontPacker );
-			self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack = AutoSteeringEngine.checkTools( self );
-		end
-	end
-
 	self.acDimensions.distance0				= self.acDimensions.distance;
 	if self.acParameters.widthOffset ~= nil then
 		self.acDimensions.distance			 = self.acDimensions.distance0 + self.acParameters.widthOffset;
@@ -2303,7 +1854,7 @@ end
 function AIVehicleExtension:setNextTurnStage(noEventSend)
 
 	if AIVehicleExtension.evalTurnStage(self) then
-		if self.acParameters.enabled then
+		if self.aiveIsStarted then
 			if self.acTurnStage <= 0 then
 			
 				self.acTurn2Outside = false
@@ -2486,8 +2037,6 @@ function AIVehicleExtension:sendParameters(noEventSend)
 	end
 end;
 
-source(Utils.getFilename("AIVEEvents.lua", AtDirectory));
-
 
 if AIVEGlobals.devFeatures > 0 then
 	addConsoleCommand("acReset", "Reset global AIVehicleExtension variables to defaults.", "acReset", AIVehicleExtension);
@@ -2617,5 +2166,304 @@ function AIVehicleExtension.test4( self )
 	end
 end
 
-AIVehicle.updateTick = Utils.overwrittenFunction( AIVehicle.updateTick, AIVehicleExtension.newUpdateTick );
+
+
+--==============================================================				
+--==============================================================			
+------------------------------------------------------------------------
+-- AIVehicleExtension:detectAngle
+------------------------------------------------------------------------
+function AIVehicleExtension:detectAngle( smooth )
+	return AutoSteeringEngine.processChain( self, smooth, true, ( self.acTurnStage == 0 or self.acTurnStage == 199 ) )
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:getMaxAngleWithTool
+------------------------------------------------------------------------
+function AIVehicleExtension:getMaxAngleWithTool( outside )
+	
+	local angle
+	local toolAngle = AutoSteeringEngine.getToolAngle( self );	
+	if not self.acParameters.leftAreaActive then
+		toolAngle = -toolAngle
+	end
+
+	if outside then
+		angle = -self.acDimensions.maxSteeringAngle + math.min( 2 * math.max( -toolAngle - AIVEGlobals.maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle );	-- 75° => 1,3089969389957471826927680763665
+	else
+		angle =  self.acDimensions.maxSteeringAngle - math.min( 2 * math.max(  toolAngle - AIVEGlobals.maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle );	-- 75° => 1,3089969389957471826927680763665
+	end
+
+	if AIVEGlobals.devFeatures > 0 and math.abs( toolAngle ) >= AIVEGlobals.maxToolAngle - 0.01745 then
+		AIVehicleExtension.debugPrint( self, string.format("Tool angle: a: %0.1f° ms: %0.1f° to: %0.1f°", math.deg(angle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
+	end
+
+	
+	return angle
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:waitForAnimTurnStage
+------------------------------------------------------------------------
+function AIVehicleExtension:waitForAnimTurnStage()
+	if     self.acTurnStage <  0
+			or ( self.acTurnStage == 0 and AIVEGlobals.raiseNoFruits > 0 )
+			or self.acTurnStage == 3
+			or self.acTurnStage == 8
+			or self.acTurnStage == 26 or self.acTurnStage == 27
+			or self.acTurnStage == 38
+			or self.acTurnStage == 48 or self.acTurnStage == 49
+			or self.acTurnStage == 59 or self.acTurnStage == 60 or self.acTurnStage == 61 
+			or self.acTurnStage == 77 or self.acTurnStage == 78 or self.acTurnStage == 79 then
+		return true
+	end
+	return false
+end			
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:checkCorrectField
+------------------------------------------------------------------------
+function AIVehicleExtension:checkIsCorrectField()
+--local wx,_,wz = localToWorld( self.aseChain.refNode, 0.5 * ( self.aseActiveX + self.aseOtherX ), 0, 0.5 * ( self.aseStart + self.aseDistance ) )
+--if self.aseCurrentField ~= nil and not AutoSteeringEngine.checkField( self, wx, wz ) then
+--	local checkFunction, areaTotalFunction = AutoSteeringEngine.getCheckFunction( self )
+--	if AutoSteeringEngine.checkFieldNoBuffer( wx, wz, checkFunction ) then
+--		return false 
+--	end
+--end
+	
+	return true
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:stopWaiting
+------------------------------------------------------------------------
+function AIVehicleExtension:stopWaiting( angle )
+	local a
+	if self.acParameters.leftAreaActive then
+		a = angle 
+	else	 
+		a = -angle 
+	end
+	
+	if math.abs( a - AutoSteeringEngine.currentSteeringAngle( self, self.acParameters.inverted ) ) < 0.05236 then -- 3° 
+		return true 
+	end
+	return false
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:navigationFallbackRetry
+------------------------------------------------------------------------
+function AIVehicleExtension:navigationFallbackRetry( uTurn )
+	local x, z, allowedToDrive = AIVehicleExtension.getTurnVector( self, uTurn )
+	local a = AutoSteeringEngine.normalizeAngle( math.pi - AutoSteeringEngine.getTurnAngle( self )	)
+	local angle = 0
+
+	if z < 1 and math.abs( a ) > 0.9 * math.pi then
+		angle = 0
+	elseif x > 0 then
+		-- D: turn away from target point for next try
+		angle = -self.acDimensions.maxSteeringAngle
+	else
+		-- E: turn away from target point for next try
+		angle =  self.acDimensions.maxSteeringAngle
+	end
+	
+	return angle
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:navigationFallbackRotateMinus
+------------------------------------------------------------------------
+function AIVehicleExtension:navigationFallbackRotateMinus( uTurn )
+	local angle = -self.acDimensions.maxSteeringAngle					
+	if not self.acParameters.leftAreaActive then
+		angle = -angle;		
+	end	
+	return angle
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:getTurnVector
+------------------------------------------------------------------------
+function AIVehicleExtension:getTurnVector( uTurn, turn2Outside )
+
+	local x, z = AutoSteeringEngine.getTurnVector( self, Utils.getNoNil( uTurn, false ), Utils.getNoNil( turn2Outside, self.acTurn2Outside ) )
+ 
+	return x, z, true
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:getToolAngle
+------------------------------------------------------------------------
+function AIVehicleExtension:getToolAngle()
+
+	local toolAngle = AutoSteeringEngine.getToolAngle( self )
+	if not self.acParameters.leftAreaActive then
+		toolAngle = -toolAngle;
+	end
+	
+	return toolAngle
+end
+	
+------------------------------------------------------------------------
+-- AIVehicleExtension:getStraighBackwardsAngle
+------------------------------------------------------------------------
+function AIVehicleExtension:getStraighBackwardsAngle( iTarget )
+
+	local target = math.rad( Utils.getNoNil( iTarget, 0 ) )
+
+	local turnAngle = AutoSteeringEngine.getTurnAngle( self ) 
+	if self.acParameters.leftAreaActive then
+		turnAngle = -turnAngle
+	end
+	
+	local ta  = turnAngle
+	turnAngle = AutoSteeringEngine.normalizeAngle( turnAngle - target )
+	
+	AIVehicleExtension.debugPrint( self, "gSBA init: target: "..AutoSteeringEngine.degToString( iTarget ).." current: "..AutoSteeringEngine.radToString( ta ).." delta: "..AutoSteeringEngine.radToString( turnAngle ))
+	
+	return AIVehicleExtension.getStraighBackwardsAngle2( self, turnAngle, target )
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:getStraighBackwardsAngle2
+------------------------------------------------------------------------
+function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
+	
+	local taJoints = AutoSteeringEngine.getTaJoints1( self, self.acRefNode, self.acDimensions.zOffset )
+
+	if 	 	 AutoSteeringEngine.tableGetN( taJoints  ) < 1
+			or self.aseDirectionBeforeTurn   == nil
+			or self.aseDirectionBeforeTurn.a == nil then
+		AIVehicleExtension.debugPrint( self, "gSBA: no tools with joint found: "..AutoSteeringEngine.radToString( -turnAngle ))
+		return -turnAngle
+	end
+
+	local yv = -self.aseDirectionBeforeTurn.a - math.pi
+	if iTarget ~= nil then
+		if self.acParameters.leftAreaActive then
+			yv = AutoSteeringEngine.normalizeAngle( yv + iTarget )
+		else
+			yv = AutoSteeringEngine.normalizeAngle( yv - iTarget )
+		end
+	end
+	
+	local yt = AutoSteeringEngine.getWorldYRotation( taJoints[1].nodeTrailer )
+	
+	local maxWorldRatio = 0.75 / AutoSteeringEngine.tableGetN( taJoints  )
+	local ratio  = Utils.clamp( 3 * AutoSteeringEngine.normalizeAngle( yv - yt ) / AIVEGlobals.maxToolAngle, -maxWorldRatio, maxWorldRatio )
+	local target = ratio
+
+	local sumTargetFactors = 0
+	for _,joint in pairs( taJoints ) do
+		sumTargetFactors = sumTargetFactors + joint.targetFactor
+	end
+	
+	local maxToolDegrees = AIVEGlobals.maxToolAngle / sumTargetFactors
+	for _,joint in pairs( taJoints ) do
+		target    = joint.targetFactor * ratio
+		degree    = AutoSteeringEngine.getRelativeYRotation( joint.nodeVehicle, joint.nodeTrailer )
+		if joint.otherDirection then
+			degree  = AutoSteeringEngine.normalizeAngle( degree + math.pi )
+		end
+		angle     = Utils.clamp( degree / maxToolDegrees, -1, 1 )	
+		ratio     = Utils.clamp( target + 1.5 * ( angle - ratio ), -1, 1 )
+	end
+	
+	angle = ratio * self.acDimensions.maxSteeringAngle
+	
+	if not self.acParameters.leftAreaActive then
+		angle = -angle 
+	end
+	
+	AIVehicleExtension.debugPrint( self, "gSBA: current: "..AutoSteeringEngine.radToString( yt ).." target: "..AutoSteeringEngine.radToString( yv ).." => angle: "..AutoSteeringEngine.radToString( angle ).." ("..tostring( self.acParameters.leftAreaActive ).." / "..tostring( iTarget ).." / "..AutoSteeringEngine.radToString( self.aseDirectionBeforeTurn.a )..")")
+	
+	return angle 
+end
+	
+------------------------------------------------------------------------
+-- AIVehicleExtension:getToolAngle
+------------------------------------------------------------------------
+function AIVehicleExtension:getStraighForwardsAngle( iTarget )
+
+	local target = math.rad( Utils.getNoNil( iTarget, 0 ) )
+
+	local toolAngle = AutoSteeringEngine.getToolAngle( self )
+	local turnAngle = AutoSteeringEngine.getTurnAngle( self ) 
+	if self.acParameters.leftAreaActive then
+		turnAngle = -turnAngle
+	else
+		toolAngle = -toolAngle
+	end
+	turnAngle = turnAngle - target 
+	
+	angle = 0
+	
+	if      math.abs( toolAngle ) > math.abs( turnAngle ) then
+		angle = -toolAngle 
+	else
+		angle = turnAngle 
+	end
+	
+	AIVehicleExtension.debugPrint( self, "gSFA: "..AutoSteeringEngine.degToString( iTarget ).." "..AutoSteeringEngine.radToString( toolAngle ).." "..AutoSteeringEngine.radToString( turnAngle ).." => "..AutoSteeringEngine.radToString( angle ))
+	
+	angle = Utils.clamp( angle, -self.acDimensions.maxSteeringAngle, self.acDimensions.maxSteeringAngle )
+
+	return angle 
+end
+	
+------------------------------------------------------------------------
+-- AIVehicleExtension:getLimitedToolAngle
+------------------------------------------------------------------------
+function AIVehicleExtension:getLimitedToolAngle( iLimit )
+
+	local toolAngle = AIVehicleExtension.getToolAngle( self )
+	local limit     = Utils.getNoNil( iLimit, 0.5 * self.acDimensions.maxSteeringAngle )
+	
+	if     toolAngle >=  limit then
+		toolAngle =  limit
+	elseif toolAngle <= -limit then
+		toolAngle = -limit
+	else
+		local x   = toolAngle / limit
+		toolAngle = toolAngle * 2 / ( 1 + x^2 )
+	end
+	
+	return toolAngle
+end
+
+
+
+--==============================================================				
+--==============================================================			
+function AIVehicleExtension:afterSetDriveStrategies()	
+	if self.aiveIsStarted and self.driveStrategies ~= nil and #self.driveStrategies > 0 then
+		local insertIndex = nil
+		for i,d in pairs( self.driveStrategies ) do
+			if d:isa(AIDriveStrategyStraight) then
+				insertIndex = i
+				break
+			end
+		end
+		
+		if insertIndex ~= nil then
+			local driveStrategyMogli = AIDriveStrategyMogli:new();
+			driveStrategyMogli:setAIVehicle(self);
+			self.driveStrategies[insertIndex] = driveStrategyMogli
+		end
+	end
+end
+
+AIVehicle.setDriveStrategies = Utils.appendedFunction( AIVehicle.setDriveStrategies, AIVehicleExtension.afterSetDriveStrategies )
+
+function AIVehicleExtension:afterStopAIVehicle(reason, noEventSend)
+	print("Stop AI Vehicle: "..tostring(reason))
+	AIVehicleExtension.printCallStack( self, 15 )
+end
+
+AIVehicle.stopAIVehicle = Utils.appendedFunction( AIVehicle.stopAIVehicle, AIVehicleExtension.afterStopAIVehicle )
+--==============================================================				
+--==============================================================				
 
