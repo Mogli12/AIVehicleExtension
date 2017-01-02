@@ -15,6 +15,8 @@
 -- AIDriveStrategy.update is a function
 -- AIDriveStrategy.copy is a function
 
+source(Utils.getFilename("AITurnStrategyMogli.lua", g_currentModDirectory));
+source(Utils.getFilename("AITurnStrategyMogli_C_R.lua", g_currentModDirectory));
 source(Utils.getFilename("AITurnStrategyMogliDefault.lua", g_currentModDirectory));
 
 
@@ -103,8 +105,13 @@ function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	
 	
 	self.turnLeft = not ( self.vehicle.acParameters.rightAreaActive )
-	self.turnStrategies = { AITurnStrategyMogliDefault:new() }
+	self.turnStrategies = { }
 	
+	self.turnStrategies[1] = AITurnStrategyMogliDefault:new()
+	
+	self.ts_C_R = table.getn( self.turnStrategies ) + 1
+	self.turnStrategies[self.ts_C_R] = AITurnStrategyMogli_C_R:new()
+		
 	for _,turnStrategy in pairs(self.turnStrategies) do
 		turnStrategy:setAIVehicle(self.vehicle);
 	end
@@ -355,7 +362,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 		turnAngle = -turnAngle;
 	end;
 
-	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh, 0.9 )
+	local fruitsDetected, fruitsAll, distToStop = AutoSteeringEngine.hasFruits( veh, 0.9 )
+	
+	if self.search == nil then
+		distanceToStop = distToStop
+	end
 	
 	if fruitsDetected and self.search ~= nil then
 		if veh.acFruitAllTimer == nil then
@@ -545,8 +556,13 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 				veh.acClearTraceAfterTurn = false
 				veh.turnTimer			 = veh.acDeltaTimeoutWait;
 				AutoSteeringEngine.initTurnVector( veh, false, true )
-				AIVehicleExtension.setAIImplementsMoveDown(veh,false);
-				AutoSteeringEngine.ensureToolIsLowered( veh, false )
+				
+				if AIVEGlobals.raiseNoFruits > 0 and not veh.aiveHas.combine then
+					AIVehicleExtension.setAIImplementsMoveDown(veh,false);
+					AutoSteeringEngine.ensureToolIsLowered( veh, false )
+					AIVehicleExtension.setAIImplementsMoveDown(veh,true);
+				end
+				
 			elseif AutoSteeringEngine.getTraceLength(veh) < 10 then		
 				uTurn = false
 				veh.acClearTraceAfterTurn = false
@@ -674,8 +690,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 					or veh.acTurnMode == "A" 
 					or veh.acTurnMode == "Y" then
 		-- 90° turn with reverse
-				self.turnData.stage = 1;
-				veh.turnTimer = veh.acDeltaTimeoutWait;
+			--self.turnData.stage = 1;
+			--veh.turnTimer = veh.acDeltaTimeoutWait;
+				self.activeTurnStrategy = self.turnStrategies[self.ts_C_R]
 			elseif veh.acTurnMode == "7" then 
 		-- 90° new turn with reverse
 				self.turnData.stage = 90;
@@ -698,12 +715,6 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 			AutoSteeringEngine.saveDirection( veh, true, not turn2Outside );
 		end
 		
---==============================================================				
-	elseif -23 <= self.turnData.stage and self.turnData.stage < -20 then
-		--AutoSteeringEngine.ensureToolIsLowered( veh, true )
-		AIVehicleExtension.setAIImplementsMoveDown(veh,true);
-		self.turnData.stage = self.turnData.stage + 10;					
-				
 --==============================================================				
 -- searching...
 	else
@@ -752,7 +763,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 			
 --print("normal: "..tostring(tX).." "..tostring(tZ).." "..tostring(speedLevel).." "..tostring(maxSpeed))
 	
-	if detected and self.turnData.stage <= 0 then
+	if detected then
 		self.lastDriveData = { tX, tZ, true, maxSpeed, distanceToStop }
 	else
 		self.lastDriveData = nil

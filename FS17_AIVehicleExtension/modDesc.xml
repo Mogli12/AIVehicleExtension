@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="34">
 	<author>Mogli</author>
-	<version>0.2.0.0</version>
+	<version>0.2.0.1</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AUTO_TRACTOR_VERSION">
-			<en>AIVehicleExtension v0.2.0.0</en>
-			<de>AIVehicleExtension v0.2.0.0</de>
-									<cs>车辆助手 v0.2.0.0</cs>
+			<en>AIVehicleExtension v0.2.0.1</en>
+			<de>AIVehicleExtension v0.2.0.1</de>
+			<fr>AIVehicleExtension v0.2.0.1</fr>
+			<it>AIVehicleExtension v0.2.0.1</it>
+			<ru>AIVehicleExtension v0.2.0.1</ru>
+			<cz>AIVehicleExtension v0.2.0.1</cz>
+			<pl>AIVehicleExtension v0.2.0.1</pl>
+									<cs>车辆助手 v0.2.0.1</cs>
 		</text>
 	</l10n>
 	<title>
@@ -17,6 +22,7 @@
 		<ru>AI Vehicle</ru>
 		<cz>AI Vehicle</cz>
 		<pl>AI Vehicle</pl>
+		<cs>车辆助手</cs>
 	</title>
 	<description>
 		<en>
@@ -33,6 +39,8 @@
 			<![CDATA[AI Vehicle - český překlad by Albi]]></cz>
 		<pl>
 			<![CDATA[AI Vehicle - Polskie tłumaczenie Dzi4d3k]]></pl>
+		<cs>
+			<![CDATA[自动驾驶]]></cs>
 	</description>
 	<iconFilename>dds/store.dds</iconFilename>
 	<multiplayer supported="true"/>

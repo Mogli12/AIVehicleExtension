@@ -1741,6 +1741,8 @@ function AutoSteeringEngine.hasFruits( vehicle, widthFactor )
 	
 	local fruitsDetected = false
 	local fruitsAll      = true
+	local distanceToStop = nil
+	
 	vehicle.aiveFruitAreas = {}
 	
 	if      vehicle.aiveChain      ~= nil 
@@ -1807,6 +1809,13 @@ function AutoSteeringEngine.hasFruits( vehicle, widthFactor )
 
 			local lx5 = 0.25 * ( lx1 + lx2 + lx3 + lx4 )
 			local lz5 = 0.25 * ( lz1 + lz2 + lz3 + lz4 )
+			
+			if dist < front - back - 0.6 then
+				dist = dist + 0.5
+				if distanceToStop == nil or distanceToStop < dist then
+					distanceToStop = dist 
+				end
+			end
 			
 			if vehicle.aiveChain.headland < 1 then
 				if     AutoSteeringEngine.checkField( vehicle, lx1, lz1 )
@@ -1912,8 +1921,13 @@ function AutoSteeringEngine.hasFruits( vehicle, widthFactor )
 		end
 	end
 	
-	vehicle.aiveChain.hasFruitsDetected = fruitsDetected
-	vehicle.aiveChain.hasFruitsAll      = fruitsAll
+	if distanceToStop == nil then
+		distanceToStop = math.huge 
+	end
+	
+	vehicle.aiveChain.hasFruitsDetected   = fruitsDetected
+	vehicle.aiveChain.hasFruitsAll        = fruitsAll
+	vehicle.aiveChain.hasFruitsDistToStop = distanceToStop
 	
 	return fruitsDetected, fruitsAll
 end
@@ -6919,7 +6933,15 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.setToolIsLowered( vehicle, tool, isLowered )
 
-	tool.targetLowerState   = isLowered  
+	if tool.targetLowerState == nil then
+		print("tool.targetLowerState == nil")
+		AIVehicleExtension.printCallstack()
+	elseif tool.targetLowerState ~= isLowered then
+		print("tool.targetLowerState ~= isLowered")
+		AIVehicleExtension.printCallstack()
+	end
+	
+--tool.targetLowerState   = isLowered  
 	tool.currentLowerState  = isLowered
 	tool.waitUntilIsLowered = g_currentMission.time + vehicle.acDeltaTimeoutStart
 
@@ -6955,12 +6977,13 @@ function AutoSteeringEngine.setToolsAreLowered( vehicle, isLowered, immediate, o
 	end
 	
 	local doItNow = vehicle.aiveHas.combine
-	
+		
 	for i=1,vehicle.aiveChain.toolCount do		
 		if vehicle.aiveChain.tools[i].currentLowerState == nil then
 			doItNow = true			
 		end
-		vehicle.aiveChain.tools[i].targetLowerState = isLowered
+
+		vehicle.aiveChain.tools[i].targetLowerState = isLowered		
 	end	
 	
 	if isLowered and vehicle.aiveHas.combineVehicle and not vehicle:getIsTurnedOn() then
@@ -7046,18 +7069,20 @@ function AutoSteeringEngine.ensureToolIsLowered( vehicle, isLowered, indexFilter
 	
 	for i=1,table.getn( vehicle.aiveChain.toolParams ) do
 		local doit = false
-		if     indexFilter == nil or indexFilter <= 0 then
-			doit = true
-		elseif i == indexFilter and vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].targetLowerState ~= nil then
-			if vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].targetLowerState == isLowered then
+		local tool = vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i]
+		if indexFilter == nil or indexFilter <= 0 or i == indexFilter then
+			if tool.targetLowerState == nil then
 				doit = true
+			elseif tool.targetLowerState == isLowered then
+				if     ( tool.targetLowerState and not ( tool.currentLowerState ) ) 
+						or ( not ( tool.targetLowerState ) and tool.currentLowerState ) then
+					doit = true
+				end
 			end
-		else
-			doit = true
 		end
 		
 		if doit then
-			AutoSteeringEngine.setToolIsLowered( vehicle, vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i], isLowered )			
+			AutoSteeringEngine.setToolIsLowered( vehicle, tool, isLowered )			
 		end
 	end
 	
