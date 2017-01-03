@@ -32,9 +32,11 @@ function AITurnStrategyMogli:startTurn( turnData )
 	
 	AIVehicleExtension.setAIImplementsMoveDown(self.vehicle,false)
 	
-	self.stages = {}
-	self.stage  = 1 
-	self:fillStages( turnData )
+	self.stageId       = 0		
+	self.activeStage   = nil
+	self.animWaitTimer = nil
+	self.noSneakTimer  = nil
+
 end
 
 --============================================================================================================================
@@ -43,99 +45,18 @@ end
 function AITurnStrategyMogli:onEndTurn( turnLeft )
 	self.lastDirection = nil
 	AIVehicleExtension.setAIImplementsMoveDown(self.vehicle,true)
+
+	self.stageId       = 0		
+	self.activeStage   = nil
+	self.animWaitTimer = nil
+	self.noSneakTimer  = nil
+
 end
 
 --============================================================================================================================
 -- update
 --============================================================================================================================
 function AITurnStrategyMogli:update(dt)
-	if self.vehicle ~= nil and self.stages ~= nil and self.vehicle.acShowTrace then
-		local c  = table.getn( self.stages )		
-		local c1 = 1
-		if c > 1 then
-			c1 = 1 / ( c - 1 )
-		end
-		
-		for i,s in pairs( self.stages ) do
-			local cr = c1 * i
-			local cb = 1 - cr
-			
-			if s.points ~= nil then for j,p in pairs( s.points ) do
-				local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, p.x, 1, p.z)					
-				drawDebugLine(  p.x, y, p.z,cr,1,cb, p.x, y+4, p.z,cr,1,cb)
-				drawDebugPoint( p.x, y+4, p.z	, 1, 1, 1, 1 )
-				drawDebugLine(  p.x, y+2, p.z,cr,1,cb, p.x+p.dx, y+2, p.z+p.dz,cr,1,cb)				
-			end end
-		end
-	end
-end
-
---============================================================================================================================
--- fillStages
---============================================================================================================================
-function AITurnStrategyMogli:fillStages( turnData )
-	print("ERROR: AITurnStrategyMogli:fillStages")
-end
-
---============================================================================================================================
--- fillStageDuringTurn
---============================================================================================================================
-function AITurnStrategyMogli:fillStageDuringTurn( index, stage )
-end
-
---============================================================================================================================
--- addStageLateFill
---============================================================================================================================
-function AITurnStrategyMogli:addStageFillDuringTurn()
-	local s = table.getn( self.stages ) + 1
-	
-	self.stages[s] = {}
-	self.stages[s].id  = s
-	self.stages[s].fillDuringTurn = true
-	
-	return s
-end
-
---============================================================================================================================
--- addStageWithPoints
---============================================================================================================================
-function AITurnStrategyMogli:addStageWithPoints( moveForwards, points, fct )
-	local s = table.getn( self.stages ) + 1
-	
-	self.stages[s] = {}
-	self.stages[s].id  = s
-	self.stages[s].moveForwards = moveForwards
-	self.stages[s].fct          = fct
-	self.stages[s].points       = {}
-	
-	-- add points in reverse order (from last to first)
-	for i,p in pairs( points ) do
-		table.insert( self.stages[s].points, 1, p )
-		
-		self.stages[s].points[1].distanceToStop = 0
-		
-		if self.stages[s].points[2] ~= nil then
-			local d = Utils.vector2Length( p.x - self.stages[s].points[2].x, p.z - self.stages[s].points[2].z )
-			for j=2,table.getn(self.stages[s].points) do
-				self.stages[s].points[j].distanceToStop = self.stages[s].points[j].distanceToStop + d
-			end
-		end
-	end	
-	
-	return s
-end
-
---============================================================================================================================
--- addStageWithFunction
---============================================================================================================================
-function AITurnStrategyMogli:addStageWithFunction( fct )
-	local s = table.getn( self.stages ) + 1
-	
-	self.stages[s] = {}
-	self.stages[s].id  = s
-	self.stages[s].fct = fct
-	
-	return s
 end
 
 --============================================================================================================================
@@ -145,6 +66,9 @@ function AITurnStrategyMogli:getPoint( wx, wz, dx, dz )
 	return { x=wx, z=wz, dx=dx, dz=dz }
 end
 
+--============================================================================================================================
+-- fillQuot2Rad
+--============================================================================================================================
 function AITurnStrategyMogli.fillQuot2Rad()
 	AITurnStrategyMogli.quot2Rad = AnimCurve:new(linearInterpolator1)
 	
@@ -189,7 +113,7 @@ end
 --============================================================================================================================
 -- raiseOrLower
 --============================================================================================================================
-function AITurnStrategyMogli:raiseOrLower( tX, tZ, moveForwards, maxSpeed, distanceToStop )
+function AITurnStrategyMogli:raiseOrLower( moveForwards )
 	if not moveForwards then
 	-- make sure that tools are raised if going backwards
 		AutoSteeringEngine.ensureToolIsLowered( self.vehicle, false )
@@ -202,196 +126,352 @@ function AITurnStrategyMogli:raiseOrLower( tX, tZ, moveForwards, maxSpeed, dista
 end
 
 --============================================================================================================================
+-- getNextStage
+--============================================================================================================================
+function AITurnStrategyMogli:getNextStage( dt, vX,vY,vZ, turnData, stageId )
+end
+
+--============================================================================================================================
 -- getDriveData
 --============================================================================================================================
 function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
+
+	local vehicle = self.vehicle 
 	
-	if self.stage <= table.getn( self.stages ) then
-		local vehicle = self.vehicle 
+	if self.stageId == 0 then
+		self.stageId     = 1
+		self.activeStage = self:getNextStage( dt, vX,vY,vZ, turnData, 1 )
+	end
+	
+	if self.activeStage == nil then
+	-- end of turn
+		return 
+	end
+	
+	AIVehicleExtension.statEvent( vehicle, "t0", dt )
+
+	AIVehicleExtension.checkState( vehicle )
+	if not AutoSteeringEngine.hasTools( vehicle ) then
+		vehicle:stopAIVehicle(AIVehicle.STOP_REASON_UNKOWN)
+		return
+	end
+	
+	while self.activeStage ~= nil do
+		local tX, tZ, moveForwards, allowedToDrive, distanceToStop = self.activeStage.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( self.activeStage.parameter ) )
 		
-		while self.stage <= table.getn( self.stages ) do
-			local stage = self.stages[self.stage]
-			
-			if stage.fct == nil and stage.points == nil and stage.fillDuringTurn then
-				self:fillStageDuringTurn( self.stage, stage )
-			end
-			
-			local r1,r2,r3,r4,r5 = nil,nil,nil,nil,nil
-							
-			if type( stage.points) == "table" then
-			-- navigate using points 
-				local distanceToStop = 0
-			
-				if AITurnStrategyMogli.quot2Rad == nil then
-					AITurnStrategyMogli.fillQuot2Rad()
-				end
-			
-				n     = 0
-				angle = nil
-				bestD = nil
-				bestB = nil
-				bestX = nil
-				bestZ = nil
+		if tX ~= nil then
+			local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 1, false, 0.7 )
+			self:raiseOrLower( moveForwards )
 				
-				local score = {}
-				for i=1,3 do
-					score[i] = { score = math.huge }
-				end
-				
-				for i,p in pairs( stage.points ) do
-				--local x,_,z   = worldToLocal( vehicle.aiveChain.refNode, p.x, wy, p.z )
-					local x,_,z   = worldDirectionToLocal( vehicle.aiveChain.refNode, p.x-vX, 0, p.z-vZ )
-					local dx,_,dz = worldDirectionToLocal( vehicle.aiveChain.refNode, p.dx, 0, p.dz )
-					
-					if not stage.moveForwards then
-						x  = -x
-						z  = -z
-					end
-					
-					if AIVEGlobals.devFeatures > 0 then
-						print(string.format("%2d: (%4f, %4f) (%4f, %4f)",i,x,z,dx,dz))
-					end
-					
-					if i == 1 and z >= 0 then
-						distanceToStop = z
-						bestX = p.x
-						bestZ = p.z
-						angle = 0
-						bestD = 0
-						bestB = 0
-					end
-					
-					if z >= 1 then	
-						if distanceToStop < p.distanceToStop then
-							distanceToStop = p.distanceToStop
-						end
-							
-						if math.abs( x ) <= 22.9 * math.abs( z ) then
-							local alpha = AITurnStrategyMogli.quot2Rad:get( x/z )					
-							local beta  = math.atan2( dx, dz )
-												
-							if math.abs(x) < math.abs(z) then
-								a = math.atan2( vehicle.aiveChain.wheelBase * math.sin( alpha ), z )					
-							else
-								a = math.atan2( vehicle.aiveChain.wheelBase * (1-math.cos( alpha )), math.abs(x) )					
-								if x < 0 then
-									a = -a
-								end
-							end
-							
-							a = a + 0.5 * ( alpha - beta )
-							
-							if math.abs( a ) <= 1.25 * vehicle.aiveChain.maxSteering then
-								local d = x*x+z*z 						
-								local s = math.abs( 4 - d )
-								local b = math.abs( alpha - beta ) 
-						
-								for j=1,table.getn( score ) do
-									if s <= score[j].score then
-										for k=table.getn( score )-1, j,-1 do
-											if score[k].angle ~= nil then
-												score[k+1].score = score[k].score
-												score[k+1].angle = score[k].angle
-												score[k+1].dist  = score[k].dist 
-												score[k+1].beta  = score[k].beta 
-												score[k+1].tX    = score[k].tX   
-												score[k+1].tZ    = score[k].tZ
-											end
-										end
-										score[j].score = s
-										score[j].angle = a
-										score[j].dist  = d
-										score[j].beta  = b
-										score[j].tX    = p.x
-										score[j].tZ    = p.z
-										break
-									end
-								end
-							end			
-						end				
-					end
-				end
-				
-				for j=1,table.getn( score ) do
-					if score[j].angle == nil then
-						break
-					else--if score[j].score < 10 then
-						if n > 0 then
-							n     = n + 1
-							angle = angle + score[j].angle
-							bestD = bestD + score[j].dist 
-							bestB = bestB + score[j].beta 
-							bestX = bestX + score[j].tX
-							bestZ = bestZ + score[j].tZ
-						else
-							n     = 1
-							angle = score[j].angle
-							bestD = score[j].dist 
-							bestB = score[j].beta 						
-							bestX = score[j].tX
-							bestZ = score[j].tZ
-						end
-					end
-				end
-				
-				if n > 1 then
-					angle = angle / n
-					bestD = bestD / n
-					bestB = bestB / n
-					bestX = bestX / n
-					bestZ = bestZ / n
-				end
-				
-				if bestX ~= nil then		
-					distanceToStop = distanceToStop + math.sqrt( bestD )
-					
-					if AIVEGlobals.devFeatures > 0 then
-						print(tostring(math.deg(angle)).."° "..tostring(n).." "..tostring(bestD).." "..tostring(bestB))
-					end
-					
-					local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, true, stage.moveForwards, 1, false, 0.7 )
-					
-					if type( stage.fct ) == "function" then
-					--print("Calling function (1)...")
-						r1,r2,r3,r4,r5 = stage.fct( self, dt, vX,vY,vZ, turnData, stage, bestX, bestZ, maxSpeed, distanceToStop )
-					else
-						r1 = bestX
-						r2 = bestZ
-						r3 = stage.moveForwards
-						r4 = maxSpeed
-						r5 = distanceToStop
-					end
-				else
-					if AIVEGlobals.devFeatures > 0 then
-						print(tostring(n))
-					end
-					
-					if type( stage.fct ) == "function" then
-					--print("Calling function (2)...")
-						r1,r2,r3,r4,r5 = stage.fct( self, dt, vX,vY,vZ, turnData, stage )
-					end
-				end
-								
-			elseif type( stage.fct ) == "function" then
-			-- navigate using stage specific function 
-			--print("Calling function (3)...")
-				r1,r2,r3,r4,r5 = stage.fct( self, dt, vX,vY,vZ, turnData, stage )
-			end	
+			return tX, tZ, moveForwards, maxSpeed, distanceToStop
+		end
 			
-			if r1 ~= nil then
-				self:raiseOrLower( r1,r2,r3,r4,r5 )
-				return r1,r2,r3,r4,r5
-			end
+		-- go to next stage 		
+		self.stageId     = self.stageId + 1		
+		self.activeStage = self:getNextStage( dt, vX,vY,vZ, turnData, self.stageId )
 			
-			-- go to next stage 		
-			self.stage = self.stage + 1
-			
-			if AIVEGlobals.devFeatures > 0 then
-				print("going to stage "..tostring(self.stage).."/"..tostring(table.getn( self.stages )))
-			end
+		if AIVEGlobals.devFeatures > 0 then
+			print("going to stage "..tostring(self.stageId))
 		end
 	end
 	
 	-- end of turn
---return 0, 0, true, 0, 0	
+end
+
+--============================================================================================================================
+-- getStageFromPoints
+--============================================================================================================================
+function AITurnStrategyMogli:getStageFromPoints( points, moveForwards, distanceToStop )
+	local s          = {}	
+	s.getDriveData   = AITurnStrategyMogli.getDD_navigateAlongPoints
+	
+	s.parameter      = { moveForwards, {}}
+	
+	local dts = Utils.getNoNil( distanceToStop, 0 )
+	
+	-- add points in reverse order (from last to first)
+	for i,p in pairs( points ) do
+		table.insert( s.parameter[2], 1, p )
+		
+		s.parameter[2][1].distanceToStop = dts
+		
+		if s.parameter[2][2] ~= nil then
+			local d = Utils.vector2Length( p.x - s.parameter[2][2].x, p.z - s.parameter[2][2].z )
+			for j=2,table.getn(s.parameter[2]) do
+				s.parameter[2][j].distanceToStop = s.parameter[2][j].distanceToStop + d
+			end
+		end
+	end	
+	
+	
+	return s
+end
+
+--============================================================================================================================
+-- getDD_navigateAlongPoints
+--============================================================================================================================
+function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, moveForwards, points )
+	local vehicle = self.vehicle 
+	
+-- navigate using points 
+	local distanceToStop = 0
+
+	if AITurnStrategyMogli.quot2Rad == nil then
+		AITurnStrategyMogli.fillQuot2Rad()
+	end
+
+	n     = 0
+	angle = nil
+	bestD = nil
+	bestB = nil
+	bestX = nil
+	bestZ = nil
+	
+	local score = {}
+	for i=1,3 do
+		score[i] = { score = math.huge }
+	end
+	
+	for i,p in pairs( points ) do
+	--local x,_,z   = worldToLocal( vehicle.aiveChain.refNode, p.x, wy, p.z )
+		local x,_,z   = worldDirectionToLocal( vehicle.aiveChain.refNode, p.x-vX, 0, p.z-vZ )
+		local dx,_,dz = worldDirectionToLocal( vehicle.aiveChain.refNode, p.dx, 0, p.dz )
+		
+		if not moveForwards then
+			x  = -x
+			z  = -z
+		end
+		
+		if AIVEGlobals.devFeatures > 0 then
+			print(string.format("%2d: (%4f, %4f) (%4f, %4f)",i,x,z,dx,dz))
+		end
+		
+		if i == 1 and z >= 0 then
+			distanceToStop = z
+			bestX = p.x
+			bestZ = p.z
+			angle = 0
+			bestD = 0
+			bestB = 0
+		end
+		
+		if z >= 1 then	
+			if distanceToStop < p.distanceToStop then
+				distanceToStop = p.distanceToStop
+			end
+				
+			if math.abs( x ) <= 22.9 * math.abs( z ) then
+				local alpha = AITurnStrategyMogli.quot2Rad:get( x/z )					
+				local beta  = math.atan2( dx, dz )
+									
+				if math.abs(x) < math.abs(z) then
+					a = math.atan2( vehicle.aiveChain.wheelBase * math.sin( alpha ), z )					
+				else
+					a = math.atan2( vehicle.aiveChain.wheelBase * (1-math.cos( alpha )), math.abs(x) )					
+					if x < 0 then
+						a = -a
+					end
+				end
+				
+				a = a + 0.5 * ( alpha - beta )
+				
+				if math.abs( a ) <= 1.25 * vehicle.aiveChain.maxSteering then
+					local d = x*x+z*z 						
+					local s = math.abs( 4 - d )
+					local b = math.abs( alpha - beta ) 
+			
+					for j=1,table.getn( score ) do
+						if s <= score[j].score then
+							for k=table.getn( score )-1, j,-1 do
+								if score[k].angle ~= nil then
+									score[k+1].score = score[k].score
+									score[k+1].angle = score[k].angle
+									score[k+1].dist  = score[k].dist 
+									score[k+1].beta  = score[k].beta 
+									score[k+1].tX    = score[k].tX   
+									score[k+1].tZ    = score[k].tZ
+								end
+							end
+							score[j].score = s
+							score[j].angle = a
+							score[j].dist  = d
+							score[j].beta  = b
+							score[j].tX    = p.x
+							score[j].tZ    = p.z
+							break
+						end
+					end
+				end			
+			end				
+		end
+	end
+	
+	for j=1,table.getn( score ) do
+		if score[j].angle == nil then
+			break
+		else--if score[j].score < 10 then
+			if n > 0 then
+				n     = n + 1
+				angle = angle + score[j].angle
+				bestD = bestD + score[j].dist 
+				bestB = bestB + score[j].beta 
+				bestX = bestX + score[j].tX
+				bestZ = bestZ + score[j].tZ
+			else
+				n     = 1
+				angle = score[j].angle
+				bestD = score[j].dist 
+				bestB = score[j].beta 						
+				bestX = score[j].tX
+				bestZ = score[j].tZ
+			end
+		end
+	end
+	
+	if n > 1 then
+		angle = angle / n
+		bestD = bestD / n
+		bestB = bestB / n
+		bestX = bestX / n
+		bestZ = bestZ / n
+	end
+	
+	if bestX == nil then		
+		return 
+	end
+
+	distanceToStop = distanceToStop + math.sqrt( bestD )
+	
+	return bestX, bestZ, moveForwards, true, distanceToStop
+end
+
+--============================================================================================================================
+-- getStageFromFunction
+--============================================================================================================================
+function AITurnStrategyMogli:getStageFromFunction( fct, params )
+	local s          = {}	
+
+	if type( params ) == "table" then
+		s.parameter = {}
+		for n,p in pairs( params ) do
+			s.parameter[n] = p
+		end
+	elseif params ~= nil then
+		s.parameter = { params }
+	else
+		s.parameter = {}
+	end
+	
+	s.getDriveData = fct 
+	
+	return s
+end
+
+--============================================================================================================================
+-- getDD_reduceTurnAngle
+--============================================================================================================================
+function AITurnStrategyMogli:getDD_reduceTurnAngle( dt, vX,vY,vZ, turnData, moveForwards, maxAngle )
+
+	local vehicle = self.vehicle 
+	
+	local angle  = AutoSteeringEngine.getTurnAngle( vehicle )
+	if math.abs( angle ) < math.rad( maxAngle ) then
+		return 
+	end
+	local tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, Utils.clamp( -angle, -vehicle.acDimensions.maxSteeringAngle, vehicle.acDimensions.maxSteeringAngle ) )
+	return tX, tZ, moveForwards, true, 1
+end
+
+--============================================================================================================================
+-- getDD_checkIsAnimPlaying
+--============================================================================================================================
+function AITurnStrategyMogli:getDD_checkIsAnimPlaying( dt, vX,vY,vZ, turnData, moveForwards )
+	local vehicle = self.vehicle 
+	
+	local allowedToDrive =  AutoSteeringEngine.checkAllowedToDrive( vehicle, not ( vehicle.acParameters.isHired  ) )
+	if not allowedToDrive then
+		AIVehicleExtension.setStatus( self, 0 )
+	end
+	
+	self.noSneak = false
+
+	local isPlaying, noSneak = AutoSteeringEngine.checkIsAnimPlaying( vehicle, vehicle.acImplementsMoveDown )
+	
+	if isPlaying then
+		if    self.animWaitTimer == nil then
+			self.animWaitTimer = vehicle.acDeltaTimeoutWait
+		elseif self.animWaitTimer > 0 then
+			self.animWaitTimer = self.animWaitTimer - dt
+		end
+	else
+		self.animWaitTimer = nil
+		noSneak            = false
+	end
+	
+	if noSneak then
+		if    self.noSneakTimer == nil then
+			self.noSneakTimer = vehicle.acDeltaTimeoutWait
+			self.noSneak = true
+		elseif self.noSneakTimer > 0 then
+			self.noSneakTimer = self.noSneakTimer - dt
+			self.noSneak = true
+		end
+	else
+		self.noSneakTimer = nil
+	end
+	
+	if      allowedToDrive 
+			and self.noSneak then
+		AIVehicleExtension.setStatus( vehicle, 3 )
+		allowedToDrive = false
+	end
+	
+	if not allowedToDrive then
+		AIVehicleExtension.statEvent( vehicle, "tS", dt )
+		vehicle.isHirableBlocked = true		
+		return vX, vZ, Utils.getNoNil( moveForwards, true ), false, 0
+	end
+	
+end
+
+--============================================================================================================================
+-- getCombinedStage
+--============================================================================================================================
+function AITurnStrategyMogli:getCombinedStage( s1, s2 )
+	local s        = {}	
+	s.parameter    = { s1, s2 }
+	s.getDriveData = AITurnStrategyMogli.getDD_combinedStage
+	return s
+end
+
+--============================================================================================================================
+-- getDD_combinedStage
+--============================================================================================================================
+function AITurnStrategyMogli:getDD_combinedStage( dt, vX,vY,vZ, turnData, s1, s2 )
+	local tX, tZ, moveForwards, allowedToDrive, distanceToStop = s1.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( s1.parameter ) )
+	
+	if tX ~= nil then
+		return tX, tZ, moveForwards, allowedToDrive, distanceToStop
+	end
+
+	return s2.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( s2.parameter ) )
+end
+
+--============================================================================================================================
+-- getStageWithPostCheck
+--============================================================================================================================
+function AITurnStrategyMogli:getStageWithPostCheck( s1, fct )
+	local s        = {}	
+	s.parameter    = { s1, fct }
+	s.getDriveData = AITurnStrategyMogli.getDD_withPostCheck
+	return s
+end
+
+--============================================================================================================================
+-- getDD_withPostCheck
+--============================================================================================================================
+function AITurnStrategyMogli:getDD_withPostCheck( dt, vX,vY,vZ, turnData, s1, fct )
+	local tX, tZ, moveForwards, allowedToDrive, distanceToStop = s1.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( s1.parameter ) )
+
+	return fct( self, dt, vX,vY,vZ, turnData, tX, tZ, moveForwards, allowedToDrive, distanceToStop )
 end

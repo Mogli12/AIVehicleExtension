@@ -16,8 +16,10 @@
 -- AIDriveStrategy.copy is a function
 
 source(Utils.getFilename("AITurnStrategyMogli.lua", g_currentModDirectory));
-source(Utils.getFilename("AITurnStrategyMogli_C_R.lua", g_currentModDirectory));
 source(Utils.getFilename("AITurnStrategyMogliDefault.lua", g_currentModDirectory));
+
+source(Utils.getFilename("AITurnStrategyMogli_C_R.lua", g_currentModDirectory));
+--source(Utils.getFilename("AITurnStrategyMogli_C_RS.lua", g_currentModDirectory));
 
 
 
@@ -436,6 +438,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 			and AutoSteeringEngine.getTraceLength(veh) > 5 then
 		
 		speedLevel = 4
+		detected   = detected and fruitsDetected
 		
 		local ta = math.min( math.max( math.rad( 0.5 * turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
 		

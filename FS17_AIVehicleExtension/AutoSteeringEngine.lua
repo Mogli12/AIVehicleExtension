@@ -674,20 +674,25 @@ function AutoSteeringEngine.processIsAtEnd( vehicle, a )
 
 	vehicle.aiveChain.isAtEnd = true
 
-	local cs = math.min( math.max( vehicle.aiveChain.chainStep0, 1 ) + 2, vehicle.aiveChain.chainMax )	
-	local ce = Utils.clamp( vehicle.aiveChain.chainStep3, cs, vehicle.aiveChain.chainMax )
-	for i=ce,cs,-1 do 
-		if vehicle.aiveChain.nodes[i].detected then
-			vehicle.aiveChain.isAtEnd = false
-			break
-		end
-		if vehicle.aiveChain.nodes[i].distance < AIVEGlobals.ignoreDist - math.max( 0, vehicle.aiveChain.maxZ ) then
-			break
-		end
-	end
-	if vehicle.aiveChain.isAtEnd and AutoSteeringEngine.hasFruitsInFront( vehicle, cs ) then
+--local cs = math.min( math.max( vehicle.aiveChain.chainStep0, 1 ) + 2, vehicle.aiveChain.chainMax )	
+--local ce = Utils.clamp( vehicle.aiveChain.chainStep3, cs, vehicle.aiveChain.chainMax )
+--for i=ce,cs,-1 do 
+--	if vehicle.aiveChain.nodes[i].detected then
+--		vehicle.aiveChain.isAtEnd = false
+--		break
+--	end
+--	if vehicle.aiveChain.nodes[i].distance < AIVEGlobals.ignoreDist - math.max( 0, vehicle.aiveChain.maxZ ) then
+--		break
+--	end
+--end
+--if vehicle.aiveChain.isAtEnd and AutoSteeringEngine.hasFruitsInFront( vehicle, cs ) then
+--	vehicle.aiveChain.isAtEnd = false
+--end
+
+	if AutoSteeringEngine.hasFruitsInFront( vehicle, 1 ) then
 		vehicle.aiveChain.isAtEnd = false
 	end
+		
 	
 	if      vehicle.aiveChain.inField 
 			and not vehicle.aiveChain.isAtEnd
@@ -1641,7 +1646,7 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle, cs )
 			local toolParam = vehicle.aiveChain.toolParams[i]
 			local tool      = vehicle.aiveChain.tools[toolParam.i]				
 			local back      = toolParam.zReal + vehicle.aiveChain.nodes[cs].distance 
-			local front     = back + 10
+			local front     = back + 0.7 * toolParam.width
 			
 			local dx,dz
 			if tool.steeringAxleNode == nil then
@@ -1652,7 +1657,7 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle, cs )
 				dx,_,dz = localDirectionToWorld( tool.steeringAxleNode, 0, 0, 1 )
 			end
 
-			local w = toolParam.width * 0.8
+			local w = toolParam.width + toolParam.width
 			local ofs, idx			
 			if vehicle.aiveChain.leftActive	then
 				ofs = 0.125*w-toolParam.offset 
@@ -1757,7 +1762,7 @@ function AutoSteeringEngine.hasFruits( vehicle, widthFactor )
 			local gotFruits = false
 			local gotField  = false
 			local back      = math.min( toolParam.zBack - toolParam.zReal, 0 )
-			local front     = 1
+			local front     = 2
 			
 			tool.hasFruits = false
 			
@@ -4452,6 +4457,8 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside )
 	local saveTurnPoint = nil
 	if vehicle.aiveChain.trace.ux == nil then
 		saveTurnPoint = true
+	elseif cumulate then
+		saveTurnPoint = true
 	elseif Utils.vector2LengthSq( vehicle.aiveChain.trace.x - wx, vehicle.aiveChain.trace.z - wz ) < 0.01 then
 		saveTurnPoint = false
 	end
@@ -4505,7 +4512,7 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside )
 					  and AutoSteeringEngine.checkField( vehicle, ox, oz ) ) ) ) then
 						
 		--local d = Utils.getNoNil( vehicle.aiveChain.trace.lastD, 0.05 ) 
-			local d   = 1
+			local d   = 2
 			local stp = false
 			if saveTurnPoint then
 				stp = true
@@ -5005,7 +5012,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 				factor = -factor
 			end
 			
-			if true then
+			if false then
 				local maxShiftZ = 2
 				local shiftZ, area, total = -maxShiftZ, 0, 0
 				local dzx,_,dzz = localDirectionToWorld( vehicle.aiveChain.headlandNode, 0, 0, 1 )				
@@ -6207,6 +6214,38 @@ function AutoSteeringEngine.normalizeAngle( b )
 	while a >  math.pi do a = a - math.pi - math.pi end
 	while a < -math.pi do a = a + math.pi + math.pi end
 	return a
+end
+
+------------------------------------------------------------------------
+-- getMinToolRadius
+------------------------------------------------------------------------
+function AutoSteeringEngine.getMinToolRadius( vehicle, radius )
+	local radiusT = radius
+	
+	for _,tool in pairs( vehicle.aiveChain.tools ) do
+		if tool.aiForceTurnNoBackward then
+			local _,_,b1  = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.refNode, tool.refNode )
+			b1            = math.max( 0, -b1 )
+			local b2
+			if tool.b2 == nil then
+				b2          = math.max( 0, -tool.zb )
+			else
+				b2          = math.max( 0, -tool.b2 )
+			end
+			local b3 = 0
+			if tool.doubleJoint then
+				b3 = tool.b3
+			end
+			if b1 < 0 and b2 < -1 then
+				b2 = b2 + 0.5
+				b1 = b1 - 0.5
+			end
+			
+			radiusT = math.min( radiusT, math.sqrt( math.max( radius*radius + b1*b1 - b2*b2 - b3*b3, 0 ) ) )
+		end
+	end
+	
+	return radiusT 
 end
 
 ------------------------------------------------------------------------

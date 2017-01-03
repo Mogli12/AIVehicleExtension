@@ -14,42 +14,61 @@ function AITurnStrategyMogli_C_R:new(customMt)
 	return self
 end
 
---============================================================================================================================
--- fillStages
---============================================================================================================================
-function AITurnStrategyMogli_C_R:detect( dt, vX,vY,vZ, turnData, stage, tX, tZ, maxSpeed, distanceToStop )
 
+function AITurnStrategyMogli_C_R:getNextStage( dt, vX,vY,vZ, turnData, stageId )
+	if     stageId == 1 then
+		return self:getCombinedStage( self:getStageFromFunction( AITurnStrategyMogli.getDD_checkIsAnimPlaying, true ),
+																	self:getStageFromFunction( AITurnStrategyMogli.getDD_reduceTurnAngle, { true, 6 } ) )
+	elseif stageId == 2 then
+		self:fillStages( turnData )
+		return self:getStageFromPoints( self.stages[1], true, 0 )
+	elseif stageId == 3 then
+		return self:getStageFromPoints( self.stages[2], false, 0)
+	elseif stageId == 4 then
+		return self:getStageWithPostCheck( self:getStageFromPoints( self.stages[3], true, 0 ), AITurnStrategyMogli_C_R.detect4 )
+	elseif stageId == 5 then
+		self:getStageFromFunction( AITurnStrategyMogli_C_R.detect5 )
+	end
+end
+
+--============================================================================================================================
+-- detect4
+--============================================================================================================================
+function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveForwards, allowedToDrive, distanceToStop )
 	local veh = self.vehicle 
 	
-	local moveForwards = stage.moveForwards
-	
-	if     stage.id == self.finalStage1 then
-		AutoSteeringEngine.syncRootNode( veh, true )
-		AutoSteeringEngine.setChainStraight( veh )
-		local m = math.min( veh.aiveChain.chainMax, veh.aiveChain.chainStep2 )
-		if      veh.aiveChain.chainStep1 > 0 
-				and veh.aiveChain.chainStep1 < m then
-			m = veh.aiveChain.chainStep1
-		end
-		if AutoSteeringEngine.getAllChainBorders( veh, 1, m ) > 0 then
-		-- end the turn
-			return
-		end
-	elseif stage.id == self.finalStage2 then
-		moveForwards = false 
+	if self.needsLowering then
+		self.needsLowering = nil
+		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, false )
+	end
 		
-		local detected, angle2, border, tX2, _, tZ2 = AutoSteeringEngine.processChain( veh )
-		if border > 0 then			
-			tX2, tZ2 = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, 0 )
-			return tX2, tZ2, false, maxSpeed, math.huge
-		else
+	local detected, angle2, border = AutoSteeringEngine.processChain( veh )
+	if border > 0 then
+		return 
+	elseif detected then
+		if not veh.acParameters.leftAreaActive then
+			angle2 = -angle2		
+		end			
+		
+		if angle2 > -0.5 * veh.acDimensions.maxLookingAngle then		
 			return 
-		end 
-	else
-		print("ERROR in AITurnStrategyMogli_C_R: unknown turn stage!!!")
+		end
 	end
 	
-	return tX, tZ, moveForwards, maxSpeed, distanceToStop
+	return tX, tZ, moveForwards, allowedToDrive, distanceToStop
+end
+	
+--============================================================================================================================
+-- detect5
+--============================================================================================================================
+function AITurnStrategyMogli_C_R:detect5( dt, vX,vY,vZ, turnData )
+	local veh = self.vehicle 
+		
+	local detected, angle2, border = AutoSteeringEngine.processChain( veh )
+	if border > 0 or math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then			
+		local tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, 0 )
+		return tX, tZ, false, true, math.huge
+	end 
 end
 
 --============================================================================================================================
@@ -57,9 +76,10 @@ end
 --============================================================================================================================
 function AITurnStrategyMogli_C_R:fillStages( turnData )
 
+	self.stages = { {}, {}, {} }
+
 	local vehicle = self.vehicle 
-	local points 
-	local extraF  = 1
+	local extraF  = 2
 	local factor  = 1
 	if vehicle.aiveChain.leftActive then
 		factor = -1
@@ -71,8 +91,8 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 	local dirCX,_,dirCZ = localDirectionToWorld( vehicle.aiveChain.headlandNode, 0, 0, 1 )	
 	local dirFX,_,dirFZ = localDirectionToWorld( vehicle.aiveChain.headlandNode, factor, 0, 0 )			
 
-	finalX = finalX - ( vehicle.aiveChain.maxZ + extraF ) * dirFX + 0.5 * dirCX
-	finalZ = finalZ - ( vehicle.aiveChain.maxZ + extraF ) * dirFZ + 0.5 * dirCZ
+	finalX = finalX - ( vehicle.aiveChain.maxZ + extraF ) * dirFX -- + 0.5 * dirCX
+	finalZ = finalZ - ( vehicle.aiveChain.maxZ + extraF ) * dirFZ -- + 0.5 * dirCZ
 
 	local curX,_,curZ   = AutoSteeringEngine.getAiWorldPosition( vehicle )
 	
@@ -93,10 +113,6 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 		alpha = 0
 	end
 	
---print(string.format("%4f %4f, %4f, %4f°", r, deltaX, deltaZ, math.deg(alpha) ))
-	
-	points = {}
-	
 	s = math.sin( alpha )
 	c = math.cos( alpha )
 	
@@ -113,23 +129,16 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 	local c1x = wx - r * c * dirFX + r * s * dirCX
 	local c1z = wz - r * c * dirFZ + r * s * dirCZ
 	
---local t1X, _, t1Z = worldToLocal( vehicle.aiveChain.headlandNode, c1x + r * dirFX, vehicle.acAiPos[2], c1z + r * dirFZ )
---local t2X, _, t2Z = worldToLocal( vehicle.aiveChain.headlandNode, wx, vehicle.acAiPos[2], wz )
---local t3X, _, t3Z = worldToLocal( vehicle.aiveChain.headlandNode, c2x, vehicle.acAiPos[2], c2z )
---print(string.format("%4f, %4f / %4f, %4f / %4f, %4f", t1X, t1Z, t2X, t2Z, t3X, t3Z))
-	
+	-- stage 2 => straight forward
 	local steps = 5
 	
-	for i=steps,0,-1 do
+	for i=steps,-1,-1 do
 		local x = c1x + r * dirFX - i * dirCX
 		local z = c1z + r * dirFZ - i * dirCZ
-		table.insert( points, self:getPoint( x, z, dirCX, dirCZ ) )	
+		table.insert( self.stages[1], self:getPoint( x, z, dirCX, dirCZ ) )	
 	end
 	
-	self:addStageWithPoints( true, points )
-		
-	points = {}
-	
+	-- stage 3 => curved backward
 	steps = 1 + math.floor( r * alpha )
 
 	for i=0,steps do
@@ -139,16 +148,13 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 		local dx,_,dz = localDirectionToWorld( vehicle.aiveChain.headlandNode, factor * s, 0, c )		
 		local x = c1x + r * ( c * dirFX - s * dirCX )
 		local z = c1z + r * ( c * dirFZ - s * dirCZ )
-		table.insert( points, self:getPoint( x, z, dx, dz ) )	
+		table.insert( self.stages[2], self:getPoint( x, z, dx, dz ) )	
 		if i == steps then
-			table.insert( points, self:getPoint( x-dx, z-dz, dx, dz ) )	
+			table.insert( self.stages[2], self:getPoint( x-dx, z-dz, dx, dz ) )	
 		end
-	end
+	end 
 	
-	self:addStageWithPoints( false, points )
-	
-	points = {}	
-	
+	-- stage 4 => curved forward
 	steps = 1 + math.floor( r * ( pi2-alpha ) )
 	
 	for i=steps,0,-1 do
@@ -158,17 +164,39 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 		local dx,_,dz = localDirectionToWorld( vehicle.aiveChain.headlandNode, factor * c, 0, s )		
 		local x = c2x + r * ( c * dirCX - s * dirFX )
 		local z = c2z + r * ( c * dirCZ - s * dirFZ )
-		table.insert( points, self:getPoint( x, z, dx, dz ) )	
+		table.insert( self.stages[3], self:getPoint( x, z, dx, dz ) )	
 	end
 
 	if offsetX > 0 then
-		table.insert( points, self:getPoint( finalX, finalZ, dirFX, dirFZ ) )	
+		table.insert( self.stages[3], self:getPoint( finalX, finalZ, dirFX, dirFZ ) )	
 	end
 	
-	table.insert( points, self:getPoint( finalX + extraF * dirFX, finalZ + extraF * dirFZ, dirFX, dirFZ ) )	
+	table.insert( self.stages[3], self:getPoint( finalX + extraF * dirFX, finalZ + extraF * dirFZ, dirFX, dirFZ ) )	
 	
-	self.finalStage1 = self:addStageWithPoints( true, points, AITurnStrategyMogli_C_R.detect )
-	self.finalStage2 = self:addStageWithFunction( true, points, AITurnStrategyMogli_C_R.detect )
-	
+	self.needsLowering = true	
 end
 
+--============================================================================================================================
+-- update
+--============================================================================================================================
+function AITurnStrategyMogli_C_R:update(dt)
+	if self.vehicle ~= nil and self.stages ~= nil and self.vehicle.acShowTrace then
+		local c  = table.getn( self.stages )		
+		local c1 = 1
+		if c > 1 then
+			c1 = 1 / ( c - 1 )
+		end
+		
+		for i,s in pairs( self.stages ) do
+			local cr = c1 * (i-1)
+			local cb = 1 - cr
+			
+			for j,p in pairs( s ) do
+				local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, p.x, 1, p.z)					
+				drawDebugLine(  p.x, y, p.z,cr,1,cb, p.x, y+4, p.z,cr,1,cb)
+				drawDebugPoint( p.x, y+4, p.z	, 1, 1, 1, 1 )
+				drawDebugLine(  p.x, y+2, p.z,cr,1,cb, p.x+p.dx, y+2, p.z+p.dz,cr,1,cb)				
+			end
+		end
+	end
+end

@@ -17,16 +17,17 @@ end
 --============================================================================================================================
 -- fillStages
 --============================================================================================================================
-function AITurnStrategyMogli:fillStages( turnData )
-	self.stages = {}
-	self:addStageWithFunction( AITurnStrategyMogliDefault.getDriveDataDefault )
+function AITurnStrategyMogliDefault:getNextStage( dt, vX,vY,vZ, turnData, stageId )
+	if stageId == 1 then
+		return self:getStageFromFunction( AITurnStrategyMogliDefault.getDriveDataDefault )
+	end
 end
 
 
 --============================================================================================================================
 -- getDriveDataDefault
 --============================================================================================================================
-function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData, stage)
+function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData )
 
   local veh = self.vehicle
 	
@@ -34,7 +35,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData,
 		return 
 	end
 	
-	local tX, tZ, moveForwards, maxSpeed, distanceToStop = nil, nil, true, 0, math.huge		
+	local tX, tZ, moveForwards, distanceToStop = nil, nil, true, math.huge		
 		
 	AIVehicleExtension.statEvent( veh, "t0", dt )
 
@@ -137,7 +138,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData,
 		veh:stopAIVehicle(AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT)
 		return
 	end
-	if turnData.stage > 0 and AutoSteeringEngine.getTurnDistanceSq( veh ) > AIVEGlobals.aiRescueDistSq then
+	if AutoSteeringEngine.getTurnDistanceSq( veh ) > AIVEGlobals.aiRescueDistSq then
 		veh:stopAIVehicle(AIVehicle.STOP_REASON_UNKOWN)
 		return
 	end
@@ -2039,19 +2040,5 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData,
 	self.lastDirection = { tX, tZ }
 	self.lastDirection[3] = angle2 
 	
-	maxSpeed = AutoSteeringEngine.getMaxSpeed( veh, dt, 1, allowedToDrive, moveForwards, 1, false, 0.7 )
-	
-	if math.abs( maxSpeed ) < 1e-6 and angle2 ~= nil then
-		AutoSteeringEngine.steer( veh, dt, angle2, veh.aiSteeringSpeed, false )	
-	end
-	
-	if not detected then
-		AIVehicleExtension.setStatus( veh, 0 )	
-	elseif veh.acIamDetecting then
-		AIVehicleExtension.setStatus( veh, 1 )
-	else
-		AIVehicleExtension.setStatus( veh, 2 )
-	end
-	
-	return tX, tZ, moveForwards, maxSpeed, distanceToStop
+	return tX, tZ, moveForwards, allowedToDrive, distanceToStop
 end
