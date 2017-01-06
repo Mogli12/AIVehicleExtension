@@ -22,8 +22,8 @@
 		
     <angleFactorInside type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
     <angleFactorNoFix type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
-    <chainDivideIn  value="6" />
-    <chainDivideOut value="12" />
+    <chainDivideIn  value="5" />
+    <chainDivideOut value="10" />
 		
 		<staticRoot type="bool" value="true" />
 		<straightTA type="bool" value="false" />
@@ -33,7 +33,7 @@
     <!--                              1 2 3 4 5 6 7 8 9 0 1 2-->
     <chainLen    type="vector" value="1 1 2 2 2 3 4 5 6 7 8 9"/> 
 		<chainStep0  value="3"/>  <!-- initial part of the chain that always rotates    -->                           
-		<chainStep1  value="8"/>  <!-- steps to outside, can be smaller than chainStep2 -->
+		<chainStep1  value="7"/>  <!-- steps to outside, can be smaller than chainStep2 -->
 		<chainStep2  value="12"/> <!-- steps to check, increased only if nothing found  -->
 		<chainStep3  value="99"/> <!-- test outside up to this step                     -->
 		<chainStep4  value="99"/> <!-- test outside up to this step                     -->
@@ -43,17 +43,22 @@
     <!--                              1 2 3 4 5 6 7 8 9 0 1-->
     <chain2Len   type="vector" value="3 3 4 5 5 5 5 6 7 8 9"/> 
 		<chain2Step0 value="2"/>
-		<chain2Step1 value="7"/>
+		<chain2Step1 value="6"/>
 		<chain2Step2 value="11"/>
 		<chain2Step3 value="99"/>     
 		<chain2Step4 value="99"/>     
+
+		<chain3Step0 value="2"/>
+		<chain3Step1 value="4"/>
+		<chain3Step2 value="6"/>
+		<chain3Step3 value="99"/>     
+		<chain3Step4 value="99"/>     
 		
     <chainBorder value="1" />
 		<chainStart value="1" />
 		
 		<correctionIn  type="float" value="1.0" />
 		<correctionOut type="float" value="1.0" />
-		<maxOutside type="float" value="0.0"/>
 		
 		<shiftFixZ type="bool" value="false" />
 		<colliMask type="bool" value="true" />
@@ -63,7 +68,7 @@
     <minLooking type="degree" value="2" />
     <minLkgFactor type="float" value="0.15" />
     <maxRotation type="degree" value="30" />
-    <maxRotationC type="degree" value="50" />
+    <maxRotationC type="degree" value="90" />
     <maxRotationU type="degree" value="30" />
 		<minRadius type="float" value="5.5" />
     <minLength type="float" value="0"/> <!--value="0.25" />-->
@@ -77,8 +82,8 @@
     <stepLog2 value="2" />
     <yieldCount value="2500" />
 		
-    <!--widthDec type="float" value="0.01" /-->
-    <widthDec type="float" value="0.00125"/> 
+    <widthDec type="float" value="0" />
+    <!--widthDec type="float" value="0.00125"/--> 
 		<safetyFactor value="2"/>
     <widthMaxDec type="float" value="3" />
 		
@@ -94,7 +99,8 @@
 
 		<maxDtSumT value="100"/>
 		<maxDtSum  value="100" /> <!-- 10 fps => 100 ms -->
-		<maxDtDist type="float" value="0.077284" /> <!-- 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square-->
+		<maxDtDist type="float" value="0.077284" /> <!-- 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
+		<maxDtDistD type="float" value="0.01" />
 		<maxDtAngle type="float" value="0.3" />
 		
 		<maxDetectDt value="2000"/>
@@ -122,4 +128,6 @@
 		<lowerAdvance type="float" value="2" />
 		
 		<borderBuffer type="bool" value="true" />
+		
+		<detectLevel3 type="bool" value="true" />
 </AIVEGlobals>

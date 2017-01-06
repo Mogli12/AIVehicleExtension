@@ -14,7 +14,25 @@ function AITurnStrategyMogli_C_R:new(customMt)
 	return self
 end
 
+--============================================================================================================================
+-- onStartTurn
+--============================================================================================================================
+function AITurnStrategyMogli_C_R:onStartTurn( ... )
+	superClass:onStartTurn( ... )
+	self.stages = nil
+end
 
+--============================================================================================================================
+-- onEndTurn
+--============================================================================================================================
+function AITurnStrategyMogli_C_R:onEndTurn( ... )
+	superClass:onStartTurn( ... )
+	self.stages = nil
+end
+
+--============================================================================================================================
+-- getNextStage
+--============================================================================================================================
 function AITurnStrategyMogli_C_R:getNextStage( dt, vX,vY,vZ, turnData, stageId )
 	if     stageId == 1 then
 		return self:getCombinedStage( self:getStageFromFunction( AITurnStrategyMogli.getDD_checkIsAnimPlaying, true ),
@@ -23,8 +41,9 @@ function AITurnStrategyMogli_C_R:getNextStage( dt, vX,vY,vZ, turnData, stageId )
 		self:fillStages( turnData )
 		return self:getStageFromPoints( self.stages[1], true, 0 )
 	elseif stageId == 3 then
-		return self:getStageFromPoints( self.stages[2], false, 0)
+		return self:getStageWithPostCheck( self:getStageFromPoints( self.stages[2], false, 0), AITurnStrategyMogli_C_R.detect4 )
 	elseif stageId == 4 then
+		self.needsLowering = true	
 		return self:getStageWithPostCheck( self:getStageFromPoints( self.stages[3], true, 0 ), AITurnStrategyMogli_C_R.detect4 )
 	elseif stageId == 5 then
 		self:getStageFromFunction( AITurnStrategyMogli_C_R.detect5 )
@@ -34,28 +53,43 @@ end
 --============================================================================================================================
 -- detect4
 --============================================================================================================================
-function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveForwards, allowedToDrive, distanceToStop )
+function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle )
 	local veh = self.vehicle 
 	
+	local checkIt = false
+
 	if self.needsLowering then
 		self.needsLowering = nil
-		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, false )
+		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, veh.aiveHas.combine )
 	end
+	
+	if self.stageId == 4 then
+		checkIt = true
+	else			
+		local turnAngle = AutoSteeringEngine.getTurnAngle( veh )
+		if veh.acParameters.leftAreaActive then
+			turnAngle = -turnAngle 
+		end
 		
-	local detected, angle2, border = AutoSteeringEngine.processChain( veh )
-	if border > 0 then
-		return 
-	elseif detected then
-		if not veh.acParameters.leftAreaActive then
-			angle2 = -angle2		
-		end			
-		
-		if angle2 > -0.5 * veh.acDimensions.maxLookingAngle then		
+		checkIt = turnAngle > 0.5 * math.pi - veh.acDimensions.maxLookingAngle
+	end
+	
+	if checkIt then
+		local detected, angle2, border = AutoSteeringEngine.processChain( veh )
+		if border > 0 then
 			return 
+		elseif detected then
+			if not veh.acParameters.leftAreaActive then
+				angle2 = -angle2		
+			end			
+			
+			if angle2 > -0.1 * veh.acDimensions.maxLookingAngle then		
+				return 
+			end
 		end
 	end
 	
-	return tX, tZ, moveForwards, allowedToDrive, distanceToStop
+	return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle
 end
 	
 --============================================================================================================================
@@ -67,7 +101,7 @@ function AITurnStrategyMogli_C_R:detect5( dt, vX,vY,vZ, turnData )
 	local detected, angle2, border = AutoSteeringEngine.processChain( veh )
 	if border > 0 or math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then			
 		local tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, 0 )
-		return tX, tZ, false, true, math.huge
+		return tX, tZ, false, true, math.huge, 0
 	end 
 end
 
@@ -91,8 +125,8 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 	local dirCX,_,dirCZ = localDirectionToWorld( vehicle.aiveChain.headlandNode, 0, 0, 1 )	
 	local dirFX,_,dirFZ = localDirectionToWorld( vehicle.aiveChain.headlandNode, factor, 0, 0 )			
 
-	finalX = finalX - ( vehicle.aiveChain.maxZ + extraF ) * dirFX -- + 0.5 * dirCX
-	finalZ = finalZ - ( vehicle.aiveChain.maxZ + extraF ) * dirFZ -- + 0.5 * dirCZ
+	finalX = finalX - ( vehicle.aiveChain.maxZ + extraF ) * dirFX + 0.5 * dirCX
+	finalZ = finalZ - ( vehicle.aiveChain.maxZ + extraF ) * dirFZ + 0.5 * dirCZ
 
 	local curX,_,curZ   = AutoSteeringEngine.getAiWorldPosition( vehicle )
 	
@@ -172,8 +206,6 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 	end
 	
 	table.insert( self.stages[3], self:getPoint( finalX + extraF * dirFX, finalZ + extraF * dirFZ, dirFX, dirFZ ) )	
-	
-	self.needsLowering = true	
 end
 
 --============================================================================================================================
