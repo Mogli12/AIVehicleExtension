@@ -25,6 +25,8 @@ end
 -- startTurn
 --============================================================================================================================
 function AITurnStrategyMogli:startTurn( turnData )
+	AITurnStrategyMogli:superClass().startTurn( self, turnData )
+
 	self.lastDirection = nil
 	
 	self.vehicle.aiveChain.inField = false
@@ -44,6 +46,8 @@ end
 -- onEndTurn
 --============================================================================================================================
 function AITurnStrategyMogli:onEndTurn( turnLeft )
+	AITurnStrategyMogli:superClass().onEndTurn( self, turnLeft )
+
 	self.lastDirection = nil
 	AIVehicleExtension.setAIImplementsMoveDown(self.vehicle,true)
 

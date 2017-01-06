@@ -17,8 +17,8 @@ end
 --============================================================================================================================
 -- onStartTurn
 --============================================================================================================================
-function AITurnStrategyMogli_C_R:onStartTurn( ... )
-	superClass:onStartTurn( ... )
+function AITurnStrategyMogli_C_R:startTurn( ... )
+	AITurnStrategyMogli_C_R:superClass().startTurn( self, ... )
 	self.stages = nil
 end
 
@@ -26,7 +26,7 @@ end
 -- onEndTurn
 --============================================================================================================================
 function AITurnStrategyMogli_C_R:onEndTurn( ... )
-	superClass:onStartTurn( ... )
+	AITurnStrategyMogli_C_R:superClass().onEndTurn( self, ... )
 	self.stages = nil
 end
 
