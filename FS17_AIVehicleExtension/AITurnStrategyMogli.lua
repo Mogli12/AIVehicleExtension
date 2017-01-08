@@ -34,6 +34,7 @@ function AITurnStrategyMogli:startTurn( turnData )
 	
 	AIVehicleExtension.setAIImplementsMoveDown(self.vehicle,false)
 	
+	self.lastDirection = nil
 	self.stageId       = 0		
 	self.dtSum         = 0
 	self.activeStage   = nil
@@ -49,8 +50,6 @@ function AITurnStrategyMogli:onEndTurn( turnLeft )
 	AITurnStrategyMogli:superClass().onEndTurn( self, turnLeft )
 
 	self.lastDirection = nil
-	AIVehicleExtension.setAIImplementsMoveDown(self.vehicle,true)
-
 	self.stageId       = 0		
 	self.dtSum         = 0
 	self.activeStage   = nil

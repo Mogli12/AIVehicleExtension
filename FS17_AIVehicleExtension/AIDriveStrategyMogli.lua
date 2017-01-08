@@ -244,6 +244,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 			if self.search == nil then
 				self.search = AIDriveStrategyMogli.searchCircle
 			end			
+			AIVehicleExtension.setAIImplementsMoveDown(veh,true,false);
 		else
 			self.lastDirection = { tX, tZ }
 			self:printReturnInfo( tX, vY, tZ, moveForwards, maxSpeed, distanceToStop )
@@ -369,11 +370,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 		turnAngle = -turnAngle;
 	end;
 
-	local fruitsDetected, fruitsAll, distToStop = AutoSteeringEngine.hasFruits( veh, 0.9 )
-	
-	if self.search == nil then
-		distanceToStop = distToStop
-	end
+	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh, 0.9 )
 	
 	if fruitsDetected and self.search ~= nil then
 		if veh.acFruitAllTimer == nil then
@@ -398,7 +395,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 		smooth = Utils.clamp( AIVEGlobals.smoothFactor * ( AutoSteeringEngine.getTraceLength(veh) - veh.acTraceSmoothOffset ), 0, AIVEGlobals.smoothMax ) * Utils.clamp( speedLevelFactor, 0.7, 1.3 ) 
 	end
 
-	detected, angle2, border, tX, _, tZ = AutoSteeringEngine.processChain( veh, smooth, true, self.search == nil )
+	detected, angle2, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( veh, smooth, true, ( fruitsAll and not self.acFullAngle ) or self.search == nil )
 	
 --==============================================================				
 	if	  self.search    == nil
@@ -439,7 +436,26 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 		veh.acTurnInTheMiddle = nil
 	end		
 	
-			
+	local minDistanceToStop = 3 * veh.turnTimer / veh.acDeltaTimeoutRun
+	if self.search == nil and AutoSteeringEngine.getIsAtEnd( veh ) then
+		distanceToStop = minDistanceToStop
+		self.lastDistancePos = nil
+	else
+		if self.search ~= nil then
+			distanceToStop = math.huge 
+			self.lastDistancePos = nil
+		else
+			fruitsDetected = true
+			if     self.lastDistancePos    == nil
+					or self.lastDistancePos[4] ~= dist then
+				self.lastDistancePos = { vX, vY, vZ, distanceToStop }
+				distanceToStop = math.max( minDistanceToStop, dist )
+			else
+				distanceToStop = math.max( minDistanceToStop, self.lastDistancePos[4] - Utils.vector2Length( vX - self.lastDistancePos[1], vZ - self.lastDistancePos[3] ) )
+			end
+		end
+	end		
+	
 	if	    self.search == nil
 			and border <= 0
 			and ( AutoSteeringEngine.getIsAtEnd( veh ) or ( AutoSteeringEngine.getTraceLength(veh) > 5 and not detected ) )
@@ -752,27 +768,24 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 				and detected 
 				and veh.acTurnInTheMiddle == nil
 				and not ( veh.acFullAngle ) then
+
 			if veh.acClearTraceAfterTurn then
 				AutoSteeringEngine.clearTrace( veh );
 				AutoSteeringEngine.saveDirection( veh, false, not turn2Outside );
-				if not ( AIVEGlobals.raiseNoFruits > 0 ) then
-					AutoSteeringEngine.ensureToolIsLowered( veh, true )	
-				end
+				AutoSteeringEngine.ensureToolIsLowered( veh, true )	
 			end
 			self.search = nil
 			veh.acTurn2Outside	 = false;
 			veh.turnTimer		  = veh.acDeltaTimeoutNoTurn;
 			veh.acTurnOutsideTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutNoTurn );
 			veh.aiRescueTimer	  = veh.acDeltaTimeoutStop;
-		end;
-		
+		end		
 		
 --==============================================================				
 --==============================================================				
 	end
 	
-	distanceToStop = math.huge
-	
+
 	local smooth = false
 	if angle ~= nil then
 		if not veh.acParameters.leftAreaActive then

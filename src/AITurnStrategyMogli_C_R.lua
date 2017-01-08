@@ -63,15 +63,16 @@ function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveFo
 		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, veh.aiveHas.combine )
 	end
 	
-	if self.stageId == 4 then
-		checkIt = true
-	else			
+--if self.stageId == 4 then
+--	checkIt = true
+--else	
+	do
 		local turnAngle = AutoSteeringEngine.getTurnAngle( veh )
 		if veh.acParameters.leftAreaActive then
 			turnAngle = -turnAngle 
 		end
 		
-		checkIt = turnAngle > 0.5 * math.pi - veh.acDimensions.maxLookingAngle
+		checkIt = turnAngle >= math.max( 0.45 * math.pi, 0.5 * math.pi - veh.acDimensions.maxLookingAngle )
 	end
 	
 	if checkIt then
@@ -83,7 +84,7 @@ function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveFo
 				angle2 = -angle2		
 			end			
 			
-			if angle2 > -0.1 * veh.acDimensions.maxLookingAngle then		
+			if angle2 >= 0 then		
 				return 
 			end
 		end
@@ -140,7 +141,7 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 	
 	if     deltaX < -r then
 		alpha   = pi2
-		offsetX = -deltaX 
+		offsetX = -deltaX-r 
 	elseif deltaX < r then
 		alpha = math.acos( 0.5 * ( deltaX / r + 1 ) )
 	else

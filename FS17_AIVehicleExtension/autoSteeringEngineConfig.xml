@@ -68,7 +68,7 @@
     <minLooking type="degree" value="2" />
     <minLkgFactor type="float" value="0.15" />
     <maxRotation type="degree" value="30" />
-    <maxRotationC type="degree" value="90" />
+    <maxRotationC type="degree" value="75" />
     <maxRotationU type="degree" value="30" />
 		<minRadius type="float" value="5.5" />
     <minLength type="float" value="0"/> <!--value="0.25" />-->
@@ -130,4 +130,5 @@
 		<borderBuffer type="bool" value="true" />
 		
 		<detectLevel3 type="bool" value="true" />
+		<maxBorder2 value="10"/>
 </AIVEGlobals>
