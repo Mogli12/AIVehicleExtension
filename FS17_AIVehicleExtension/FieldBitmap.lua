@@ -191,7 +191,7 @@ FieldBitmap = {}
 ------------------------------------------------------------------------
 -- create
 ------------------------------------------------------------------------
-function FieldBitmap.create( iStepLog2, tiles )
+function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 	local s = 5 - Utils.getNoNil( iStepLog2, 2 )
 
 	local self = { tiles    = {}, 
@@ -199,6 +199,12 @@ function FieldBitmap.create( iStepLog2, tiles )
 								 factor1  = 2^s, 
 								 factor2  = 2^(-s) }
 								 
+	if bufferSize ~= nil and bufferSize > 0 then
+		self.buffer   = {}
+		self.index    = 0
+		self.bSize    = bufferSize
+	end
+	
 	if type( tiles ) == "table" then
 		for i,t1 in pairs(tiles) do
 			self.tiles[i] = {}
@@ -245,6 +251,36 @@ function FieldBitmap.create( iStepLog2, tiles )
 		if self.tiles[i] == nil then return false end
 		if self.tiles[i][j] == nil then return false end
 		return FieldBitmapTile.getBit( self.tiles[i][j], x, z )
+	end
+	
+------------------------------------------------------------------------
+-- getBit
+------------------------------------------------------------------------
+	local getBitB = function( x, z )
+		local i, j = getTile( x, z )
+		if self.tiles[i] == nil then return false end
+		if self.tiles[i][j] == nil then return false end
+		
+		if self.buffer ~= nil then
+			for i,b in pairs( self.buffer ) do
+				if b.x-0.01 < x and x < b.x+0.01 and b.z-0.01 < z and z < b.z+0.01 then
+					return b.b
+				end
+			end
+		end
+		
+		local b = FieldBitmapTile.getBit( self.tiles[i][j], x, z )
+		
+		if self.buffer ~= nil then
+			if self.index >= self.bSize then
+				self.index = 1
+			else
+				self.index = self.index + 1
+			end	
+			self.buffer[self.index] = { x=x, z=z, b=b }
+		end
+		
+		return b
 	end
 	
 ------------------------------------------------------------------------
@@ -457,9 +493,14 @@ function FieldBitmap.create( iStepLog2, tiles )
 		
 		return area, total 
 	end
+	
+	local getBitFct = getBit 
+	if self.buffer ~= nil then
+		getBitFct = getBitB
+	end
 		
 	return { setBit            = setBit, 
-					 getBit            = getBit, 
+					 getBit            = getBitFct, 
 					 getPoints         = getPoints,
 					 tileExists        = tileExists, 
 					 getTileDimensions = getTileDimensions,
