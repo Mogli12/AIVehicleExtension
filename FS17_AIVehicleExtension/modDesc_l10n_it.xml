@@ -17,7 +17,7 @@
 		<text name="AUTO_TRACTOR_STEERING_OFF"             text="sterzo manuale [off]"/>
 		<text name="AUTO_TRACTOR_CONTINUE"                 text="continua"/>
 		
-		<text name="AUTO_TRACTOR_WAITMODE_ON" text="mode scarcico [fermo]" />
+		<text name="AUTO_TRACTOR_WAITMODE_ON" text="modo scarico [fermo]" />
 		<text name="AUTO_TRACTOR_WAITMODE_OFF" text="modo scarico [in movimento]" />
 		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON" text="mantieni la distanza è ON" />
 		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" text="mantieni la distanza è OFF" />
