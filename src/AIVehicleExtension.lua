@@ -154,8 +154,8 @@ function AIVehicleExtension:load(saveGame)
 	
 	self.acAutoRotateBackSpeedBackup = self.autoRotateBackSpeed;	
 
-	local tempNode = self.aiTractorDirectionNode;
-	if self.aiTractorDirectionNode == nil then
+	local tempNode = self.aiVehicleDirectionNode;
+	if self.aiVehicleDirectionNode == nil then
 		tempNode = self.components[1].node
 	end
 	if			self.articulatedAxis ~= nil 
@@ -1025,7 +1025,7 @@ function AIVehicleExtension:shiftAIMarker()
 	for _,marker in pairs( {"aiCurrentLeftMarker", "aiCurrentRightMarker", "aiCurrentBackMarker"} ) do 						
 		if self[marker] == nil then
 		--print("unlink marker "..marker)
-			link( self.aiTractorDirectionNode, self.atShiftedMarker[marker] )
+			link( self.aiVehicleDirectionNode, self.atShiftedMarker[marker] )
 		elseif self[marker] ~= self.atShiftedMarker[marker] then
 		--print("linking marker "..marker)
 			link( self[marker], self.atShiftedMarker[marker] )
@@ -2458,12 +2458,12 @@ end
 
 AIVehicle.setDriveStrategies = Utils.appendedFunction( AIVehicle.setDriveStrategies, AIVehicleExtension.afterSetDriveStrategies )
 
-function AIVehicleExtension:afterStopAIVehicle(reason, noEventSend)
-	print("Stop AI Vehicle: "..tostring(reason))
-	AIVehicleExtension.printCallStack( self, 15 )
-end
-
-AIVehicle.stopAIVehicle = Utils.appendedFunction( AIVehicle.stopAIVehicle, AIVehicleExtension.afterStopAIVehicle )
+--function AIVehicleExtension:afterStopAIVehicle(reason, noEventSend)
+--	print("Stop AI Vehicle: "..tostring(reason))
+--	AIVehicleExtension.printCallStack( self, 15 )
+--end
+--
+--AIVehicle.stopAIVehicle = Utils.appendedFunction( AIVehicle.stopAIVehicle, AIVehicleExtension.afterStopAIVehicle )
 --==============================================================				
 --==============================================================				
 

@@ -68,7 +68,8 @@ end
 -- getPoint
 --============================================================================================================================
 function AITurnStrategyMogli:getPoint( wx, wz, dx, dz )
-	return { x=wx, z=wz, dx=dx, dz=dz }
+	local l = Utils.vector2Length( dx, dz )
+	return { x=wx, z=wz, dx=dx/l, dz=dz/l }
 end
 
 --============================================================================================================================
@@ -176,24 +177,39 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 	end 
 	
 	if skip then
-		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle = unpack( self.lastDriveData )
-		if angle ~= nil then
+		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive = unpack( self.lastDriveData )
+		if tX == nil and angle ~= nil then
 			tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
 		end
 		local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 1, false, 0.7 )
-		return tX, tZ, moveForwards, maxSpeed, distanceToStop
+		
+		if allowedToDrive then
+			self:raiseOrLower( moveForwards )
+		elseif angle ~= nil then
+			AutoSteeringEngine.steer( vehicle, dt, angle, vehicle.aiSteeringSpeed, false )		
+		end
+		
+		return tX, tZ, moveForwards, maxSpeed, distanceToStop, not ( inactive )
 	end
 	
 	while self.activeStage ~= nil do
-		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle = self.activeStage.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( self.activeStage.parameter ) )
+		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive = self.activeStage.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( self.activeStage.parameter ) )
 		
+		if tX == nil and angle ~= nil then
+			tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
+		end
 		if tX ~= nil then
 			local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 1, false, 0.7 )
-			self:raiseOrLower( moveForwards )
 			
-			self.lastDriveData = { tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle }
+			if allowedToDrive then
+				self:raiseOrLower( moveForwards )
+			elseif angle ~= nil then
+				AutoSteeringEngine.steer( vehicle, dt, angle, vehicle.aiSteeringSpeed, false )		
+			end
+			
+			self.lastDriveData = { tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive }
 				
-			return tX, tZ, moveForwards, maxSpeed, distanceToStop
+			return tX, tZ, moveForwards, maxSpeed, distanceToStop, not ( inactive )
 		end
 			
 		-- go to next stage 		
@@ -206,6 +222,79 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 	end
 	
 	-- end of turn
+end
+
+--============================================================================================================================
+-- getStageCircle
+--============================================================================================================================
+function AITurnStrategyMogli:getStageCircle( centerX, centerZ, radius, endAngle, increaseAngle, moveForwards, distanceToStop )
+	local s          = {}	
+	
+	s.getDriveData   = AITurnStrategyMogli.getDD_circle
+	s.parameter      = { centerX, centerZ, math.max( 5, radius ), endAngle, increaseAngle, moveForwards, distanceToStop }
+	
+	return s
+end
+
+--============================================================================================================================
+-- getDD_navigateAlongPoints
+--============================================================================================================================
+function AITurnStrategyMogli:getDD_circle( dt, vX,vY,vZ, turnData, centerX, centerZ, radius, endAngle, increaseAngle, moveForwards, distanceToStop )
+	local vehicle  = self.vehicle 
+	local wx,wy,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
+--local dx,_,dz  = localDirectionToWorld( vehicle.aiveChain.refNode, 0, 0, 1 )
+	local dx       = wx - centerX
+	local dz       = wz - centerZ 
+	local angle    = math.atan2( dx, dz )
+	local diff     = AutoSteeringEngine.normalizeAngle( angle - endAngle )
+	local invert   = false
+
+	if not ( increaseAngle ) then
+		diff   = - diff
+		insert = not invert 
+	end
+	if not ( moveForwards ) then
+		diff   = -diff
+		insert = not invert 
+	end
+	
+	if 0 <= diff and diff < 0.5 * math.pi then
+		print(tostring(self.stageId)..": "..AutoSteeringEngine.radToString(angle).." - "..AutoSteeringEngine.radToString(endAngle).." = "..AutoSteeringEngine.radToString(diff))
+		return 
+	end
+	diff = -diff
+	if diff < 0 then
+		diff = diff + math.pi + math.pi
+	end
+
+	local dist = diff * radius + distanceToStop	
+	local targetAngle = endAngle
+	if diff * radius > 1 then
+		
+		diff = 1 / radius 
+		if invert then
+			targetAngle = angle - diff
+		else
+			targetAngle = angle + diff
+		end
+	end
+	
+	print(AutoSteeringEngine.radToString( angle ).." => "..AutoSteeringEngine.radToString( targetAngle ).." => "..AutoSteeringEngine.radToString( endAngle ))
+	
+	local r = radius 
+	if not increaseAngle then
+		r = -radius 
+	end
+	
+	dx = math.sin( targetAngle ) * r 
+	dz = math.cos( targetAngle ) * r 
+	
+	wx = centerX+dx
+	wz = centerZ+dz
+	
+	print(tostring(wx).." "..tostring(wz))
+	
+	return centerX+dx, centerZ+dz, moveForwards, true, dist, nil, false
 end
 
 --============================================================================================================================
@@ -372,7 +461,7 @@ function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, 
 
 	distanceToStop = distanceToStop + math.sqrt( bestD )
 	
-	return bestX, bestZ, moveForwards, true, distanceToStop, nil
+	return bestX, bestZ, moveForwards, true, distanceToStop, nil, false
 end
 
 --============================================================================================================================
@@ -410,8 +499,7 @@ function AITurnStrategyMogli:getDD_reduceTurnAngle( dt, vX,vY,vZ, turnData, move
 	end
 	
 	local angle2 = Utils.clamp( -angle, -vehicle.acDimensions.maxSteeringAngle, vehicle.acDimensions.maxSteeringAngle )
-	local tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle2 )
-	return tX, tZ, moveForwards, true, 1, angle2
+	return tX, tZ, moveForwards, true, 1, angle2, true
 end
 
 --============================================================================================================================
@@ -461,7 +549,7 @@ function AITurnStrategyMogli:getDD_checkIsAnimPlaying( dt, vX,vY,vZ, turnData, m
 	if not allowedToDrive then
 		AIVehicleExtension.statEvent( vehicle, "tS", dt )
 		vehicle.isHirableBlocked = true		
-		return vX, vZ, Utils.getNoNil( moveForwards, true ), false, 0
+		return vX, vZ, Utils.getNoNil( moveForwards, true ), false, 0, true
 	end
 	
 end
@@ -480,10 +568,10 @@ end
 -- getDD_combinedStage
 --============================================================================================================================
 function AITurnStrategyMogli:getDD_combinedStage( dt, vX,vY,vZ, turnData, s1, s2 )
-	local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle = s1.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( s1.parameter ) )
+	local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive = s1.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( s1.parameter ) )
 	
-	if tX ~= nil then
-		return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle
+	if tX ~= nil or angle ~= nil then
+		return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive
 	end
 
 	return s2.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( s2.parameter ) )
@@ -503,7 +591,7 @@ end
 -- getDD_withPostCheck
 --============================================================================================================================
 function AITurnStrategyMogli:getDD_withPostCheck( dt, vX,vY,vZ, turnData, s1, fct )
-	local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle = s1.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( s1.parameter ) )
+	local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive = s1.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( s1.parameter ) )
 
-	return fct( self, dt, vX,vY,vZ, turnData, tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle )
+	return fct( self, dt, vX,vY,vZ, turnData, tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive )
 end

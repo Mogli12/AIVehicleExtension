@@ -99,7 +99,7 @@
 
 		<maxDtSumT value="100"/>
 		<maxDtSum  value="100" /> <!-- 10 fps => 100 ms -->
-		<maxDtDist type="float" value="0.077284" /> <!-- 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
+		<maxDtDist type="float" value="0.077284" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
 		<maxDtDistD type="float" value="0.01" />
 		<maxDtAngle type="float" value="0.3" />
 		

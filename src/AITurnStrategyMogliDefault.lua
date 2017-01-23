@@ -94,21 +94,13 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		AIVehicleExtension.statEvent( veh, "tS", dt )
 		veh.isHirableBlocked = true		
 		
-		local angle3
-		if self.lastDirection == nil then
-			tX = vX
-			tZ = vZ
-		else
-			tX = self.lastDirection[1]
-			tZ = self.lastDirection[2]
-			
+		if self.lastDirection ~= nil then
 			if self.lastDirection[3] ~= nil then
-				angle3 = self.lastDirection[3]
 				AutoSteeringEngine.steer( veh, dt, self.lastDirection[3], veh.aiSteeringSpeed, false );
 			end
-		end
-		
-		return tX, tZ, true, 0, 0, angle3
+			return self.lastDirection[1], self.lastDirection[2], true, 0, 0, self.lastDirection[3]
+		end		
+		return vX, vZ, true, 0, 0
 	end
 	
 	veh.isHirableBlocked = false
@@ -2029,20 +2021,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			angle2 = -angle
 		end
 	end
-	
-	local angle3 
-	if tX == nil then
-		angle3 = angle2
-		tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, angle2 )
-	end
-		
-	if self.lastDirection ~= nil then
-		tX = self.lastDirection[1] + 0.1 * ( tX - self.lastDirection[1] )
-		tZ = self.lastDirection[2] + 0.1 * ( tZ - self.lastDirection[2] )
-	end
 
-	self.lastDirection = { tX, tZ }
-	self.lastDirection[3] = angle2 
+	self.lastDirection = { tX, tZ, angle2 }
 	
-	return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle3
+	return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle2
 end

@@ -35,8 +35,9 @@ end
 --============================================================================================================================
 function AITurnStrategyMogli_C_R:getNextStage( dt, vX,vY,vZ, turnData, stageId )
 	if     stageId == 1 then
-		return self:getCombinedStage( self:getStageFromFunction( AITurnStrategyMogli.getDD_checkIsAnimPlaying, true ),
-																	self:getStageFromFunction( AITurnStrategyMogli.getDD_reduceTurnAngle, { true, 6 } ) )
+	--return self:getCombinedStage( self:getStageFromFunction( AITurnStrategyMogli.getDD_checkIsAnimPlaying, true ),
+	--															self:getStageFromFunction( AITurnStrategyMogli.getDD_reduceTurnAngle, { true, 6 } ) )
+		return self:getStageFromFunction( AITurnStrategyMogli.getDD_reduceTurnAngle, { true, 6 } )
 	elseif stageId == 2 then
 		self:fillStages( turnData )
 		return self:getStageFromPoints( self.stages[1], true, 0 )
@@ -53,7 +54,7 @@ end
 --============================================================================================================================
 -- detect4
 --============================================================================================================================
-function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle )
+function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive )
 	local veh = self.vehicle 
 	
 	local checkIt = false
@@ -90,7 +91,7 @@ function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveFo
 		end
 	end
 	
-	return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle
+	return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive
 end
 	
 --============================================================================================================================
@@ -102,7 +103,7 @@ function AITurnStrategyMogli_C_R:detect5( dt, vX,vY,vZ, turnData )
 	local detected, angle2, border = AutoSteeringEngine.processChain( veh )
 	if border > 0 or math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then			
 		local tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, 0 )
-		return tX, tZ, false, true, math.huge, 0
+		return tX, tZ, false, true, math.huge, 0, false
 	end 
 end
 
@@ -126,8 +127,8 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 	local dirCX,_,dirCZ = localDirectionToWorld( vehicle.aiveChain.headlandNode, 0, 0, 1 )	
 	local dirFX,_,dirFZ = localDirectionToWorld( vehicle.aiveChain.headlandNode, factor, 0, 0 )			
 
-	finalX = finalX - ( vehicle.aiveChain.maxZ + extraF ) * dirFX + 0.5 * dirCX
-	finalZ = finalZ - ( vehicle.aiveChain.maxZ + extraF ) * dirFZ + 0.5 * dirCZ
+	finalX = finalX - ( vehicle.aiveChain.maxZ + extraF ) * dirFX
+	finalZ = finalZ - ( vehicle.aiveChain.maxZ + extraF ) * dirFZ
 
 	local curX,_,curZ   = AutoSteeringEngine.getAiWorldPosition( vehicle )
 	
