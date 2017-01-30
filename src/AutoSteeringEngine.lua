@@ -1011,8 +1011,11 @@ function AutoSteeringEngine.getToolsSpeedLimit( vehicle )
 	if vehicle.cruiseControl ~= nil and vehicle.cruiseControl.maxSpeed ~= nil then
 		speedLimit = vehicle.cruiseControl.maxSpeed
 	end
-	if vehicle.checkSpeedLimit and speedLimit > vehicle.speedLimit then
-		speedLimit = vehicle.speedLimit
+
+	local s, c = vehicle:getSpeedLimit()
+
+	if c and speedLimit > s then
+		speedLimit = s
 	end
 	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
@@ -1033,6 +1036,8 @@ end
 function AutoSteeringEngine.getWantedSpeed( vehicle, speedLevel )
 	if vehicle.aiveChain.wantedSpeed == nil then
 		vehicle.aiveChain.wantedSpeed = 0.8 *  AutoSteeringEngine.getToolsSpeedLimit( vehicle )
+	else
+		vehicle.aiveChain.wantedSpeed = math.min( vehicle.aiveChain.wantedSpeed, AutoSteeringEngine.getToolsSpeedLimit( vehicle ) )
 	end
 	
 	local wantedSpeed  = 12
@@ -2359,10 +2364,10 @@ end
 ------------------------------------------------------------------------
 -- getWorldTargetFromSteeringAngle
 ------------------------------------------------------------------------
-function AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
+function AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle, moveForwards )
 
 	local invR = vehicle.aiveChain.invWheelBase * math.tan( angle )	
-	local l    = 1 --math.min( 5, vehicle.aiveChain.radius )
+	local l    = math.max( 1, 0.2 * vehicle.aiveChain.radius ) -- math.min( 5, vehicle.aiveChain.radius )
 	local rot  = 2 * math.asin( invR * 0.5 * l )
 	local lz   = l * math.cos( rot )
 	local lx   = l * math.sin( rot )
@@ -2452,6 +2457,7 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
 	
   if not allowedToDrive then
     acc = 0
+		wantedSpeed = 0
 	end
 	
 --print("dt: "..tostring(dt)..", wantedSpeed: "..tostring(wantedSpeed).."("..tostring(speedLevel).."), acc:"..tostring(acc).."("..tostring(allowedToDrive)..")")
@@ -2460,7 +2466,7 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
 		vehicle.acLastAcc = 0
 	end
 	if vehicle.acLastWantedSpeed == nil then
-		vehicle.acLastWantedSpeed = 5
+		vehicle.acLastWantedSpeed = math.max( 2, vehicle.lastSpeed * 3600 )
 	end
 		
 	if     math.abs( acc ) < 1E-4
@@ -2472,13 +2478,26 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
 	else
 		vehicle.acLastAcc = vehicle.acLastAcc + Utils.clamp( acc - vehicle.acLastAcc, - dt * 0.0005, dt * 0.0005)
 	end
+	
+	local curSpeed = math.abs( vehicle.lastSpeed * 3600 )
 			
-	if     wantedSpeed < 5 then		
-		vehicle.acLastWantedSpeed = 5
+	if     wantedSpeed < 1 then		
+		vehicle.acLastWantedSpeed = 2
 		return 0
-	elseif wantedSpeed < 7.5 then
+	elseif wantedSpeed < 7.5 and wantedSpeed < curSpeed then
+		vehicle.acLastWantedSpeed = wantedSpeed
+	elseif math.abs( wantedSpeed - curSpeed ) < 0.5 then
 		vehicle.acLastWantedSpeed = wantedSpeed
 	else
+		if wantedSpeed < curSpeed then
+			vehicle.acLastWantedSpeed = math.min( vehicle.acLastWantedSpeed, curSpeed )
+		else
+			vehicle.acLastWantedSpeed = math.max( vehicle.acLastWantedSpeed, curSpeed )
+		end
+		if vehicle.acLastWantedSpeed < 2 then
+			vehicle.acLastWantedSpeed = 2
+		end
+	
 		vehicle.acLastWantedSpeed = vehicle.acLastWantedSpeed + Utils.clamp( wantedSpeed - vehicle.acLastWantedSpeed, -0.0015 * dt, 0.0015 * dt )
 	end
 	
@@ -5192,12 +5211,13 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 					
 					if     shiftZ > 0 then
 						if area <= 0 then
+							doShiftZ = shiftZ
 							break
 						end
 						shiftZ = shiftZ + 0.25
 					elseif shiftZ < 0 then
 						if area > 0 then
-							shiftZ = shiftZ + 0.25
+							doShiftZ = shiftZ + 0.25
 							break
 						else
 							shiftZ = shiftZ - 0.25 
@@ -5211,25 +5231,27 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 					end
 				end
 				
-				vehicle.aiveChain.trace.cx = vehicle.aiveChain.trace.cx + dzx * shiftZ
-				vehicle.aiveChain.trace.ox = vehicle.aiveChain.trace.ox + dzx * shiftZ
-				vehicle.aiveChain.trace.cz = vehicle.aiveChain.trace.cz + dzz * shiftZ
-				vehicle.aiveChain.trace.oz = vehicle.aiveChain.trace.oz + dzz * shiftZ
-				vehicle.aiveChain.buffer = {}
-				
-				if AIVEGlobals.showTrace > 0 then			
-					print(string.format("shiftZ: %1.2fm => area: %d / total: %d",shiftZ,area,total))
-					local x0 = vehicle.aiveChain.trace.cx + dzx * math.abs( vehicle.aiveChain.activeX )
-					local z0 = vehicle.aiveChain.trace.cz + dzz * math.abs( vehicle.aiveChain.activeX )
-					local xs = x0 - dxx
-					local zs = z0 - dxz
-					local xh = xs + dzx
-					local zh = zs + dzz
-					local xw = x0 + dxx
-					local zw = z0 + dxz
+				if doShiftZ ~= nil then
+					vehicle.aiveChain.trace.cx = vehicle.aiveChain.trace.cx + dzx * doShiftZ
+					vehicle.aiveChain.trace.ox = vehicle.aiveChain.trace.ox + dzx * doShiftZ
+					vehicle.aiveChain.trace.cz = vehicle.aiveChain.trace.cz + dzz * doShiftZ
+					vehicle.aiveChain.trace.oz = vehicle.aiveChain.trace.oz + dzz * doShiftZ
+					vehicle.aiveChain.buffer = {}
 					
-				--print(string.format("xs: %1.2f, zs: %1.2f, xw: %1.2f, zw: %1.2f, xh: %1.2f, zh: %1.2f",xs, zs, xw, zw, xh, zh))
-					vehicle.aiveChain.trace.itv2 = { xs, zs, xw, zw, xh, zh }			
+					if AIVEGlobals.showTrace > 0 then			
+						print(string.format("shiftZ: %1.2fm => area: %d / total: %d",doShiftZ,area,total))
+						local x0 = vehicle.aiveChain.trace.cx + dzx * math.abs( vehicle.aiveChain.activeX )
+						local z0 = vehicle.aiveChain.trace.cz + dzz * math.abs( vehicle.aiveChain.activeX )
+						local xs = x0 - dxx
+						local zs = z0 - dxz
+						local xh = xs + dzx
+						local zh = zs + dzz
+						local xw = x0 + dxx
+						local zw = z0 + dxz
+						
+					--print(string.format("xs: %1.2f, zs: %1.2f, xw: %1.2f, zw: %1.2f, xh: %1.2f, zh: %1.2f",xs, zs, xw, zw, xh, zh))
+						vehicle.aiveChain.trace.itv2 = { xs, zs, xw, zw, xh, zh }			
+					end
 				end
 			end
 
@@ -5811,12 +5833,6 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	tool.isMower         = SpecializationUtil.hasSpecialization(Mower, object.specializations)
 	tool.isFoldable      = SpecializationUtil.hasSpecialization(Foldable, object.specializations)
 	
---if tool.isCombine then
---	useAI = false
---elseif  object.customEnvironment ~= nil
---		and SpecializationUtil.hasSpecialization(SpecializationUtil.getSpecialization( object.customEnvironment ..".HorschSW3500S" ), object.specializations) then 
---	useAI = false
---end
 	if tool.isPlough and tool.aiForceTurnNoBackward then
 		tool.checkZRotation = true
 	end
@@ -5869,23 +5885,12 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		
 		tool.aiBackMarker = object.aiBackMarker		
 
-		if     object.packomatBase ~= nil then
-			tool.isPlough = false
-			tool.specialType = "Packomat"
-			tool.outTerrainDetailChannel = g_currentMission.ploughChannel
-		elseif  object.customEnvironment   ~= nil
-				and SpecializationUtil.hasSpecialization(SpecializationUtil.getSpecialization( object.customEnvironment ..".Lemken_Gigant" ), object.specializations) then
-			tool.outTerrainDetailChannel = g_currentMission.cultivatorChannel
-			tool.aiForceTurnNoBackward   = true
-		elseif tool.isSowingMachine then
+		if     tool.isSowingMachine then
 			tool.outTerrainDetailChannel = g_currentMission.sowingChannel
 		elseif tool.isCultivator then
 			tool.outTerrainDetailChannel = g_currentMission.cultivatorChannel
 		elseif tool.isPlough then
 			tool.outTerrainDetailChannel = g_currentMission.ploughChannel
-			if getName( object.components[1].node ) == "poettingerServo650" then
-				tool.specialType = "poettingerServo650"
-			end
 		end
 	end
 
@@ -5915,38 +5920,6 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 			and AutoSteeringEngine.tableGetN( AutoSteeringEngine.getTaJoints2( vehicle, implement, vehicle.aiveChain.refNode, 0 ) ) > 1 then
 		tool.doubleJoint = true
 	end
-	
-	----------------------------------------------------------
-	---- Vaederstad_SoilMod_Pack
-	--
-	--if      object.customEnvironment ~= nil 
-	--		and object.typeName          == object.customEnvironment..".RapidA" then
-	--	if AIVEGlobals.devFeatures > 0 then
-	--		print(string.sub( object.configFileName, -10, -1 ))
-	--	end
-	--	if string.sub( object.configFileName, -10, -1 ) ~= "_Light.xml" then
-	--		tool.doubleJoint = true
-	--	end
-	--end
-	--
-	--if object.customEnvironment ~= nil and object.typeName == object.customEnvironment..".vaederstadTopDown" then
-	--	tool.noRevStraight = false
-	--end
-	--
-	---- BioDrill or BioSpray attached to cultivator or seeding machine
-	--if      object.customEnvironment                 ~= nil
-	--		and object.attacherVehicle                   ~= nil 
-	--		and object.attacherVehicle.customEnvironment ~= nil
-	--		and object.attacherVehicle.customEnvironment == object.customEnvironment then
-	--	if AIVEGlobals.devFeatures > 0 then
-	--		print(string.sub( object.typeName, -22, -5 ))
-	--	end
-	--	if     string.sub( object.typeName, -22, -5 ) == "vaederstadBioSpray"
-	--			or string.sub( object.typeName, -22, -5 ) == "vaederstadBioDrill" then
-	--		tool.ignoreAI = true
-	--	end
-	--end
- ----------------------------------------------------------
 	
   --------------------------------------------------------
 	-- tool attached to tool
@@ -6052,10 +6025,6 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		i = 1
 	else
 		i = table.getn(vehicle.aiveChain.tools) + 1
-	end
-	
-	if tool.isSprayer and getfenv(0)["modSoilMod2"] ~= nil then
-		tool.ignoreAI = true
 	end
 	
 	if SpecializationUtil.hasSpecialization(Combine, vehicle.specializations) then
@@ -6497,7 +6466,7 @@ function AutoSteeringEngine.getMaxSteeringAngle75( vehicle, invert )
 			diffT = vehicle.aiveChain.activeX
 		else
 			for i,tool in pairs(vehicle.aiveChain.tools) do
-				if tool.isPlough or tool.specialType == "Packomat" then
+				if tool.isPlough then
 					diffT = vehicle.aiveChain.activeX
 					break
 				end
@@ -7095,29 +7064,7 @@ function AutoSteeringEngine.setToolsAreTurnedOn( vehicle, isTurnedOn, immediate,
 	for i=1,vehicle.aiveChain.toolCount do
 		if objectFilter == nil or objectFilter == vehicle.aiveChain.tools[i].obj then
 			local self = vehicle.aiveChain.tools[i].obj
-			if     vehicle.aiveChain.tools[i].specialType == "Poettinger X8"          then
-				local idx = self.x8.selectionIdx
-				self:setSelection( 3 )
-				if isTurnedOn then
-					self:setTransport( false )
-				end
-				self:setTurnedOn( isTurnedOn )
-				self:setSelection( idx )
-			elseif vehicle.aiveChain.tools[i].specialType == "Poettinger AlphaMotion" then
-				if isTurnedOn then
-					self:setTransport( false )
-				end
-				self:setTurnedOn( isTurnedOn )
-			elseif vehicle.aiveChain.tools[i].specialType == "Horsch SW3500 S"        then
-			--if isTurnedOn and self.Go.trsp ~= isTurnedOn then
-			--	self:setStateEvent("Speed", "trsp", 1.0)
-			--	self:setStateEvent("Go", "trsp", isTurnedOn)
-			--	self:setStateEvent("Done", "trsp", true)
-			--end
-				if self.turnOn ~= isTurnedOn then
-					self:setStateEvent("turnOn", false, isTurnedOn)
-				end
-			elseif vehicle.aiveChain.tools[i].isAITool then
+			if vehicle.aiveChain.tools[i].isAITool then
 				if vehicle.aiveChain.tools[i].isTurnOnVehicle then
 					self:setIsTurnedOn( isTurnedOn )
 				end
@@ -7234,14 +7181,7 @@ function AutoSteeringEngine.setPloughTransport( vehicle, isTransport, excludePac
 		return
 	end
 	for i=1,vehicle.aiveChain.toolCount do
-		if      vehicle.aiveChain.tools[i].specialType == "Packomat"
-				and ( excludePackomat == nil or not excludePackomat ) then
-				
-			local self = vehicle.aiveChain.tools[i].obj
-			if self.transport ~= isTransport then
-				self:setStateEvent("transport", isTransport )
-			end
-		elseif  vehicle.aiveChain.tools[i].ploughTransport
+		if      vehicle.aiveChain.tools[i].ploughTransport
 				and vehicle.aiveChain.tools[i].obj:getIsPloughRotationAllowed() then
 			local self = vehicle.aiveChain.tools[i].obj
 			local curAnimTime = self:getAnimationTime(self.rotationPart.turnAnimation)

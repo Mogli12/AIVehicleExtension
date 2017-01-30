@@ -64,8 +64,6 @@ function AITurnStrategyMogli_U_O:fillStages( turnData )
 	local finalX = vehicle.aiveChain.trace.ux
 	local finalZ = vehicle.aiveChain.trace.uz
 	local dirZx,_,dirZz = localDirectionToWorld( vehicle.aiveChain.headlandNode, 0, 0, 1 )	
-	local startAngle    = math.atan2( dirZx, dirZz )
-	local endAngle      = startAngle + math.pi
 
 	local rV = vehicle.acDimensions.radius * 1.2
 	for _,implement in pairs(vehicle.aiImplementList) do
@@ -97,14 +95,21 @@ function AITurnStrategyMogli_U_O:fillStages( turnData )
 	
 	local lX, lZ = worldDirectionToLocal( vehicle.aiveChain.headlandNode, finalX - curX, 0, finalZ - curZ )
 	local dirXx, dirXz
-	local increaseAngle = true
+	local rC = rV
 	if lX < 0 then
 		dirXx,_,dirXz = localDirectionToWorld( vehicle.aiveChain.headlandNode, -1, 0, 0 )
 		lX = -lX
-		increaseAngle = not increaseAngle
 	else
 		dirXx,_,dirXz = localDirectionToWorld( vehicle.aiveChain.headlandNode,  1, 0, 0 )	
+		rC = -rV
 	end
+
+	local startAngle = math.acos( -dirXz )
+	if dirXx > 0 then
+		startAngle     = -startAngle 
+	end
+	local endAngle   = startAngle + math.pi
+
 	
 	local centerX = -rT
 	local centerZ = math.max( lZ, 0 ) + 1 - vehicle.aiveChain.maxZ
@@ -119,10 +124,10 @@ function AITurnStrategyMogli_U_O:fillStages( turnData )
 		shiftX = lX - width
 	end
 
-	print(string.format("%5.2f %5.2f",curX,curZ))
-	print(string.format("%5.2f %5.2f",finalX,finalZ))
-	print(string.format("%5.2f %5.2f",centerX,centerZ))
-	print(string.format("%5.2f° %5.2f°",math.deg(startAngle),math.deg(endAngle)))
+	self:addDebugText(string.format("%5.2f %5.2f",curX,curZ))
+	self:addDebugText(string.format("%5.2f %5.2f",finalX,finalZ))
+	self:addDebugText(string.format("%5.2f %5.2f",centerX,centerZ))
+	self:addDebugText(string.format("%5.2f° %5.2f°",math.deg(startAngle),math.deg(endAngle)))
 	
 --
 --local lastX = curX
@@ -139,7 +144,7 @@ function AITurnStrategyMogli_U_O:fillStages( turnData )
 --		local wx = curX + x * dirXx + z * dirZx
 --		local wz = curZ + x * dirXz + z * dirZz 
 --		
---		print(string.format("%5.2f %5.2f",wx,wz))
+--		self:addDebugText(string.format("%5.2f %5.2f",wx,wz))
 --		
 --		table.insert( self.stages[s], self:getPoint( wx, wz, wx - lastX, wz - lastZ ) )
 --		lastX = wx
@@ -155,7 +160,7 @@ function AITurnStrategyMogli_U_O:fillStages( turnData )
 --		local wx = finalX + x * dirXx + z * dirZx
 --		local wz = finalZ + x * dirXz + z * dirZz 
 --		
---		print(string.format("%5.2f %5.2f",wx,wz))
+--		self:addDebugText(string.format("%5.2f %5.2f",wx,wz))
 --		
 --		table.insert( self.stages[s], self:getPoint( wx, wz, wx - lastX, wz - lastZ ) )
 --		lastX = wx
@@ -176,7 +181,7 @@ function AITurnStrategyMogli_U_O:fillStages( turnData )
 --	local wx = finalX + x * dirXx + z * dirZx
 --	local wz = finalZ + x * dirXz + z * dirZz 
 --	
---	print(string.format("%5.2f %5.2f",wx,wz))
+--	self:addDebugText(string.format("%5.2f %5.2f",wx,wz))
 --	
 --	if i == 0 then
 --		s = s + 1
@@ -189,38 +194,38 @@ function AITurnStrategyMogli_U_O:fillStages( turnData )
 --end
 
 
-	-- centerX, centerZ, radius, endAngle, increaseAngle, moveForwards, distanceToStop
+	-- centerX, centerZ, radius, endAngle, moveForwards, distanceToStop
 	local centerX2 = centerX - shiftX * dirXx
 	local centerZ2 = centerZ - shiftX * dirXz
 	
 	local s = 0
 	
-	if extraA > 0 and extraA > 0.05 * math.pi then
-		local wx = curX - rV * dirXx
-		local wz = curZ - rV * dirXz
-
-		s = s + 1 
-		self.stages[s] = { wx, wz, rV, startAngle - extraA, increaseAngle, true, ( math.pi + extraA ) * rV }
-	end
+--if extraA > 0 and extraA > 0.05 * math.pi then
+--	local wx = curX - rV * dirXx
+--	local wz = curZ - rV * dirXz
+--
+--	s = s + 1 
+--	self.stages[s] = { wx, wz, -rC, startAngle - extraA, true, ( math.pi + extraA ) * rV }
+--end
 	
 	local wx = finalX + centerX2 * dirXx + centerZ2 * dirZx
 	local wz = finalZ + centerX2 * dirXz + centerZ2 * dirZz 
 	
 --if extraA > 0 and extraA > 0.05 * math.pi then
 --	s = s + 1 
---	self.stages[s] = { wx, wz, rV, startAngle, increaseAngle, true, math.pi * rV }
+--	self.stages[s] = { wx, wz, rC, startAngle, true, math.pi * rV }
 --end	
 
 	s = s + 1 
-	self.stages[s] = { wx, wz, rV, 0.5*( startAngle + endAngle ), increaseAngle, true, 0 }
+	self.stages[s] = { wx, wz, rC, 0.5*( startAngle + endAngle ), true, 0.5 * math.pi * rV }
 	
 	wx = finalX + centerX * dirXx + centerZ * dirZx
 	wz = finalZ + centerX * dirXz + centerZ * dirZz 
 	
 	s = s + 1 
-	self.stages[s] = { wx, wz, rV, endAngle, increaseAngle, true, 0 }
+	self.stages[s] = { wx, wz, rC, endAngle, true, 0 }
 	
-	print(tostring(table.getn(self.stages)))
+	self:addDebugText(tostring(table.getn(self.stages)))
 	
 	self.updateDebugPrint = true
 end
@@ -232,26 +237,30 @@ function AITurnStrategyMogli_U_O:update(dt)
 	if self.updateDebugPrint then
 		self.updateDebugPrint = nil 
 		for s=1,table.getn( self.stages ) do
-			local centerX, centerZ, radius, endAngle, increaseAngle, moveForwards, distanceToStop = unpack( self.stages[s] )
-			print(tostring(s)..": "..
+			local centerX, centerZ, radius, endAngle, moveForwards, distanceToStop = unpack( self.stages[s] )
+			
+			local wx, wz
+			if centerX ~= nil and centerZ ~= nil and endAngle ~= nil and radius ~= nil then
+				wx = centerX + math.sin( endAngle ) * radius 
+				wz = centerZ + math.cos( endAngle ) * radius 
+			end
+			
+			self:addDebugText(tostring(s)..": "..
 						tostring(centerX).." "..
 						tostring(centerZ).." "..
 						tostring(radius).." "..
 						tostring(endAngle).." "..
-						tostring(increaseAngle).." "..
 						tostring(moveForwards).." "..
-						tostring(distanceToStop))
+						tostring(distanceToStop).." => "..
+						tostring(wx).." "..
+						tostring(wz))
 		end
 	end
 	
 	if self.vehicle ~= nil and self.stages ~= nil then -- and self.vehicle.acShowTrace then
 	
 		for s=1,table.getn( self.stages ) do
-			local centerX, centerZ, radius, endAngle, increaseAngle, moveForwards, distanceToStop = unpack( self.stages[s] )
-			
-			if not ( increaseAngle ) then
-				radius = -radius
-			end
+			local centerX, centerZ, radius, endAngle, moveForwards, distanceToStop = unpack( self.stages[s] )
 			
 			local x = centerX 
 			local z = centerZ 

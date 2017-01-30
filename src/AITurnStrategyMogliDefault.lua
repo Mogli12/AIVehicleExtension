@@ -15,6 +15,15 @@ function AITurnStrategyMogliDefault:new(customMt)
 end
 
 --============================================================================================================================
+-- onEndTurn
+--============================================================================================================================
+function AITurnStrategyMogliDefault:onEndTurn( ... )
+	AITurnStrategyMogliDefault:superClass().onEndTurn( self, ... )
+	AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, self.vehicle.aiveHas.combine )
+	self.lastTurnStage = nil
+end
+
+--============================================================================================================================
 -- fillStages
 --============================================================================================================================
 function AITurnStrategyMogliDefault:getNextStage( dt, vX,vY,vZ, turnData, stageId )
@@ -33,6 +42,11 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	
 	if turnData.stage <= 0 then
 		return 
+	end
+	
+	if self.lastTurnStage == nil or self.lastTurnStage ~= turnData.stage then
+		self.lastTurnStage = turnData.stage
+		self.turnStageData = nil
 	end
 	
 	local tX, tZ, moveForwards, distanceToStop = nil, nil, true, math.huge		
@@ -122,11 +136,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 
 --==============================================================				
 	
-	if     turnData.stage ~= 0 then
-		veh.aiRescueTimer = veh.aiRescueTimer - dt;
-	else
-		veh.aiRescueTimer = math.max( veh.aiRescueTimer, veh.acDeltaTimeoutStop )
-	end
+	veh.aiRescueTimer = veh.aiRescueTimer - dt;
 	
 	if veh.aiRescueTimer < 0 then
 		veh:stopAIVehicle(AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT)
@@ -350,9 +360,9 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				angle = 0
 				if AIVEGlobals.devFeatures > 0 then
 					if veh.turnTimer < 0  then
-						print("time out: "..tostring(veh.acDeltaTimeoutNoTurn))
+						self:addDebugText("time out: "..tostring(veh.acDeltaTimeoutNoTurn))
 					elseif x*x + z*z > 400 then
-						print("too far: 400m")
+						self:addDebugText("too far: 400m")
 					end
 				end
 			end

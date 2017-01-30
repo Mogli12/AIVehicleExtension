@@ -201,7 +201,46 @@ function AIDriveStrategyMogli:updateTurnData()
 	self.turnData.driveStrategy = self
 end
 
-function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
+function AIDriveStrategy:adjustPosition( eX, eZ, moveForwards, inverse )
+	local vehicle = self.vehicle
+	
+	if vehicle.aiveChain == nil or vehicle.aiveChain.refNode == nil then
+		return eX, eZ
+	end
+	
+	local refNode = vehicle.aiveChain.refNode
+	
+	if      not ( moveForwards ) 
+			and vehicle.articulatedAxis ~= nil 
+      and vehicle.articulatedAxis.aiRevereserNode ~= nil then
+		refNode = vehicle.aiVehicleDirectionNode
+	elseif  vehicle.aiVehicleDirectionNode ~= nil then
+		refNode = vehicle.aiVehicleDirectionNode
+	end
+	
+	if refNode == vehicle.aiveChain.refNode then
+		return eX, eZ
+	end
+	
+	local nIn  = vehicle.aiveChain.refNode
+	local nOut = refNode
+	
+	if inverse then
+		nIn  = refNode
+		nOut = vehicle.aiveChain.refNode
+	end
+	
+	local eY       = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, eX, 1, eZ) 
+	
+	local lX,lY,lZ = worldToLocal( nIn,  eX, eY, eZ )
+	local tX,_,tZ  = localToWorld( nOut, lX, lY, lZ )
+	
+--print(string.format("%5.2f %5.2f => %5.2f %5.2f => %5.2f %5.2f", eX, eZ, lX, lZ, tX, tZ ))
+	
+	return tX, tZ
+end
+
+function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	local veh = self.vehicle 
 	
 	if veh.acPause then
@@ -212,26 +251,44 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 	self.dtSum = self.dtSum + dt
 	
 	local skip = true
+	local vX, vY, vZ
+	if veh.aiveChain == nil or veh.aiveChain.refNode == nil then
+		vX = vX2
+		vY = vY2
+		vZ = vZ2
+	else
+		vX,vY,vZ = getWorldTranslation( veh.aiveChain.refNode )
+	end
+	
+	
 	
 	if	   self.lastDriveData == nil then
+	--print("no skip 1")
 		skip = false
 	elseif veh.acHighPrec then
+	--print("no skip 2")
 		skip = false
 	elseif self.currentTurnStrategy ~= nil then
+	--print("no skip 3")
 		skip = false
 	elseif AIVEGlobals.maxDtSum <= 0 then
+	--print("no skip 4")
 		skip = false
 	elseif self.dtSum > AIVEGlobals.maxDtSum then 
+	--print("no skip 5: "..tostring(self.dtSum))
 		skip = false
 	elseif Utils.vector2LengthSq( veh.acAiPos[1] - vX, veh.acAiPos[3] - vZ ) > AIVEGlobals.maxDtDist then
+	--print("no skip 6: "..tostring(Utils.vector2LengthSq( veh.acAiPos[1] - vX, veh.acAiPos[3] - vZ )))
 		skip = false
 	end 
 	
 	if skip then
+	--print("skip")
 		return unpack( self.lastDriveData )
 	end
 	
-	veh.acAiPos = { vX,vY,vZ }
+	veh.acAiPos = { vX, vY, vZ }
+
 	dt = self.dtSum 
 	self.dtSum = 0
 	
@@ -251,14 +308,20 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 			end			
 			AIVehicleExtension.setAIImplementsMoveDown(veh,true,false);
 		else
-			self.lastDirection = { tX, tZ }
-			self:printReturnInfo( tX, vY, tZ, moveForwards, maxSpeed, distanceToStop )
+			local tX2, tZ2 = self:adjustPosition( tX, tZ, moveForwards )
+			self.lastDirection = { tX2, tZ2 }
+			self:printReturnInfo( tX2, vY, tZ2, moveForwards, maxSpeed, distanceToStop )
 			
 			if active then
 				self.activeTurnStrategy = self.currentTurnStrategy
 			end
 			
-			return tX, tZ, moveForwards, maxSpeed, distanceToStop
+			if maxSpeed == 0 then
+				veh.acLastWantedSpeed = nil
+			end
+			
+			AIVehicleExtension.statEvent( veh, "tT", dt )
+			return tX2, tZ2, moveForwards, maxSpeed, distanceToStop
 		end		
 	end
 	
@@ -337,7 +400,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 			self.lastDirection = { AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, 0 ) }
 		end
 		
-		return self.lastDirection[1], self.lastDirection[2], true, 0, 0
+		return self.lastDirection[1], self.lastDirection[2], true, AutoSteeringEngine.getMaxSpeed( veh, dt, 1, false, true, 0, false, 0.7 ), 0
 	end
 	
 	veh.isHirableBlocked = false
@@ -524,13 +587,13 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 		veh.acHighPrec = true
 	elseif  detected then
 	-- everything is ok
-	elseif  self.search == nil and border <= 0 then
-		angle2 = nil
-		if fruitsDetected then
-			angle = -veh.acDimensions.maxLookingAngle
-		else
-			angle = -veh.acDimensions.maxSteeringAngle 
-		end
+--elseif  self.search == nil and border <= 0 then
+--	angle2 = nil
+--	if fruitsDetected then
+--		angle = -veh.acDimensions.maxLookingAngle
+--	else
+--		angle = -veh.acDimensions.maxSteeringAngle 
+--	end
 	elseif  self.search == AIDriveStrategyMogli.searchStart then
 	-- start of hired worker
 		if     turn2Outside then
@@ -769,15 +832,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 				self.turnData.stage = 5;
 				veh.turnTimer = veh.acDeltaTimeoutWait;
 				veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
-				--if not veh.acParameters.upNDown
-				--		or AutoSteeringEngine.getTraceLength(veh) < 10 then
-					veh.acTurn2Outside = false
-				--else
-				--	veh.acTurn2Outside = true
-				--	veh.acParameters.leftAreaActive  = not veh.acParameters.leftAreaActive;
-				--	veh.acParameters.rightAreaActive = not veh.acParameters.rightAreaActive;
-				--	AIVehicleExtension.sendParameters(veh);
-				--end
+				veh.acTurn2Outside = false
 			elseif veh.acTurnMode == "L" 
 					or veh.acTurnMode == "A" 
 					or veh.acTurnMode == "Y" then
@@ -844,6 +899,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, angle2 )
 		smooth = true
 	end
+	
+	local tX2 = tX
+	local tZ2 = tZ
+	
+	tX, tZ = self:adjustPosition( tX2, tZ2, moveForwards )
 
 	if smooth and self.lastDirection ~= nil then
 		tX = self.lastDirection[1] + 0.03 * ( tX - self.lastDirection[1] )

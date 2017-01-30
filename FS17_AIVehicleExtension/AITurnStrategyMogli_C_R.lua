@@ -34,6 +34,7 @@ end
 -- getNextStage
 --============================================================================================================================
 function AITurnStrategyMogli_C_R:getNextStage( dt, vX,vY,vZ, turnData, stageId )
+	self:addDebugText(tostring(stageId))
 	if     stageId == 1 then
 	--return self:getCombinedStage( self:getStageFromFunction( AITurnStrategyMogli.getDD_checkIsAnimPlaying, true ),
 	--															self:getStageFromFunction( AITurnStrategyMogli.getDD_reduceTurnAngle, { true, 6 } ) )

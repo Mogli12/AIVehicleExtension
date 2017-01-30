@@ -22,6 +22,15 @@ function AITurnStrategyMogli:setAIVehicle(vehicle)
 end
 
 --============================================================================================================================
+-- addDebugText
+--============================================================================================================================
+function AITurnStrategyMogli:addDebugText( s )
+	if self.vehicle ~= nil and type( self.vehicle.aiveAddDebugText ) == "function" then
+		self.vehicle:aiveAddDebugText( s ) 
+	end
+end
+
+--============================================================================================================================
 -- startTurn
 --============================================================================================================================
 function AITurnStrategyMogli:startTurn( turnData )
@@ -181,7 +190,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 		if tX == nil and angle ~= nil then
 			tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
 		end
-		local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 1, false, 0.7 )
+		local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 4, false, 0.7 )
 		
 		if allowedToDrive then
 			self:raiseOrLower( moveForwards )
@@ -199,7 +208,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 			tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
 		end
 		if tX ~= nil then
-			local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 1, false, 0.7 )
+			local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 4, false, 0.7 )
 			
 			if allowedToDrive then
 				self:raiseOrLower( moveForwards )
@@ -217,7 +226,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 		self.activeStage = self:getNextStage( dt, vX,vY,vZ, turnData, self.stageId )
 			
 		if AIVEGlobals.devFeatures > 0 then
-			print("going to stage "..tostring(self.stageId))
+			self:addDebugText("going to stage "..tostring(self.stageId))
 		end
 	end
 	
@@ -227,11 +236,11 @@ end
 --============================================================================================================================
 -- getStageCircle
 --============================================================================================================================
-function AITurnStrategyMogli:getStageCircle( centerX, centerZ, radius, endAngle, increaseAngle, moveForwards, distanceToStop )
+function AITurnStrategyMogli:getStageCircle( centerX, centerZ, radius, endAngle, moveForwards, distanceToStop )
 	local s          = {}	
 	
 	s.getDriveData   = AITurnStrategyMogli.getDD_circle
-	s.parameter      = { centerX, centerZ, math.max( 5, radius ), endAngle, increaseAngle, moveForwards, distanceToStop }
+	s.parameter      = { centerX, centerZ, math.max( 5, radius ), endAngle, moveForwards, distanceToStop }
 	
 	return s
 end
@@ -239,60 +248,56 @@ end
 --============================================================================================================================
 -- getDD_navigateAlongPoints
 --============================================================================================================================
-function AITurnStrategyMogli:getDD_circle( dt, vX,vY,vZ, turnData, centerX, centerZ, radius, endAngle, increaseAngle, moveForwards, distanceToStop )
-	local vehicle  = self.vehicle 
-	local wx,wy,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
---local dx,_,dz  = localDirectionToWorld( vehicle.aiveChain.refNode, 0, 0, 1 )
-	local dx       = wx - centerX
-	local dz       = wz - centerZ 
-	local angle    = math.atan2( dx, dz )
-	local diff     = AutoSteeringEngine.normalizeAngle( angle - endAngle )
-	local invert   = false
-
-	if not ( increaseAngle ) then
-		diff   = - diff
-		insert = not invert 
-	end
-	if not ( moveForwards ) then
-		diff   = -diff
-		insert = not invert 
+function AITurnStrategyMogli:getDD_circle( dt, vX,vY,vZ, turnData, centerX, centerZ, radius, endAngle, moveForwards, distanceToStop )
+	local vehicle   = self.vehicle 
+	local wx,wy,wz  = AutoSteeringEngine.getAiWorldPosition( vehicle )
+	local twx       = centerX + math.sin( endAngle ) * radius 
+	local twz       = centerZ + math.cos( endAngle ) * radius 
+	local tdx,_,tdz = worldDirectionToLocal( vehicle.aiveChain.refNode, twx-wx, 0, twz-wz )
+	
+--local dx,_,dz   = localDirectionToWorld( vehicle.aiveChain.refNode, 0, 0, 1 )
+--local r         = 1
+	local dx        = wx - centerX
+	local dz        = wz - centerZ
+	local r         = Utils.vector2Length( dx, dz )
+--local angle     = math.atan2( dx, dz )
+                  
+	if r < 0.5 then
+		return twx, twz, moveForwards, true, distanceToStop, nil, false
 	end
 	
-	if 0 <= diff and diff < 0.5 * math.pi then
-		print(tostring(self.stageId)..": "..AutoSteeringEngine.radToString(angle).." - "..AutoSteeringEngine.radToString(endAngle).." = "..AutoSteeringEngine.radToString(diff))
-		return 
+	if radius < 0 then
+		dx = -dx
+		dz = -dz
 	end
-	diff = -diff
-	if diff < 0 then
-		diff = diff + math.pi + math.pi
+	
+	local angle     = math.acos( dz / r )
+	if dx < 0 then
+		angle         = -angle 
+	end
+	
+	local diff = AutoSteeringEngine.normalizeAngle( endAngle - angle )
+
+	self:addDebugText(tostring(self.stageId)..": "..AutoSteeringEngine.radToString(angle).." - "..AutoSteeringEngine.radToString(endAngle).." = "..AutoSteeringEngine.radToString(diff).." / "..tostring(tdz))
+
+	if math.abs( diff ) < 0.25 * math.pi and tdz < 0 then
+		return 
 	end
 
 	local dist = diff * radius + distanceToStop	
 	local targetAngle = endAngle
-	if diff * radius > 1 then
-		
+	if math.abs( diff * radius )  > 1 then		
 		diff = 1 / radius 
-		if invert then
-			targetAngle = angle - diff
-		else
-			targetAngle = angle + diff
-		end
+		targetAngle = angle + diff
 	end
 	
-	print(AutoSteeringEngine.radToString( angle ).." => "..AutoSteeringEngine.radToString( targetAngle ).." => "..AutoSteeringEngine.radToString( endAngle ))
-	
-	local r = radius 
-	if not increaseAngle then
-		r = -radius 
-	end
-	
-	dx = math.sin( targetAngle ) * r 
-	dz = math.cos( targetAngle ) * r 
+	dx = math.sin( targetAngle ) * radius 
+	dz = math.cos( targetAngle ) * radius 
 	
 	wx = centerX+dx
 	wz = centerZ+dz
 	
-	print(tostring(wx).." "..tostring(wz))
+	self:addDebugText(AutoSteeringEngine.radToString( angle ).." => "..AutoSteeringEngine.radToString( targetAngle ).." ("..AutoSteeringEngine.radToString( endAngle )..") => "..tostring(wx).." "..tostring(wz))
 	
 	return centerX+dx, centerZ+dz, moveForwards, true, dist, nil, false
 end
@@ -362,7 +367,7 @@ function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, 
 		end
 		
 		if AIVEGlobals.devFeatures > 0 then
-			print(string.format("%2d: (%4f, %4f) (%4f, %4f)",i,x,z,dx,dz))
+			self:addDebugText(string.format("%2d: (%4f, %4f) (%4f, %4f)",i,x,z,dx,dz))
 		end
 		
 		if i == 1 and z >= 0 then
@@ -494,12 +499,18 @@ function AITurnStrategyMogli:getDD_reduceTurnAngle( dt, vX,vY,vZ, turnData, move
 	local vehicle = self.vehicle 
 	
 	local angle  = AutoSteeringEngine.getTurnAngle( vehicle )
+	
+	
 	if math.abs( angle ) < math.rad( maxAngle ) then
+		self:addDebugText(string.format("math.abs( %4.1f° ) < math.abs( %4.1f° )",math.deg(angle),maxAngle ))
 		return 
 	end
 	
 	local angle2 = Utils.clamp( -angle, -vehicle.acDimensions.maxSteeringAngle, vehicle.acDimensions.maxSteeringAngle )
-	return tX, tZ, moveForwards, true, 1, angle2, true
+
+	self:addDebugText(string.format("math.abs( %4.1f° ) => math.abs( %4.1f° ) => %4.1f°",math.deg(angle),maxAngle,math.deg(angle2) ))
+
+	return nil, nil, moveForwards, true, 1, angle2, true
 end
 
 --============================================================================================================================

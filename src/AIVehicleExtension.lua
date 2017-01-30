@@ -51,6 +51,10 @@ function AIVehicleExtension:debugPrint( ... )
 	end	
 end
 
+function AIVehicleExtension:aiveAddDebugText( s )
+	AIVehicleExtension.debugPrint( s )
+end
+
 AIVehicleExtension.saveAttributesMapping = { 
 																			upNDown				 = { xml = "acUTurn",			 tp = "B", default = false, always = true },
 																			rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false },
@@ -131,6 +135,7 @@ function AIVehicleExtension:load(saveGame)
 	self.acAxisSide					  = 0
 	self.acSentSpeedFactor		= 0.8
 	self.acDebugPrint			  	= AIVehicleExtension.debugPrint
+	self.aiveAddDebugText     = AIVehicleExtension.aiveAddDebugText
 	self.acShowTrace					= false
 	self.waitForTurnTime      = 0
 	self.turnTimer            = 0
@@ -2195,7 +2200,7 @@ function AIVehicleExtension:getMaxAngleWithTool( outside )
 	end
 
 	if AIVEGlobals.devFeatures > 0 and math.abs( toolAngle ) >= AIVEGlobals.maxToolAngle - 0.01745 then
-		AIVehicleExtension.debugPrint( self, string.format("Tool angle: a: %0.1f° ms: %0.1f° to: %0.1f°", math.deg(angle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
+		self:acDebugPrint( string.format("Tool angle: a: %0.1f° ms: %0.1f° to: %0.1f°", math.deg(angle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
 	end
 
 	
@@ -2322,7 +2327,7 @@ function AIVehicleExtension:getStraighBackwardsAngle( iTarget )
 	local ta  = turnAngle
 	turnAngle = AutoSteeringEngine.normalizeAngle( turnAngle - target )
 	
-	AIVehicleExtension.debugPrint( self, "gSBA init: target: "..AutoSteeringEngine.degToString( iTarget ).." current: "..AutoSteeringEngine.radToString( ta ).." delta: "..AutoSteeringEngine.radToString( turnAngle ))
+	self:acDebugPrint( "gSBA init: target: "..AutoSteeringEngine.degToString( iTarget ).." current: "..AutoSteeringEngine.radToString( ta ).." delta: "..AutoSteeringEngine.radToString( turnAngle ))
 	
 	return AIVehicleExtension.getStraighBackwardsAngle2( self, turnAngle, target )
 end
@@ -2335,13 +2340,14 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 	local taJoints = AutoSteeringEngine.getTaJoints1( self, self.acRefNode, self.acDimensions.zOffset )
 
 	if 	 	 AutoSteeringEngine.tableGetN( taJoints  ) < 1
-			or self.aseDirectionBeforeTurn   == nil
-			or self.aseDirectionBeforeTurn.a == nil then
-		AIVehicleExtension.debugPrint( self, "gSBA: no tools with joint found: "..AutoSteeringEngine.radToString( -turnAngle ))
+			or self.aiveChain         == nil
+			or self.aiveChain.trace   == nil
+			or self.aiveChain.trace.a == nil then
+		self:acDebugPrint( "gSBA: no tools with joint found: "..AutoSteeringEngine.radToString( -turnAngle ))
 		return -turnAngle
 	end
 
-	local yv = -self.aseDirectionBeforeTurn.a - math.pi
+	local yv = -self.aiveChain.trace.a - math.pi
 	if iTarget ~= nil then
 		if self.acParameters.leftAreaActive then
 			yv = AutoSteeringEngine.normalizeAngle( yv + iTarget )
@@ -2378,7 +2384,7 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 		angle = -angle 
 	end
 	
-	AIVehicleExtension.debugPrint( self, "gSBA: current: "..AutoSteeringEngine.radToString( yt ).." target: "..AutoSteeringEngine.radToString( yv ).." => angle: "..AutoSteeringEngine.radToString( angle ).." ("..tostring( self.acParameters.leftAreaActive ).." / "..tostring( iTarget ).." / "..AutoSteeringEngine.radToString( self.aseDirectionBeforeTurn.a )..")")
+	self:acDebugPrint( "gSBA: current: "..AutoSteeringEngine.radToString( yt ).." target: "..AutoSteeringEngine.radToString( yv ).." => angle: "..AutoSteeringEngine.radToString( angle ).." ("..tostring( self.acParameters.leftAreaActive ).." / "..tostring( iTarget ).." / "..AutoSteeringEngine.radToString( self.aiveChain.trace.a )..")")
 	
 	return angle 
 end
@@ -2407,7 +2413,7 @@ function AIVehicleExtension:getStraighForwardsAngle( iTarget )
 		angle = turnAngle 
 	end
 	
-	AIVehicleExtension.debugPrint( self, "gSFA: "..AutoSteeringEngine.degToString( iTarget ).." "..AutoSteeringEngine.radToString( toolAngle ).." "..AutoSteeringEngine.radToString( turnAngle ).." => "..AutoSteeringEngine.radToString( angle ))
+	self:acDebugPrint( "gSFA: "..AutoSteeringEngine.degToString( iTarget ).." "..AutoSteeringEngine.radToString( toolAngle ).." "..AutoSteeringEngine.radToString( turnAngle ).." => "..AutoSteeringEngine.radToString( angle ))
 	
 	angle = Utils.clamp( angle, -self.acDimensions.maxSteeringAngle, self.acDimensions.maxSteeringAngle )
 
