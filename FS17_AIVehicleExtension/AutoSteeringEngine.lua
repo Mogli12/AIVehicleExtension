@@ -1014,7 +1014,7 @@ function AutoSteeringEngine.getToolsSpeedLimit( vehicle )
 
 	local s, c = vehicle:getSpeedLimit()
 
-	if c and speedLimit > s then
+	if speedLimit > s then
 		speedLimit = s
 	end
 	
@@ -1039,6 +1039,9 @@ function AutoSteeringEngine.getWantedSpeed( vehicle, speedLevel )
 	else
 		vehicle.aiveChain.wantedSpeed = math.min( vehicle.aiveChain.wantedSpeed, AutoSteeringEngine.getToolsSpeedLimit( vehicle ) )
 	end
+	if vehicle.aiveChain.wantedSpeed < 5 then
+		vehicle.aiveChain.wantedSpeed = 5
+	end
 	
 	local wantedSpeed  = 12
 		
@@ -1046,13 +1049,7 @@ function AutoSteeringEngine.getWantedSpeed( vehicle, speedLevel )
 			or speedLevel == 2 then
 		wantedSpeed = vehicle.aiveChain.wantedSpeed
 	elseif speedLevel == 4 then
-		wantedSpeed = 7
---elseif speedLevel == 1 then
---	wantedSpeed = 12
---elseif speedLevel == 2 then
---	wantedSpeed = 18
---elseif speedLevel == 3 then
---	wantedSpeed = 30
+		wantedSpeed = math.min( 7, vehicle.aiveChain.wantedSpeed )
 	elseif speedLevel == 5 then
 		wantedSpeed = 1
 	elseif speedLevel == 0 then

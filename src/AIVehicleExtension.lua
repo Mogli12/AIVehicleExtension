@@ -70,7 +70,7 @@ AIVehicleExtension.saveAttributesMapping = {
 																			turnOffset			= { xml = "acTurnOffset",	tp = "F", default = 0 },
 																			safetyFactor		= { xml = "acSafetyFactor",tp = "I", default = AIVEGlobals.safetyFactor },
 																			angleFactor		 = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
-																			speedFactor		 = { xml = "acSpeedFactor", tp = "F", default = 0.8 },																															
+																			speedFactor		 = { xml = "acSpeedFactor", tp = "F", default = 1 },																															
 																			noSteering			= { xml = "acNoSteering",	tp = "B", default = false } };																															
 AIVehicleExtension.turnStageNoNext = { 21, 22, 23 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { { 4, -1 },
@@ -932,7 +932,7 @@ function AIVehicleExtension:update(dt)
 					self.acParameters.speedFactor = Utils.clamp( self.acParameters.speedFactor + 0.00025 * dt * cc, 0.1, 1.1 )
 				end
 			else
-				local maxSpeed = 3.6 * AutoSteeringEngine.getToolsSpeedLimit( self )
+				local maxSpeed = AutoSteeringEngine.getToolsSpeedLimit( self )
 				local cs = math.floor( 0.5 + self.acParameters.speedFactor * maxSpeed )
 				if		 cc > 0 then
 					cs = cs + 1
@@ -1316,7 +1316,7 @@ end
 
 function AIVehicleExtension:getSaveAttributesAndNodes(nodeIdent)
 	
-	local attributes = 'acVersion="2.1"';
+	local attributes = 'acVersion="2.2"';
 	
 	local skip = true
 	
@@ -1344,7 +1344,7 @@ end;
 -- loadFromAttributesAndNodes
 ------------------------------------------------------------------------
 function AIVehicleExtension:loadFromAttributesAndNodes(xmlFile, key, resetVehicles)
-	local version = getXMLString(xmlFile, key.."#acVersion");
+	local version = AIVEHud.getXmlFloat(xmlFile, key.."#acVersion", 0 )
 
 	for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
 		if		 p.tp == "B" then
@@ -1363,13 +1363,16 @@ function AIVehicleExtension:loadFromAttributesAndNodes(xmlFile, key, resetVehicl
 		self:setIsReverseDriving( self.acParameters.inverted, false )
 	end
 	
-	if version == '1.4' then
+	if version < 1.5 then
 		self.acParameters.turnModeIndexC = self.acParameters.turnModeIndex
 		if self.acParameters.upNDown and self.acParameters.turnModeIndex > 1 then
 			self.acParameters.turnModeIndex = self.acParameters.turnModeIndex - 1
 		end
 	end
-
+	if version < 2.2 then
+		self.acParameters.speedFactor = math.max( 1, self.acParameters.speedFactor )
+	end
+	
 	return BaseMission.VEHICLE_LOAD_OK;
 end
 
