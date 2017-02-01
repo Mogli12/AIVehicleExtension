@@ -70,6 +70,8 @@
     <maxRotation type="degree" value="30" />
     <maxRotationC type="degree" value="75" />
     <maxRotationU type="degree" value="30" />
+		<maxRotationT type="degree" value="120" /> 
+		<maxRotationL type="float" value="3" /> 
 		<minRadius type="float" value="5.5" />
     <minLength type="float" value="0"/> <!--value="0.25" />-->
     <minMidDist type="float" value="1.0" />
@@ -125,7 +127,7 @@
 		<enableKUTurn type="bool" value="false" />
 		<aiRescueDistSq type="float" value="1600" />
 		<raiseNoFruits type="bool" value="true" />
-		<lowerAdvance type="float" value="2" />
+		<lowerAdvance type="float" value="4" />
 		
 		<borderBuffer type="bool" value="true" />
 		

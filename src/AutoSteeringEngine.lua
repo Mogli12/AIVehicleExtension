@@ -33,6 +33,8 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.maxRotation  = 0
 	AIVEGlobals.maxRotationC = 0
 	AIVEGlobals.maxRotationU = 0
+	AIVEGlobals.maxRotationT = 0
+	AIVEGlobals.maxRotationL = 0
 	AIVEGlobals.minRadius    = 0
 	AIVEGlobals.aiSteering   = 0
 	AIVEGlobals.aiSteeringD  = 0
@@ -1109,8 +1111,11 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 	vehicle.aiveChain.maxLooking  = maxLooking	
 	vehicle.aiveChain.minLooking  = math.min( math.max( AIVEGlobals.minLooking, maxLooking * AIVEGlobals.minLkgFactor ), 0.5 * vehicle.aiveChain.maxLooking )
 	
-	local maxRot = 0.5*math.pi
-	if     vehicle.aiveChain.turnMode == "C"
+	local maxRot = AIVEGlobals.maxRotationT
+	
+	if not ( vehicle.aiveChain.inField ) then
+		maxRot = AIVEGlobals.maxRotationT
+	elseif vehicle.aiveChain.turnMode == "C"
 			or vehicle.aiveChain.turnMode == "L"
 			or vehicle.aiveChain.turnMode == "K"
 			or vehicle.aiveChain.turnMode == "7" then
@@ -1118,6 +1123,14 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 	else 
 		maxRot = AIVEGlobals.maxRotationU
 	end 
+	
+	if maxRot < AIVEGlobals.maxRotationT then
+		local t = AutoSteeringEngine.getTraceLength( vehicle )
+		if t < AIVEGlobals.maxRotationL then
+			f = t / AIVEGlobals.maxRotationL
+			maxRot = f * maxRot + ( 1-f ) * AIVEGlobals.maxRotationT
+		end
+	end	
 	
 	if vehicle.aiveChain.leftActive then
 		vehicle.aiveChain.minRotation = -maxRot 
@@ -2958,14 +2971,65 @@ function AutoSteeringEngine.getFruitArea( vehicle, x1,z1,x2,z2,d,toolIndex,noMin
 	local lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( x1, z1, x2, z2, d, noMinLength )
 	return AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, vehicle.aiveChain.tools[toolIndex], lx1,lz1,lx2,lz2,lx3,lz3,noMinLength )
 end
+
+function AutoSteeringEngine.initWorldToDensity( vehicle )
+	if vehicle.aiveChain.worldToDensity == nil then
+		vehicle.aiveChain.worldToDensityM = 2 * g_currentMission.terrainDetailMapSize
+		vehicle.aiveChain.worldToDensity  = vehicle.aiveChain.worldToDensityM / g_currentMission.terrainSize
+		vehicle.aiveChain.worldToDensityI = g_currentMission.terrainSize / vehicle.aiveChain.worldToDensityM
+	end
+end
+
+function AutoSteeringEngine.floatToInteger( vehicle, f, m )
+	if f < m then -- mean
+		return math.floor( f * vehicle.aiveChain.worldToDensity )
+	end
+	return math.ceil( f * vehicle.aiveChain.worldToDensity )
+end
 	
 ------------------------------------------------------------------------
 -- getFruitAreaWorldPositions
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, tool, lx1,lz1,lx2,lz2,lx3,lz3,origAI )
 
-	return AIVehicleUtil.getAIAreaOfVehicle( tool.obj, lx1, lz1, lx2, lz2, lx3, lz3 )
+--return AIVehicleUtil.getAIAreaOfVehicle( tool.obj, lx1, lz1, lx2, lz2, lx3, lz3 )
 
+	AutoSteeringEngine.initWorldToDensity( vehicle ) 
+	
+	local lxm = 0.5 * ( lx2 + lx3 )
+	local lzm = 0.5 * ( lz2 + lz3 )
+	local ni1 = AutoSteeringEngine.floatToInteger( vehicle, lx1, lxm )
+	local ni2 = AutoSteeringEngine.floatToInteger( vehicle, lx2, lxm )
+	local ni3 = AutoSteeringEngine.floatToInteger( vehicle, lx3, lxm )
+	local nj1 = AutoSteeringEngine.floatToInteger( vehicle, lz1, lzm )
+	local nj2 = AutoSteeringEngine.floatToInteger( vehicle, lz2, lzm )
+	local nj3 = AutoSteeringEngine.floatToInteger( vehicle, lz3, lzm )
+	
+	if vehicle.aiveChain.buffer == nil then
+		vehicle.aiveChain.buffer = {}
+	end
+	if vehicle.aiveChain.buffer.getFruitAreaWorldPositions == nil then
+		vehicle.aiveChain.buffer.getFruitAreaWorldPositions = {}
+	end
+
+	local indx = tostring(ni1)
+	indx = indx..","..tostring(ni2)
+	indx = indx..","..tostring(ni3)
+	indx = indx..","..tostring(nj1)
+	indx = indx..","..tostring(nj2)
+	indx = indx..","..tostring(nj3)
+	
+	if vehicle.aiveChain.buffer.getFruitAreaWorldPositions[indx] == nil then
+		vehicle.aiveChain.buffer.getFruitAreaWorldPositions[indx] = { AIVehicleUtil.getAIAreaOfVehicle( tool.obj,
+																										ni1 * vehicle.aiveChain.worldToDensityI,
+																										nj1 * vehicle.aiveChain.worldToDensityI,
+																										ni2 * vehicle.aiveChain.worldToDensityI, 
+																										nj2 * vehicle.aiveChain.worldToDensityI, 
+																										ni3 * vehicle.aiveChain.worldToDensityI,
+																										nj3 * vehicle.aiveChain.worldToDensityI ) }
+  end
+	
+	return unpack( vehicle.aiveChain.buffer.getFruitAreaWorldPositions[indx] )
 end
 
 ------------------------------------------------------------------------
@@ -3054,14 +3118,14 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.applyRotation( vehicle, toIndex )
 
+	if not vehicle.isServer then return end
+	
 	local cumulRot, turnAngle = 0, 0
-	if vehicle.aiveChain.inField and AutoSteeringEngine.getTraceLength( vehicle ) > 5 then
+	if vehicle.aiveChain.inField and AutoSteeringEngine.getTraceLength( vehicle ) > AIVEGlobals.maxRotationL then
 		turnAngle = Utils.clamp( AutoSteeringEngine.getTurnAngle( vehicle ), -AIVEGlobals.maxRotation, AIVEGlobals.maxRotation )
 		cumulRot  = turnAngle
 	end 
 
-	if not vehicle.isServer then return end
-	
 	AutoSteeringEngine.applySteering( vehicle, toIndex )
 
 	local j0 = vehicle.aiveChain.chainMax+2
@@ -3544,7 +3608,7 @@ function AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 			vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].y, vehicle.aiveChain.nodes[i].tool[tp.i].z = localToWorld( idx, ofs, 0, 0 )
 		end
 		
-		vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].z = AutoSteeringEngine.normalizePosition( vehicle, vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].z )
+	--vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].z = AutoSteeringEngine.normalizePosition( vehicle, vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].z )
 		
 		vehicle.aiveChain.nodes[i].status = AIVEStatus.position
 	end
@@ -3558,10 +3622,7 @@ end
 -- normalizePosition
 ------------------------------------------------------------------------
 function AutoSteeringEngine.normalizePosition( vehicle, x, z )
-	if vehicle.aiveChain.worldToDensity == nil then
-		vehicle.aiveChain.worldToDensity  = 2 * g_currentMission.terrainDetailMapSize / g_currentMission.terrainSize
-		vehicle.aiveChain.worldToDensityI = 1 / vehicle.aiveChain.worldToDensity
-	end
+	AutoSteeringEngine.initWorldToDensity( vehicle )
 	
 	local nx = math.floor(x*vehicle.aiveChain.worldToDensity+0.5) * vehicle.aiveChain.worldToDensityI
 	local nz = math.floor(z*vehicle.aiveChain.worldToDensity+0.5) * vehicle.aiveChain.worldToDensityI
@@ -3648,10 +3709,11 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 					while f > 0.01 do
 						xc = xp + f*(x2-xp)
 						yc = yp + f*(y2-yp)
-						zc = zp + f*(z2-zp)
-						fc = f2
+						zc = zp + f*(z2-zp) 
 						
-						if f < 1 then
+						if f == 1 then
+							fc = f2
+						else
 							fc = AutoSteeringEngine.isChainPointOnField( vehicle, xc, zc )
 						end
 						if fc then

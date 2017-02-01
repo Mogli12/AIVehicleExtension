@@ -305,11 +305,11 @@ end
 --============================================================================================================================
 -- getStageFromPoints
 --============================================================================================================================
-function AITurnStrategyMogli:getStageFromPoints( points, moveForwards, distanceToStop )
+function AITurnStrategyMogli:getStageFromPoints( points, moveForwards, distanceToStop, inactive )
 	local s          = {}	
 	s.getDriveData   = AITurnStrategyMogli.getDD_navigateAlongPoints
 	
-	s.parameter      = { moveForwards, {}}
+	s.parameter      = { moveForwards, {}, inactive}
 	
 	local dts = Utils.getNoNil( distanceToStop, 0 )
 	
@@ -334,7 +334,7 @@ end
 --============================================================================================================================
 -- getDD_navigateAlongPoints
 --============================================================================================================================
-function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, moveForwards, points )
+function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, moveForwards, points, inactive )
 	local vehicle = self.vehicle 
 	
 -- navigate using points 
@@ -466,7 +466,7 @@ function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, 
 
 	distanceToStop = distanceToStop + math.sqrt( bestD )
 	
-	return bestX, bestZ, moveForwards, true, distanceToStop, nil, false
+	return bestX, bestZ, moveForwards, true, distanceToStop, nil, inactive
 end
 
 --============================================================================================================================

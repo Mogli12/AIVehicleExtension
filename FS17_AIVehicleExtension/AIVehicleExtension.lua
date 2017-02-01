@@ -56,22 +56,23 @@ function AIVehicleExtension:aiveAddDebugText( s )
 end
 
 AIVehicleExtension.saveAttributesMapping = { 
-																			upNDown				 = { xml = "acUTurn",			 tp = "B", default = false, always = true },
+																			enabled         = { xml = "acDefaultOn",	 tp = "B", default = false },
+																			upNDown				  = { xml = "acUTurn",			 tp = "B", default = false, always = true },
 																			rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false },
-																			headland				= { xml = "acHeadland",		tp = "B", default = false },
-																			collision			 = { xml = "acCollision",	 tp = "B", default = false },
-																			inverted				= { xml = "acInverted",		tp = "B", default = false },
-																			frontPacker		 = { xml = "acFrontPacker", tp = "B", default = false },
-																			isHired				 = { xml = "acIsHired",		 tp = "B", default = false },
-																			bigHeadland		 = { xml = "acBigHeadland", tp = "B", default = true },
-																			turnModeIndex	 = { xml = "acTurnMode",		tp = "I", default = 1 },
+																			headland				= { xml = "acHeadland",		 tp = "B", default = false },
+																			collision			  = { xml = "acCollision",	 tp = "B", default = false },
+																			inverted				= { xml = "acInverted",		 tp = "B", default = false },
+																			frontPacker		  = { xml = "acFrontPacker", tp = "B", default = false },
+																			isHired				  = { xml = "acIsHired",		 tp = "B", default = false },
+																			bigHeadland		  = { xml = "acBigHeadland", tp = "B", default = true },
+																			turnModeIndex	  = { xml = "acTurnMode",		 tp = "I", default = 1 },
 																			turnModeIndexC	= { xml = "acTurnModeC",	 tp = "I", default = 1 },
-																			widthOffset		 = { xml = "acWidthOffset", tp = "F", default = 0 },
-																			turnOffset			= { xml = "acTurnOffset",	tp = "F", default = 0 },
+																			widthOffset		  = { xml = "acWidthOffset", tp = "F", default = 0 },
+																			turnOffset			= { xml = "acTurnOffset",	 tp = "F", default = 0 },
 																			safetyFactor		= { xml = "acSafetyFactor",tp = "I", default = AIVEGlobals.safetyFactor },
-																			angleFactor		 = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
-																			speedFactor		 = { xml = "acSpeedFactor", tp = "F", default = 1 },																															
-																			noSteering			= { xml = "acNoSteering",	tp = "B", default = false } };																															
+																			angleFactor		  = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
+																			speedFactor		  = { xml = "acSpeedFactor", tp = "F", default = 1 },
+																			noSteering			= { xml = "acNoSteering",	 tp = "B", default = false } };																															
 AIVehicleExtension.turnStageNoNext = { 21, 22, 23 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { { 4, -1 },
 															{ 8, -1 },
@@ -225,32 +226,32 @@ function AIVehicleExtension:initMogliHud()
 		AIVEHud.addButton(self, nil, nil, AIVehicleExtension.test4, nil, mogliCols,4, "Points" );
 	end
 
-	AIVEHud.addButton(self, "dds/off.dds",						"dds/on.dds",					 AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,		1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage );
-	AIVEHud.addButton(self, "dds/ai_combine.dds",		 "dds/auto_combine.dds", AIVehicleExtension.onEnable,			AIVehicleExtension.evalEnable,		 2,1, "AUTO_TRACTOR_STOP", "AUTO_TRACTOR_START" );
+	AIVEHud.addButton(self, "dds/off.dds",						"dds/on.dds",					  AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,		1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage );
+	AIVEHud.addButton(self, "dds/ai_combine.dds",		  "dds/auto_combine.dds", AIVehicleExtension.onEnable,			AIVehicleExtension.evalEnable,		 2,1, "AUTO_TRACTOR_STOP", "AUTO_TRACTOR_START" );
 	AIVEHud.addButton(self, "dds/no_uturn2.dds",			"dds/uturn.dds",				AIVehicleExtension.setUTurn,			AIVehicleExtension.evalUTurn,			3,1, "AUTO_TRACTOR_UTURN_OFF", "AUTO_TRACTOR_UTURN_ON") ;
---AIVEHud.addButton(self, "dds/next.dds",					 "dds/no_next.dds",			AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,	4,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
-	AIVEHud.addButton(self, "dds/no_pause.dds",			 "dds/pause.dds",				AIVehicleExtension.setPause,			AIVehicleExtension.evalPause,			5,1, "AUTO_TRACTOR_PAUSE_OFF", "AUTO_TRACTOR_PAUSE_ON", nil, AIVehicleExtension.getPauseImage );
+--AIVEHud.addButton(self, "dds/next.dds",					  "dds/no_next.dds",			AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,	4,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
+	AIVEHud.addButton(self, "dds/no_pause.dds",			  "dds/pause.dds",				AIVehicleExtension.setPause,			AIVehicleExtension.evalPause,			5,1, "AUTO_TRACTOR_PAUSE_OFF", "AUTO_TRACTOR_PAUSE_ON", nil, AIVehicleExtension.getPauseImage );
 --AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds",AIVehicleExtension.onAutoSteer,	 AIVehicleExtension.evalAutoSteer,	6,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" );
 
-	AIVEHud.addButton(self, "dds/noHeadland.dds",		 "dds/headland.dds",		 AIVehicleExtension.setHeadland,	 AIVehicleExtension.evalHeadland,	 1,2, "AUTO_TRACTOR_HEADLAND_ON", "AUTO_TRACTOR_HEADLAND_OFF" );
+	AIVEHud.addButton(self, "dds/noHeadland.dds",		  "dds/headland.dds",		  AIVehicleExtension.setHeadland,	 AIVehicleExtension.evalHeadland,	 1,2, "AUTO_TRACTOR_HEADLAND_ON", "AUTO_TRACTOR_HEADLAND_OFF" );
 	AIVEHud.addButton(self, nil,											nil,										AIVehicleExtension.setBigHeadland,nil,												2,2, "AUTO_TRACTOR_HEADLAND", nil, AIVehicleExtension.getBigHeadlandText, AIVehicleExtension.getBigHeadlandImage );
 	AIVEHud.addButton(self, "dds/collision_off.dds",	"dds/collision_on.dds", AIVehicleExtension.setCollision,	AIVehicleExtension.evalCollision,	3,2, "AUTO_TRACTOR_COLLISION_OFF", "AUTO_TRACTOR_COLLISION_ON" );
 	AIVEHud.addButton(self, nil,											nil,										AIVehicleExtension.setTurnMode,	 nil,												4,2, nil, nil, AIVehicleExtension.getTurnModeText, AIVehicleExtension.getTurnModeImage );
-	AIVEHud.addButton(self, "dds/hire_off.dds",			 "dds/hire_on.dds",			AIVehicleExtension.setIsHired,		AIVehicleExtension.evalIsHired,		5,2, "AUTO_TRACTOR_HIRE_OFF", "AUTO_TRACTOR_HIRE_ON");
-	AIVEHud.addButton(self, "dds/raise_impl.dds",		 "dds/lower_impl.dds",	 AIVehicleExtension.onRaiseImpl,	 AIVehicleExtension.evalRaiseImpl,	6,2, "AUTO_TRACTOR_STEER_LOWER", "AUTO_TRACTOR_STEER_RAISE", nil, AIVehicleExtension.getRaiseImplImage );
+	AIVEHud.addButton(self, "dds/hire_off.dds",			  "dds/hire_on.dds",			AIVehicleExtension.setIsHired,		AIVehicleExtension.evalIsHired,		5,2, "AUTO_TRACTOR_HIRE_OFF", "AUTO_TRACTOR_HIRE_ON");
+	AIVEHud.addButton(self, "dds/raise_impl.dds",		  "dds/lower_impl.dds",	  AIVehicleExtension.onRaiseImpl,	 AIVehicleExtension.evalRaiseImpl,	6,2, "AUTO_TRACTOR_STEER_LOWER", "AUTO_TRACTOR_STEER_RAISE", nil, AIVehicleExtension.getRaiseImplImage );
 
 	AIVEHud.addButton(self, "dds/inactive_left.dds",	"dds/active_left.dds",	AIVehicleExtension.setAreaLeft,	 AIVehicleExtension.evalAreaLeft,	 1,3, "AUTO_TRACTOR_ACTIVESIDERIGHT", "AUTO_TRACTOR_ACTIVESIDELEFT" );
 	AIVEHud.addButton(self, "dds/inactive_right.dds", "dds/active_right.dds", AIVehicleExtension.setAreaRight,	AIVehicleExtension.evalAreaRight,	2,3, "AUTO_TRACTOR_ACTIVESIDELEFT", "AUTO_TRACTOR_ACTIVESIDERIGHT" );	
-	AIVEHud.addButton(self, "dds/bigger.dds",				 nil,										AIVehicleExtension.setWidthUp,		nil,												3,3, "AUTO_TRACTOR_WIDTH_OFFSET", nil, AIVehicleExtension.getWidth);
+	AIVEHud.addButton(self, "dds/bigger.dds",				  nil,										AIVehicleExtension.setWidthUp,		nil,												3,3, "AUTO_TRACTOR_WIDTH_OFFSET", nil, AIVehicleExtension.getWidth);
 	AIVEHud.addButton(self, "dds/smaller.dds",				nil,										AIVehicleExtension.setWidthDown,	nil,												4,3, "AUTO_TRACTOR_WIDTH_OFFSET", nil, AIVehicleExtension.getWidth);
 	AIVEHud.addButton(self, "dds/forward.dds",				nil,										AIVehicleExtension.setForward,		nil,												5,3, "AUTO_TRACTOR_TURN_OFFSET", nil, AIVehicleExtension.getTurnOffset);
-	AIVEHud.addButton(self, "dds/backward.dds",			 nil,										AIVehicleExtension.setBackward,	 nil,												6,3, "AUTO_TRACTOR_TURN_OFFSET", nil, AIVehicleExtension.getTurnOffset);
+	AIVEHud.addButton(self, "dds/backward.dds",			  nil,										AIVehicleExtension.setBackward,	 nil,												6,3, "AUTO_TRACTOR_TURN_OFFSET", nil, AIVehicleExtension.getTurnOffset);
 
-	AIVEHud.addButton(self, "dds/notInverted.dds",		"dds/inverted.dds",		 AIVehicleExtension.setInverted,	 AIVehicleExtension.evalInverted,	 1,4, "AUTO_TRACTOR_INVERTED_OFF", "AUTO_TRACTOR_INVERTED_ON" );	
+	AIVEHud.addButton(self, "dds/notInverted.dds",		"dds/inverted.dds",		  AIVehicleExtension.setInverted,	 AIVehicleExtension.evalInverted,	 1,4, "AUTO_TRACTOR_INVERTED_OFF", "AUTO_TRACTOR_INVERTED_ON" );	
 	AIVEHud.addButton(self, "dds/noFrontPacker.dds",	"dds/frontPacker.dds",	AIVehicleExtension.setFrontPacker,AIVehicleExtension.evalFrontPacker,2,4, "AUTO_TRACTOR_FRONT_PACKER_OFF", "AUTO_TRACTOR_FRONT_PACKER_ON" );
-	AIVEHud.addButton(self, "dds/safety_ina.dds",		 nil,										AIVehicleExtension.onToggleTrace, nil,												3,4, "AUTO_TRACTOR_TRACE", nil );
+	AIVEHud.addButton(self, "dds/safety_ina.dds",		  nil,										AIVehicleExtension.onToggleTrace, nil,												3,4, "AUTO_TRACTOR_TRACE", nil );
 	AIVEHud.addButton(self, "dds/refresh.dds",				nil,										AIVehicleExtension.onMagic,			 nil,												4,4, "AUTO_TRACTOR_MAGIC", nil );
-	AIVEHud.addButton(self, "dds/angle_plus.dds",		 nil,										AIVehicleExtension.setAngleUp,		AIVehicleExtension.evalAngleUp,		5,4, "AUTO_TRACTOR_ANGLE_OFFSET", nil, AIVehicleExtension.getAngleFactor);
+	AIVEHud.addButton(self, "dds/angle_plus.dds",		  nil,										AIVehicleExtension.setAngleUp,		AIVehicleExtension.evalAngleUp,		5,4, "AUTO_TRACTOR_ANGLE_OFFSET", nil, AIVehicleExtension.getAngleFactor);
 	AIVEHud.addButton(self, "dds/angle_minus.dds",		nil,										AIVehicleExtension.setAngleDown,	AIVehicleExtension.evalAngleDown,	6,4, "AUTO_TRACTOR_ANGLE_OFFSET", nil, AIVehicleExtension.getAngleFactor);
 	
 	if type( self.atHud ) == "table" then
@@ -464,10 +465,18 @@ function AIVehicleExtension:getStartImage()
 end
 
 function AIVehicleExtension:evalEnable()
-	return not self.aiveIsStarted;
+	if     self.aiIsStarted          then
+		return not ( self.aiveIsStarted )
+	elseif self.acParameters.enabled then
+		return false
+	end
+	return not ( self.aiveIsStarted )
 end;
 
 function AIVehicleExtension:onEnable(enabled)
+	if not ( self.aiIsStarted ) then
+		self.acParameters.enabled = enabled
+	end
 end;
 
 function AIVehicleExtension:setWidthUp()
@@ -699,7 +708,7 @@ function AIVehicleExtension:onMagic(enabled)
 	AIVehicleExtension.initMogliHud(self)
 	AutoSteeringEngine.invalidateField( self, true )		
 	AutoSteeringEngine.checkTools1( self, true )
-	AIVehicleExtension.processImplementsOfImplement(self,self,true)	
+--AIVehicleExtension.processImplementsOfImplement(self,self,true)	
 end
 
 function AIVehicleExtension:onRaiseImpl(enabled)
@@ -2213,16 +2222,16 @@ end
 ------------------------------------------------------------------------
 -- AIVehicleExtension:waitForAnimTurnStage
 ------------------------------------------------------------------------
-function AIVehicleExtension:waitForAnimTurnStage()
-	if     self.acTurnStage <  0
-			or ( self.acTurnStage == 0 and AIVEGlobals.raiseNoFruits > 0 )
-			or self.acTurnStage == 3
-			or self.acTurnStage == 8
-			or self.acTurnStage == 26 or self.acTurnStage == 27
-			or self.acTurnStage == 38
-			or self.acTurnStage == 48 or self.acTurnStage == 49
-			or self.acTurnStage == 59 or self.acTurnStage == 60 or self.acTurnStage == 61 
-			or self.acTurnStage == 77 or self.acTurnStage == 78 or self.acTurnStage == 79 then
+function AIVehicleExtension:waitForAnimTurnStage( turnStage )
+	if     turnStage <  0
+			or ( turnStage == 0 and AIVEGlobals.raiseNoFruits > 0 )
+			or turnStage == 3
+			or turnStage == 8
+			or turnStage == 26 or turnStage == 27
+			or turnStage == 38
+			or turnStage == 48 or turnStage == 49
+			or turnStage == 59 or turnStage == 60 or turnStage == 61 
+			or turnStage == 77 or turnStage == 78 or turnStage == 79 then
 		return true
 	end
 	return false
@@ -2448,6 +2457,9 @@ end
 --==============================================================				
 --==============================================================			
 function AIVehicleExtension:afterSetDriveStrategies()	
+	if self.aiIsStarted and self.acParameters.enabled then
+		self.aiveIsStarted = true
+	end
 	if self.aiveIsStarted and self.driveStrategies ~= nil and #self.driveStrategies > 0 then
 		local insertIndex = nil
 		for i,d in pairs( self.driveStrategies ) do
@@ -2462,6 +2474,8 @@ function AIVehicleExtension:afterSetDriveStrategies()
 			driveStrategyMogli:setAIVehicle(self);
 			self.driveStrategies[insertIndex] = driveStrategyMogli
 		end
+	else
+		self.aiveIsStarted = false
 	end
 end
 

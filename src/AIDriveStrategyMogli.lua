@@ -244,8 +244,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	local veh = self.vehicle 
 	
 	if veh.acPause then
+		veh.isHirableBlocked = true		
 		AIVehicleExtension.setStatus( veh, 0 )
-		return vX, vZ, moveForwards, 0, 0
+		return vX2, vZ2, moveForwards, 0, 0
 	end
 		
 	self.dtSum = self.dtSum + dt
@@ -302,11 +303,12 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			end
 			self.currentTurnStrategy = nil
 			veh.turnTimer		   = veh.acDeltaTimeoutNoTurn
+			veh.acFullAngle    = true
 			
 			if self.search == nil then
 				self.search = AIDriveStrategyMogli.searchCircle
 			end			
-			AIVehicleExtension.setAIImplementsMoveDown(veh,true,false);
+			AIVehicleExtension.setAIImplementsMoveDown(veh,true,true) -- false);
 		else
 			local tX2, tZ2 = self:adjustPosition( tX, tZ, moveForwards )
 			self.lastDirection = { tX2, tZ2 }
@@ -403,7 +405,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		return self.lastDirection[1], self.lastDirection[2], true, AutoSteeringEngine.getMaxSpeed( veh, dt, 1, false, true, 0, false, 0.7 ), 0
 	end
 	
-	veh.isHirableBlocked = false
+	if veh.isHirableBlocked then
+		veh.isHirableBlocked = false
+		AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)
+	end
 	
 	local offsetOutside = 0;
 	if	 veh.acParameters.rightAreaActive then
@@ -587,13 +592,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		veh.acHighPrec = true
 	elseif  detected then
 	-- everything is ok
---elseif  self.search == nil and border <= 0 then
---	angle2 = nil
---	if fruitsDetected then
---		angle = -veh.acDimensions.maxLookingAngle
---	else
---		angle = -veh.acDimensions.maxSteeringAngle 
---	end
+	elseif  self.search == nil and border <= 0 and fruitsDetected then
+		angle = -veh.acDimensions.maxLookingAngle
+	elseif  self.search == AIDriveStrategyMogli.searchCircle and border <= 0 and fruitsDetected then
+		self.acFullAngle = true
+		angle = -veh.acDimensions.maxSteeringAngle
 	elseif  self.search == AIDriveStrategyMogli.searchStart then
 	-- start of hired worker
 		if     turn2Outside then
