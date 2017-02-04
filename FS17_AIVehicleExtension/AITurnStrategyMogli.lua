@@ -58,6 +58,15 @@ end
 function AITurnStrategyMogli:onEndTurn( turnLeft )
 	AITurnStrategyMogli:superClass().onEndTurn( self, turnLeft )
 
+	local immediate = false
+	if     self.vehicle.aiveHas.combine then
+		immediate = true
+	elseif AutoSteeringEngine.hasFruits( self.vehicle ) then
+		immediate = true
+	end
+	
+	AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, immediate )
+	
 	self.lastDirection = nil
 	self.stageId       = 0		
 	self.dtSum         = 0

@@ -19,7 +19,6 @@ end
 --============================================================================================================================
 function AITurnStrategyMogliDefault:onEndTurn( ... )
 	AITurnStrategyMogliDefault:superClass().onEndTurn( self, ... )
-	AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, self.vehicle.aiveHas.combine )
 	self.lastTurnStage = nil
 end
 

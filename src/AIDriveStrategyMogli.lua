@@ -308,7 +308,6 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			if self.search == nil then
 				self.search = AIDriveStrategyMogli.searchCircle
 			end			
-			AIVehicleExtension.setAIImplementsMoveDown(veh,true,true) -- false);
 		else
 			local tX2, tZ2 = self:adjustPosition( tX, tZ, moveForwards )
 			self.lastDirection = { tX2, tZ2 }
@@ -378,11 +377,16 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	else
 		self.animWaitTimer = nil
 		self.noSneakTimer  = nil
-		
-		if AIVEGlobals.raiseNoFruits <= 0 or self.acImplementsMoveDown then
-			if not AutoSteeringEngine.getIsAIReadyForWork( veh ) then
-				allowedToDrive = false
-			end
+	end
+	
+	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh, 0.9 )
+	
+	if      allowedToDrive
+			and ( fruitsDetected 
+				 or ( self.search == nil and AIVEGlobals.raiseNoFruits <= 0 )
+				 or self.acImplementsMoveDown ) then
+		if not AutoSteeringEngine.getIsAIReadyForWork( veh ) then
+			allowedToDrive = false
 		end
 	end
 	
@@ -407,7 +411,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	
 	if veh.isHirableBlocked then
 		veh.isHirableBlocked = false
-		AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)
+	--AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)
 	end
 	
 	local offsetOutside = 0;
@@ -454,8 +458,6 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		turnAngle = -turnAngle;
 	end;
 
-	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh, 0.9 )
-	
 	if fruitsDetected and self.search ~= nil then
 		if veh.acFruitAllTimer == nil then
 			veh.acFruitAllTimer = veh.acDeltaTimeoutStart
