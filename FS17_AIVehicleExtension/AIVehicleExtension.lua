@@ -103,6 +103,7 @@ AIVehicleExtension.turnStageEnd	= { { 4, -1 },
 															{ 79, -2 },
 															{ 83, 85 },
 															{ 86, -2 },
+															{ 89, -1 },
 															{ 99, -1 },
 															{103, -1 },
 															{108, -1 },
@@ -229,7 +230,7 @@ function AIVehicleExtension:initMogliHud()
 	AIVEHud.addButton(self, "dds/off.dds",						"dds/on.dds",					  AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,		1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage );
 	AIVEHud.addButton(self, "dds/ai_combine.dds",		  "dds/auto_combine.dds", AIVehicleExtension.onEnable,			AIVehicleExtension.evalEnable,		 2,1, "AUTO_TRACTOR_STOP", "AUTO_TRACTOR_START" );
 	AIVEHud.addButton(self, "dds/no_uturn2.dds",			"dds/uturn.dds",				AIVehicleExtension.setUTurn,			AIVehicleExtension.evalUTurn,			3,1, "AUTO_TRACTOR_UTURN_OFF", "AUTO_TRACTOR_UTURN_ON") ;
---AIVEHud.addButton(self, "dds/next.dds",					  "dds/no_next.dds",			AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,	4,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
+	AIVEHud.addButton(self, "dds/next.dds",					  "dds/no_next.dds",			AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,	4,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
 	AIVEHud.addButton(self, "dds/no_pause.dds",			  "dds/pause.dds",				AIVehicleExtension.setPause,			AIVehicleExtension.evalPause,			5,1, "AUTO_TRACTOR_PAUSE_OFF", "AUTO_TRACTOR_PAUSE_ON", nil, AIVehicleExtension.getPauseImage );
 --AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds",AIVehicleExtension.onAutoSteer,	 AIVehicleExtension.evalAutoSteer,	6,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" );
 
@@ -968,7 +969,17 @@ function AIVehicleExtension:update(dt)
 		end
 	end;
 	
-	if self.acTurnStage >= 198 then
+	if     self.aiveIsStarted      then
+		if AIVEGlobals.devFeatures <= 0 or self.atHud.InfoText == nil or self.atHud.InfoText == "" then
+			AIVEHud.setInfoText( self )
+			if self.acDimensions ~= nil and self.acDimensions.distance ~= nil then
+				AIVEHud.setInfoText( self, AIVEHud.getText( "AUTO_TRACTOR_WORKWIDTH" ) .. string.format(" %0.2fm", self.acDimensions.distance+self.acDimensions.distance) )
+			end
+			if self.acTurnStage ~= nil and self.acTurnStage ~= 0 and self.acTurnStage < 197 then
+				AIVEHud.setInfoText( self, AIVEHud.getInfoText(self) .. string.format(" (%i)", self.acTurnStage) )
+			end
+		end
+	elseif self.acTurnStage >= 198 then
 		self.stopMotorOnLeave = false
 		self.deactivateOnLeave = false
 	end
@@ -1121,21 +1132,19 @@ function AIVehicleExtension:checkAvailableTurnModes( noEventSend )
 	
 	if self.acParameters.upNDown then
 		if rev	then
-			if AIVEGlobals.enableAUTurn > 0 and sut then
-				table.insert( self.acTurnModes, "A" )
-			end
-			if			AIVEGlobals.enableYUTurn		 > 0
-					and self.acDimensions.distance ~= nil 
-					and self.acDimensions.radius	 ~= nil 
-					and self.acDimensions.distance < self.acDimensions.radius + 1.5 then
+			if self.acDimensions.zBack ~= nil and self.acDimensions.zBack > 0 then
 				table.insert( self.acTurnModes, "Y" )
+			elseif AIVEGlobals.enableAUTurn > 0 and sut then
+				table.insert( self.acTurnModes, "A" )
 			end
 		end
 		if revS then
 			table.insert( self.acTurnModes, "T" )
 		end
 		table.insert( self.acTurnModes, "O" )
-		table.insert( self.acTurnModes, "8" )
+		if self.acDimensions.zBack ~= nil and self.acDimensions.zBack < 0 then
+			table.insert( self.acTurnModes, "8" )
+		end
 	else
 		if rev	then
 			table.insert( self.acTurnModes, "L"	)
@@ -1412,170 +1421,18 @@ function AIVehicleExtension.calculateDimensions( self )
 	
 	AIVehicleExtension.roueSet( self, nil, AIVEGlobals.maxLooking )
 	
-	self.acDimensions									= {};
-	self.acDimensions.radius					 = 5;
-	self.acDimensions.maxSteeringAngle = math.rad(25);
-	self.acDimensions.wheelBase				= self.acDimensions.radius * math.tan( self.acDimensions.maxSteeringAngle )
-	self.acDimensions.zOffset					= 0 
-	self.acDimensions.acRefNodeZ   		= -0.5 * self.acDimensions.wheelBase;
-	
-	
-	local refNodeParent = getParent( self.acRefNode )
-	
-	
-	if			self.articulatedAxis ~= nil 
-			and self.articulatedAxis.componentJoint ~= nil
-			and self.articulatedAxis.componentJoint.jointNode ~= nil 
-			and self.articulatedAxis.rotMax then
-			
-		self.acDimensions.wheelParents = {}
-		_,_,self.acDimensions.acRefNodeZ = AutoSteeringEngine.getRelativeTranslation(refNodeParent,self.articulatedAxis.componentJoint.jointNode);
-		local n=0;
-		for _,wheel in pairs(self.wheels) do
-			local temp1 = { getRotation(wheel.driveNode) }
-			local temp2 = { getRotation(wheel.repr) }
-			setRotation(wheel.driveNode, 0, 0, 0)
-			setRotation(wheel.repr, 0, 0, 0)
-			local x,y,z = AutoSteeringEngine.getRelativeTranslation(self.articulatedAxis.componentJoint.jointNode,wheel.driveNode);
-			setRotation(wheel.repr, unpack(temp2))
-			setRotation(wheel.driveNode, unpack(temp1))
-
-			if n==0 then
-				self.acDimensions.wheelBase = math.abs(z)
-				n = 1
-			else
-				self.acDimensions.wheelBase = self.acDimensions.wheelBase + math.abs(z);
-				n	= n	+ 1;
-			--self.acDimensions.wheelBase = math.max( math.abs(z) )
-			end
-			
-			local node = getParent( wheel.driveNode )
-			if self.acDimensions.wheelParents[node] == nil then
-				self.acDimensions.wheelParents[node] = 1
-			else
-				self.acDimensions.wheelParents[node] = self.acDimensions.wheelParents[node] + 1
-			end
-		end
-		if n > 1 then
-			self.acDimensions.wheelBase = self.acDimensions.wheelBase / n;
-		end
-		-- divide max. steering angle by 2 because it is for both sides
-		self.acDimensions.maxSteeringAngle = 0.25 * (math.abs(self.articulatedAxis.rotMin)+math.abs(self.articulatedAxis.rotMax))
-		-- reduce wheel base according to max. steering angle
-		self.acDimensions.wheelBase				= self.acDimensions.wheelBase * math.cos( self.acDimensions.maxSteeringAngle ) 
-	else
-		local left	= {};
-		local right = {};
-		local nl0,zl0,nr0,zr0,zlm,alm,zrm,arm,zlmi,almi,zrmi,armi = 0,0,0,0,-99,0,-99,0,99,0,99,0;
-		for _,wheel in pairs(self.wheels) do
-			local temp1 = { getRotation(wheel.driveNode) }
-			local temp2 = { getRotation(wheel.repr) }
-			setRotation(wheel.driveNode, 0, 0, 0)
-			setRotation(wheel.repr, 0, 0, 0)
-			local x,y,z = AutoSteeringEngine.getRelativeTranslation(refNodeParent,wheel.driveNode);
-			setRotation(wheel.repr, unpack(temp2))
-			setRotation(wheel.driveNode, unpack(temp1))
-
-			local a = 0.5 * (math.abs(wheel.rotMin)+math.abs(wheel.rotMax));
-
-			if		 wheel.rotSpeed >	1E-03 then
-				if x > 0 then
-					if zlm < z then
-						zlm = z;
-						alm = a;
-					end
-				else
-					if zrm < z then
-						zrm = z;
-						arm = a;
-					end
-				end
-			elseif wheel.rotSpeed > -1E-03 then
-				if x > 0 then
-					zl0 = zl0 + z;
-					nl0 = nl0 + 1;
-				else
-					zr0 = zr0 + z;
-					nr0 = nr0 + 1;
-				end
-			else
-				if x > 0 then
-					if zlmi > z then
-						zlmi = z;
-						almi = a;
-					end
-				else
-					if zrmi > z then
-						zrmi = z;
-						armi = a;
-					end
-				end
-			end	
-		end
-		
-		if zlm > -98 and zrm > -98 then
-			alm = 0.5 * ( alm + arm );
-			zlm = 0.5 * ( zlm + zrm );
-		elseif zrm > -98 then
-			alm = arm;
-			zlm = zrm;
-		end
-		if zlmi < 98 and zrmi < 98 then
-			almi = 0.5 * ( almi + armi );
-			zlmi = 0.5 * ( zlmi + zrmi );
-		elseif zrmi > -98 then
-			almi = armi;
-			zlmi = zrmi;
-		end
-				
-		if nl0 > 0 or nr0 > 0 then
-			self.acDimensions.acRefNodeZ = ( zl0 + zr0 ) / ( nl0 + nr0 );
-		
-			if		 zlm > -98 then
-				self.acDimensions.wheelBase = zlm - self.acDimensions.acRefNodeZ
-				self.acDimensions.maxSteeringAngle = alm
-			elseif zlmi < 98 then
-				self.acDimensions.wheelBase = self.acDimensions.acRefNodeZ -zlmi
-				self.acDimensions.maxSteeringAngle = almi
-			else
-				self.acDimensions.wheelBase = 0;
-			end
-		elseif zlm > -98 and zlmi < 98 then
--- all wheel steering					
-			self.acDimensions.maxSteeringAngle = math.max( math.abs( alm ), math.abs( almi ) );
-			local t1 = math.tan( alm );
-			local t2 = math.tan( almi );
-			
-			self.acDimensions.acRefNodeZ	 = ( t1 * zlmi - t2 * zlm ) / ( t1 - t2 );
-			self.acDimensions.wheelBase = zlm - self.acDimensions.acRefNodeZ;
-		else
-			self.acDimensions.maxSteeringAngle = math.abs( alm )
-			self.acDimensions.wheelBase				= 4;
-			self.acDimensions.acRefNodeZ					= 0;
-		end
-	end
+	self.acDimensions								 	 = {};
+	self.acDimensions.zOffset				 	 = 0 
+	self.acDimensions.acRefNodeZ       = 0
+	self.acDimensions.maxSteeringAngle = Utils.getNoNil( self.maxRotation, math.rad( 25 ))
+	self.acDimensions.radius           = Utils.getNoNil( self.maxTurningRadius, 5 )
+	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
 	
 	if self.acParameters.inverted then
 		self.acDimensions.wheelBase = -self.acDimensions.wheelBase 
 	end
 	
 	setTranslation( self.acRefNode, 0, 0, self.acDimensions.acRefNodeZ )
-	
-	--adjusted steering
-	if self.as ~= nil and self.as.radI ~= nil and self.as.radO ~= nil and 0 < self.as.radO and self.as.radO < self.as.radI then
-		self.acDimensions.maxSteeringAngle = self.acDimensions.maxSteeringAngle * ( self.as.radO + self.as.radI ) / ( self.as.radI + self.as.radI )
-	end
-	
-	if math.abs( self.acDimensions.wheelBase ) > 1E-3 and math.abs( self.acDimensions.maxSteeringAngle ) > 1E-4 then
-		self.acDimensions.radius				= self.acDimensions.wheelBase / math.tan( self.acDimensions.maxSteeringAngle );
-	--if self.articulatedAxis ~= nil and self.aiTractorTurnRadius ~= nil then
-	--	self.acDimensions.radius			= math.max( self.acDimensions.radius, self.aiTractorTurnRadius )
-	--end
-	elseif self.aiTractorTurnRadius ~= nil then
-		self.acDimensions.radius				= self.aiTractorTurnRadius
-	else
-		self.acDimensions.radius				= 5;
-	end
 	
 	if AIVEGlobals.devFeatures > 0 then
 		print(string.format("wb: %0.3fm, r: %0.3fm, z: %0.3fm", self.acDimensions.wheelBase, self.acDimensions.radius, self.acDimensions.acRefNodeZ ))
@@ -1668,7 +1525,7 @@ function AIVehicleExtension.calculateDistances( self )
 	self.acDimensions.uTurnDistance	= math.max( 0, 1 + self.acDimensions.toolDistance + self.acDimensions.distance - self.acDimensions.radius);	
 	self.acDimensions.headlandDist	 = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
 	self.acDimensions.collisionDist	= 1 + AIVehicleExtension.calculateHeadland( self.acTurnMode, math.max( self.acDimensions.distance, 1.5 ), self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
-	
+	self.acDimensions.uTurnDist4x   = self.acDimensions.toolDistance - self.acDimensions.distance - self.acDimensions.distance - math.max( 0, self.acDimensions.radius - self.acDimensions.distance - self.acDimensions.distance ) * 0.134
 	--if self.acShowDistOnce == nil then
 	--	self.acShowDistOnce = 1
 	--else
@@ -1680,9 +1537,10 @@ function AIVehicleExtension.calculateDistances( self )
 	
 	if self.acParameters.turnOffset ~= nil then
 		self.acDimensions.insideDistance = math.max( 0, self.acDimensions.insideDistance + self.acParameters.turnOffset );
-		self.acDimensions.uTurnDistance	= math.max( 0, self.acDimensions.uTurnDistance	+ self.acParameters.turnOffset );
+		self.acDimensions.uTurnDistance	 = math.max( 0, self.acDimensions.uTurnDistance	 + self.acParameters.turnOffset );
 		self.acDimensions.headlandDist	 = math.max( 0, self.acDimensions.headlandDist	 + self.acParameters.turnOffset );
-		self.acDimensions.collisionDist	= math.max( 0, self.acDimensions.collisionDist	+ self.acParameters.turnOffset );
+		self.acDimensions.collisionDist	 = math.max( 0, self.acDimensions.collisionDist	 + self.acParameters.turnOffset );
+		self.acDimensions.uTurnDist4x    = math.max( 0, self.acDimensions.uTurnDist4x  	 + self.acParameters.turnOffset );
 	end
 	
 	self.acDimensions.headlandCount = 0
@@ -1870,65 +1728,11 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:setNextTurnStage(noEventSend)
 
-	if AIVehicleExtension.evalTurnStage(self) then
-		if self.aiveIsStarted then
-			if self.acTurnStage <= 0 then
-			
-				self.acTurn2Outside = false
-				self.turnTimer = self.acDeltaTimeoutWait;
-				
-				if self.acParameters.upNDown then
-					if		 self.acTurnMode == "O" then				
-						self.acTurnStage = 70				
-					elseif self.acTurnMode == "8" then				
-						self.acTurnStage = 80				
-					elseif self.acTurnMode == "A" then
-						self.acTurnStage = 50;
-					elseif self.acTurnMode == "Y" then
-						self.acTurnStage = 40;
-					else
-						self.acTurnStage = 20;
-					end
-					self.acParameters.leftAreaActive	= not self.acParameters.leftAreaActive;
-					self.acParameters.rightAreaActive = not self.acParameters.rightAreaActive;
-					AIVehicleExtension.sendParameters(self);
-					self.waitForTurnTime = g_currentMission.time + self.turnTimer;
-					if self.isServer then	
-						AutoSteeringEngine.setChainStraight( self ) 
-					end
-				elseif self.acTurnMode == "C" 
-						or self.acTurnMode == "8" 
-						or self.acTurnMode == "O" then
-			-- 90° turn w/o reverse
-					self.aiRescueTimer	= 3 * self.acDeltaTimeoutStop;
-					self.acTurnStage = 5;
-					self.waitForTurnTime = g_currentMission.time + self.turnTimer;
-				elseif self.acTurnMode == "L" 
-						or self.acTurnMode == "A" 
-						or self.acTurnMode == "Y" then
-			-- 90° turn with reverse
-					self.acTurnStage = 1;
-				elseif self.acTurnMode == "7" then 
-			-- 90° new turn with reverse
-					self.acTurnStage = 90;
-					self.turnTimer = self.acDeltaTimeoutWait;
-				else
-			-- 90° turn with reverse
-					self.acTurnStage = 30;
-				end
-				
-			else
-				local ts0 = self.acTurnStage
-				self.acTurnStage = self.acTurnStage + 1;
-				self.turnTimer	 = self.acDeltaTimeoutWait;
-				for _,ts in pairs( AIVehicleExtension.turnStageEnd ) do
-					if ts[1] == ts0 then
-						self.acTurnStage = ts[2]
-					end
-				end
+	if self.isServer and self.driveStrategies ~= nil then
+		for i,d in pairs( self.driveStrategies ) do
+			if type( d.gotoNextStage ) == "function" then
+				d:gotoNextStage()
 			end
-		else
-			self.turnStage	 = self.turnStage + 1;
 		end
 	end
 

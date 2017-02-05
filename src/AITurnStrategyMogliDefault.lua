@@ -23,6 +23,23 @@ function AITurnStrategyMogliDefault:onEndTurn( ... )
 end
 
 --============================================================================================================================
+-- gotoNextStage
+--============================================================================================================================
+function AITurnStrategyMogliDefault:gotoNextStage( turnData )
+	local veh = self.vehicle 
+	if veh ~= nil then
+		local ts0 =turnData.stage
+		turnData.stage = turnData.stage + 1;
+		veh.turnTimer	 = veh.acDeltaTimeoutWait;
+		for _,ts in pairs( AIVehicleExtension.turnStageEnd ) do
+			if ts[1] == ts0 then
+				turnData.stage = ts[2]
+			end
+		end
+	end
+end
+
+--============================================================================================================================
 -- fillStages
 --============================================================================================================================
 function AITurnStrategyMogliDefault:getNextStage( dt, vX,vY,vZ, turnData, stageId )
@@ -30,7 +47,6 @@ function AITurnStrategyMogliDefault:getNextStage( dt, vX,vY,vZ, turnData, stageI
 		return self:getStageFromFunction( AITurnStrategyMogliDefault.getDriveDataDefault )
 	end
 end
-
 
 --============================================================================================================================
 -- getDriveDataDefault
@@ -43,12 +59,14 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		return 
 	end
 	
+	veh.acTurnStage = turnData.stage
+	
 	if self.lastTurnStage == nil or self.lastTurnStage ~= turnData.stage then
 		self.lastTurnStage = turnData.stage
 		self.turnStageData = nil
 	end
 	
-	local tX, tZ, moveForwards, distanceToStop, inactive = nil, nil, true, math.huge, false
+	local tX, tZ, moveForwards, distanceToStop, inactive, noLower = nil, nil, true, math.huge, false, false
 		
 	AIVehicleExtension.statEvent( veh, "t0", dt )
 
@@ -863,150 +881,178 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		end;
 
 --==============================================================				
+-- U turn with reverse
 --==============================================================				
--- 180° turn with 90° backwards
+-- go to the right distance before the U-turn
 	elseif turnData.stage == 40 then
-		inactive = true
-		angle = 0;
-		turnData.stage   = turnData.stage + 1;					
-		veh.turnTimer     = veh.acDeltaTimeoutRun;
 
-		--AIVehicleExtension.setAIImplementsMoveDown(veh,false);
-		
---==============================================================				
--- move far enough if tool is in front
-	elseif turnData.stage == 41 then
-		inactive = true
-		angle = 0;
-
-		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
-		if z > math.max( 0, veh.acDimensions.toolDistance ) + 1 - stoppingDist then
-			AutoSteeringEngine.ensureToolIsLowered( veh, false )
-			turnData.stage   = turnData.stage + 1;					
-			veh.turnTimer     = veh.acDeltaTimeoutRun;
-		end
-
---==============================================================				
--- wait
-	elseif turnData.stage == 42 then
-		allowedToDrive = false;				
-		moveForwards = false;					
-		angle = 0
-		
-		if veh.turnTimer < 0 or AIVehicleExtension.stopWaiting( veh, angle ) then
-			turnData.stage   = turnData.stage + 1;					
-		end
-
---==============================================================				
--- turn 45°
-	elseif turnData.stage == 43 then		
-		angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )
-		
-		if turnAngle > 45-angleOffset then
-			if veh.acParameters.leftAreaActive then
-				AIVehicle.aiRotateLeft(veh);
-			else
-				AIVehicle.aiRotateRight(veh);
-			end
-			turnData.stage     = turnData.stage + 1;					
-			veh.turnTimer       = veh.acDeltaTimeoutNoTurn;
-		end
---==============================================================				
--- wait
-	elseif turnData.stage == 44 then
-		allowedToDrive = false;						
-		angle = AIVehicleExtension.getMaxAngleWithTool( veh )
-		
-		if veh.turnTimer < 0 or AIVehicleExtension.stopWaiting( veh, angle ) then
-			turnData.stage   = turnData.stage + 1;					
-			veh.turnTimer     = veh.acDeltaTimeoutStop;
-		end
-
---==============================================================				
--- move backwards (90°)	I	
-	elseif turnData.stage == 45 then		
-		moveForwards = false;					
-		angle = AIVehicleExtension.getMaxAngleWithTool( veh )
-		
-		if turnAngle > 90-angleOffset then
-			turnData.stage     = turnData.stage + 1;					
-			angle = math.min( math.max( 3 * math.rad( 90 - turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
-			veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
-		end
---==============================================================				
--- move backwards (0°) II
-	elseif turnData.stage == 46 then		
-		moveForwards = false;					
-		angle = math.min( math.max( 3 * math.rad( 90 - turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
-		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
+		inactive     = true
+		noLower      = true
+		moveForwards = true
+		angle        = math.rad( turnAngle )
+		local x,z    = AIVehicleExtension.getTurnVector( veh );
 		if not veh.acParameters.leftAreaActive then x = -x end
-	
-		--if veh.isRealistic then
-		--	x = x - 1
-		--else	
-		--	x = x - 0.5
-		--end
+		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
 		
-		if x > - stoppingDist then
-			turnData.stage   = turnData.stage + 1;					
-			angle = veh.acDimensions.maxSteeringAngle;
-			veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
+		if     z > veh.acDimensions.uTurnDist4x + 0.5 then
+			turnData.stage = turnData.stage + 1
+		elseif z < veh.acDimensions.uTurnDist4x - 0.5 then
+			turnData.stage = turnData.stage + 2
+		else
+			turnData.stage = turnData.stage + 3
 		end
+			
 --==============================================================				
--- move backwards (45°) III
-	elseif turnData.stage == 47 then		
-		moveForwards = false;					
-		angle = AIVehicleExtension.getMaxAngleWithTool( veh )
+-- go to the right distance before the U-turn
+	elseif turnData.stage == 41 then
+
+		inactive     = true
+		noLower      = true
+		moveForwards = false
+		angle        = math.rad( turnAngle )
+		local x,z    = AIVehicleExtension.getTurnVector( veh );
+		if not veh.acParameters.leftAreaActive then x = -x end
+		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
 		
-		if turnAngle > 150-angleOffset then
-			turnData.stage   = turnData.stage + 1;					
-			veh.turnTimer     = veh.acDeltaTimeoutRun;
-		end
---==============================================================				
--- wait
-	elseif turnData.stage == 48 then
-		allowedToDrive = false;						
-		angle = AIVehicleExtension.getMaxAngleWithTool( veh, false )
-		
-		if veh.turnTimer < 0 or AIVehicleExtension.stopWaiting( veh, angle ) then
-			--AIVehicleExtension.setAIImplementsMoveDown(veh,true);
-			AutoSteeringEngine.navigateToSavePoint( veh, 1 )
-			turnData.stage   = turnData.stage + 1;					
-			veh.turnTimer     = veh.acDeltaTimeoutStop;
+		if z <= veh.acDimensions.uTurnDist4x + 0.5 then
+			turnData.stage = turnData.stage + 2
+			veh.turnTimer  = veh.acDeltaTimeoutRun
 		end
 
 --==============================================================				
--- turn 90° II
-	elseif turnData.stage == 49 then
-		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
- 
-		detected, angle2, border = AutoSteeringEngine.processChain( veh )
- 
-		if detected or border <= 0 then
-			--AIVehicleExtension.setAIImplementsMoveDown(veh,true);
-			if fruitsDetected or z < AutoSteeringEngine.getToolDistance( veh ) then
-				turnData.stage = -2
-				veh.turnTimer   = veh.acDeltaTimeoutNoTurn;
-			end
-		elseif fruitsDetected then
-			turnData.stage = 110
-			veh.turnTimer   = veh.acDeltaTimeoutNoTurn
-		else
-			veh.turnTimer   = veh.acDeltaTimeoutNoTurn;
-			angle            = nil
-		--local turn75     = AutoSteeringEngine.getMaxSteeringAngle75( veh );
-			local onTrack    = false
-		--angle2, onTrack, tX, tZ  = AutoSteeringEngine.navigateToSavePoint( veh, 1, nil, turn75 )
-			angle2, onTrack, tX, tZ  = AutoSteeringEngine.navigateToSavePoint( veh, 1 )
-			if not onTrack then
-				turnData.stage = 110
-				veh.turnTimer   = veh.acDeltaTimeoutNoTurn
+-- go to the right distance before the U-turn
+	elseif turnData.stage == 42 then
+
+		inactive     = true
+		noLower      = true
+		moveForwards = true
+		angle        = math.rad( turnAngle )
+		local x,z    = AIVehicleExtension.getTurnVector( veh );
+		if not veh.acParameters.leftAreaActive then x = -x end
+		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
+		
+		if z >= veh.acDimensions.uTurnDist4x - 0.5 then
+			turnData.stage = turnData.stage + 1
+			veh.turnTimer  = veh.acDeltaTimeoutRun
+		end
+
+--==============================================================				
+-- turn 90°
+	elseif turnData.stage == 43 then
+
+		noLower      = true
+		moveForwards = true
+		angle        = veh.acDimensions.maxSteeringAngle
+		local x,z    = AIVehicleExtension.getTurnVector( veh );
+		if not veh.acParameters.leftAreaActive then x = -x end
+		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
+		
+		if turnAngle < -87 then
+
+			if     x > veh.acDimensions.distance + 0.5 then
+			-- move to right position II
+				turnData.stage = turnData.stage + 1
+				veh.turnTimer  = veh.acDeltaTimeoutRun
+			elseif x < veh.acDimensions.distance - 0.5 then
+			-- move to right position II
+				turnData.stage = turnData.stage + 2
+				veh.turnTimer  = veh.acDeltaTimeoutRun
+			else
+			-- turn 30°
+				targetAngle      = veh.acDimensions.maxSteeringAngle
+				turnData.stage = turnData.stage + 3
+				veh.turnTimer  = veh.acDeltaTimeoutRun
 			end
 		end
+
+--==============================================================				
+-- move to right position II
+	elseif turnData.stage == 44 then
+
+		noLower      = true
+		moveForwards = false
+		angle        = math.rad( turnAngle + 90 )
+		local x,z    = AIVehicleExtension.getTurnVector( veh );
+		if not veh.acParameters.leftAreaActive then x = -x end
+		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
 		
+		if x <= veh.acDimensions.distance + 0.5 then
+			targetAngle      = veh.acDimensions.maxSteeringAngle
+			moveForwards     = true					
+			turnData.stage = turnData.stage + 2
+			veh.turnTimer  = veh.acDeltaTimeoutRun
+		end
 		
+--==============================================================				
+-- move to right position II
+	elseif turnData.stage == 45 then
+
+		noLower      = true
+		angle        = math.rad( turnAngle + 90 )
+		local x,z    = AIVehicleExtension.getTurnVector( veh );
+		if not veh.acParameters.leftAreaActive then x = -x end
+		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
 		
+		if x >= veh.acDimensions.distance - 0.5 then
+			targetAngle      = veh.acDimensions.maxSteeringAngle
+			turnData.stage = turnData.stage + 1
+			veh.turnTimer  = veh.acDeltaTimeoutRun
+		end
 		
+--==============================================================				
+-- turn 30°
+	elseif turnData.stage == 46 then
+
+		noLower      = true
+		angle        = veh.acDimensions.maxSteeringAngle
+		local x,z    = AIVehicleExtension.getTurnVector( veh );
+		if not veh.acParameters.leftAreaActive then x = -x end
+		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
+		
+		if turnAngle < -119 then
+			moveForwards     = false
+			targetAngle      = veh.acDimensions.maxSteeringAngle
+			turnData.stage = turnData.stage + 1
+			veh.turnTimer  = veh.acDeltaTimeoutRun
+		end
+		
+--==============================================================				
+-- turn -60°
+	elseif turnData.stage == 47 then
+
+		noLower      = true
+		moveForwards = false
+		angle        = -veh.acDimensions.maxSteeringAngle
+		local x,z    = AIVehicleExtension.getTurnVector( veh );
+		if not veh.acParameters.leftAreaActive then x = -x end
+		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
+		
+		if turnAngle < -175 or turnAngle > 0 then
+			turnData.stage   = turnData.stage + 1
+			veh.turnTimer    = veh.acDeltaTimeoutRun
+		end
+	
+--==============================================================				
+-- turn -60°
+	elseif turnData.stage == 48 then
+
+		noLower      = true
+		moveForwards = false
+		angle        = -veh.acDimensions.maxSteeringAngle
+		local x,z    = AIVehicleExtension.getTurnVector( veh );
+		if not veh.acParameters.leftAreaActive then x = -x end
+		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
+		
+		if     fruitsDetected then
+		elseif detected       then
+			turnData.stage = -2
+			veh.turnTimer  = veh.acDeltaTimeoutNoTurn;
+		elseif turnAngle < -175 or turnAngle > 0 then
+			turnData.stage = -2
+			veh.turnTimer  = veh.acDeltaTimeoutNoTurn;
+		end
+	
+	
 --==============================================================				
 --==============================================================				
 -- 180° turn with 90° backwards
@@ -2083,15 +2129,18 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		return 
 	end
 	
-	if angle2 == nil and angle ~= nil then
+	if     angle2 ~= nil then
+	elseif angle  ~= nil then
 		if veh.acParameters.leftAreaActive then
 			angle2 =  angle
 		else
 			angle2 = -angle
 		end
+	else
+		angle2 = 0
 	end
 
 	self.lastDirection = { tX, tZ, angle2 }
 	
-	return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle2, inactive
+	return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle2, inactive, noLower
 end

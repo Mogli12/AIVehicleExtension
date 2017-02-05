@@ -240,6 +240,14 @@ function AIDriveStrategy:adjustPosition( eX, eZ, moveForwards, inverse )
 	return tX, tZ
 end
 
+function AIDriveStrategyMogli:gotoNextStage()
+	if self.currentTurnStrategy ~= nil then
+		self.currentTurnStrategy:gotoNextStage(self.turnData)
+	else
+		self.search = nil
+	end
+end
+
 function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	local veh = self.vehicle 
 	
@@ -326,6 +334,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		end		
 	end
 	
+	veh.acTurnStage = 0
 		
 	local tX, tZ, maxSpeed, distanceToStop = nil, nil, 0, 0			
 
@@ -390,7 +399,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		end
 	end
 	
-	local speedLevel = 2;
+	local speedLevel = 4
+	if self.search == nil then
+		speedLevel = 2
+	end
 --if veh.speed2Level ~= nil and 0 <= veh.speed2Level and veh.speed2Level <= 4 then
 --	speedLevel = veh.speed2Level;
 --end
@@ -569,6 +581,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		end
 	end		
 	
+	if not detected then
+		speedLevel = 4
+		self.acFullAngle = true
+	end
+	
 	if	    self.search == nil
 			and border <= 0
 			and ( AutoSteeringEngine.getIsAtEnd( veh ) or ( AutoSteeringEngine.getTraceLength(veh) > 5 and not detected ) )
@@ -594,8 +611,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		veh.acHighPrec = true
 	elseif  detected then
 	-- everything is ok
-	elseif  self.search == nil and border <= 0 and fruitsDetected then
-		angle = -veh.acDimensions.maxLookingAngle
+--elseif  self.search == nil and border <= 0 and fruitsDetected then
+--	angle = -veh.acDimensions.maxLookingAngle
 	elseif  self.search == AIDriveStrategyMogli.searchCircle and border <= 0 and fruitsDetected then
 		self.acFullAngle = true
 		angle = -veh.acDimensions.maxSteeringAngle
@@ -719,7 +736,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 					AIVehicleExtension.setAIImplementsMoveDown(veh,true,false);
 				end
 				
-			elseif AutoSteeringEngine.getTraceLength(veh) < 10 and veh.acParameters.upNDown then		
+		--elseif AutoSteeringEngine.getTraceLength(veh) < 10 and veh.acParameters.upNDown then		
+			elseif AutoSteeringEngine.getTraceLength(veh) < 3 and veh.acParameters.upNDown then		
 				uTurn = false
 				veh.acClearTraceAfterTurn = false
 			else

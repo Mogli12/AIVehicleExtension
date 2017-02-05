@@ -77,6 +77,16 @@ function AITurnStrategyMogli:onEndTurn( turnLeft )
 end
 
 --============================================================================================================================
+-- gotoNextStage
+--============================================================================================================================
+function AITurnStrategyMogli:gotoNextStage( turnData )
+	if self.stageId ~= nil and self.stageId > 0 then
+		self.stageId     = self.stageId + 1
+		self.activeStage = self:getNextStage( dt, vX,vY,vZ, turnData, self.stageId )	
+	end
+end
+
+--============================================================================================================================
 -- update
 --============================================================================================================================
 function AITurnStrategyMogli:update(dt)
@@ -137,8 +147,8 @@ end
 --============================================================================================================================
 -- raiseOrLower
 --============================================================================================================================
-function AITurnStrategyMogli:raiseOrLower( moveForwards )
-	if not moveForwards then
+function AITurnStrategyMogli:raiseOrLower( moveForwards, noLower )
+	if not moveForwards or noLower then
 	-- make sure that tools are raised if going backwards
 		AutoSteeringEngine.ensureToolIsLowered( self.vehicle, false )
 	elseif self.vehicle.aiveHas.combine then
@@ -164,8 +174,10 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 	
 	if self.stageId == 0 then
 		self.stageId     = 1
-		self.activeStage = self:getNextStage( dt, vX,vY,vZ, turnData, 1 )
+		self.activeStage = self:getNextStage( dt, vX,vY,vZ, turnData, self.stageId )
 	end
+	
+	vehicle.acTurnStage = self.stageId
 	
 	if self.activeStage == nil then
 	-- end of turn
@@ -195,14 +207,14 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 	end 
 	
 	if skip then
-		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive = unpack( self.lastDriveData )
+		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive, noLower = unpack( self.lastDriveData )
 		if tX == nil and angle ~= nil then
 			tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
 		end
 		local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 4, false, 0.7 )
 		
 		if allowedToDrive then
-			self:raiseOrLower( moveForwards )
+			self:raiseOrLower( moveForwards, noLower )
 		elseif angle ~= nil then
 			AutoSteeringEngine.steer( vehicle, dt, angle, vehicle.aiSteeringSpeed, false )		
 		end
@@ -211,7 +223,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 	end
 	
 	while self.activeStage ~= nil do
-		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive = self.activeStage.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( self.activeStage.parameter ) )
+		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive, noLower = self.activeStage.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( self.activeStage.parameter ) )
 		
 		if tX == nil and angle ~= nil then
 			tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
@@ -220,12 +232,12 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 			local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 4, false, 0.7 )
 			
 			if allowedToDrive then
-				self:raiseOrLower( moveForwards )
+				self:raiseOrLower( moveForwards, noLower )
 			elseif angle ~= nil then
 				AutoSteeringEngine.steer( vehicle, dt, angle, vehicle.aiSteeringSpeed, false )		
 			end
 			
-			self.lastDriveData = { tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive }
+			self.lastDriveData = { tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive, noLower }
 				
 			return tX, tZ, moveForwards, maxSpeed, distanceToStop, not ( inactive )
 		end
@@ -233,6 +245,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 		-- go to next stage 		
 		self.stageId     = self.stageId + 1		
 		self.activeStage = self:getNextStage( dt, vX,vY,vZ, turnData, self.stageId )
+		vehicle.acTurnStage = self.stageId
 			
 		if AIVEGlobals.devFeatures > 0 then
 			self:addDebugText("going to stage "..tostring(self.stageId))

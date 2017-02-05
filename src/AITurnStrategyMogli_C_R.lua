@@ -46,7 +46,7 @@ function AITurnStrategyMogli_C_R:getNextStage( dt, vX,vY,vZ, turnData, stageId )
 		return self:getStageWithPostCheck( self:getStageFromPoints( self.stages[2], false, 0, false ), AITurnStrategyMogli_C_R.detect4 )
 	elseif stageId == 4 then
 		self.needsLowering = true	
-		return self:getStageWithPostCheck( self:getStageFromPoints( self.stages[3], true, 0, false ), AITurnStrategyMogli_C_R.detect4 )
+		return self:getStageWithPostCheck( self:getStageFromPoints( self.stages[3], true, 3, false ), AITurnStrategyMogli_C_R.detect4 )
 	elseif stageId == 5 then
 		self:getStageFromFunction( AITurnStrategyMogli_C_R.detect5 )
 	end
