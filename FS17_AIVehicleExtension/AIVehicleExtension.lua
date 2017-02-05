@@ -1420,13 +1420,57 @@ function AIVehicleExtension.calculateDimensions( self )
 	end;
 	
 	AIVehicleExtension.roueSet( self, nil, AIVEGlobals.maxLooking )
-	
+
 	self.acDimensions								 	 = {};
 	self.acDimensions.zOffset				 	 = 0 
 	self.acDimensions.acRefNodeZ       = 0
 	self.acDimensions.maxSteeringAngle = Utils.getNoNil( self.maxRotation, math.rad( 25 ))
 	self.acDimensions.radius           = Utils.getNoNil( self.maxTurningRadius, 5 )
 	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
+	
+	
+	if			self.articulatedAxis ~= nil 
+			and self.articulatedAxis.componentJoint ~= nil
+			and self.articulatedAxis.componentJoint.jointNode ~= nil 
+			and self.articulatedAxis.rotMax then
+			
+		self.acDimensions.wheelParents = {}
+	--_,_,self.acDimensions.acRefNodeZ = AutoSteeringEngine.getRelativeTranslation(refNodeParent,self.articulatedAxis.componentJoint.jointNode);
+	--local n=0;
+		for _,wheel in pairs(self.wheels) do
+	--	local temp1 = { getRotation(wheel.driveNode) }
+	--	local temp2 = { getRotation(wheel.repr) }
+	--	setRotation(wheel.driveNode, 0, 0, 0)
+	--	setRotation(wheel.repr, 0, 0, 0)
+	--	local x,y,z = AutoSteeringEngine.getRelativeTranslation(self.articulatedAxis.componentJoint.jointNode,wheel.driveNode);
+	--	setRotation(wheel.repr, unpack(temp2))
+	--	setRotation(wheel.driveNode, unpack(temp1))
+  --
+	--	if n==0 then
+	--		self.acDimensions.wheelBase = math.abs(z)
+	--		n = 1
+	--	else
+	--		self.acDimensions.wheelBase = self.acDimensions.wheelBase + math.abs(z);
+	--		n	= n	+ 1;
+	--	--self.acDimensions.wheelBase = math.max( math.abs(z) )
+	--	end
+			
+			local node = getParent( wheel.driveNode )
+			if self.acDimensions.wheelParents[node] == nil then
+				self.acDimensions.wheelParents[node] = 1
+			else
+				self.acDimensions.wheelParents[node] = self.acDimensions.wheelParents[node] + 1
+			end
+		end
+	--if n > 1 then
+	--	self.acDimensions.wheelBase = self.acDimensions.wheelBase / n;
+	--end
+	---- divide max. steering angle by 2 because it is for both sides
+	--self.acDimensions.maxSteeringAngle = 0.25 * (math.abs(self.articulatedAxis.rotMin)+math.abs(self.articulatedAxis.rotMax))
+	---- reduce wheel base according to max. steering angle
+	--self.acDimensions.wheelBase				= self.acDimensions.wheelBase * math.cos( self.acDimensions.maxSteeringAngle ) 
+	end
+	
 	
 	if self.acParameters.inverted then
 		self.acDimensions.wheelBase = -self.acDimensions.wheelBase 
