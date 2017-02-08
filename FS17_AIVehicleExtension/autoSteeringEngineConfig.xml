@@ -22,26 +22,26 @@
 		
     <angleFactorInside type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
     <angleFactorNoFix type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
-    <chainDivideIn  value="5" />
-    <chainDivideOut value="10" />
+    <chainDivideIn  value="8" />
+    <chainDivideOut value="12" />
 		
 		<staticRoot type="bool" value="true" />
 		<straightTA type="bool" value="false" />
 		
-    <!--                                        1 1 2 2 3 4 5-->
-    <!--                              1 2 4 6 8 1 5 0 6 3 1 0-->
-    <!--                              1 2 3 4 5 6 7 8 9 0 1 2-->
-    <chainLen    type="vector" value="1 1 2 2 2 3 4 5 6 7 8 9"/> 
-		<chainStep0  value="3"/>  <!-- initial part of the chain that always rotates    -->                           
-		<chainStep1  value="7"/>  <!-- steps to outside, can be smaller than chainStep2 -->
+    <!--                                      1 1 2 2 3 3 4 4-->
+    <!--                              1 3 7 8 1 5 0 5 0 5 0 5-->
+      <!--                            1 2 3 4 5 6 7 8 9 0 1 2-->
+    <chainLen    type="vector" value="2 2 2 3 3 4 5 5 5 5 5 5"/> 
+		<chainStep0  value="2" /> <!-- initial part of the chain that always rotates    -->                           
+		<chainStep1  value="6" /> <!-- steps to outside, can be smaller than chainStep2 -->
 		<chainStep2  value="12"/> <!-- steps to check, increased only if nothing found  -->
 		<chainStep3  value="99"/> <!-- test outside up to this step                     -->
-		<chainStep4  value="99"/> <!-- test outside up to this step                     -->
+		<chainStep4  value="99"/>  <!-- test outside up to this step                     -->
 	
     <!--                                  1 1 2 2 3 3 4 5 6-->
     <!--                              3 6 0 5 0 5 0 6 3 1 0-->
     <!--                              1 2 3 4 5 6 7 8 9 0 1-->
-    <chain2Len   type="vector" value="3 3 4 5 5 5 5 6 7 8 9"/> 
+    <chain2Len   type="vector" value="2 4 4 5 5 5 5 6 7 8 9"/> 
 		<chain2Step0 value="2"/>
 		<chain2Step1 value="6"/>
 		<chain2Step2 value="11"/>
@@ -93,7 +93,6 @@
 		<getIsHired type="bool" value="true" />
 		
 		<widthOffset type="float" value="1" />
-		<testOutside type="float" value="0.25" />
 		
 		<smoothFactor type="float" value="0.2" />
 		<smoothMax type="float" value="0" /> <!-- 0.45 -->
@@ -101,8 +100,9 @@
 		<limitInside type="bool" value="true" />
 
 		<maxDtSumT value="100"/>  <!-- 10 fps => 100 ms -->
-		<maxDtSum  value="200" /> <!--  5 fps => 200 ms -->
-		<maxDtDist type="float" value="0.077284" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
+		<maxDtSumD value="60"/>   
+		<maxDtSum  value="500" /> <!--  2 fps => 500 ms -->
+		<maxDtDist  type="float" value="0.25" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
 		<maxDtDistD type="float" value="0.01" />
 		<maxDtAngle type="float" value="0.3" />
 		
@@ -130,8 +130,10 @@
 		<raiseNoFruits type="bool" value="true" />
 		<lowerAdvance type="float" value="4" />
 		
-		<borderBuffer type="bool" value="true" />
+		<borderBuffer type="bool" value="false" />
 		
-		<detectLevel3 type="bool" value="true" />
-		<maxBorder2 value="10"/>
+		<detectLevel3 type="bool" value="false" />
+		
+		<testOutside type="float" value="0.25" />
+		<maxBorder2 type="float" value="0.5"/>
 </AIVEGlobals>

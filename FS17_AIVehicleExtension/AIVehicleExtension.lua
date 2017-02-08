@@ -148,13 +148,13 @@ function AIVehicleExtension:load(saveGame)
 	self.acDeltaTimeoutStop	  = math.max(Utils.getNoNil( self.turnStage1Timeout , 20000), 10000);
 	self.acDeltaTimeoutStart	= math.max(Utils.getNoNil( self.turnTimeoutLong	 , 6000 ), 4000 );
 	self.acDeltaTimeoutNoTurn = 2 * self.acDeltaTimeoutWait --math.max(Utils.getNoNil( self.waitForTurnTimeout , 2000 ), 1000 );
-	self.acSteeringSpeed			= Utils.getNoNil( self.aiSteeringSpeed, 0.001 );
 	self.acRecalculateDt			= 0;
-	self.acTurn2Outside			 = false;
+	self.acTurn2Outside	      = false;
 	self.acCollidingVehicles	= {};
 	self.acTurnStageSent			= 0;
 	self.acWaitTimer					= 0;
-	self.acTurnOutsideTimer	 = 0;
+	self.acTurnOutsideTimer   = 0;
+	self.acSteeringSpeed      = self.aiSteeringSpeed
 	
 	detected = nil;	
 	fruitsDetected = nil;
@@ -848,7 +848,11 @@ end
 function AIVehicleExtension:update(dt)
 
 	if self.aiveIsStarted and not self.aiIsStarted then
-		self.aiveIsStarted = false
+		self.aiveIsStarted   = false
+	end
+	
+	if not ( self.aiveIsStarted ) and self.aiSteeringSpeed ~= self.acSteeringSpeed then
+		self.aiSteeringSpeed = self.acSteeringSpeed
 	end
 
 	if self.setIsReverseDriving ~= nil then
@@ -1230,7 +1234,9 @@ function AIVehicleExtension:checkState( onlyMaxLooking )
 	end
 	
 	local maxLooking = self.acDimensions.maxLookingAngle
-	if self.acFullAngle then
+	if     maxLooking >= self.acDimensions.maxSteeringAngle then
+		self.acFullAngle = true
+	elseif self.acFullAngle then
 		maxLooking = self.acDimensions.maxSteeringAngle
 	end
 	
@@ -2322,6 +2328,8 @@ function AIVehicleExtension:afterSetDriveStrategies()
 			driveStrategyMogli:setAIVehicle(self);
 			self.driveStrategies[insertIndex] = driveStrategyMogli
 		end
+		
+		AutoSteeringEngine.initFruitBuffer( self )
 	else
 		self.aiveIsStarted = false
 	end
@@ -2337,4 +2345,44 @@ AIVehicle.setDriveStrategies = Utils.appendedFunction( AIVehicle.setDriveStrateg
 --AIVehicle.stopAIVehicle = Utils.appendedFunction( AIVehicle.stopAIVehicle, AIVehicleExtension.afterStopAIVehicle )
 --==============================================================				
 --==============================================================				
+
+---Returns true if ai can start
+-- @return boolean canStart can start ai
+-- @includeCode
+function AIVehicleExtension:newCanStartAIVehicle()
+	-- check if reverse driving is available and used, we do not allow the AI to work when reverse driving is enabled
+	if self.isReverseDriving ~= nil then
+		if self.isChangingDirection then
+			return false;
+		elseif self.isReverseDriving then
+			if     self.acParameters == nil
+					or not self.acParameters.enabled then
+				return false
+			end
+		end
+	end
+	if self.aiVehicleDirectionNode == nil then
+		return false;
+	end
+	if g_currentMission.disableAIVehicle then
+		return false;
+	end
+	if AIVehicle.numHirablesHired >= g_currentMission.maxNumHirables then
+		return false;
+	end
+	if not self.isMotorStarted then
+		return false;
+	end
+	if self.isConveyorBelt then
+		return true;
+	end;
+	if self.aiImplementList ~= nil and #self.aiImplementList > 0 then
+		return true;
+	else
+		return false;
+	end
+end
+
+AIVehicle.canStartAIVehicle = Utils.overwrittenFunction( AIVehicle.canStartAIVehicle, AIVehicleExtension.newCanStartAIVehicle )
+
 

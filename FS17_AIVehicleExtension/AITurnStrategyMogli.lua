@@ -34,18 +34,17 @@ end
 -- startTurn
 --============================================================================================================================
 function AITurnStrategyMogli:startTurn( turnData )
-	AITurnStrategyMogli:superClass().startTurn( self, turnData )
+--AITurnStrategyMogli:superClass().startTurn( self, turnData )
 
 	self.lastDirection = nil
 	
 	self.vehicle.aiveChain.inField = false
 	self.vehicle.aiveChain.isAtEnd = false
 	
-	AIVehicleExtension.setAIImplementsMoveDown(self.vehicle,false)
+	AIVehicleExtension.setAIImplementsMoveDown( self.vehicle,false )
 	
 	self.lastDirection = nil
 	self.stageId       = 0		
-	self.dtSum         = 0
 	self.activeStage   = nil
 	self.animWaitTimer = nil
 	self.noSneakTimer  = nil
@@ -56,7 +55,7 @@ end
 -- onEndTurn
 --============================================================================================================================
 function AITurnStrategyMogli:onEndTurn( turnLeft )
-	AITurnStrategyMogli:superClass().onEndTurn( self, turnLeft )
+--AITurnStrategyMogli:superClass().onEndTurn( self, turnLeft )
 
 	local immediate = false
 	if     self.vehicle.aiveHas.combine then
@@ -69,7 +68,6 @@ function AITurnStrategyMogli:onEndTurn( turnLeft )
 	
 	self.lastDirection = nil
 	self.stageId       = 0		
-	self.dtSum         = 0
 	self.activeStage   = nil
 	self.animWaitTimer = nil
 	self.noSneakTimer  = nil
@@ -192,35 +190,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 		return
 	end
 	
-	self.dtSum = self.dtSum + dt
-	
-	local skip = true
-	
-	if	   self.lastDriveData == nil then
-		skip = false
-	elseif AIVEGlobals.maxDtSum <= 0 then
-		skip = false
-	elseif self.dtSum > AIVEGlobals.maxDtSum then 
-		skip = false
-	elseif Utils.vector2LengthSq( vehicle.acAiPos[1] - vX, vehicle.acAiPos[3] - vZ ) > AIVEGlobals.maxDtDistD then
-		skip = false
-	end 
-	
-	if skip then
-		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive, noLower = unpack( self.lastDriveData )
-		if tX == nil and angle ~= nil then
-			tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
-		end
-		local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 4, false, 0.7 )
-		
-		if allowedToDrive then
-			self:raiseOrLower( moveForwards, noLower )
-		elseif angle ~= nil then
-			AutoSteeringEngine.steer( vehicle, dt, angle, vehicle.aiSteeringSpeed, false )		
-		end
-		
-		return tX, tZ, moveForwards, maxSpeed, distanceToStop, not ( inactive )
-	end
+	AutoSteeringEngine.setAiWorldPosition( vehicle, vX, vY, vZ )
 	
 	while self.activeStage ~= nil do
 		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive, noLower = self.activeStage.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( self.activeStage.parameter ) )
@@ -237,8 +207,6 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 				AutoSteeringEngine.steer( vehicle, dt, angle, vehicle.aiSteeringSpeed, false )		
 			end
 			
-			self.lastDriveData = { tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive, noLower }
-				
 			return tX, tZ, moveForwards, maxSpeed, distanceToStop, not ( inactive )
 		end
 			
