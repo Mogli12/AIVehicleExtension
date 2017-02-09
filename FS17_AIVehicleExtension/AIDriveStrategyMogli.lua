@@ -364,11 +364,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	
 	if      allowedToDrive
 			and ( fruitsDetected 
-				 or ( self.search == nil and AIVEGlobals.raiseNoFruits <= 0 )
-				 or self.acImplementsMoveDown ) then
-		if not AutoSteeringEngine.getIsAIReadyForWork( veh ) then
-			allowedToDrive = false
-		end
+				or ( self.search == nil and AIVEGlobals.raiseNoFruits <= 0 )
+				or self.acImplementsMoveDown )
+			and not AutoSteeringEngine.getIsAIReadyForWork( veh ) then
+		allowedToDrive = false
 	end
 	
 	local speedLevel = 4
@@ -573,8 +572,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			detected = true
 		end
 	else
-		turn2Outside		   = false
-		veh.acTurnInTheMiddle = nil
+		turn2Outside = false
 	end		
 	
 	local minDistanceToStop = 3 * veh.turnTimer / veh.acDeltaTimeoutRun
@@ -904,9 +902,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 -- searching...
 	else
 	
-		if      fruitsAll 
-				and detected 
-				and veh.acTurnInTheMiddle == nil
+		if      detected 
+				and fruitsAll
 				and not ( veh.acFullAngle ) then
 
 			if veh.acClearTraceAfterTurn then

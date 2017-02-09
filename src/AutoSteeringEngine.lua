@@ -595,7 +595,7 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 		indexMax  = indexMax + 1 
 	end
 
-	AIVehicleExtension.debugPrint( vehicle, tostring(detected)..", "..tostring(best.score)..", "..tostring(best.angle)..", "..tostring(best.indexMin)..", "..tostring(best.indexMax)..", "..tostring(best.border)..", "..tostring(best.border2)..", "..tostring(best.distance))
+	--print( tostring(detected)..", "..tostring(best.score)..", "..tostring(best.angle)..", "..tostring(best.indexMin)..", "..tostring(best.indexMax)..", "..tostring(best.border)..", "..tostring(best.border2)..", "..tostring(best.distance))
 	
 	local j  = best.indexMin
 	indexMax = best.indexMax
@@ -618,34 +618,27 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 
 	local dist = vehicle.aiveChain.radius 
 	local wx,wy,wz 
-	angle = 0 
 	
 	if math.abs( best.angle ) < 1e-6 then
+		angle = 0 
 		wx,wy,wz = localToWorld( vehicle.aiveChain.refNode, 0, 0, dist )
 	else
-		local i = 1
-		local j = best.indexMin 
-		
-	--if best.angle > 0 then
-	--	if i < best.indexMin then
-	--		i = best.indexMin
-	--	end
-			j = best.indexMax
-	--end
-		
 		angle = vehicle.aiveChain.nodes[1].steering
-		while i < j and vehicle.aiveChain.nodes[i+1].distance < dist do
+		local i = 2
+		while i <= indexMax and vehicle.aiveChain.nodes[i].distance < dist do
 			i = i + 1
-		end
-		
-		wx,wy,wz = getWorldTranslation( vehicle.aiveChain.nodes[i+1].index )
-	--angle    = AutoSteeringEngine.getSteeringAngleFromWorldTarget( vehicle, wx, wy, wz )
+		end		
+		wx,wy,wz = getWorldTranslation( vehicle.aiveChain.nodes[i].index )
+		local scaleX = 1
 		if best.angle > 0 then
-			angle  = angle * AIVEGlobals.correctionOut
+			scaleX = AIVEGlobals.correctionOut
 		else
-			angle  = angle * AIVEGlobals.correctionIn 
+			scaleX = AIVEGlobals.correctionIn 
 		end
-	--wx, wz   = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle, true )
+		if math.abs( scaleX - 1 ) > 0.01 then
+			local lx,ly,lz = worldToLocal( vehicle.aiveChain.refNode, wx,wy,wz )
+			wx,wy,wz = localToWorld( vehicle.aiveChain.refNode, lx*scaleX, ly, lz )
+		end
 	end
 	vehicle.aiveChain.lastWorldTarget = { wx, wy, wz }
 	
@@ -653,35 +646,38 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 	
 	vehicle.aiveChain.lastIndexMax = indexMax 	
 	
+	if detected and AIVEGlobals.useFBB123 > 0 then
+		vehicle.aiveChain.fbb1 = nil
+		AutoSteeringEngine.hasFruits( vehicle )
+	end
+	
 	if detected and border > 0 then
 		detected = false 
 	end
 	
-	local fx, fz, fl = 0,0,0
-	if vehicle.lastAcAiPos ~= nil then
-		fx = vehicle.acAiPos[1] - vehicle.lastAcAiPos[1]
-		fz = vehicle.acAiPos[3] - vehicle.lastAcAiPos[3]
-		fl = Utils.vector2Length( fx, fz )
-		if fl > 1e-3 then
-			fx = fx / fl
-			fz = fz / fl
-		end
-	end
-	
-	local dx = wx - vehicle.acAiPos[1]
-	local dz = wz - vehicle.acAiPos[3]
-	local dl = Utils.vector2Length( dx, dz )
-	dx = dx / dl
-	dz = dz / dl
-	
+--local fx, fz, fl = 0,0,0
+--if vehicle.lastAcAiPos ~= nil then
+--	fx = vehicle.acAiPos[1] - vehicle.lastAcAiPos[1]
+--	fz = vehicle.acAiPos[3] - vehicle.lastAcAiPos[3]
+--	fl = Utils.vector2Length( fx, fz )
+--	if fl > 1e-3 then
+--		fx = fx / fl
+--		fz = fz / fl
+--	end
+--end
+--
+--local dx = wx - vehicle.acAiPos[1]
+--local dz = wz - vehicle.acAiPos[3]
+--local dl = Utils.vector2Length( dx, dz )
+--dx = dx / dl
+--dz = dz / dl
+--
 --AIVehicleExtension.debugPrint( vehicle, string.format("(%7.3f, %7.3f) -> (%7.3f, %7.3f) / (%7.3f, %7.3f) -> (%7.3f, %7.3f), %7.3f",vehicle.acAiPos[1], vehicle.acAiPos[3], wx, wz, fx, fz, dx, dz, fl ))
-
-	vehicle.lastAcAiPos = {} 
-	vehicle.lastAcAiPos[1] = vehicle.acAiPos[1]
-	vehicle.lastAcAiPos[2] = vehicle.acAiPos[2]
-	vehicle.lastAcAiPos[3] = vehicle.acAiPos[3]
-	
---angle = AutoSteeringEngine.getSteeringAngleFromWorldTarget( vehicle, wx, wy, wz )
+--
+--vehicle.lastAcAiPos = {} 
+--vehicle.lastAcAiPos[1] = vehicle.acAiPos[1]
+--vehicle.lastAcAiPos[2] = vehicle.acAiPos[2]
+--vehicle.lastAcAiPos[3] = vehicle.acAiPos[3]
 	
 	return detected, angle, border, wx, wy, wz, length
 end
@@ -1252,7 +1248,13 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 				skipOther = true
 			end
 
-			if      vehicle.aiveHas.sowingMachine
+			if      vehicle.aiveHas.cultivator
+					and not ( vehicle.aiveChain.tools[i].isCultivator )
+					and vehicle.aiveChain.tools[i].isPlough
+					 then
+				skip      = true
+				skipOther = true
+			elseif  vehicle.aiveHas.sowingMachine
 					and not ( vehicle.aiveChain.tools[i].isSowingMachine )
 					and ( ( vehicle.aiveChain.tools[i].isCultivator and not AutoSteeringEngine.hasFrontPacker( vehicle ) )
 						 or vehicle.aiveChain.tools[i].isPlough
@@ -1260,11 +1262,6 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 					 then
 				skip      = true
 				skipOther = true
-		--elseif  vehicle.aiveHas.plough
-		--		and not ( vehicle.aiveChain.tools[i].isPlough )
-		--		and vehicle.aiveChain.tools[i].isCultivator then
-		--	skip      = true
-		--	skipOther = true
 			end
 			
 		--if      not ( vehicle.aiveChain.tools[i].isCombine )
@@ -1770,6 +1767,7 @@ function AutoSteeringEngine.hasLeftFruits( vehicle )
 	end
 	
 	if AIVEGlobals.useFBB123 > 0 then
+		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
 		vehicle.aiveChain.fbb3 = { x=wx, z=wz, d=fruitsDetected }
 	end
 	
@@ -1906,6 +1904,7 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle )
 	end
 	
 	if AIVEGlobals.useFBB123 > 0 then
+		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
 		vehicle.aiveChain.fbb2 = { x=wx, z=wz, d=fruitsDetected }
 	end
 	
@@ -1925,11 +1924,11 @@ function AutoSteeringEngine.hasFruits( vehicle )
 	end	
 	
 	if AIVEGlobals.useFBB123 > 0 then
+		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
 		local fbbd = 0.01
 		if vehicle.aiveChain.inField then
 			fbbd = 0.09
 		end
-		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
 		if vehicle.aiveChain.fbb1 ~= nil and Utils.vector2LengthSq( vehicle.aiveChain.fbb1.x - wx, vehicle.aiveChain.fbb1.z - wz ) < fbbd then
 			return vehicle.aiveChain.fbb1.d, vehicle.aiveChain.fbb1.a 
 		end
@@ -1940,7 +1939,7 @@ function AutoSteeringEngine.hasFruits( vehicle )
 		return false, false
 	end
 	
-	local widthFactor    = 0.8
+	local widthFactor = 0.95 --   = 0.8
 	
 	local fruitsDetected = false
 	local fruitsAll      = true
@@ -1959,7 +1958,11 @@ function AutoSteeringEngine.hasFruits( vehicle )
 			local gotFruits = false
 			local gotField  = false
 			local back      = math.min( toolParam.zBack - toolParam.zReal, 0 )
-			local front     = math.max( back + 1, 1 )
+			local front     = math.max( back, 0 ) + 2
+			
+			if tool.isCultivator then
+				front = front + 2
+			end
 			
 			tool.hasFruits = false
 			
@@ -2043,7 +2046,7 @@ function AutoSteeringEngine.hasFruits( vehicle )
 			vehicle.aiveFruitAreas[i] = { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits }
 
       if not gotFruits then 
-				if     tool.ignoreAI then
+				if tool.ignoreAI then
 				-- ignore 
 				else
 					fruitsAll = false
@@ -2120,7 +2123,12 @@ function AutoSteeringEngine.hasFruits( vehicle )
 		end
 	end
 	
+	if not fruitsDetected then
+		fruitsAll = false
+	end
+	
 	if AIVEGlobals.useFBB123 > 0 then
+		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
 		vehicle.aiveChain.fbb1 = { x=wx, z=wz, d=fruitsDetected, a=fruitsAll }
 	end
 	
@@ -3052,6 +3060,9 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getFruitArea( vehicle, x1,z1,x2,z2,d,toolIndex,noMinLength )
 	local lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( x1, z1, x2, z2, d, noMinLength )
+	if noMinLength then
+		return AIVehicleUtil.getAIAreaOfVehicle( vehicle.aiveChain.tools[toolIndex].obj, lx1, lz1, lx2, lz2, lx3, lz3 )
+	end
 	return AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, vehicle.aiveChain.tools[toolIndex], lx1,lz1,lx2,lz2,lx3,lz3,noMinLength )
 end
 
