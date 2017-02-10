@@ -136,5 +136,7 @@
 		
 		<testOutside type="float" value="0.25" />
 		<maxBorder2 type="float" value="0.5"/>
-		<useFBB123 type="bool" value="true"/>
+		<useFBB123 type="bool" value="false"/>
+		
+		<showTrace type="bool" value="true"/>
 </AIVEGlobals>

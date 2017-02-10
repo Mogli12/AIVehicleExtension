@@ -1960,9 +1960,9 @@ function AutoSteeringEngine.hasFruits( vehicle )
 			local back      = math.min( toolParam.zBack - toolParam.zReal, 0 )
 			local front     = math.max( back, 0 ) + 2
 			
-			if tool.isCultivator then
-				front = front + 2
-			end
+		--if tool.isCultivator then
+		--	front = front + 2
+		--end
 			
 			tool.hasFruits = false
 			
