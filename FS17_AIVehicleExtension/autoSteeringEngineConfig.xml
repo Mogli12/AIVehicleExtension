@@ -12,7 +12,6 @@
     <!--angleStep type="degree" value="15" /-->
 		
 		<zeroAngle  type="bool" value="true" />
-		<zeroAngle2 type="bool" value="true" />
 		
     <angleStep    type="degree" value="0" />
     <angleStepInc type="degree" value="20" /> <!-- 27° / 45° -->
@@ -130,13 +129,10 @@
 		<raiseNoFruits type="bool" value="false" />
 		<lowerAdvance type="float" value="4" />
 		
-		<borderBuffer type="bool" value="false" />
+		<borderBuffer type="bool" value="true" />
 		
 		<detectLevel3 type="bool" value="false" />
 		
 		<testOutside type="float" value="0.25" />
-		<maxBorder2 type="float" value="0.5"/>
-		<useFBB123 type="bool" value="false"/>
-		
-		<showTrace type="bool" value="true"/>
+		<useFBB123 type="bool" value="true"/>
 </AIVEGlobals>

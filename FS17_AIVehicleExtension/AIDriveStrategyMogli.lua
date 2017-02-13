@@ -902,9 +902,12 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 -- searching...
 	else
 	
-		if      detected 
-				and fruitsAll
-				and not ( veh.acFullAngle ) then
+		if not detected then
+			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutNoTurn )
+		elseif veh.acFullAngle then
+			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
+		elseif fruitsAll 
+				or ( veh.turnTimer < 0 and AutoSteeringEngine.hasFruitsInFront( veh ) ) then
 
 			if veh.acClearTraceAfterTurn then
 				AutoSteeringEngine.clearTrace( veh );
@@ -912,10 +915,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			end
 			AutoSteeringEngine.ensureToolIsLowered( veh, true )	
 			self.search = nil
-			veh.acTurn2Outside	 = false;
-			veh.turnTimer		  = veh.acDeltaTimeoutNoTurn;
+			veh.acTurn2Outside	   = false;
+			veh.turnTimer		       = veh.acDeltaTimeoutNoTurn;
 			veh.acTurnOutsideTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutNoTurn );
-			veh.aiRescueTimer	  = veh.acDeltaTimeoutStop;
+			veh.aiRescueTimer	     = veh.acDeltaTimeoutStop;
 		end		
 		
 --==============================================================				
