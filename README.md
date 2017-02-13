@@ -1,7 +1,8 @@
 # AIVehicleExtension for Farming Simulator 2017
 
 ## Status
-After release of Farming Simulator 2017 Patch 1.4 I decided to stop this project. Sorry guys!
+Minimum patch level is Farming Simulator 2017 patch 1.3.1, but patch 1.4 is supported as well and I do not test it with patch 1.3.1.
+This project is still in a very early beta stage. I publish it in GitHub because I need the backup and versioning support from GitHub. 
 
 ## Motivation
 I do not like maps with rectangular fields. But driving a combine harvester plus the tractor with trailer is a bit tedious in SP mode. 
