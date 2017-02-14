@@ -35,7 +35,7 @@
 		<chainStep1  value="6" /> <!-- steps to outside, can be smaller than chainStep2 -->
 		<chainStep2  value="12"/> <!-- steps to check, increased only if nothing found  -->
 		<chainStep3  value="99"/> <!-- test outside up to this step                     -->
-		<chainStep4  value="99"/>  <!-- test outside up to this step                     -->
+		<chainStep4  value="6"/>  <!-- test outside up to this step                     -->
 	
     <!--                                  1 1 2 2 3 3 4 5 6-->
     <!--                              3 6 0 5 0 5 0 6 3 1 0-->
@@ -45,13 +45,13 @@
 		<chain2Step1 value="6"/>
 		<chain2Step2 value="11"/>
 		<chain2Step3 value="99"/>     
-		<chain2Step4 value="99"/>     
+		<chain2Step4 value="6"/>     
 
 		<chain3Step0 value="2"/>
 		<chain3Step1 value="4"/>
 		<chain3Step2 value="6"/>
 		<chain3Step3 value="99"/>     
-		<chain3Step4 value="99"/>     
+		<chain3Step4 value="6"/>     
 		
     <chainBorder value="1" />
 		<chainStart value="1" />
@@ -133,6 +133,6 @@
 		
 		<detectLevel3 type="bool" value="false" />
 		
-		<testOutside type="float" value="0.25" />
+		<testOutside type="float" value="1.0" />
 		<useFBB123 type="bool" value="true"/>
 </AIVEGlobals>

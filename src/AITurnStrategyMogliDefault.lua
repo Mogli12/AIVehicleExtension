@@ -1287,7 +1287,6 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		if turnAngle < 90 - angleOffset then
 			angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )
 		else
-			inactive = true
 			angle = 0
 		end
 		
