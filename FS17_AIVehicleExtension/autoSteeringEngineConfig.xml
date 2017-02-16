@@ -27,15 +27,15 @@
 		<staticRoot type="bool" value="true" />
 		<straightTA type="bool" value="false" />
 		
-    <!--                                      1 1 2 2 3 3 4 4-->
-    <!--                              1 3 7 8 1 5 0 5 0 5 0 5-->
-      <!--                            1 2 3 4 5 6 7 8 9 0 1 2-->
-    <chainLen    type="vector" value="2 2 2 3 3 4 5 5 5 5 5 5"/> 
+    <!--                                        1 1 2 2 3 3 4 4-->
+    <!--                              1 2 3 7 8 1 5 0 5 0 5 0 5-->
+      <!--                            1 2 3 4 5 6 7 8 9 0 1 2 3-->
+    <chainLen    type="vector" value="1 1 2 2 3 3 4 5 5 5 5 5 5"/> 
 		<chainStep0  value="2" /> <!-- initial part of the chain that always rotates    -->                           
-		<chainStep1  value="6" /> <!-- steps to outside, can be smaller than chainStep2 -->
-		<chainStep2  value="12"/> <!-- steps to check, increased only if nothing found  -->
-		<chainStep3  value="99"/> <!-- test outside up to this step                     -->
-		<chainStep4  value="6"/>  <!-- test outside up to this step                     -->
+		<chainStep1  value="8" /> <!-- steps to outside, can be smaller than chainStep2 -->
+		<chainStep2  value="8"/> <!-- steps to check, increased only if nothing found  -->
+		<chainStep3  value="3"/>  <!-- test outside up to this step                     -->
+		<chainStep4  value="8"/>  <!-- test outside up to this step                     -->
 	
     <!--                                  1 1 2 2 3 3 4 5 6-->
     <!--                              3 6 0 5 0 5 0 6 3 1 0-->
@@ -44,13 +44,13 @@
 		<chain2Step0 value="2"/>
 		<chain2Step1 value="6"/>
 		<chain2Step2 value="11"/>
-		<chain2Step3 value="99"/>     
+		<chain2Step3 value="2"/>     
 		<chain2Step4 value="6"/>     
 
 		<chain3Step0 value="2"/>
 		<chain3Step1 value="4"/>
 		<chain3Step2 value="6"/>
-		<chain3Step3 value="99"/>     
+		<chain3Step3 value="1"/>     
 		<chain3Step4 value="6"/>     
 		
     <chainBorder value="1" />

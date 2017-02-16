@@ -17,10 +17,7 @@
 
 source(Utils.getFilename("AITurnStrategyMogli.lua", g_currentModDirectory));
 source(Utils.getFilename("AITurnStrategyMogliDefault.lua", g_currentModDirectory));
-
 source(Utils.getFilename("AITurnStrategyMogli_C_R.lua", g_currentModDirectory));
-source(Utils.getFilename("AITurnStrategyMogli_U_O.lua", g_currentModDirectory));
-
 
 
 AIDriveStrategyMogli = {}
@@ -113,8 +110,8 @@ function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	self.ts_C_R = table.getn( self.turnStrategies ) + 1
 	self.turnStrategies[self.ts_C_R] = AITurnStrategyMogli_C_R:new()
 		
-	self.ts_U_O = table.getn( self.turnStrategies ) + 1
-	self.turnStrategies[self.ts_U_O] = AITurnStrategyMogli_U_O:new()
+--self.ts_U_O = table.getn( self.turnStrategies ) + 1
+--self.turnStrategies[self.ts_U_O] = AITurnStrategyMogli_U_O:new()
 		
 	for _,turnStrategy in pairs(self.turnStrategies) do
 		turnStrategy:setAIVehicle(self.vehicle);

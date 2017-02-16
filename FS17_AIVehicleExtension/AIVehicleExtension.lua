@@ -26,6 +26,7 @@ source(Utils.getFilename("FieldBitmap.lua", g_currentModDirectory));
 source(Utils.getFilename("FrontPacker.lua", g_currentModDirectory));
 source(Utils.getFilename("AutoSteeringEngine.lua", g_currentModDirectory));
 source(Utils.getFilename("AIDriveStrategyMogli.lua", g_currentModDirectory));
+source(Utils.getFilename("AIDriveStrategyCombine131.lua", g_currentModDirectory));
 
 ------------------------------------------------------------------------
 -- statEvent
@@ -1431,9 +1432,16 @@ function AIVehicleExtension.calculateDimensions( self )
 	self.acDimensions.zOffset				 	 = 0 
 	self.acDimensions.acRefNodeZ       = 0
 	self.acDimensions.maxSteeringAngle = Utils.getNoNil( self.maxRotation, math.rad( 25 ))
-	self.acDimensions.radius           = Utils.getNoNil( self.maxTurningRadius, 5 )
+	self.acDimensions.radius           = Utils.getNoNil( self.maxTurningRadius, 6.25 )
 	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
 	
+	local wheel = self.wheels[self.maxTurningRadiusWheel] 
+	if wheel ~= nil then
+		local diffX, _, diffZ = localToLocal(wheel.node, self.steeringCenterNode, wheel.positionX, wheel.positionY, wheel.positionZ)
+		self.acDimensions.radius         = self.acDimensions.radius - math.abs( diffX )
+	else
+		self.acDimensions.radius         = self.acDimensions.radius - 1.25
+	end
 	
 	if			self.articulatedAxis ~= nil 
 			and self.articulatedAxis.componentJoint ~= nil
@@ -1561,7 +1569,7 @@ function AIVehicleExtension.calculateDistances( self )
 	
 	self.acDimensions.distance0				= self.acDimensions.distance;
 	if self.acParameters.widthOffset ~= nil then
-		self.acDimensions.distance			 = self.acDimensions.distance0 + self.acParameters.widthOffset;
+		self.acDimensions.distance			= self.acDimensions.distance0 + self.acParameters.widthOffset;
 	end
 	
 	local optimDist = self.acDimensions.distance;
@@ -1575,7 +1583,8 @@ function AIVehicleExtension.calculateDistances( self )
 	self.acDimensions.uTurnDistance	= math.max( 0, 1 + self.acDimensions.toolDistance + self.acDimensions.distance - self.acDimensions.radius);	
 	self.acDimensions.headlandDist	 = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
 	self.acDimensions.collisionDist	= 1 + AIVehicleExtension.calculateHeadland( self.acTurnMode, math.max( self.acDimensions.distance, 1.5 ), self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
-	self.acDimensions.uTurnDist4x   = self.acDimensions.toolDistance - self.acDimensions.distance - self.acDimensions.distance - math.max( 0, self.acDimensions.radius - self.acDimensions.distance - self.acDimensions.distance ) * 0.134
+	local r = self.acDimensions.radius
+	self.acDimensions.uTurnDist4x   = math.max( 1 + self.acDimensions.toolDistance - r-r, self.acDimensions.distance - 0.7 * r, 0 )
 	--if self.acShowDistOnce == nil then
 	--	self.acShowDistOnce = 1
 	--else
@@ -1590,7 +1599,7 @@ function AIVehicleExtension.calculateDistances( self )
 		self.acDimensions.uTurnDistance	 = math.max( 0, self.acDimensions.uTurnDistance	 + self.acParameters.turnOffset );
 		self.acDimensions.headlandDist	 = math.max( 0, self.acDimensions.headlandDist	 + self.acParameters.turnOffset );
 		self.acDimensions.collisionDist	 = math.max( 0, self.acDimensions.collisionDist	 + self.acParameters.turnOffset );
-		self.acDimensions.uTurnDist4x    = math.max( 0, self.acDimensions.uTurnDist4x  	 + self.acParameters.turnOffset );
+		self.acDimensions.uTurnDist4x    = self.acDimensions.uTurnDist4x + self.acParameters.turnOffset
 	end
 	
 	self.acDimensions.headlandCount = 0
@@ -2315,20 +2324,19 @@ function AIVehicleExtension:afterSetDriveStrategies()
 		self.aiveIsStarted = true
 	end
 	if self.aiveIsStarted and self.driveStrategies ~= nil and #self.driveStrategies > 0 then
-		local insertIndex = nil
 		for i,d in pairs( self.driveStrategies ) do
-			if d:isa(AIDriveStrategyStraight) then
-				insertIndex = i
-				break
+			local driveStrategyMogli = nil
+			if     d:isa(AIDriveStrategyStraight) then
+				driveStrategyMogli = AIDriveStrategyMogli:new();
+			elseif d:isa(AIDriveStrategyCombine)  then
+				driveStrategyMogli = AIDriveStrategyCombine131:new();
+			end
+			if driveStrategyMogli ~= nil then
+				driveStrategyMogli:setAIVehicle(self);
+				self.driveStrategies[i] = driveStrategyMogli
 			end
 		end
-		
-		if insertIndex ~= nil then
-			local driveStrategyMogli = AIDriveStrategyMogli:new();
-			driveStrategyMogli:setAIVehicle(self);
-			self.driveStrategies[insertIndex] = driveStrategyMogli
-		end
-		
+				
 		AutoSteeringEngine.initFruitBuffer( self )
 	else
 		self.aiveIsStarted = false

@@ -1038,18 +1038,26 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 
 		noLower      = true
 		moveForwards = false
-		angle        = -veh.acDimensions.maxSteeringAngle
+		angle        = math.rad( 180 - turnAngle )
 		local x,z    = AIVehicleExtension.getTurnVector( veh );
 		if not veh.acParameters.leftAreaActive then x = -x end
 		AIVehicleExtension.debugPrint( veh, string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
 		
-		if     fruitsDetected then
-		elseif detected       then
-			turnData.stage = -2
-			veh.turnTimer  = veh.acDeltaTimeoutNoTurn;
-		elseif turnAngle < -175 or turnAngle > 0 then
-			turnData.stage = -2
-			veh.turnTimer  = veh.acDeltaTimeoutNoTurn;
+		if not fruitsDetected then
+			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			
+			if detected then
+				angle  = nil
+				angle2 = -angle2
+				if math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then
+					detected = false
+				end
+			end
+			
+			if detected or border <= 0 then
+				turnData.stage = -2
+				veh.turnTimer  = veh.acDeltaTimeoutNoTurn;
+			end
 		end
 	
 	
@@ -1182,6 +1190,9 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			if detected then
 				angle  = nil
 				angle2 = -angle2
+				if math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then
+					detected = false
+				end
 			else
 				if border <= 0 then
 					detected = true
