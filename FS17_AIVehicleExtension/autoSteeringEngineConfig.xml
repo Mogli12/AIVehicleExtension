@@ -34,7 +34,7 @@
 		<chainStep0  value="2" /> <!-- initial part of the chain that always rotates    -->                           
 		<chainStep1  value="8" /> <!-- steps to outside, can be smaller than chainStep2 -->
 		<chainStep2  value="8"/> <!-- steps to check, increased only if nothing found  -->
-		<chainStep3  value="3"/>  <!-- test outside up to this step                     -->
+		<chainStep3  value="1"/>  <!-- test outside up to this step                     -->
 		<chainStep4  value="8"/>  <!-- test outside up to this step                     -->
 	
     <!--                                  1 1 2 2 3 3 4 5 6-->
@@ -44,7 +44,7 @@
 		<chain2Step0 value="2"/>
 		<chain2Step1 value="6"/>
 		<chain2Step2 value="11"/>
-		<chain2Step3 value="2"/>     
+		<chain2Step3 value="1"/>     
 		<chain2Step4 value="6"/>     
 
 		<chain3Step0 value="2"/>
@@ -69,7 +69,7 @@
     <maxRotation type="degree" value="30" />
     <maxRotationC type="degree" value="75" />
     <maxRotationU type="degree" value="30" />
-		<maxRotationT type="degree" value="120" /> 
+		<maxRotationT type="degree" value="90" /> 
 		<maxRotationL type="float" value="3" /> 
 		<minRadius type="float" value="5.5" />
     <minLength type="float" value="0"/> <!--value="0.25" />-->

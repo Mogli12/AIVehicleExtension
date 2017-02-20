@@ -359,34 +359,8 @@ function AutoSteeringEngine.processChainGetScore( a, bi, ti, bo, to, ll, mb )
 	elseif to > 0 then
 		return -to + 0.5 * math.abs( a ) - 1
 	else
-		return 0.5 * math.abs( a )
+		return 0.25 * ( 1 + a )
 	end
-end
-
-function AutoSteeringEngine.processChainGetScoreOld( a, bi, ti, bo, to, ll, mb )
-	if     bi > 0 then
-		local s = math.max( 40, 100 - ll ) + 1e-7 * ( 1 - a )
-		
-		if bi > 1e6 then
-			return s + 1
-		end
-		return s + 1e-6 * bi
-	elseif bo <= 0     then
-		return 21 + a
---elseif bo >= to    then
---	return 31 - a
---elseif bo <= 0      then
---	return 1           + 0.001 * math.abs( a )
-	elseif bo <= mb     then
-		return 1 - bo / mb + 0.001 * math.abs( a )
-	elseif bo >= mb+1e6 then
-		return 11 + 1e-7 * math.abs( a )
-	else
-		return 10 + 1e-6 * ( bo - mb ) + 1e-7 * math.abs( a )
-	end
-	
-	print("ERROR in AutoSteeringEngine.processChainGetScore: "..tostring(a)..", "..tostring(bi)..", "..tostring(bo))
-	return 9999
 end
 
 ------------------------------------------------------------------------
@@ -531,7 +505,7 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 		local j1 = Utils.clamp( vehicle.aiveChain.chainStep4, 0, indexMax )
 	
 
-		if mode == nil or mode == 0 then	
+		if true then -- mode == nil or mode == 0 then	
 			local d0, bi0, bo0, to0 = AutoSteeringEngine.processChainStep( vehicle, best, 0, 0, indexMax, vehicle.aiveChain.inField )
 			if bi0 > 0 or bo0 > 0 then
 				-- maybe we are too close
@@ -572,7 +546,7 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 					or AutoSteeringEngine.processChainStep( vehicle, best, -0.5,indexMax, indexMax, vehicle.aiveChain.inField ) 
 					then 
 				-- get closer to border
-				detected = true
+				--detected = true
 				
 				for step=1,AIVEGlobals.chainDivideIn do
 					local exitLoop = false
@@ -583,8 +557,9 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 				--local a = -a2
 					
 					for j=j0,indexMax do
-						local d, bi, bo, to = AutoSteeringEngine.processChainStep( vehicle, best, a, j, indexMax, vehicle.aiveChain.inField )
-						
+						local d, bi, bo, to = AutoSteeringEngine.processChainStep( vehicle, best, a, j, indexMax, vehicle.aiveChain.inField )						
+						detected = detected or d
+
 						if bi > 0 then		
 							local k1 = -1
 							for k=1,indexMax do
@@ -726,11 +701,6 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 	AutoSteeringEngine.processIsAtEnd( vehicle, a )	
 	
 	vehicle.aiveChain.lastIndexMax = indexMax 	
-	
-	if detected and AIVEGlobals.useFBB123 > 0 then
-		vehicle.aiveChain.fbb1 = nil
-		AutoSteeringEngine.hasFruits( vehicle )
-	end
 	
 	if detected and border > 0 then
 		detected = false 

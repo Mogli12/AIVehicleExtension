@@ -48,7 +48,7 @@ function AITurnStrategyMogli:startTurn( turnData )
 	self.activeStage   = nil
 	self.animWaitTimer = nil
 	self.noSneakTimer  = nil
-
+	self.isTurning     = false
 end
 
 --============================================================================================================================
@@ -201,6 +201,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 		if tX ~= nil then
 			local maxSpeed = AutoSteeringEngine.getMaxSpeed( vehicle, dt, 1, allowedToDrive, moveForwards, 4, false, 0.7 )
 			
+			self.isTurning = not ( inactive )
 			if allowedToDrive then
 				self:raiseOrLower( moveForwards, noLower )
 			elseif angle ~= nil then
@@ -219,6 +220,8 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 			self:addDebugText("going to stage "..tostring(self.stageId))
 		end
 	end
+	
+	self.isTurning = false
 	
 	-- end of turn
 end

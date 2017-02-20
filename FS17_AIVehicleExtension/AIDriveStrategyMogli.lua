@@ -268,7 +268,6 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 
 --veh.acAiPos = { vX, vY, vZ }
 	AutoSteeringEngine.setAiWorldPosition( veh, vX, vY, vZ )
-	self.activeTurnStrategy = nil
 	
 	if self.currentTurnStrategy ~= nil then
 		veh.aiSteeringSpeed = veh.acSteeringSpeed
