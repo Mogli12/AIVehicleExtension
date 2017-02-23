@@ -68,6 +68,9 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.limitInside  = 0
 	AIVEGlobals.maxDtSumT     = 0
 	AIVEGlobals.maxDtSumD     = 0
+	AIVEGlobals.maxDtSumI     = 0
+	AIVEGlobals.maxDtSumO     = 0
+	AIVEGlobals.maxDtSum0     = 0
 	AIVEGlobals.maxDtSum      = 0
 	AIVEGlobals.maxDtDist     = 0
 	AIVEGlobals.maxDtAngle    = 0
@@ -353,13 +356,13 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.processChainGetScore( a, bi, ti, bo, to, ll, mb )
 	if     bi > 0 then
-		return 1e4 + 2 + math.ceil( ll * 10 ) - a
+		return 1e4 + 5 + math.ceil( ll * 10 ) - a
 	elseif bo > 0 then
-		return math.min( bo, 1e4 ) + math.abs( a )
+		return 3 + math.min( bo, 1e4 ) + a
 	elseif to > 0 then
-		return -to + 0.5 * math.abs( a ) - 1
+		return -to - 1 + a
 	else
-		return 0.25 * ( 1 + a )
+		return 1 + a
 	end
 end
 
@@ -386,11 +389,44 @@ end
 function AutoSteeringEngine.processChainStep( vehicle, best, a, j, m, f )
 	AutoSteeringEngine.processChainSetAngle( vehicle, a, j, m )
 	local bi, ti, bo, to, ll = AutoSteeringEngine.getAllChainBorders( vehicle, AIVEGlobals.chainStart, m, f )
-	local s  = AutoSteeringEngine.processChainResult( best, a, bi, ti, bo, to, ll, j, m, mb )
+	if best ~= nil then
+		local s  = AutoSteeringEngine.processChainResult( best, a, bi, ti, bo, to, ll, j, m, mb )
+	end
 	if bi > 0 or bo > 0 then
 		return true, bi, bo, to
 	end
 	return false, bi, bo, to
+end
+
+------------------------------------------------------------------------
+-- processOneAngle
+------------------------------------------------------------------------
+function AutoSteeringEngine.processOneAngle( vehicle, steering )
+	if vehicle.aiveChain == nil or vehicle.aiveChain.chainMax == nil then
+		return 0
+	end
+	
+	AutoSteeringEngine.initWorldToDensity( vehicle )
+	AutoSteeringEngine.initSteering( vehicle )	
+	AutoSteeringEngine.syncRootNode( vehicle, 0 )
+
+	local a = AutoSteeringEngine.steering2ChainAngle( vehicle, steering )
+	local i = AutoSteeringEngine.getChainIndexMax( vehicle )
+	return AutoSteeringEngine.processChainStep( vehicle, nil, a, i, i , false )
+end
+
+------------------------------------------------------------------------
+-- getChainIndexMax
+------------------------------------------------------------------------
+function AutoSteeringEngine.getChainIndexMax( vehicle )
+	local indexMax   = math.min( vehicle.aiveChain.chainMax, vehicle.aiveChain.chainStep2 )
+
+	while   indexMax < vehicle.aiveChain.chainMax
+			and vehicle.aiveChain.nodes[indexMax].distance < vehicle.aiveChain.width do
+		indexMax = indexMax + 1
+	end
+	
+	return indexMax
 end
 
 ------------------------------------------------------------------------
@@ -415,42 +451,10 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 		return false, 0,0
 	end
 	
-	vehicle.acIamDetecting = true
-
-	vehicle.aiveChain.valid   = false
-	vehicle.aiveChain.smooth  = nil
-	vehicle.aiveChain.inField = false
-	
-	if s < 1 then
-		vehicle.aiveChain.smooth      = s
-		vehicle.aiveChain.angleFactor = vehicle.aiveChain.angleFactor * vehicle.aiveChain.smooth
-	end
-	
-	if inField then
-		vehicle.aiveChain.inField = true
-	end
-	
-	if AIVEGlobals.collectCbr > 0 then
-		vehicle.aiveChain.collectCbr	= true
-		vehicle.aiveChain.cbr	      = {} 
-		vehicle.aiveChain.pcl        = {}
-	else
-		vehicle.aiveChain.collectCbr	= nil
-		vehicle.aiveChain.cbr	      = nil
-		vehicle.aiveChain.pcl        = nil
-	end		
-
 	local detected    = false
 	local angle       = 0
 	local border      = 0
-	local indexMax0   = math.min( vehicle.aiveChain.chainMax, vehicle.aiveChain.chainStep2 )
-
-	while   indexMax0 < vehicle.aiveChain.chainMax
-			and vehicle.aiveChain.nodes[indexMax0].distance < vehicle.aiveChain.width do
-		indexMax0 = indexMax0 + 1
-	end
-	
-	local indexMax    = indexMax0
+	local indexMax    = AutoSteeringEngine.getChainIndexMax( vehicle )
 	local chainBorder
 	
 	vehicle.aiveProcessChainInfo = ""
@@ -492,174 +496,231 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 	end
 	
 	chainBorder = Utils.clamp( AIVEGlobals.chainBorder, 1, indexMax )
-	
-	AutoSteeringEngine.syncRootNode( vehicle, Utils.getNoNil( offsetAngle, 0 ) )
 	local best = {}
-
-	for i=1,vehicle.aiveChain.chainMax do
-		vehicle.aiveChain.nodes[i].detected = false
-	end
-			
-	while true do
-		local j0 = Utils.clamp( vehicle.aiveChain.chainStep0, 1, indexMax )
-		local j1 = Utils.clamp( vehicle.aiveChain.chainStep4, 0, indexMax )
 	
+	local useBuffer = false
+	if vehicle.aiveChain.inField and vehicle.aiveChain.valid ~= nil and g_currentMission.time < vehicle.aiveChain.valid then
+		AutoSteeringEngine.processChainSetAngle( vehicle, vehicle.lastBest.angle, vehicle.lastBest.indexMin, vehicle.lastBest.indexMax )	
+		if AutoSteeringEngine.getAllChainBorders( vehicle, AIVEGlobals.chainStart, vehicle.lastBest.indexMax, vehicle.aiveChain.inField ) <= 0 then
+			useBuffer = true
+		end
+	end
+		
+	if useBuffer then
+		best = vehicle.lastBest
+		detected = true
+	else
 
-		if true then -- mode == nil or mode == 0 then	
-			local d0, bi0, bo0, to0 = AutoSteeringEngine.processChainStep( vehicle, best, 0, 0, indexMax, vehicle.aiveChain.inField )
-			if bi0 > 0 or bo0 > 0 then
-				-- maybe we are too close
-				detected = true
+		vehicle.acIamDetecting = true
+
+		vehicle.aiveChain.valid   = 0
+		vehicle.aiveChain.smooth  = nil
+		vehicle.aiveChain.inField = false
+		
+		if s < 1 then
+			vehicle.aiveChain.smooth      = s
+			vehicle.aiveChain.angleFactor = vehicle.aiveChain.angleFactor * vehicle.aiveChain.smooth
+		end
+		
+		if inField then
+			vehicle.aiveChain.inField = true
+		end
+		
+		if AIVEGlobals.collectCbr > 0 then
+			vehicle.aiveChain.collectCbr	= true
+			vehicle.aiveChain.cbr	      = {} 
+			vehicle.aiveChain.pcl        = {}
+		else
+			vehicle.aiveChain.collectCbr	= nil
+			vehicle.aiveChain.cbr	      = nil
+			vehicle.aiveChain.pcl        = nil
+		end		
+
+		AutoSteeringEngine.syncRootNode( vehicle, Utils.getNoNil( offsetAngle, 0 ) )
+
+		for i=1,vehicle.aiveChain.chainMax do
+			vehicle.aiveChain.nodes[i].detected = false
+		end
 				
-				for step=1,AIVEGlobals.chainDivideOut do
-					local exitLoop = false
-					local a2 = step / AIVEGlobals.chainDivideOut	
-				--local a = math.min( 0.6*a2*(a2+0.666666667), 1 )
-					local a = 1-math.sin( 0.5*math.pi*(1-a2) )
-				--local a = a2
+		while true do
+			local j0 = Utils.clamp( vehicle.aiveChain.chainStep0, 1, indexMax )
+			local j2 = Utils.clamp( vehicle.aiveChain.chainStep3,j0, indexMax )
+			local j1 = Utils.clamp( vehicle.aiveChain.chainStep4, 0, indexMax )
+		
+
+			if true then -- mode == nil or mode == 0 then	
+				local d0, bi0, bo0, to0 = AutoSteeringEngine.processChainStep( vehicle, best, 0, 0, indexMax, vehicle.aiveChain.inField )
+				if bi0 > 0 or bo0 > 0 then
+					-- maybe we are too close
+				--if not detected then print("Set detected 1: 0, 0, "..tostring(indexMax)) end
+					detected = true
 					
-					local j = 0
-					while j < indexMax do
-						local d, bi, bo, to = AutoSteeringEngine.processChainStep( vehicle, best, a, j, indexMax, vehicle.aiveChain.inField )
-							
-						if     bi >  0 then
-							break
-						elseif bo <= 0 then
-						-- not s < 0 (50% border) but s < a => the bigger the angle the close we may get to the border
-							exitLoop = true
-						end
+					for step=1,AIVEGlobals.chainDivideOut do
+						local exitLoop = false
+						local a2 = step / AIVEGlobals.chainDivideOut	
+					--local a = math.min( 0.6*a2*(a2+0.666666667), 1 )
+						local a = 1-math.sin( 0.5*math.pi*(1-a2) )
+					--local a = a2
 						
-						if j > 0 or j1 < 1 then
-							j = j + 1
-						else
-							j = j1
-						end
-					end
-
-					if exitLoop then
-						break
-					end
-				end
-
-			elseif bo0 > 0
-					or AutoSteeringEngine.processChainStep( vehicle, best, -1,  indexMax, indexMax, vehicle.aiveChain.inField )
-					or AutoSteeringEngine.processChainStep( vehicle, best, -0.5,indexMax, indexMax, vehicle.aiveChain.inField ) 
-					then 
-				-- get closer to border
-				--detected = true
-				
-				for step=1,AIVEGlobals.chainDivideIn do
-					local exitLoop = false
-					local a2 = step / AIVEGlobals.chainDivideIn	
-				--local a = - math.min( a2*a2, 1 )
-				--local a = - math.min( 0.6*a2*(a2+0.666666667), 1 )
-					local a = math.sin( 0.5*math.pi*(1-a2) )-1
-				--local a = -a2
-					
-					for j=j0,indexMax do
-						local d, bi, bo, to = AutoSteeringEngine.processChainStep( vehicle, best, a, j, indexMax, vehicle.aiveChain.inField )						
-						detected = detected or d
-
-						if bi > 0 then		
-							local k1 = -1
-							for k=1,indexMax do
-								if vehicle.aiveChain.nodes[k].hasBorder then
-									k1 = k
-									break
-								end
-							end
-							vehicle.aiveProcessChainInfo = vehicle.aiveProcessChainInfo..string.format("bi>0: %2d %2d %2d %2d %2d\n",step,j,bi,bo,k1)
-							if j == j0 then
-								-- exit completely
+						local j = 0
+						while j < indexMax do
+							local d, bi, bo, to = AutoSteeringEngine.processChainStep( vehicle, best, a, j, indexMax, vehicle.aiveChain.inField )
+								
+							if     bi >  0 then
+								break
+							elseif bo <= 0 then
+							-- not s < 0 (50% border) but s < a => the bigger the angle the close we may get to the border
 								exitLoop = true
 							end
+							
+							if j > 0 or j1 < 1 then
+								j = j + 1
+							else
+								j = j1
+							end
+						end
+
+						if exitLoop then
 							break
 						end
 					end
 
-					if exitLoop then
-						break
-					end
-				end
-			end
-			
-		else--if mode == 1 or mode == 2 then
-			best = { math.huge, indexMax, indexMax, 0, 0, math.huge }
-			
-			local stepStart = -AIVEGlobals.chainDivideIn
-			local stepEnd   =  AIVEGlobals.chainDivideOut
-			local stepStep  = 1
-			
-			if mode == 2 then
-				stepStart, stepEnd = stepEnd, stepStart 
-				stepStep = -1
-			end
-		
-			for step=stepStart,stepEnd,stepStep do
-				local a2 = 0
-				if     step < 0 then
-					a2 = -step / AIVEGlobals.chainDivideIn	
-				elseif step > 0 then
-					a2 = step / AIVEGlobals.chainDivideOut 
-				end
+				elseif d0
+						or AutoSteeringEngine.processChainStep( vehicle, best, -1,  indexMax, indexMax, vehicle.aiveChain.inField )
+						or AutoSteeringEngine.processChainStep( vehicle, best, -0.5,indexMax, indexMax, vehicle.aiveChain.inField ) 
+						then 
+					-- get closer to border
+					--detected = true
 					
-			--local a = 1-math.sin( 0.5*math.pi*(1-a2) )
-				local a = a2
-				
-				local j = indexMax 
-				if     step < 0 then
-					a = -a
-				elseif step > 0 then
-					j = 0
-				end
+					for step=1,AIVEGlobals.chainDivideIn do
+						local exitLoop = false
+						local a2 = step / AIVEGlobals.chainDivideIn	
+					--local a = - math.min( a2*a2, 1 )
+					--local a = - math.min( 0.6*a2*(a2+0.666666667), 1 )
+						local a = math.sin( 0.5*math.pi*(1-a2) )-1
+					--local a = -a2
 						
-				while true do 
-					local d, bi, bo, to = AutoSteeringEngine.processChainStep( vehicle, best, a, j, indexMax, vehicle.aiveChain.inField )
-					detected = detected or d
-					
-					if     step < 0 then
-						j = j - 1
-						if j < j0 then
-							break 
+						for j=j0,j2 do
+							local d, bi, bo, to = AutoSteeringEngine.processChainStep( vehicle, best, a, j, indexMax, vehicle.aiveChain.inField )						
+						--if d and not detected and not vehicle.aiveChain.inField then print("Set detected 2: "..tostring(a)..", "..tostring(j)..", "..tostring(indexMax)) end
+							detected = detected or d
+
+							if bi > 0 then		
+								local k1 = -1
+								for k=1,indexMax do
+									if vehicle.aiveChain.nodes[k].hasBorder then
+										k1 = k
+										break
+									end
+								end
+								vehicle.aiveProcessChainInfo = vehicle.aiveProcessChainInfo..string.format("bi>0: %2d %2d %2d %2d %2d\n",step,j,bi,bo,k1)
+								if j == j0 then
+									-- exit completely
+									exitLoop = true
+								end
+								break
+							end
 						end
-					elseif step > 0 then
-						if j > 0 or j1 < 1 then
-							j = j + 1
-						else
-							j = j1
-						end
-						if j >= indexMax then
+
+						if exitLoop then
 							break
 						end
-					else
-						break
 					end
 				end
+				
+			else--if mode == 1 or mode == 2 then
+				best = { math.huge, indexMax, indexMax, 0, 0, math.huge }
+				
+				local stepStart = -AIVEGlobals.chainDivideIn
+				local stepEnd   =  AIVEGlobals.chainDivideOut
+				local stepStep  = 1
+				
+				if mode == 2 then
+					stepStart, stepEnd = stepEnd, stepStart 
+					stepStep = -1
+				end
 			
-			--if detected and best.score < 1 then
-			--	break
-			--end
+				for step=stepStart,stepEnd,stepStep do
+					local a2 = 0
+					if     step < 0 then
+						a2 = -step / AIVEGlobals.chainDivideIn	
+					elseif step > 0 then
+						a2 = step / AIVEGlobals.chainDivideOut 
+					end
+						
+				--local a = 1-math.sin( 0.5*math.pi*(1-a2) )
+					local a = a2
+					
+					local j = indexMax 
+					if     step < 0 then
+						a = -a
+					elseif step > 0 then
+						j = 0
+					end
+							
+					while true do 
+						local d, bi, bo, to = AutoSteeringEngine.processChainStep( vehicle, best, a, j, indexMax, vehicle.aiveChain.inField )
+					--if not detected then print("Set detected 3: "..tostring(a)..", "..tostring(j)..", "..tostring(indexMax)) end
+						detected = detected or d
+						
+						if     step < 0 then
+							j = j - 1
+							if j < j0 then
+								break 
+							end
+						elseif step > 0 then
+							if j > 0 or j1 < 1 then
+								j = j + 1
+							else
+								j = j1
+							end
+							if j >= indexMax then
+								break
+							end
+						else
+							break
+						end
+					end
+				
+				--if detected and best.score < 1 then
+				--	break
+				--end
+				end
+			end
+			
+			if detected or indexMax >= vehicle.aiveChain.chainMax then
+				break
+			end
+			
+			indexMax  = indexMax + 1 
+		end
+
+		--print( tostring(detected)..", "..tostring(best.score)..", "..tostring(best.angle)..", "..tostring(best.indexMin)..", "..tostring(best.indexMax)..", "..tostring(best.border)..", "..tostring(best.border2)..", "..tostring(best.distance))
+		
+		vehicle.lastBest       = best
+		if border <= 0 and detected then
+			if     best.angle < 0 then
+				vehicle.aiveChain.valid = g_currentMission.time + AIVEGlobals.maxDtSumI
+			elseif best.angle > 0 then
+				vehicle.aiveChain.valid = g_currentMission.time + AIVEGlobals.maxDtSumO
+			else
+				vehicle.aiveChain.valid = g_currentMission.time + AIVEGlobals.maxDtSum0
 			end
 		end
 		
-		if detected or indexMax >= vehicle.aiveChain.chainMax then
-			break
-		end
+	--if detected and not vehicle.aiveChain.inField then print("Best: "..tostring(best.angle)..", "..tostring(best.indexMin)..", "..tostring(best.indexMax)) end
 		
-		indexMax  = indexMax + 1 
 	end
 
-	--print( tostring(detected)..", "..tostring(best.score)..", "..tostring(best.angle)..", "..tostring(best.indexMin)..", "..tostring(best.indexMax)..", "..tostring(best.border)..", "..tostring(best.border2)..", "..tostring(best.distance))
-	
 	local j  = best.indexMin
 	indexMax = best.indexMax
 	local a  = best.angle
 	border   = best.border
 	length   = best.distance
-	
+
 	AutoSteeringEngine.processChainSetAngle( vehicle, a, j, indexMax )	
 	
-	local indexMin = math.min( math.max( vehicle.aiveChain.chainStep3, AIVEGlobals.chainStart ), indexMax )
+	local indexMin = math.min( AIVEGlobals.chainStart, indexMax )
 	border, total = AutoSteeringEngine.getAllChainBorders( vehicle, indexMin, indexMax, vehicle.aiveChain.inField )
 		
 	while border > 0 and indexMax > chainBorder do 
@@ -671,7 +732,7 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 			break
 		end 
 	end
-
+	
 	local dist = vehicle.aiveChain.radius 
 	local wx,wy,wz 
 	
@@ -725,10 +786,10 @@ function AutoSteeringEngine.processChain( vehicle, smooth, useBuffer, inField, m
 --
 --AIVehicleExtension.debugPrint( vehicle, string.format("(%7.3f, %7.3f) -> (%7.3f, %7.3f) / (%7.3f, %7.3f) -> (%7.3f, %7.3f), %7.3f",vehicle.acAiPos[1], vehicle.acAiPos[3], wx, wz, fx, fz, dx, dz, fl ))
 --
---vehicle.lastAcAiPos = {} 
---vehicle.lastAcAiPos[1] = vehicle.acAiPos[1]
---vehicle.lastAcAiPos[2] = vehicle.acAiPos[2]
---vehicle.lastAcAiPos[3] = vehicle.acAiPos[3]
+	vehicle.lastAcAiPos = {} 
+	vehicle.lastAcAiPos[1] = vehicle.acAiPos[1]
+	vehicle.lastAcAiPos[2] = vehicle.acAiPos[2]
+	vehicle.lastAcAiPos[3] = vehicle.acAiPos[3]
 	
 	return detected, angle, border, wx, wy, wz, length
 end
@@ -751,7 +812,7 @@ function AutoSteeringEngine.syncRootNode( vehicle, offsetAngle )
 	if     math.abs( x1-x2 ) > 1E-2 
 			or math.abs( y1-y2 ) > 1E-2 
 			or math.abs( z1-z2 ) > 1E-2 then 
-		vehicle.aiveChain.valid = false 
+		vehicle.aiveChain.valid = 0 
 		setTranslation( vehicle.aiveChain.rootNode, x1, y1, z1 )
 	end 
 	vehicle.aiveChain.rootTrans = { x1, y1, z1 }
@@ -770,7 +831,7 @@ function AutoSteeringEngine.syncRootNode( vehicle, offsetAngle )
 	if     math.abs( x1-x2 ) > 1E-3 
 			or math.abs( y1-y2 ) > 1E-3 
 			or math.abs( z1-z2 ) > 1E-3 then 
-		vehicle.aiveChain.valid = false 
+		vehicle.aiveChain.valid = 0 
 		setRotation( vehicle.aiveChain.rootNode, x1, y1, z1 )
 	end
 	vehicle.aiveChain.rootRot = { x1, y1, z1 }
@@ -1746,7 +1807,7 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle )
 		for i = 1,vehicle.aiveChain.toolCount do	
 			local toolParam = vehicle.aiveChain.toolParams[i]
 			local tool      = vehicle.aiveChain.tools[toolParam.i]				
-			local back      = 0
+			local back      = 2
 			local front     = back + math.max( 2, 0.7 * toolParam.width )		
 			local turnAngle = 0
 			
@@ -3075,6 +3136,26 @@ function AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, tool, lx1,lz1,l
 end
 
 ------------------------------------------------------------------------
+-- steering2ChainAngle
+------------------------------------------------------------------------
+function AutoSteeringEngine.steering2ChainAngle( vehicle, steering )
+	if math.abs( steering ) < 1e-4 then
+		return 0
+	end
+	
+	local a = 0
+	if steering > 0 then
+		a =  Utils.clamp( steering / vehicle.aiveChain.maxAngle, 0, 1 )
+	else
+		a = -Utils.clamp( steering / vehicle.aiveChain.minAngle, 0, 1 )
+	end
+	if vehicle.aiveChain.leftActive then
+		return a
+	end
+	return -a
+end
+
+------------------------------------------------------------------------
 -- applySteering
 ------------------------------------------------------------------------
 function AutoSteeringEngine.applySteering( vehicle, toIndex )
@@ -3150,10 +3231,10 @@ function AutoSteeringEngine.applyRotation( vehicle, toIndex )
 	if not vehicle.isServer then return end
 	
 	local cumulRot, turnAngle = 0, 0
-	if vehicle.aiveChain.inField and AutoSteeringEngine.getTraceLength( vehicle ) > AIVEGlobals.maxRotationL then
-		turnAngle = Utils.clamp( AutoSteeringEngine.getTurnAngle( vehicle ), -AIVEGlobals.maxRotation, AIVEGlobals.maxRotation )
-		cumulRot  = turnAngle
-	end 
+--if vehicle.aiveChain.inField and AutoSteeringEngine.getTraceLength( vehicle ) > AIVEGlobals.maxRotationL then
+--	turnAngle = Utils.clamp( AutoSteeringEngine.getTurnAngle( vehicle ), -AIVEGlobals.maxRotation, AIVEGlobals.maxRotation )
+--	cumulRot  = turnAngle
+--end 
 
 	AutoSteeringEngine.applySteering( vehicle, toIndex )
 
@@ -4633,50 +4714,79 @@ function AutoSteeringEngine.setChainInt( vehicle, startIndex, mode, angle, facto
 					vehicle.aiveChain.nodes[j].angle = vehicle.aiveChain.nodes[j].angle + factor * ( old - vehicle.aiveChain.nodes[j].angle )
 				end			
 			end
+		elseif j <= 1 then
+			vehicle.aiveChain.nodes[j].angle = 0
 		elseif vehicle.aiveChain.nodes[j].length > 1E-3 then 
-			local m  = 5
-			local a2 = 1+2^(-m)
-			local a1 = -a2
-			for step=1,m do
-				local a = 0.5 * ( a1 + a2 )
-				local b 
-				if vehicle.aiveChain.leftActive then
-					b =  a
-				else
-					b = -a
-				end
-				
-				vehicle.aiveChain.nodes[j].angle = b
-				AutoSteeringEngine.setChainStatus( vehicle, j, AIVEStatus.initial )
-				AutoSteeringEngine.applyRotation( vehicle, j )	
-				if math.abs( vehicle.aiveChain.nodes[j].cumulRot ) < 1E-4 then
-					break
-				elseif vehicle.aiveChain.nodes[j].cumulRot > 0 then
-					a2 = a
-				else
-					a1 = a
-				end
-			end
+		--local m  = 5
+		--local a2 = 1+2^(-m)
+		--local a1 = -a2
+		--for step=1,m do
+		--	local a = 0.5 * ( a1 + a2 )
+		--	local b 
+		--	if vehicle.aiveChain.leftActive then
+		--		b =  a
+		--	else
+		--		b = -a
+		--	end
+		--	
+		--	vehicle.aiveChain.nodes[j].angle = b
+		--	AutoSteeringEngine.setChainStatus( vehicle, j, AIVEStatus.initial )
+		--	AutoSteeringEngine.applyRotation( vehicle, j )	
+		--	if math.abs( vehicle.aiveChain.nodes[j].cumulRot ) < 1E-4 then
+		--		break
+		--	elseif vehicle.aiveChain.nodes[j].cumulRot > 0 then
+		--		a2 = a
+		--	else
+		--		a1 = a
+		--	end
+		--end
+			
+		
 		--old = vehicle.aiveChain.nodes[j].angle
 		--AutoSteeringEngine.setChainStatus( vehicle, j, AIVEStatus.initial )
 		--AutoSteeringEngine.applyRotation( vehicle, j )	
-		--if math.abs( vehicle.aiveChain.nodes[j].cumulRot ) < 1E-5 then
-		--	vehicle.aiveChain.nodes[j].angle = 0
-		--else
-		--	local r = vehicle.aiveChain.nodes[j].length / ( math.sin( -0.5 * vehicle.aiveChain.nodes[j].cumulRot ) * 2 )
-		--	local b = math.atan2( vehicle.aiveChain.wheelBase, r )
-		--	local a = 0
-		--	if b > 0 then
-		--		a =  Utils.clamp( b / vehicle.aiveChain.maxAngle, 0, 1 )
-		--	else
-		--		a = -Utils.clamp( b / vehicle.aiveChain.minAngle, 0, 1 )
-		--	end
-		--	if vehicle.aiveChain.leftActive then
-		--		vehicle.aiveChain.nodes[j].angle = a
-		--	else
-		--		vehicle.aiveChain.nodes[j].angle = -a
-		--	end
-		--end
+
+			AutoSteeringEngine.applyRotation( vehicle, j-1 )	
+			
+			local r = nil
+			for i=1,j-1 do
+				local q = math.abs( vehicle.aiveChain.nodes[i].rotation )
+				if r == nil or r < q then
+					r = q
+				end
+			end
+			if r == nil then
+				r = -0.5 * vehicle.aiveChain.nodes[j-1].cumulRot
+			elseif vehicle.aiveChain.nodes[j-1].cumulRot > 0 then
+				r = math.min(  r, vehicle.aiveChain.nodes[j-1].cumulRot )
+			else
+				r = math.max( -r, vehicle.aiveChain.nodes[j-1].cumulRot )
+			end
+			
+			vehicle.aiveChain.nodes[j].rotation = -r
+			vehicle.aiveChain.nodes[j].cumulRot = 0.5 * vehicle.aiveChain.nodes[j-1].cumulRot
+			vehicle.aiveChain.nodes[j].invRadius  = math.sin( 0.5 * vehicle.aiveChain.nodes[j].rotation ) * 2 / vehicle.aiveChain.nodes[j].length
+			if vehicle.aiveChain.nodes[j].invRadius > 1E-6 then
+				vehicle.aiveChain.nodes[j].radius   = 1 / vehicle.aiveChain.nodes[j].invRadius
+				vehicle.aiveChain.nodes[j].steering = math.atan2( vehicle.aiveChain.wheelBase, vehicle.aiveChain.nodes[j].radius )
+			else
+				vehicle.aiveChain.nodes[j].radius   = 1E+6
+				vehicle.aiveChain.nodes[j].steering = 0
+			end
+			vehicle.aiveChain.nodes[j].tool     = {}
+			
+			setRotation( vehicle.aiveChain.nodes[j].index2, 0, vehicle.aiveChain.nodes[j].rotation, 0 )
+			vehicle.aiveChain.nodes[j].status   = AIVEStatus.rotation
+			
+			if math.abs( vehicle.aiveChain.nodes[j].rotation ) < 1E-5 then
+				vehicle.aiveChain.nodes[j].angle = 0
+			else
+				local r = vehicle.aiveChain.nodes[j].length / ( math.sin( -0.5 * vehicle.aiveChain.nodes[j].cumulRot ) * 2 )
+				local b = math.atan( vehicle.aiveChain.wheelBase * vehicle.aiveChain.nodes[j].invRadius )
+				vehicle.aiveChain.nodes[j].angle = AutoSteeringEngine.steering2ChainAngle( vehicle, b )				
+			end
+			old = vehicle.aiveChain.nodes[j].angle
+		
 		else
 			vehicle.aiveChain.nodes[j].angle = 0
 		end
@@ -4752,7 +4862,7 @@ end
 ------------------------------------------------------------------------
 -- saveDirection
 ------------------------------------------------------------------------
-function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside )
+function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside, detected )
 
 	if vehicle.aiveChain == nil then
 		return 
@@ -4799,6 +4909,8 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside )
 		saveTurnPoint = true
 	elseif cumulate and not ( vehicle.aiveChain.isAtEnd ) then
 		saveTurnPoint = true
+	elseif cumulate and detected and notOutside then
+		saveTurnPoint = true
 	elseif Utils.vector2LengthSq( vehicle.aiveChain.trace.x - wx, vehicle.aiveChain.trace.z - wz ) < 0.01 then
 		saveTurnPoint = false
 	end
@@ -4834,10 +4946,10 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside )
 		
 		local ofs, idx
 		if vehicle.aiveChain.leftActive	then
-			ofs = tp.offset 
+			ofs = tp.offset + tp.offsetStd
 			idx = tp.nodeRight
 		else
-			ofs = -tp.offset 
+			ofs = -( tp.offset + tp.offsetStd )
 			idx = tp.nodeLeft 
 		end
 		
@@ -5325,7 +5437,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 				vehicle.aiveChain.trace.itv2 = { AutoSteeringEngine.getParallelogram( xw1, zw1, xw2, zw2, offsetOutside ) }
 			end
 			
-			f = offsetOutside * math.max( 0.1 * vehicle.aiveChain.width, Utils.getNoNil( vehicle.aiveChain.offsetAvg, vehicle.aiveChain.offsetStd ) )
+			f = offsetOutside * math.max( 0.1 * vehicle.aiveChain.width, vehicle.aiveChain.offsetStd )
 			xw0 = xw0 + f * dxx
 			zw0 = zw0 + f * dzx
 			

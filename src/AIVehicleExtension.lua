@@ -890,6 +890,10 @@ function AIVehicleExtension:update(dt)
 	end
 
 	if self.isEntered and self.isClient and self:getIsActive() then
+		if self.acParameters.enabled and self.acTurnStage < 198 and not self.aiveIsStarted then
+			AIVehicleExtension.checkState( self )
+		end
+	
 		if AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_HELPPANEL" ) then
 			local guiActive = false
 			if self.atHud ~= nil and self.atHud.GuiActive ~= nil then
@@ -996,25 +1000,16 @@ function AIVehicleExtension:update(dt)
 			and self.atMogliInitDone 
 			and self.atHud.GuiActive then	
 
-		if self.acParameters ~= nil and self.aiveIsStarted then			
+		if self.acParameters ~= nil and self.aiveIsStarted and self.acShowTrace then			
 			if			AIVEGlobals.showTrace > 0 
 					and self.acDimensions ~= nil
 					and ( self.aiIsStarted or self.acTurnStage >= 198 ) then	
 				AutoSteeringEngine.drawLines( self );
-			elseif self.acShowTrace then
+			else
 				if not ( self.aiIsStarted or self.acTurnStage >= 198 ) then	
 					AIVehicleExtension.checkState( self )
 				end
 				AutoSteeringEngine.drawMarker( self );
-			end
-		elseif AIVEGlobals.showTrace > 0 or self.acShowTrace then
-			for _,marker in pairs( {"aiCurrentLeftMarker", "aiCurrentRightMarker", "aiCurrentBackMarker"} ) do 						
-				if self[marker] ~= nil then
-					local x,y,z = getWorldTranslation( self[marker] )
-					y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-					drawDebugLine(	x,y,z, 0,1,0, x,y+2,z, 0,1,0 );
-					drawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
-				end
 			end
 		end
 	end	

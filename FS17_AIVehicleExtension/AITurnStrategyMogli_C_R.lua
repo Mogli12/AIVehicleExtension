@@ -58,37 +58,39 @@ end
 function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive )
 	local veh = self.vehicle 
 	
-	local checkIt = false
+	local checkIt = 0
 
 	if self.needsLowering then
 		self.needsLowering = nil
 		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, veh.aiveHas.combine )
 	end
 	
---if self.stageId == 4 then
---	checkIt = true
---else	
-	do
-		local turnAngle = AutoSteeringEngine.getTurnAngle( veh )
-		if veh.acParameters.leftAreaActive then
-			turnAngle = -turnAngle 
-		end
-		
-		checkIt = turnAngle >= math.max( 0.45 * math.pi, 0.5 * math.pi - veh.acDimensions.maxLookingAngle )
+	local turnAngle = AutoSteeringEngine.getTurnAngle( veh )
+	if veh.acParameters.leftAreaActive then
+		turnAngle = -turnAngle 
 	end
 	
-	if checkIt then
+	if self.stageId == 4 then
+		if turnAngle >= 0.48333333 * math.pi then -- 3° tolerance
+			checkIt = 2
+		else
+			checkIt = 1
+		end
+	elseif  turnAngle >= 0.45 * math.pi -- 9° tolerance
+			and turnAngle >=  0.5 * math.pi - veh.acDimensions.maxLookingAngle then
+		checkIt = 1
+	end
+	
+	if checkIt == 2 then
 		local detected, angle2, border = AutoSteeringEngine.processChain( veh )
 		if border > 0 then
 			return 
 		elseif detected then
-			if not veh.acParameters.leftAreaActive then
-				angle2 = -angle2		
-			end			
-			
-			if angle2 >= 0 then		
-				return 
-			end
+			return 
+		end
+	elseif checkIt == 1 then
+		if AutoSteeringEngine.processOneAngle( veh, 0 ) then
+			return 
 		end
 	end
 	
@@ -103,8 +105,7 @@ function AITurnStrategyMogli_C_R:detect5( dt, vX,vY,vZ, turnData )
 		
 	local detected, angle2, border = AutoSteeringEngine.processChain( veh )
 	if border > 0 or math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then			
-		local tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, 0 )
-		return tX, tZ, false, true, math.huge, 0, false
+		return nil, nil, false, true, math.huge, 0, false
 	end 
 end
 
@@ -138,7 +139,7 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 	
 	local pi2 = 0.5 * math.pi
 	local alpha, s, c
-	local r = vehicle.acDimensions.radius
+	local r = 1.1*vehicle.acDimensions.radius
 	local offsetX = 0
 	
 	if     deltaX < -r then
@@ -209,6 +210,7 @@ function AITurnStrategyMogli_C_R:fillStages( turnData )
 	end
 	
 	table.insert( self.stages[3], self:getPoint( finalX + extraF * dirFX, finalZ + extraF * dirFZ, dirFX, dirFZ ) )	
+	table.insert( self.stages[3], self:getPoint( finalX + ( 1 + extraF ) * dirFX, finalZ + ( 1 + extraF ) * dirFZ, dirFX, dirFZ ) )	
 end
 
 --============================================================================================================================

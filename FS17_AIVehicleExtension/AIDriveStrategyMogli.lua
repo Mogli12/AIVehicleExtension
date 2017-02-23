@@ -891,7 +891,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			return self.currentTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
 			
 		elseif detected or fruitsDetected then
-			AutoSteeringEngine.saveDirection( veh, true, not turn2Outside );
+			AutoSteeringEngine.saveDirection( veh, true, not turn2Outside, true );
 		end
 		
 --==============================================================				
@@ -962,7 +962,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	
 	self:printReturnInfo( tX, vY, tZ, true, maxSpeed, distanceToStop )
 	
-	if border <= 0 then
+	if border <= 0 and AIVEGlobals.maxDtSumD > 0 then
 		self.lastDriveData     = { tX, tZ, not veh.acParameters.inverted, maxSpeed, distanceToStop }
 		self.lastDriveDataTime = g_currentMission.time + AIVEGlobals.maxDtSumD
 		self.lastDriveDataDt   = 0
