@@ -507,21 +507,23 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	
 	if border > 0 then
 		veh.aiSteeringSpeed = 1
-	else
+	else --if self.search == nil then
 		if     veh.acLastAbsAngle == nil then
 			veh.aiSteeringSpeed =        veh.acSteeringSpeed
 		elseif absAngle > veh.acLastAbsAngle then
-			veh.aiSteeringSpeed = 1.5 * veh.acSteeringSpeed
+			veh.aiSteeringSpeed = 2.0 * veh.acSteeringSpeed
 		elseif absAngle < veh.acLastAbsAngle then
 			veh.aiSteeringSpeed = 0.5 * veh.acSteeringSpeed
 		else
 			veh.aiSteeringSpeed =       veh.acSteeringSpeed
 		end
 		if     absAngle > 0 then
-			veh.aiSteeringSpeed = 1.5 * veh.aiSteeringSpeed
+			veh.aiSteeringSpeed = 2.0 * veh.aiSteeringSpeed
 		elseif absAngle < 0 then
 			veh.aiSteeringSpeed = 0.5 * veh.aiSteeringSpeed
 		end
+--else
+--	veh.aiSteeringSpeed = veh.acSteeringSpeed
 	end	
 	
 	veh.acLastAbsAngle = absAngle
@@ -944,7 +946,22 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		tZ = self.lastDirection[2] + 0.03 * ( tZ - self.lastDirection[2] )
 	end
 	
-	maxSpeed = AutoSteeringEngine.getMaxSpeed( veh, dt, 1, true, true, speedLevel, false, 0.7 )
+	local useReduceSpeed = false
+	local slowFactor     = 1
+	if      self.search == nil 
+			and veh.acFullAngle 
+			and angle2 ~= nil 
+			and math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then
+		if math.abs( angle2 ) >= veh.acDimensions.maxSteeringAngle then
+			slowFactor = 0.5
+		else
+			slowFactor = 0.5 + 0.5 * ( veh.acDimensions.maxSteeringAngle - math.abs( angle2 ) ) / ( veh.acDimensions.maxSteeringAngle - veh.acDimensions.maxLookingAngle ) 
+		end
+		speedLevel     = 1
+		useReduceSpeed = true
+	end
+	
+	maxSpeed = AutoSteeringEngine.getMaxSpeed( veh, dt, 1, true, true, speedLevel, useReduceSpeed, slowFactor )
 			
 	if self.search ~= nil and self.search == AIDriveStrategyMogli.searchStart then
 		if detected then

@@ -22,20 +22,20 @@
     <angleFactorInside type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
     <angleFactorNoFix type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
     <chainDivideIn  value="6" />
-    <chainDivideOut value="12" />
+    <chainDivideOut value="6" />
 		
 		<staticRoot type="bool" value="true" />
 		<straightTA type="bool" value="false" />
 		
-    <!--                                        1 1 2 2 3 3 4 4-->
-    <!--                              1 2 3 7 8 1 5 0 5 0 5 0 5-->
-      <!--                            1 2 3 4 5 6 7 8 9 0 1 2 3-->
-    <chainLen    type="vector" value="1 1 2 2 3 3 4 5 5 5 5 5 5"/> 
-		<chainStep0  value="2" /> <!-- initial part of the chain that always rotates    -->                           
-		<chainStep1  value="8" /> <!-- steps to outside, can be smaller than chainStep2 -->
-		<chainStep2  value="8"/> <!-- steps to check, increased only if nothing found  -->
-		<chainStep3  value="5"/>  <!-- test outside up to this step                     -->
-		<chainStep4  value="8"/>  <!-- test outside up to this step                     -->
+    <!--                                              1 1 2 2 3 3 4 4-->
+    <!--                              1 2 3 4.5   6 8 1 5 0 5 0 5 0 5-->
+      <!--                            1 2 3   4   5 6 7 8 9 0 1 2 3 4-->
+    <chainLen    type="vector" value="1 1 1 1.5 1.5 2 3 4 5 5 5 5 5 5"/> 
+		<chainStep0  value="5" /> <!-- initial part of the chain that always rotates    -->                           
+		<chainStep1  value="10" /> <!-- steps to outside, can be smaller than chainStep2 -->
+		<chainStep2  value="10"/>  <!-- steps to check, increased only if nothing found  -->
+		<chainStep3  value="99"/> <!-- test inside up to this step                     -->
+		<chainStep4  value="3"/>  <!-- test outside up to this step                     -->
 	
     <!--                                  1 1 2 2 3 3 4 5 6-->
     <!--                              3 6 0 5 0 5 0 6 3 1 0-->
@@ -45,21 +45,21 @@
 		<chain2Step1 value="6"/>
 		<chain2Step2 value="11"/>
 		<chain2Step3 value="99"/>     
-		<chain2Step4 value="6"/>     
+		<chain2Step4 value="2"/>     
 
 		<chain3Step0 value="2"/>
 		<chain3Step1 value="4"/>
 		<chain3Step2 value="6"/>
 		<chain3Step3 value="99"/>     
-		<chain3Step4 value="6"/>     
+		<chain3Step4 value="2"/>     
 		
     <chainBorder value="1" />
-		<chainStart value="1" />
+		<chainStart  value="1" />
 		
-		<correctionIn  type="float" value="0.8" />
-		<correctionOut type="float" value="1.2" />
+		<correctionIn  type="float" value="1.0" />
+		<correctionOut type="float" value="1.0" />
 		
-		<shiftFixZ type="bool" value="false" />
+		<shiftFixZ type="bool" value="true" />
 		<colliMask type="bool" value="true" />
 		<colliStep type="float" value="0.2" />
 		<ignoreDist type="float" value="1.5" />
@@ -83,10 +83,9 @@
     <stepLog2 value="2" />
     <yieldCount value="2500" />
 		
-    <widthDec type="float" value="0" />
     <!--widthDec type="float" value="0.00125"/--> 
 		<safetyFactor value="2"/>
-    <widthMinDec type="float" value="0.00125"/> 
+    <widthDec type="float" value="0"/> 
     <widthMaxDec type="float" value="3" />
 		
 		<getIsHired type="bool" value="true" />
@@ -101,8 +100,8 @@
 		<maxDtSumT value="100"/>  <!-- 10 fps => 100 ms -->
 		<maxDtSumD value="0"/>   
 		<maxDtSumI value="100"/>   
-		<maxDtSumO value="40"/>   
-		<maxDtSum0 value="70"/>   
+		<maxDtSumO value="0"/>   
+		<maxDtSum0 value="40"/>   
 		<maxDtSum  value="500" /> <!--  2 fps => 500 ms -->
 		<maxDtDist  type="float" value="0.25" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
 		<maxDtDistD type="float" value="0.01" />

@@ -66,7 +66,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		self.turnStageData = nil
 	end
 	
-	local tX, tZ, moveForwards, distanceToStop, inactive, noLower = nil, nil, true, math.huge, false, false
+	local tX, tZ, moveForwards, distanceToStop, inactive, noLower = nil, nil, true, math.huge, false, nil
 		
 	AIVehicleExtension.statEvent( veh, "t0", dt )
 
@@ -2179,6 +2179,18 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	end
 
 	self.lastDirection = { tX, tZ, angle2 }
+	
+	if noLower == nil then
+		if not allowedToDrive then
+			noLower = false
+		elseif not moveForwards then
+			noLower = true
+		elseif inactive then
+			noLower = math.abs( angle2 ) <= veh.acDimensions.maxLookingAngle 
+		else
+			noLower = true 
+		end
+	end
 	
 	return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle2, inactive, noLower
 end
