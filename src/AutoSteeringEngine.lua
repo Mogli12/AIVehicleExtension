@@ -2995,15 +2995,6 @@ function AutoSteeringEngine.drawLines( vehicle )
 			local ly4 = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, lx4, 1, lz4) + 0.25
 			local c = { 0.2, 0.2, 0.2 }
 			local d = true
-			if wu == nil then
-				d = true
-			elseif wu == 1 then
-				d = b>0
-			elseif wu == 2 then
-				d = b>0
-			elseif wu == 3 then
-				d = b<=0
-			end
 			
 			if b <= 0 then
 				c = { 0, 1, 0 }
@@ -3011,6 +3002,19 @@ function AutoSteeringEngine.drawLines( vehicle )
 				c = { 1, 0.5, 0.5 }
 			else
 				c = { 1, b/(t+t), b/(t+t) }
+			end
+
+			if wu == nil then
+				d = true
+			elseif wu == 1 then				
+				d = b>0
+			elseif wu == 2 then
+				b = c[3]
+				c[3] = c[1]
+				c[1] = b
+				d = b>0
+			elseif wu == 3 then
+				d = b<=0
 			end
 			
 			if d then
@@ -4344,8 +4348,7 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 		
 		
 		if AIVEGlobals.shiftFixZ > 0 and z1 < 0 then
-		--z1 = math.max( z1-0.5, 0.5 * ( z1+zb ) )
-			z1 = zb
+			z1 = math.max( z1-2, zb )
 		end
 		
 		toolParam.x        = x1
@@ -4839,8 +4842,8 @@ function AutoSteeringEngine.invertsMarkerOnTurn( vehicle, tool, turnLeft )
 	local res = false		
 	if tool ~= nil and tool.obj ~= nil then
 		for _, spec in pairs(tool.obj.specializations) do		
-			if spec.aiInvertsMarkerOnTurn ~= nil then		
-				res = res or spec.aiInvertsMarkerOnTurn(tool.obj, turnLeft)		
+			if spec.getAiInvertsMarkerOnTurn ~= nil then		
+				res = res or spec.getAiInvertsMarkerOnTurn(tool.obj, turnLeft)		
 			end		
 		end		
 	end		
@@ -6142,25 +6145,26 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		tool.b3 = -4
 	end
 	
-	tool.ploughTransport = false
-	if      tool.isPlough 
-			and tool.aiForceTurnNoBackward 
-			and tool.obj.rotationPart.turnAnimation ~= nil
-			and tool.obj.playAnimation              ~= nil
-			-- plough transport always on
-			and ( AIVEGlobals.ploughTransport   > 2
-			-- plough transport for vogel&noot and lemken 
-				 or ( AIVEGlobals.ploughTransport > 1 
-					and ( object.configFileName == "data/vehicles/tools/vogelNoot/vogelNootHeros1000.xml"
-						 or ( object.customEnvironment ~= nil 
-							and Utils.removeModDirectory(self.configFileName) == "vogelNootHeros1000.xml" ) ) )
-			-- plough transport for lemken only
-				 or ( AIVEGlobals.ploughTransport > 0 
-					and ( object.configFileName == "data/vehicles/tools/lemken/lemkenDiamant12.xml"
-						 or ( object.customEnvironment ~= nil 
-							and Utils.removeModDirectory(self.configFileName) == "lemkenDiamant12.xml" ) ) ) ) then
-		tool.ploughTransport = true
-	end
+--tool.ploughTransport = false
+--if      tool.isPlough 
+--		and tool.aiForceTurnNoBackward 
+--		and tool.obj.rotationPart.turnAnimation ~= nil
+--		and tool.obj.playAnimation              ~= nil
+--		-- plough transport always on
+--		and ( AIVEGlobals.ploughTransport   > 2
+--		-- plough transport for vogel&noot and lemken 
+--			 or ( AIVEGlobals.ploughTransport > 1 
+--				and ( object.configFileName == "data/vehicles/tools/vogelNoot/vogelNootHeros1000.xml"
+--					 or ( object.customEnvironment ~= nil 
+--						and Utils.removeModDirectory(self.configFileName) == "vogelNootHeros1000.xml" ) ) )
+--		-- plough transport for lemken only
+--			 or ( AIVEGlobals.ploughTransport > 0 
+--				and ( object.configFileName == "data/vehicles/tools/lemken/lemkenDiamant12.xml"
+--					 or ( object.customEnvironment ~= nil 
+--						and Utils.removeModDirectory(self.configFileName) == "lemkenDiamant12.xml" ) ) ) ) then
+--	tool.ploughTransport = true
+--end
+	tool.ploughTransport = true
 		
 	if tool.ignoreAI then
 		marker[1] = reference
@@ -7478,29 +7482,38 @@ function AutoSteeringEngine.setPloughTransport( vehicle, isTransport, excludePac
 		return
 	end
 	for i=1,vehicle.aiveChain.toolCount do
-		if      vehicle.aiveChain.tools[i].ploughTransport
-				and vehicle.aiveChain.tools[i].obj:getIsPloughRotationAllowed() then
-			local self = vehicle.aiveChain.tools[i].obj
-			local curAnimTime = self:getAnimationTime(self.rotationPart.turnAnimation)
-			local tgtAnimTime = curAnimTime 
+	--if      vehicle.aiveChain.tools[i].ploughTransport
+	--		and vehicle.aiveChain.tools[i].obj:getIsPloughRotationAllowed() then
+	--	local self = vehicle.aiveChain.tools[i].obj
+	--	local curAnimTime = self:getAnimationTime(self.rotationPart.turnAnimation)
+	--	local tgtAnimTime = curAnimTime 
+	--	if     isTransport then
+	--		tgtAnimTime = 0.5
+	--	elseif self.rotationMax then
+	--		tgtAnimTime = 1
+	--	else
+	--		tgtAnimTime = -1
+	--	end
+	--	
+	--	self:stopAnimation( self.rotationPart.turnAnimation )
+	--	if curAnimTime ~= tgtAnimTime then
+	--		if tgtAnimTime > curAnimTime then
+	--			self:playAnimation( self.rotationPart.turnAnimation, 1, curAnimTime, true)
+	--		else
+	--			self:playAnimation( self.rotationPart.turnAnimation, -1, curAnimTime, true)
+	--		end
+	--		if 0 < tgtAnimTime and tgtAnimTime < 1 then
+	--			self:setAnimationStopTime( self.rotationPart.turnAnimation, tgtAnimTime )
+	--		end
+	--	end
+	--end
+		if vehicle.aiveChain.tools[i].ploughTransport then
 			if     isTransport then
-				tgtAnimTime = 0.5
-			elseif self.rotationMax then
-				tgtAnimTime = 1
+				vehicle.aiveChain.tools[i].obj:aiRotateCenter(true)
+			elseif vehicle.aiveChain.leftActive then
+				vehicle.aiveChain.tools[i].obj:onAiRotateLeft(true)
 			else
-				tgtAnimTime = -1
-			end
-			
-			self:stopAnimation( self.rotationPart.turnAnimation )
-			if curAnimTime ~= tgtAnimTime then
-				if tgtAnimTime > curAnimTime then
-					self:playAnimation( self.rotationPart.turnAnimation, 1, curAnimTime, true)
-				else
-					self:playAnimation( self.rotationPart.turnAnimation, -1, curAnimTime, true)
-				end
-				if 0 < tgtAnimTime and tgtAnimTime < 1 then
-					self:setAnimationStopTime( self.rotationPart.turnAnimation, tgtAnimTime )
-				end
+				vehicle.aiveChain.tools[i].obj:aiRotateRight(true)
 			end
 		end
 	end	

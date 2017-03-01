@@ -2098,8 +2098,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 					and math.abs( math.deg( AIVehicleExtension.getToolAngle( veh ) ) ) < angleOffsetStrict then
 				--AIVehicleExtension.setAIImplementsMoveDown(veh,false);
 				turnData.stage = turnData.stage + 1;					
-				veh.turnTimer   = veh.acDeltaTimeoutRun;
-				angle            = 0
+				veh.turnTimer   = self.acDeltaTimeoutWait
+				angle           = 0
 			end
 		
 	--==============================================================				
@@ -2109,11 +2109,13 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			moveForwards = false
 			angle        = AIVehicleExtension.getStraighBackwardsAngle( veh, targetT )
 			
-			if z < 2 and not fruitsDetected then
+			if fruitsDetected then
+				veh.turnTimer = self.acDeltaTimeoutWait
+			elseif veh.turnTimer < 0 then
 				detected,_,border = AutoSteeringEngine.processChain( veh )
 				if border <= 0 then
 					turnData.stage = turnData.stage + 1
-					veh.turnTimer   = veh.acDeltaTimeoutRun;
+					veh.turnTimer  = veh.acDeltaTimeoutRun
 				end
 			end
 		
@@ -2127,7 +2129,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			if border > 0 then
 				veh.turnTimer   = veh.acDeltaTimeoutRun;
 			elseif veh.turnTimer < 0 then
-				turnData.stage = turnData.stage + 1
+				turnData.stage  = turnData.stage + 1
 				veh.turnTimer   = veh.acDeltaTimeoutRun;
 			end
 		
@@ -2136,7 +2138,15 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		else --if turnStageMod == 4 then
 
 			moveForwards     = true
-			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border, tX,_,tZ = AutoSteeringEngine.processChain( veh )
+			
+			if border <= 0 and not detected then
+				angle2, onTrack, tX, tZ = AutoSteeringEngine.navigateToSavePoint( veh, turnMode )
+				if not onTrack then
+					angle2 = 0
+				end
+			end
+			
 			if border > 0 then
 			--if veh.turnTimer < 0 or fruitsDetected then
 				if AutoSteeringEngine.hasLeftFruits( veh ) then
