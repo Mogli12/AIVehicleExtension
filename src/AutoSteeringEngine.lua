@@ -5289,7 +5289,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 				factor = -1
 			end
 			
-			local lStart = 2
+			local lStart = 0
 			local lEnd   = 10
 			local lWidth = 1
 			

@@ -37,10 +37,10 @@
 		<chainStep3  value="99"/> <!-- test inside up to this step                     -->
 		<chainStep4  value="3"/>  <!-- test outside up to this step                     -->
 	
-    <!--                                  1 1 2 2 3 3 4 5 6-->
-    <!--                              3 6 0 5 0 5 0 6 3 1 0-->
+    <!--                                    1 1 2 3 3 4 5 6-->
+    <!--                              2 5 9 4 9 4 0 6 3 1 0-->
     <!--                              1 2 3 4 5 6 7 8 9 0 1-->
-    <chain2Len   type="vector" value="2 4 4 5 5 5 5 6 7 8 9"/> 
+    <chain2Len   type="vector" value="2 3 4 5 5 5 6 6 7 8 9"/> 
 		<chain2Step0 value="2"/>
 		<chain2Step1 value="6"/>
 		<chain2Step2 value="11"/>

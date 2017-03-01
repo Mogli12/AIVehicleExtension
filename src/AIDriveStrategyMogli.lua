@@ -951,7 +951,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			and veh.acFullAngle 
 			and angle2 ~= nil 
 			and math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then
-		slowFactor = math.min( 1, AutoSteeringEngine.getWantedSpeed( vehicle, 4 ) / AutoSteeringEngine.getWantedSpeed( vehicle, 1 ) )
+		slowFactor = math.min( 1, AutoSteeringEngine.getWantedSpeed( veh, 4 ) / AutoSteeringEngine.getWantedSpeed( veh, 1 ) )
 		if slowFactor < 1 and math.abs( angle2 ) < veh.acDimensions.maxSteeringAngle then
 			slowFactor = slowFactor + ( 1 - slowFactor ) * ( veh.acDimensions.maxSteeringAngle - math.abs( angle2 ) ) / ( veh.acDimensions.maxSteeringAngle - veh.acDimensions.maxLookingAngle ) 
 		end

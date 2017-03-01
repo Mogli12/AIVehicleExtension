@@ -2026,21 +2026,26 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true, turnData.stage >= 120 );
 		if veh.acParameters.leftAreaActive then x = -x end
 
-		local turnMode, targetS, targetA, targetT
+		local turnMode, targetS, targetA, targetT, targetZ
 			
 		if     turnData.stage < 115 then
 			turnMode = 3
 			targetS  = x
+			targetZ  = z
 			targetT  = 180
 		elseif turnData.stage < 120 then
 			turnMode = 4
 			targetS  = z
+			targetZ  = -x
 			targetT  = 90
 		else
 			turnMode = 5
 			targetS  = -x
+			targetZ  = -z
 			targetT  = 0
 		end
+		
+	--print(string.format("%3d: %5.2f %5.2f", turnData.stage, targetS, targetZ ))
 		
 		targetA  = turnAngle - targetT
 				
@@ -2098,8 +2103,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 					and math.abs( math.deg( AIVehicleExtension.getToolAngle( veh ) ) ) < angleOffsetStrict then
 				--AIVehicleExtension.setAIImplementsMoveDown(veh,false);
 				turnData.stage = turnData.stage + 1;					
-				veh.turnTimer   = self.acDeltaTimeoutWait
-				angle           = 0
+				veh.turnTimer  = veh.acDeltaTimeoutWait
+				angle          = 0
 			end
 		
 	--==============================================================				
@@ -2109,8 +2114,11 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			moveForwards = false
 			angle        = AIVehicleExtension.getStraighBackwardsAngle( veh, targetT )
 			
-			if fruitsDetected then
-				veh.turnTimer = self.acDeltaTimeoutWait
+			if     math.abs( targetZ ) > 20 then
+				turnData.stage   = turnData.stage + 2
+				veh.turnTimer    = veh.acDeltaTimeoutRun
+			elseif fruitsDetected or targetZ < 0 then
+				veh.turnTimer    = veh.acDeltaTimeoutWait
 			elseif veh.turnTimer < 0 then
 				detected,_,border = AutoSteeringEngine.processChain( veh )
 				if border <= 0 then
@@ -2140,6 +2148,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			moveForwards     = true
 			detected, angle2, border, tX,_,tZ = AutoSteeringEngine.processChain( veh )
 			
+			local onTrack  = false
 			if border <= 0 and not detected then
 				angle2, onTrack, tX, tZ = AutoSteeringEngine.navigateToSavePoint( veh, turnMode )
 				if not onTrack then
@@ -2159,8 +2168,10 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				else
 					turnData.stage = -1
 				end
-				veh.turnTimer   = veh.acDeltaTimeoutNoTurn;
+				veh.turnTimer    = veh.acDeltaTimeoutNoTurn;
 				--AIVehicleExtension.setAIImplementsMoveDown(veh,true);
+			elseif not ( detected or onTrack ) then
+				turnData.stage  = turnData.stage - 4
 			else
 				veh.turnTimer   = veh.acDeltaTimeoutRun;
 			end
