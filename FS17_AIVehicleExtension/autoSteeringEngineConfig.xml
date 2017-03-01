@@ -33,7 +33,7 @@
     <chainLen    type="vector" value="1.5 1.5 1.5 1.5 2 2 3 4 5 5 5 5 5 5"/> 
 		<chainStep0  value="5" /> <!-- initial part of the chain that always rotates    -->                           
 		<chainStep1  value="10" /> <!-- steps to outside, can be smaller than chainStep2 -->
-		<chainStep2  value="10"/>  <!-- steps to check, increased only if nothing found  -->
+		<chainStep2  value="14"/>  <!-- steps to check, increased only if nothing found  -->
 		<chainStep3  value="99"/> <!-- test inside up to this step                     -->
 		<chainStep4  value="3"/>  <!-- test outside up to this step                     -->
 	
@@ -66,7 +66,7 @@
     <maxLooking type="degree" value="30" />
     <minLooking type="degree" value="2" />
     <minLkgFactor type="float" value="0.15" />
-    <maxRotation type="degree" value="90" />
+    <maxRotation type="degree" value="30" />
     <maxRotationC type="degree" value="90" />
     <maxRotationU type="degree" value="30" />
 		<maxRotationT type="degree" value="90" /> 

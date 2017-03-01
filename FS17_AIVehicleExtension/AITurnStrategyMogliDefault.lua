@@ -718,6 +718,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			local onTrack    = false
 		--angle2, onTrack, tX, tZ  = AutoSteeringEngine.navigateToSavePoint( veh, 1, nil, turn75 )
 			angle2, onTrack, tX, tZ  = AutoSteeringEngine.navigateToSavePoint( veh, 1 )
+			
 			if not onTrack then
 				if math.abs( turnAngle ) < 150 then
 					angle  = AIVehicleExtension.getMaxAngleWithTool( veh, false )

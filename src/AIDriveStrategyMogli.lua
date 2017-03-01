@@ -534,6 +534,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		veh.acFullAngle = true
 		AIVehicleExtension.checkState( veh )
 		detected, angle2, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( veh, smooth, true, isInField, 0, offsetAngle )
+		
+		absAngle = angle2 
+		if not veh.acParameters.leftAreaActive then
+			absAngle = -angle2 
+		end
 	end
 	
 	if border > 0 then
@@ -563,11 +568,12 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		else
 			detected = true
 		end
-	elseif oldFullAngle then
-		if math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then
-			veh.acFullAngle = true
-		end
-	elseif not detected and self.search ~= nil then
+	elseif  detected 
+			and oldFullAngle
+			and absAngle > veh.acDimensions.maxLookingAngle then
+		veh.acFullAngle = true
+	elseif  not detected 
+			and self.search ~= nil then
 		veh.acFullAngle = true
 	end
 --==============================================================				
@@ -598,7 +604,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	
 	if	    self.search == nil
 			and border <= 0
-			and ( AutoSteeringEngine.getIsAtEnd( veh ) or ( AutoSteeringEngine.getTraceLength(veh) > 5 and not detected ) )
+			and ( veh.turnTimer < 0 
+				 or AutoSteeringEngine.getIsAtEnd( veh ) 
+				 or ( AutoSteeringEngine.getTraceLength(veh) > 5 and not detected ) )
 			then
 		
 	--speedLevel = 4
@@ -610,12 +618,13 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			ta = 0
 		end
 		
-		if veh.acParameters.leftAreaActive then
-			angle = angle2 
+		if detected then
+			angle = math.max( absAngle, ta )
 		else
-			angle = -angle2		
-		end	
-		angle   = math.max( angle, ta )
+			angle = ta
+		end
+		
+	--print("@end: "..AutoSteeringEngine.radToString( angle ).." = max( "..AutoSteeringEngine.radToString( absAngle )..", "..AutoSteeringEngine.radToString( ta ).." )" )
 		
 		angle2	= nil
 		veh.acHighPrec = true
@@ -732,22 +741,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			end
 		elseif turnTimer < 0 then 
 			doTurn = true
-			if	 detected then
-				doTurn					 = false
-				self.search = AIDriveStrategyMogli.searchCircle
-				veh.aiRescueTimer		 = 3 * veh.acDeltaTimeoutStop;
-				angle					  = 0			
-				veh.acClearTraceAfterTurn = false
-				veh.turnTimer			 = veh.acDeltaTimeoutWait;
-				AutoSteeringEngine.initTurnVector( veh, false, true )
-				
-				if AIVEGlobals.raiseNoFruits > 0 and not veh.aiveHas.combine then
-					AIVehicleExtension.setAIImplementsMoveDown(veh,false,true);
-					AIVehicleExtension.setAIImplementsMoveDown(veh,true,false);
-				end
-				
-		--elseif AutoSteeringEngine.getTraceLength(veh) < 10 and veh.acParameters.upNDown then		
-			elseif AutoSteeringEngine.getTraceLength(veh) < 3 and veh.acParameters.upNDown then		
+			if AutoSteeringEngine.getTraceLength(veh) < 3 and veh.acParameters.upNDown then		
 				uTurn = false
 				veh.acClearTraceAfterTurn = false
 			else
