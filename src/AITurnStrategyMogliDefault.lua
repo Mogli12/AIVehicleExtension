@@ -1291,7 +1291,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		end
 		
 		local corr     = veh.acDimensions.radius * ( 1 - math.cos( math.rad(turnAngle)))
-		local dx       = x - 2 * turn75.radius
+		local dx       = x - turn75.radius - turn75.radiusT
 		if turnAngle > 0 then
 			dx = math.min(0,dx + corr)
 		else
@@ -1349,7 +1349,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			if onTrack then
 				turnData.stage     = turnData.stage + 1;					
 				angle = nil
-			elseif x < turn75.radius + 0.5 then
+			elseif x < turn75.radiusT + 0.5 then
 				turnData.stage = turnData.stage + 2;	
 				angle2 = nil
 			else
@@ -1395,13 +1395,13 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		if veh.acParameters.leftAreaActive then x = -x end
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 	
-		if x < turn75.radius - 0.5 then
+		if x < turn75.radiusT - 0.5 then
 			veh.acTargetValue   = nil
 			turnData.stage     = turnData.stage + 1;					
 		--veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
 			angle                = turn75.alpha
-		elseif x < turn75.radius then
-			angle = 2 * ( turn75.radius - x ) * turn75.alpha
+		elseif x < turn75.radiusT then
+			angle = 2 * ( turn75.radiusT - x ) * turn75.alpha
 		end
 		
 --==============================================================				
@@ -2024,7 +2024,16 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 -- forward and reduce tool angle
 	elseif  110 <= turnData.stage and turnData.stage < 125 then
 		local turnStageMod = ( turnData.stage - 110 ) % 5
-		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true, turnData.stage >= 120 );
+		
+		local x,z, allowedToDrive
+		if     turnData.stage < 115 then
+			x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true, false )	
+		elseif turnData.stage < 120 then
+			x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, false, false )	
+		else
+			x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true, true )
+		end
+		
 		if veh.acParameters.leftAreaActive then x = -x end
 
 		local turnMode, targetS, targetA, targetT, targetZ
@@ -2068,7 +2077,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			local onTrack  = false
 			angle2, onTrack, tX, tZ = AutoSteeringEngine.navigateToSavePoint( veh, turnMode )
 			
-			if      math.abs( targetS ) < 0.5
+			if      math.abs( targetS ) < 1
 					and math.abs( targetA ) < angleOffset then
 				if math.abs( math.deg( AIVehicleExtension.getToolAngle( veh ) ) ) < angleOffsetStrict then
 					turnData.stage = turnData.stage + 2;					
@@ -2082,7 +2091,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			elseif not onTrack then		
 				angle2  = nil
 				local a = 0
-				if     math.abs( targetS ) < 0.5 then
+				if     math.abs( targetS ) < 1 then
 					a = math.rad( targetA )
 				else
 					a = AutoSteeringEngine.normalizeAngle( math.rad( targetA - Utils.clamp( targetS, -3, 3 ) * 15 ) )
@@ -2115,7 +2124,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			moveForwards = false
 			angle        = AIVehicleExtension.getStraighBackwardsAngle( veh, targetT )
 			
-			if     math.abs( targetZ ) > 20 then
+			if     math.abs( targetZ ) > 30 then
 				turnData.stage   = turnData.stage + 2
 				veh.turnTimer    = veh.acDeltaTimeoutRun
 			elseif fruitsDetected or targetZ < 0 then
@@ -2160,7 +2169,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			if border > 0 then
 			--if veh.turnTimer < 0 or fruitsDetected then
 				if AutoSteeringEngine.hasLeftFruits( veh ) then
-					AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
+					AutoSteeringEngine.shiftTurnVector( veh, 1 )
 					turnData.stage = turnData.stage - 4
 				end
 			elseif fruitsDetected then

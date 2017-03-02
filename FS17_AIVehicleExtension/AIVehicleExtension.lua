@@ -2356,17 +2356,18 @@ AIVehicle.setDriveStrategies = Utils.appendedFunction( AIVehicle.setDriveStrateg
 ---Returns true if ai can start
 -- @return boolean canStart can start ai
 -- @includeCode
-function AIVehicleExtension:newCanStartAIVehicle()
+function AIVehicleExtension:newCanStartAIVehicle( superFunc )
 	-- check if reverse driving is available and used, we do not allow the AI to work when reverse driving is enabled
-	if self.isReverseDriving ~= nil then
-		if self.isChangingDirection then
-			return false;
-		elseif self.isReverseDriving then
-			if     self.acParameters == nil
-					or not self.acParameters.enabled then
-				return false
-			end
-		end
+	if     self.isReverseDriving == nil 
+			or not self.isReverseDriving
+			or self.acParameters     == nil
+			or self.acParameters     == nil
+			or not self.acParameters.enabled then
+		return superFunc( self )
+	end
+	
+	if self.isChangingDirection then
+		return false;
 	end
 	if self.aiVehicleDirectionNode == nil then
 		return false;

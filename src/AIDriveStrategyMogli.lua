@@ -602,6 +602,16 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		self.acFullAngle = true
 	end
 	
+	if veh.acDebugRetry and fruitsDetected then
+		print("Starting debug 1xx...: "..tostring(self.search))
+		veh.acDebugRetry = nil
+		veh.turnTimer    = -1
+		border           = 99
+		turn2Outside     = true
+		detected         = false
+		AutoSteeringEngine.shiftTurnVector( veh, -1 )
+	end
+	
 	if	    self.search == nil
 			and border <= 0
 			and ( veh.turnTimer < 0 
@@ -724,12 +734,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 -- threshing...					
 	if	 self.search == nil then		
 		
-		local doTurn    = false;
-		local uTurn     = false;
-		local turnTimer = veh.turnTimer
+		local doTurn = false;
+		local uTurn  = false;
 		
 		if turn2Outside then
-			if fruitsDetected and turnTimer < 0 then
+			if fruitsDetected and veh.turnTimer < 0 and not AutoSteeringEngine.getIsAtEnd( veh ) then
 				doTurn = true
 				uTurn  = false
 				veh.acClearTraceAfterTurn = true -- false
@@ -739,7 +748,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 				veh.turnTimer   		   = math.max(veh.turnTimer,veh.acDeltaTimeoutRun);
 				veh.acTurnOutsideTimer = math.max( veh.acTurnOutsideTimer, veh.acDeltaTimeoutNoTurn );
 			end
-		elseif turnTimer < 0 then 
+		elseif veh.turnTimer < 0 then 
 			doTurn = true
 			if AutoSteeringEngine.getTraceLength(veh) < 3 and veh.acParameters.upNDown then		
 				uTurn = false
@@ -844,7 +853,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			elseif turn2Outside then
 				veh.acTurn2Outside = true
 		-- turn to outside because we are in the middle of the field
-				if	 veh.acTurnMode == "C" 
+				if	   veh.acTurnMode == "C" 
 						or veh.acTurnMode == "8" 
 						or veh.acTurnMode == "O" then
 					self.turnData.stage = 100
@@ -892,14 +901,16 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 --==============================================================				
 -- searching...
 	else
-	
+			
 		if not detected then
 			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutNoTurn )
 		elseif veh.acFullAngle then
 			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
-		elseif fruitsAll 
-				or ( veh.turnTimer < 0 and AutoSteeringEngine.hasFruitsInFront( veh ) ) then
-
+		elseif not fruitsAll or AutoSteeringEngine.getIsAtEnd( veh ) then
+			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
+		elseif AutoSteeringEngine.isBeforeStartNode( veh ) then
+			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
+		elseif veh.turnTimer < 0 then
 			if veh.acClearTraceAfterTurn then
 				AutoSteeringEngine.clearTrace( veh );
 				AutoSteeringEngine.saveDirection( veh, false, not turn2Outside );
