@@ -762,14 +762,14 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			AutoSteeringEngine.initTurnVector( veh, uTurn, turn2Outside )
 
 			if not turn2Outside then 
-				local dist	= math.floor( 2.5 * math.max( 10, veh.acDimensions.distance ) )
+				local dist	= math.floor( 4 * math.max( 10, veh.acDimensions.distance ) )
 				local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( veh )
 				local stop	= true
 				local lx,lz
 				for i=0,dist do
 					for j=0,dist do
 						for k=1,4 do
-							if	 k==1 then 
+							if     k==1 then 
 								lx = wx + i
 								lz = wz + j
 							elseif k==2 then
@@ -782,7 +782,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 								lx = wx - i
 								lz = wz - j
 							end
-							if	  AutoSteeringEngine.isChainPointOnField( veh, lx-0.5, lz-0.5 ) 
+							if	    AutoSteeringEngine.isChainPointOnField( veh, lx-0.5, lz-0.5 ) 
 									and AutoSteeringEngine.isChainPointOnField( veh, lx-0.5, lz+0.5 ) 
 									and AutoSteeringEngine.isChainPointOnField( veh, lx+0.5, lz-0.5 ) 
 									and AutoSteeringEngine.isChainPointOnField( veh, lx+0.5, lz+0.5 ) 
@@ -892,7 +892,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			
 			return self.activeTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
 			
-		elseif detected or fruitsDetected then
+	--elseif detected or fruitsDetected then
+		else
 			AutoSteeringEngine.saveDirection( veh, true, not turn2Outside, true );
 		end
 		
@@ -936,32 +937,28 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	elseif tX == nil and angle2 ~= nil then
 		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, angle2 )
 		smooth = 0.05
---elseif border > 0 then
---	veh.aiSteeringSpeed = 1
---elseif self.search == nil then
---	veh.aiSteeringSpeed = 1
---elseif veh.acLastAbsAngle == nil then
---	veh.aiSteeringSpeed = veh.acSteeringSpeed
---elseif absAngle > veh.acLastAbsAngle then
---	veh.aiSteeringSpeed = 1
---else
---	if     absAngle > veh.acLastAbsAngle then
---		veh.aiSteeringSpeed = 2.0 * veh.acSteeringSpeed
---	elseif absAngle < veh.acLastAbsAngle then
---		veh.aiSteeringSpeed = 0.5 * veh.acSteeringSpeed
---	else
---		veh.aiSteeringSpeed =       veh.acSteeringSpeed
---	end
---	if     absAngle > 0 then
---		veh.aiSteeringSpeed = 2.0 * veh.aiSteeringSpeed
---	elseif absAngle < 0 then
---		veh.aiSteeringSpeed = 0.5 * veh.aiSteeringSpeed
---	end
-	else
+	elseif true then
 		veh.aiSteeringSpeed = 1
+	elseif border > 0 then
+		veh.aiSteeringSpeed = 1
+	elseif veh.acLastAbsAngle == nil then
+		veh.aiSteeringSpeed = veh.acSteeringSpeed
+	else
+		if     absAngle > veh.acLastAbsAngle then
+			veh.aiSteeringSpeed = 2.0 * veh.acSteeringSpeed
+		elseif absAngle < veh.acLastAbsAngle then
+			veh.aiSteeringSpeed = 0.5 * veh.acSteeringSpeed
+		else
+			veh.aiSteeringSpeed =       veh.acSteeringSpeed
+		end
+		if     absAngle > 0 then
+			veh.aiSteeringSpeed = 2.0 * veh.aiSteeringSpeed
+		elseif absAngle < 0 then
+			veh.aiSteeringSpeed = 0.5 * veh.aiSteeringSpeed
+		end
 	end	
 	
-	veh.aiSteeringSpeed = math.min( veh.aiSteeringSpeed, ( veh.maxRotTime - veh.minRotTime ) / 100 )
+	veh.aiSteeringSpeed = math.min( veh.aiSteeringSpeed, ( veh.maxRotTime - veh.minRotTime ) / 200 )
 	veh.acLastAbsAngle  = absAngle
 	
 	local tX2 = tX

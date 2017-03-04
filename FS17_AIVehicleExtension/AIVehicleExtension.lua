@@ -8,8 +8,8 @@
 --
 --	code source: AIVehicle.lua by Giants Software		
  
-AIVehicleExtension = {};
-local AtDirectory = g_currentModDirectory;
+AIVehicleExtension = {}
+local AtDirectory = g_currentModDirectory
 
 ------------------------------------------------------------------------
 -- INCLUDES
@@ -17,7 +17,7 @@ local AtDirectory = g_currentModDirectory;
 source(Utils.getFilename("mogliBase.lua", g_currentModDirectory))
 _G[g_currentModName..".mogliBase"].newClass( "AIVehicleExtension", "acParameters" )
 ------------------------------------------------------------------------
-source(Utils.getFilename("mogliHud.lua", g_currentModDirectory));
+source(Utils.getFilename("mogliHud.lua", g_currentModDirectory))
 _G[g_currentModName..".mogliHud"].newClass( "AIVEHud", "atHud" )
 ------------------------------------------------------------------------
 source(Utils.getFilename("AIVEEvents.lua", g_currentModDirectory));
@@ -1580,7 +1580,7 @@ function AIVehicleExtension.calculateDistances( self )
 	self.acDimensions.headlandDist	 = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
 	self.acDimensions.collisionDist	= 1 + AIVehicleExtension.calculateHeadland( self.acTurnMode, math.max( self.acDimensions.distance, 1.5 ), self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
 	local r = self.acDimensions.radius
-	self.acDimensions.uTurnDist4x   = math.max( 1 + self.acDimensions.toolDistance - r-r, self.acDimensions.distance - 0.7 * r, 0 )
+	self.acDimensions.uTurnDist4x   = 1 + math.max( self.acDimensions.toolDistance - r-r, self.acDimensions.toolDistance + self.acDimensions.distance - r, 0 )
 	--if self.acShowDistOnce == nil then
 	--	self.acShowDistOnce = 1
 	--else
@@ -2353,38 +2353,101 @@ AIVehicle.setDriveStrategies = Utils.appendedFunction( AIVehicle.setDriveStrateg
 -- @includeCode
 function AIVehicleExtension:newCanStartAIVehicle( superFunc )
 	-- check if reverse driving is available and used, we do not allow the AI to work when reverse driving is enabled
-	if     self.isReverseDriving == nil 
-			or not self.isReverseDriving
-			or self.acParameters     == nil
-			or not self.acParameters.enabled then
-		return superFunc( self )
-	end
 	
-	if self.isChangingDirection then
-		return false;
+	local backup = self.isReverseDriving
+	
+	if      self.acParameters ~= nil
+			and self.acParameters.enabled
+			and self.acParameters.inverted then
+		self.isReverseDriving = not ( self.isReverseDriving )
 	end
-	if self.aiVehicleDirectionNode == nil then
-		return false;
-	end
-	if g_currentMission.disableAIVehicle then
-		return false;
-	end
-	if AIVehicle.numHirablesHired >= g_currentMission.maxNumHirables then
-		return false;
-	end
-	if not self.isMotorStarted then
-		return false;
-	end
-	if self.isConveyorBelt then
-		return true;
-	end;
-	if self.aiImplementList ~= nil and #self.aiImplementList > 0 then
-		return true;
-	else
-		return false;
-	end
+
+	local res = { superFunc( self ) }
+	
+	self.isReverseDriving = backup
+	
+	return unpack( res )
 end
 
 AIVehicle.canStartAIVehicle = Utils.overwrittenFunction( AIVehicle.canStartAIVehicle, AIVehicleExtension.newCanStartAIVehicle )
 
 
+
+function AIVehicleExtension:newDriveToPoint( superFunc, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer )
+
+	if     self.acParameters == nil 
+			or not self.acParameters.enabled then
+		superFunc( self, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer )
+	end
+	
+	if self.firstTimeRun then
+
+		if allowedToDrive then
+
+			local tX_2 = tX * 0.5
+			local tZ_2 = tZ * 0.5
+
+			local d1X, d1Z = tZ_2, -tX_2
+			if tX > 0 then
+				d1X, d1Z = -tZ_2, tX_2
+			end
+
+			local hit,_,f2 = Utils.getLineLineIntersection2D(tX_2,tZ_2, d1X,d1Z, 0,0, tX, 0)
+
+			if doNotSteer == nil or not doNotSteer then
+				local rotTime = 0
+				local radius = 0
+				if hit and math.abs(f2) < 100000 then
+					radius = tX * f2
+					rotTime = self.wheelSteeringDuration * ( math.atan(1/radius) / math.atan(1/self.maxTurningRadius) )
+				end
+
+				local targetRotTime = 0
+				if rotTime >= 0 then
+					targetRotTime = math.min(rotTime, self.maxRotTime)
+				else
+					targetRotTime = math.max(rotTime, self.minRotTime)
+				end
+
+				if targetRotTime > self.rotatedTime then
+					self.rotatedTime = math.min(self.rotatedTime + dt*self.aiSteeringSpeed, targetRotTime)
+				else
+					self.rotatedTime = math.max(self.rotatedTime - dt*self.aiSteeringSpeed, targetRotTime)
+				end
+
+				if maxSpeed > 4 then
+					-- adjust maxSpeed
+					local steerDiff = targetRotTime - self.rotatedTime
+					local fac = math.abs(steerDiff) / math.max(self.maxRotTime, -self.minRotTime)
+					maxSpeed = math.max( 4, maxSpeed * ( 1.0 - math.pow(fac,0.25)))
+				end
+			end
+		end
+
+		self.motor:setSpeedLimit(maxSpeed)
+		if self.cruiseControl.state ~= Drivable.CRUISECONTROL_STATE_ACTIVE then
+			self:setCruiseControlState(Drivable.CRUISECONTROL_STATE_ACTIVE)
+		end
+
+		if not allowedToDrive then
+			acceleration = 0
+		end
+		if not moveForwards then
+			acceleration = -acceleration
+		end
+
+		if not g_currentMission.missionInfo.stopAndGoBraking then
+			if acceleration ~= self.nextMovingDirection then
+				if not self.hasStopped then
+					if math.abs(self.lastSpeedAcceleration) < 0.0001 and math.abs(self.lastSpeedReal) < 0.0001 and math.abs(self.lastMovedDistance) < 0.001 then
+						acceleration = 0
+					end
+				end
+			end
+		end
+
+		WheelsUtil.updateWheelsPhysics(self, dt, self.lastSpeedReal, acceleration, not allowedToDrive, self.requiredDriveMode)
+	end
+end
+
+AIVehicleUtil.driveToPoint = Utils.overwrittenFunction( AIVehicleUtil.driveToPoint, AIVehicleExtension.newDriveToPoint )

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="34">
 	<author>Mogli</author>
-	<version>0.3.1.0</version>
+	<version>0.3.1.1</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AUTO_TRACTOR_VERSION">
-			<en>AIVehicleExtension v0.3.1.0</en>
-			<de>AIVehicleExtension v0.3.1.0</de>
-			<fr>AIVehicleExtension v0.3.1.0</fr>
-			<it>AIVehicleExtension v0.3.1.0</it>
-			<ru>AIVehicleExtension v0.3.1.0</ru>
-			<cz>AIVehicleExtension v0.3.1.0</cz>
-			<pl>AIVehicleExtension v0.3.1.0</pl>
-									<cs>车辆助手 v0.3.1.0</cs>
+			<en>AIVehicleExtension v0.3.1.1</en>
+			<de>AIVehicleExtension v0.3.1.1</de>
+			<fr>AIVehicleExtension v0.3.1.1</fr>
+			<it>AIVehicleExtension v0.3.1.1</it>
+			<ru>AIVehicleExtension v0.3.1.1</ru>
+			<cz>AIVehicleExtension v0.3.1.1</cz>
+			<pl>AIVehicleExtension v0.3.1.1</pl>
+									<cs>车辆助手 v0.3.1.1</cs>
 		</text>
 	</l10n>
 	<title>

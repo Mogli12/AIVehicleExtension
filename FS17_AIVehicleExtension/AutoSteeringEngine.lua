@@ -486,6 +486,7 @@ function AutoSteeringEngine.processChain( vehicle, inField )
 	local chainBorder
 	
 	vehicle.aiveProcessChainInfo = ""
+	vehicle.acIamDetecting = true
 		
 	if      vehicle.aiveChain.inField
 			and vehicle.aiveChain.chainStep1 > 0 
@@ -548,8 +549,6 @@ function AutoSteeringEngine.processChain( vehicle, inField )
 	if useBuffer then
 		best = vehicle.aiveChain.lastBest
 	else
-
-		vehicle.acIamDetecting = true
 				
 		if AIVEGlobals.collectCbr > 0 then
 			vehicle.aiveChain.collectCbr	= true
@@ -4888,17 +4887,14 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside, detect
 	local saveTurnPoint = nil
 	if vehicle.aiveChain.trace.ux == nil then
 		saveTurnPoint = true
-	elseif cumulate and not ( vehicle.aiveChain.isAtEnd ) then
-		saveTurnPoint = true
+--elseif cumulate and not ( vehicle.aiveChain.isAtEnd ) then
+--	saveTurnPoint = true
 --elseif cumulate and detected and notOutside then
 --	saveTurnPoint = true
---elseif Utils.vector2LengthSq( vehicle.aiveChain.trace.x - wx, vehicle.aiveChain.trace.z - wz ) < 0.01 then
---	saveTurnPoint = false
+	elseif Utils.vector2LengthSq( vehicle.aiveChain.trace.x - wx, vehicle.aiveChain.trace.z - wz ) < 0.0625 then
+		saveTurnPoint = false
 	end
-	
-	vehicle.aiveChain.trace.x = wx
-	vehicle.aiveChain.trace.z = wz
-	
+		
 	if vehicle.aiveChain.leftActive then
 		vehicle.aiveChain.trace.dx,_,vehicle.aiveChain.trace.dz = localDirectionToWorld( vehicle.aiveChain.refNode, 1, 0, 0 )
 	else
@@ -4938,8 +4934,6 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside, detect
 		
 	--local ox,_,oz = localToWorld( idx, ofs, 0, 2 )
 		local ox,_,oz = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 0, 2 )
-		local dx,_,dz = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs+dir, 0, 0 )
-		local bx,_,bz = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 0, 0 )
 		
 		if      not ( tp.skipOther and tp.skip ) 
 				and ( saveTurnPoint == nil or saveTurnPoint == true )
@@ -4951,15 +4945,27 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside, detect
 			local stp = false
 			if saveTurnPoint then
 				stp = true
-			elseif AIVehicleUtil.getAIAreaOfVehicle( vehicle.aiveChain.tools[tp.i].obj, bx,bz,dx,dz,ox,oz, true ) > 0 then
-				if vehicle.aiveChain.collectCbr then
-					if vehicle.aiveChain.cbr == nil then
-						vehicle.aiveChain.cbr = {}
-					end							
-					table.insert( vehicle.aiveChain.cbr, { bx,bz,dx,dz,ox,oz, 1, 1 } )
-				end
+			elseif AutoSteeringEngine.checkField( vehicle, ox,oz ) then
+				--AutoSteeringEngine.rotateHeadlandNode( vehicle )
+				local refNode = vehicle.aiveChain.headlandNode
+				local refNode = vehicle.aiveChain.refNode
+				local ex,_,ez = localDirectionToWorld( refNode, 0, 0, -2 )
+				local bx = ox + ex
+				local bz = oz + ez
+				ex,_,ez = localDirectionToWorld( refNode, dir, 0, 0 )
+				local dx = bx + ex
+				local dz = bz + ez
+				local a,t = AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, vehicle.aiveChain.tools[tp.i], bx,bz,dx,dz,ox,oz, true )
+				if a > 0 then
+					if vehicle.aiveChain.collectCbr then
+						if vehicle.aiveChain.cbr == nil then
+							vehicle.aiveChain.cbr = {}
+						end							
+						table.insert( vehicle.aiveChain.cbr, { bx,bz,dx,dz,ox,oz, 1, 1 } )
+					end
 
-				stp = true
+					stp = true
+				end				
 			end				
 			
 			if stp then			
@@ -5012,6 +5018,9 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside, detect
 	end
 	
 	if saveTurnPoint then
+		vehicle.aiveChain.trace.x = wx
+		vehicle.aiveChain.trace.z = wz
+		
 		if turnXu == nil and vehicle.aiveChain.trace.ux == nil then
 			turnXu = vehicle.aiveChain.otherX
 			if AIVehicleUtil.invertsMarkerOnTurn( vehicle, not vehicle.aiveChain.leftActive ) then
@@ -5462,7 +5471,9 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 				local maxShiftZ = w+w
 				local shiftZ, area, total = 0, 0, 0
 				local dzx,_,dzz = localDirectionToWorld( vehicle.aiveChain.headlandNode, 0, 0, 1 )				
-				local dxx,_,dxz = localDirectionToWorld( vehicle.aiveChain.headlandNode, factor * math.cos( math.rad( 15 )), 0, math.sin( math.rad( 15 )) )			
+			--local dxx,_,dxz = localDirectionToWorld( vehicle.aiveChain.headlandNode, factor * math.cos( math.rad( 15 )), 0, math.sin( math.rad( 15 )) )			
+				local dxx,_,dxz = localDirectionToWorld( vehicle.aiveChain.headlandNode, factor * math.cos( math.rad( 4.5 )), 0, math.sin( math.rad( 4.5 )) )			
+			--local dxx,_,dxz = localDirectionToWorld( vehicle.aiveChain.headlandNode, factor, 0, 0 )			
 				
 				while minShiftZ <= shiftZ and shiftZ <= maxShiftZ do
 					area  = 0
@@ -5529,6 +5540,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 				end
 				
 				if doShiftZ ~= nil then
+					doShiftZ = doShiftZ + 0.5 -- math.max( vehicle.aiveChain.worldToDensityI, vehicle.aiveChain.offsetStd )
 					vehicle.aiveChain.trace.cx = vehicle.aiveChain.trace.cx + dzx * doShiftZ
 					vehicle.aiveChain.trace.ox = vehicle.aiveChain.trace.ox + dzx * doShiftZ
 					vehicle.aiveChain.trace.cz = vehicle.aiveChain.trace.cz + dzz * doShiftZ
