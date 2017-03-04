@@ -36,6 +36,8 @@ end
 function AITurnStrategyMogli:startTurn( turnData )
 --AITurnStrategyMogli:superClass().startTurn( self, turnData )
 
+	AIVehicleExtension.checkState( self.vehicle, true )
+	
 	self.lastDirection = nil
 	
 	self.vehicle.aiveChain.inField = false

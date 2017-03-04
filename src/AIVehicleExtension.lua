@@ -941,32 +941,32 @@ function AIVehicleExtension:update(dt)
 		end
 		
 		if self.aiIsStarted then
-			local cc = InputBinding.getDigitalInputAxis(InputBinding.AXIS_CRUISE_CONTROL)
-			local cd = false
-			if InputBinding.isAxisZero(cc) then
-				cc = InputBinding.getAnalogInputAxis(InputBinding.AXIS_CRUISE_CONTROL)
-				if InputBinding.isAxisZero(cc) then
-					cc = 0
-				else
-					self.acParameters.speedFactor = Utils.clamp( self.acParameters.speedFactor + 0.00025 * dt * cc, 0.1, 1.1 )
-				end
-			else
-				local maxSpeed = AutoSteeringEngine.getToolsSpeedLimit( self )
-				local cs = math.floor( 0.5 + self.acParameters.speedFactor * maxSpeed )
-				if		 cc > 0 then
-					cs = cs + 1
-				elseif cc < 0 then
-					cs = cs - 1
-				end
-				self.acParameters.speedFactor = Utils.clamp( cs / maxSpeed, 0.1, 1.1 )
-			end
-			if self.aiveIsStarted then
-				self:setCruiseControlMaxSpeed( self.acParameters.speedFactor * AutoSteeringEngine.getToolsSpeedLimit( self ) )
-			end
-				
-			if math.abs( self.acSentSpeedFactor - self.acParameters.speedFactor ) > 0.1 then
-				AIVehicleExtension.sendParameters(self);
-			end
+		--local cc = InputBinding.getDigitalInputAxis(InputBinding.AXIS_CRUISE_CONTROL)
+		--local cd = false
+		--if InputBinding.isAxisZero(cc) then
+		--	cc = InputBinding.getAnalogInputAxis(InputBinding.AXIS_CRUISE_CONTROL)
+		--	if InputBinding.isAxisZero(cc) then
+		--		cc = 0
+		--	else
+		--		self.acParameters.speedFactor = Utils.clamp( self.acParameters.speedFactor + 0.00025 * dt * cc, 0.1, 1.1 )
+		--	end
+		--else
+		--	local maxSpeed = AutoSteeringEngine.getToolsSpeedLimit( self )
+		--	local cs = math.floor( 0.5 + self.acParameters.speedFactor * maxSpeed )
+		--	if		 cc > 0 then
+		--		cs = cs + 1
+		--	elseif cc < 0 then
+		--		cs = cs - 1
+		--	end
+		--	self.acParameters.speedFactor = Utils.clamp( cs / maxSpeed, 0.1, 1.1 )
+		--end
+		--if self.aiveIsStarted then
+		--	self:setCruiseControlMaxSpeed( self.acParameters.speedFactor * AutoSteeringEngine.getToolsSpeedLimit( self ) )
+		--end
+		--	
+		--if math.abs( self.acSentSpeedFactor - self.acParameters.speedFactor ) > 0.1 then
+		--	AIVehicleExtension.sendParameters(self);
+		--end
 			
 			if AIVehicleExtension.mbHasInputEvent( "TOGGLE_CRUISE_CONTROL" ) then
 				if self.speed2Level == nil or self.speed2Level > 0 then
@@ -1179,9 +1179,10 @@ end
 ------------------------------------------------------------------------
 -- checkState
 ------------------------------------------------------------------------
-function AIVehicleExtension:checkState( onlyMaxLooking )
+function AIVehicleExtension:checkState( force )
 
-	if			self.acCheckStateTimer ~= nil
+	if      not ( force )
+			and self.acCheckStateTimer ~= nil
 			and self.acDimensions			~= nil
 			and self.acCheckStateTimer > g_currentMission.time then
 		return 
@@ -2049,7 +2050,7 @@ end
 -- AIVehicleExtension:detectAngle
 ------------------------------------------------------------------------
 function AIVehicleExtension:detectAngle( smooth )
-	return AutoSteeringEngine.processChain( self, smooth, true, ( self.acTurnStage == 0 or self.acTurnStage == 199 ) )
+	return AutoSteeringEngine.processChain( self, ( self.acTurnStage == 0 or self.acTurnStage == 199 ) )
 end
 
 ------------------------------------------------------------------------
@@ -2344,15 +2345,9 @@ end
 
 AIVehicle.setDriveStrategies = Utils.appendedFunction( AIVehicle.setDriveStrategies, AIVehicleExtension.afterSetDriveStrategies )
 
---function AIVehicleExtension:afterStopAIVehicle(reason, noEventSend)
---	print("Stop AI Vehicle: "..tostring(reason))
---	AIVehicleExtension.printCallStack( self, 15 )
---end
---
---AIVehicle.stopAIVehicle = Utils.appendedFunction( AIVehicle.stopAIVehicle, AIVehicleExtension.afterStopAIVehicle )
+--==============================================================		
+-- AIVehicle.canStartAIVehicle		
 --==============================================================				
---==============================================================				
-
 ---Returns true if ai can start
 -- @return boolean canStart can start ai
 -- @includeCode
@@ -2360,7 +2355,6 @@ function AIVehicleExtension:newCanStartAIVehicle( superFunc )
 	-- check if reverse driving is available and used, we do not allow the AI to work when reverse driving is enabled
 	if     self.isReverseDriving == nil 
 			or not self.isReverseDriving
-			or self.acParameters     == nil
 			or self.acParameters     == nil
 			or not self.acParameters.enabled then
 		return superFunc( self )

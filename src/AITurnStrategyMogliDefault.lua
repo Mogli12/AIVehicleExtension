@@ -273,7 +273,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 
 		AutoSteeringEngine.setSteeringAngle( veh, 0 )
 		if veh.acTurn2Outside then
-			detected, _, border = AutoSteeringEngine.processChain( veh, 0.5 )
+			detected, _, border = AutoSteeringEngine.processChain( veh )
 			if border <= 0 then
 				detected = true
 			end
@@ -324,7 +324,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	elseif turnData.stage == 4 then
 
 		if veh.acTurn2Outside then
-			detected, angle2, border = AutoSteeringEngine.processChain( veh, 0.5 )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh )
 		else 
 			detected, angle2, border = AutoSteeringEngine.processChain( veh )
 		end 
@@ -469,7 +469,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	elseif turnData.stage == 9 then
 	
 		if math.abs( turnAngle - 90 ) < math.deg( veh.acDimensions.maxLookingAngle )  then
-			detected, angle2, border = AutoSteeringEngine.processChain( veh, AIVEGlobals.smoothMax )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh )
 		else
 			detected = false
 			border   = 1
@@ -1503,7 +1503,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			if     fruitsDetected
 					or ( math.abs( turnAngle ) >= 170 
 					 and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 ) then
-				detected, angle2, border = AutoSteeringEngine.processChain( veh, -1 )
+				detected, angle2, border = AutoSteeringEngine.processChain( veh )
 			else
 				detected = false
 				border   = 1
@@ -1698,20 +1698,23 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 -- turn 90°
 	elseif turnData.stage == 89 then		
 
-		detected, angle2, border = AutoSteeringEngine.processChain( veh, nil, false, false, 1 )
+		detected, angle2, border = AutoSteeringEngine.processChain( veh )
 		inactive = true
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh );
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 
 		if     border    > 0 then
 			-- giving up
-			turnData.stage   = 93
-			veh.turnTimer     = veh.acDeltaTimeoutRun;
-			veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
-			angle = 0
+			if veh.turnTimer < 0 then
+				turnData.stage   = 93
+				veh.turnTimer     = veh.acDeltaTimeoutRun;
+				veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
+			end
+			angle  = veh.acDimensions.maxSteeringAngle
 			angle2 = nil
 		elseif not detected then
 			-- hmm, nothing found
+			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
 			angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )		
 			angle2 = nil
 		elseif turnAngle > 90 - angleOffset or math.abs( x ) > turn75.radius then		
@@ -1720,6 +1723,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
 		else
 			-- great!
+			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
 			angle = nil
 		end
 		
@@ -1880,7 +1884,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		end
 		
 		local a2
-		detected, a2, border = AutoSteeringEngine.processChain( veh, AIVEGlobals.smoothMax )
+		detected, a2, border = AutoSteeringEngine.processChain( veh )
 		if not veh.acParameters.leftAreaActive then
 			a2 = -a2
 		end
@@ -1916,10 +1920,11 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		veh:acDebugPrint( "T97: "..AutoSteeringEngine.degToString( turnAngle ).." "..AutoSteeringEngine.radToString( ta ).." "..AutoSteeringEngine.radToString( a2 ).." "..AutoSteeringEngine.degToString( target ).." "..string.format("%2.3fm %2.3fm / %2.3fm", x, z, -veh.acDimensions.toolDistance) )
 		
 		if      x < -veh.acDimensions.toolDistance 
-				and ( detected or border <= 0 or x < -15 ) 
+				and ( border <= 0 or x < -15 ) 
 			--and a2 <= 0
 			--and turnAngle <= 90
-				and not fruitsDetected then				
+				and not fruitsDetected 
+				and not AutoSteeringEngine.hasLeftFruits( veh ) then
 			if veh.turnTimer < 0 then
 				turnData.stage = -1
 				veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
