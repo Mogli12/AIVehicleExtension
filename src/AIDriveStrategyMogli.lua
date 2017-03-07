@@ -285,9 +285,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		veh.turnTimer = 0
 	end
 		
+	veh.aiSteeringSpeed = veh.acSteeringSpeed
+	
 	local resetState = false 
 	if self.activeTurnStrategy ~= nil then
-		veh.aiSteeringSpeed = veh.acSteeringSpeed
 		local tX, tZ, moveForwards, maxSpeed, distanceToStop = self.activeTurnStrategy:getDriveData(dt, vX,vY,vZ, self.turnData)
 		if tX == nil then
 			for _,turnStrategy in pairs(self.turnStrategies) do
@@ -296,6 +297,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			self.activeTurnStrategy = nil
 			veh.turnTimer		   = veh.acDeltaTimeoutRun
 			veh.acFullAngle    = true
+			veh.aiRescueTimer  = math.max( veh.aiRescueTimer, veh.acDeltaTimeoutStop )
 			
 			if self.search == nil then
 				self.search = AIDriveStrategyMogli.searchCircle
@@ -316,7 +318,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		end		
 	end
 	
-	veh.acTurnStage = 0
+	if self.search == nil then
+		veh.acTurnStage = 0
+	else
+		veh.acTurnStage = -self.search 
+	end
 		
 	local tX, tZ, maxSpeed, distanceToStop = nil, nil, 0, 0			
 
@@ -526,7 +532,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			isInField = false
 		end
 		AIVehicleExtension.checkState( veh, true )
-	--AutoSteeringEngine.initFruitBuffer( veh )
+		AutoSteeringEngine.initFruitBuffer( veh, true )
 		detected, angle2, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( veh, isInField )
 		
 		absAngle = angle2 
@@ -905,7 +911,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
 		elseif veh.acFullAngle then
 			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
-		elseif not fruitsAll or AutoSteeringEngine.getIsAtEnd( veh ) then
+		elseif AutoSteeringEngine.getIsAtEnd( veh ) then
+			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
+	--elseif not fruitsAll then
+		elseif not fruitsDetected then
 			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
 		elseif AutoSteeringEngine.isBeforeStartNode( veh ) then
 			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
@@ -926,7 +935,6 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 --==============================================================				
 	end
 	
-	veh.aiSteeringSpeed = veh.acSteeringSpeed
 	local smooth = nil
 	if angle ~= nil then
 		if not veh.acParameters.leftAreaActive then

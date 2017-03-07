@@ -2338,6 +2338,8 @@ function AIVehicleExtension:afterSetDriveStrategies()
 		end
 				
 		AutoSteeringEngine.initFruitBuffer( self )
+		self.aiRescueTimer = self.acDeltaTimeoutStop;
+		self.hasStopped    = true
 	else
 		self.aiveIsStarted = false
 	end
@@ -2376,7 +2378,9 @@ AIVehicle.canStartAIVehicle = Utils.overwrittenFunction( AIVehicle.canStartAIVeh
 function AIVehicleExtension:newDriveToPoint( superFunc, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer )
 
 	if     self.acParameters == nil 
-			or not self.acParameters.enabled then
+			or not self.acParameters.enabled
+		--or self.acTurnStage ~= 0 
+			then
 		superFunc( self, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer )
 	end
 	
@@ -2414,12 +2418,17 @@ function AIVehicleExtension:newDriveToPoint( superFunc, dt, acceleration, allowe
 				else
 					self.rotatedTime = math.max(self.rotatedTime - dt*self.aiSteeringSpeed, targetRotTime)
 				end
-
-				if maxSpeed > 4 then
+				
+				local minSpeed = 0.01
+				if self.acTurnStage <= 0 then
+					minSpeed = 5
+				end
+				
+				if maxSpeed > minSpeed then
 					-- adjust maxSpeed
 					local steerDiff = targetRotTime - self.rotatedTime
 					local fac = math.abs(steerDiff) / math.max(self.maxRotTime, -self.minRotTime)
-					maxSpeed = math.max( 4, maxSpeed * ( 1.0 - math.pow(fac,0.25)))
+					maxSpeed = math.max( minSpeed, maxSpeed * ( 1.0 - math.pow(fac,0.25)))
 				end
 			end
 		end
@@ -2431,6 +2440,12 @@ function AIVehicleExtension:newDriveToPoint( superFunc, dt, acceleration, allowe
 
 		if not allowedToDrive then
 			acceleration = 0
+	--elseif self.acTurnStage > 0 then
+	--	--keep it
+	--elseif acceleration > 0 then
+	--	acceleration = 1
+	--elseif acceleration < 0 then
+	--	acceleration = -1
 		end
 		if not moveForwards then
 			acceleration = -acceleration
@@ -2450,4 +2465,4 @@ function AIVehicleExtension:newDriveToPoint( superFunc, dt, acceleration, allowe
 	end
 end
 
-AIVehicleUtil.driveToPoint = Utils.overwrittenFunction( AIVehicleUtil.driveToPoint, AIVehicleExtension.newDriveToPoint )
+--AIVehicleUtil.driveToPoint = Utils.overwrittenFunction( AIVehicleUtil.driveToPoint, AIVehicleExtension.newDriveToPoint )

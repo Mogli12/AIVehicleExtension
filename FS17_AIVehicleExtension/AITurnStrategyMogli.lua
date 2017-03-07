@@ -217,6 +217,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 		self.stageId     = self.stageId + 1		
 		self.activeStage = self:getNextStage( dt, vX,vY,vZ, turnData, self.stageId )
 		vehicle.acTurnStage = self.stageId
+		vehicle.aiRescueTimer = math.max( vehicle.aiRescueTimer, vehicle.acDeltaTimeoutStop )
 			
 		if AIVEGlobals.devFeatures > 0 then
 			self:addDebugText("going to stage "..tostring(self.stageId))

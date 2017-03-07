@@ -64,6 +64,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	if self.lastTurnStage == nil or self.lastTurnStage ~= turnData.stage then
 		self.lastTurnStage = turnData.stage
 		self.turnStageData = nil
+		veh.aiRescueTimer = math.max( veh.aiRescueTimer, veh.acDeltaTimeoutStop )
 	end
 	
 	local tX, tZ, moveForwards, distanceToStop, inactive, noLower = nil, nil, true, math.huge, false, nil
@@ -173,7 +174,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	local offsetOutside;
 	local noReverseIndex = 0;
 	local angleOffset = 6;
-	local angleOffsetStrict = 4;
+	local angleOffsetStrict = 3;
 	local stoppingDist = 0.5;
 	local turn2Outside = veh.acTurn2Outside;
 --==============================================================		
@@ -1113,33 +1114,38 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		end
 
 --==============================================================				
--- move backwards (90°)	I	
+-- move forwards (90°)	I	
 	elseif turnData.stage == 53 then		
 		angle = veh.acDimensions.maxSteeringAngle;
 		
+	--allowedToDrive = AIVehicleExtension.stopWaiting( veh, angle )			
+		
 		if turnAngle < -90+angleOffset then			
-			angle                = math.min( math.max( 3 * math.rad( turnAngle + 90 ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
+			angle               = 0 --math.min( math.max( 3 * math.rad( turnAngle + 90 ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
 			veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
-			turnData.stage     = turnData.stage + 1;					
+			turnData.stage      = turnData.stage + 1;					
 		end
 --==============================================================				
--- move backwards (0°) II
+-- move forwards (0°) II
 	elseif turnData.stage == 54 then		
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 		if not veh.acParameters.leftAreaActive then x = -x end
 
-		angle = math.min( math.max( 3 * math.rad( turnAngle + 90 ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
+	--angle = math.min( math.max( -math.rad( turnAngle + 90 ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
+		angle = 0
+	--allowedToDrive = AIVehicleExtension.stopWaiting( veh, angle )			
 		
-	--if x > - stoppingDist then
-		if x > 0 then
+		if x > -stoppingDist then
 			angle                = veh.acDimensions.maxSteeringAngle;
 			veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
 			turnData.stage     = turnData.stage + 1;					
 		end
 --==============================================================				
--- move backwards (90°) III
+-- move forwards (30°) III
 	elseif turnData.stage == 55 then		
 		angle = veh.acDimensions.maxSteeringAngle;
+
+	--allowedToDrive = AIVehicleExtension.stopWaiting( veh, angle )			
 		
 		if turnAngle < -120+angleOffset then
 			turnData.stage   = turnData.stage + 1;					
@@ -1148,11 +1154,14 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 --==============================================================				
 -- wait
 	elseif turnData.stage == 56 then
-		allowedToDrive = false;						
 		moveForwards = false;					
-		angle = -veh.acDimensions.maxSteeringAngle;
+		angle = 0
+		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
+		if not veh.acParameters.leftAreaActive then x = -x end
 		
-		if veh.turnTimer < 0 or AIVehicleExtension.stopWaiting( veh, angle ) then
+		print("T56: "..AutoSteeringEngine.posToString(x))
+		
+		if x + x < veh.acDimensions.radius then
 			turnData.stage   = turnData.stage + 1;					
 			veh.turnTimer     = veh.acDeltaTimeoutStop;
 			veh.acMinDetected = nil
