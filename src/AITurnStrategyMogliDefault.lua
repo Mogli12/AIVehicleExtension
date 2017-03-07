@@ -1159,7 +1159,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 		if not veh.acParameters.leftAreaActive then x = -x end
 		
-		print("T56: "..AutoSteeringEngine.posToString(x))
+		veh:acDebugPrint("T56: "..AutoSteeringEngine.posToString(x))
 		
 		if x + x < veh.acDimensions.radius then
 			turnData.stage   = turnData.stage + 1;					
