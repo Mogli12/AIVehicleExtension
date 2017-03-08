@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+	<GuiElement type="bitmap" profile="backgroundImageIngame" />
+
+
+	<GuiElement type="bitmap" profile="uiElementBg">
+		<GuiElement type="bitmap" profile="uiElementMainBg" >
+			<GuiElement type="bitmap" profile="uiElementBaseHeader">
+				<GuiElement type="text" profile="headerText" text="$l10n_AUTO_TRACTOR_VERSION" />
+			</GuiElement>
+
+			<GuiElement type="boxLayout" profile="settingsBox" position="20px 550px">
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="enabled" onCreate="onCreateSubElement" toolTip="$l10n_AUTO_TRACTOR_VERSION" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text" profile="multiTextOptionText" />
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_VERSION"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="rightAreaActive" onCreate="onCreateSubElement" onCreateArgs="rightLeft" toolTip="$l10n_AUTO_TRACTOR_STEERING" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text" profile="multiTextOptionText" />
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_STEERING"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="headland" onCreate="onCreateSubElement" onCreateArgs="headland" toolTip="$l10n_AUTO_TRACTOR_HEADLAND" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text"   profile="multiTextOptionText" />
+					<GuiElement type="text"   profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_HEADLAND"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="noSteering" onCreate="onCreateSubElement" onCreateArgs="inverted" toolTip="$l10n_AUTO_TRACTOR_STEERING" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text" profile="multiTextOptionText" />
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_STEERING"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="inverted" onCreate="onCreateSubElement" toolTip="$l10n_AUTO_TRACTOR_INVERTED_ON" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text" profile="multiTextOptionText" />
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_INVERTED_ON"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="collision" onCreate="onCreateSubElement" toolTip="$l10n_AUTO_TRACTOR_COLLISION_ON" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text" profile="multiTextOptionText" />
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_COLLISION_ON"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+			</GuiElement>
+
+			<GuiElement type="boxLayout" profile="settingsBox" position="347px 550px">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="widthOffset" onCreate="onCreateSubElement" onCreateArgs="distance_2_0125" toolTip="$l10n_AUTO_TRACTOR_WIDTH_OFFSET" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text"   profile="multiTextOptionText" />
+					<GuiElement type="text"   profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_WIDTH_OFFSET"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnOffset" onCreate="onCreateSubElement" onCreateArgs="distance" toolTip="$l10n_AUTO_TRACTOR_TURN_OFFSET" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text"   profile="multiTextOptionText" />
+					<GuiElement type="text"   profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_TURN_OFFSET"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="angleFactor" onCreate="onCreateSubElement" onCreateArgs="percent5" toolTip="$l10n_AUTO_TRACTOR_ANGLE_OFFSET" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text"   profile="multiTextOptionText" />
+					<GuiElement type="text"   profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_ANGLE_OFFSET"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+			</GuiElement>
+
+			<GuiElement type="boxLayout" profile="settingsBox" position="675px 550px">
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="acShowTrace" onCreate="onCreateSubElement" toolTip="$l10n_AUTO_TRACTOR_TRACE" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text" profile="multiTextOptionText" />
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_TRACE"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+			</GuiElement>
+
+			<GuiElement type="flowLayout" profile="buttonBox" id="buttonsPC" >
+				<GuiElement type="button" profile="buttonBack"   size="499px 40px" text="$l10n_button_back"  onClick="onClickBack" focusId="100" focusChangeTop="19" focusChangeRight="101" focusChangeBottom="101" focusInit="onOpen"/>
+				<GuiElement type="button" profile="buttonOK"     size="500px 40px" text="$l10n_button_ok"    onClick="onClickOk"   focusId="101" focusChangeTop="100" focusChangeLeft="100" focusChangeBottom="1"/>
+			</GuiElement>
+		</GuiElement>
+	</GuiElement>
+</GUI>

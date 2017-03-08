@@ -1094,7 +1094,7 @@ function AutoSteeringEngine.addToolsRec( vehicle, obj )
 					end
 				end
 				if not found then
-					AutoSteeringEngine.addTool( vehicle,implement )
+					AutoSteeringEngine.addTool( vehicle, implement )
 				end
 				AutoSteeringEngine.addToolsRec( vehicle, implement.object )
 			end
@@ -1114,16 +1114,13 @@ function AutoSteeringEngine.checkTools1( vehicle, reset )
 		vehicle.aiveChain.lastBestAngle  = nil
 		vehicle.aiveChain.savedAngles    = nil
 		vehicle.aiveChain.angleBuffer    = nil	
+		vehicle.aiveChain.tools          = {}
 		
 		for _,implement in pairs(vehicle.aiImplementList) do
 			AutoSteeringEngine.addTool(vehicle,implement)
 		end
 		
 		AutoSteeringEngine.addToolsRec( vehicle, vehicle )
-
-		if vehicle.aiveChain.tools == nil then
-			vehicle.aiveChain.tools = {}
-		end
 		
 		for _,tool in pairs(vehicle.aiveChain.tools) do
 			if     ( tool.isPlough        and vehicle.aiveHas.cultivator )

@@ -3,6 +3,8 @@ AIVehicleExtensionRegister = {};
 AIVehicleExtensionRegister.isLoaded = true;
 AIVehicleExtensionRegister.g_currentModDirectory = g_currentModDirectory;
 
+source(Utils.getFilename("AIVEScreen.lua", g_currentModDirectory));
+
 if SpecializationUtil.specializations["AIVehicleExtension"] == nil then
 	SpecializationUtil.registerSpecialization("AIVehicleExtension", "AIVehicleExtension", g_currentModDirectory.."AIVehicleExtension.lua")
 	AIVehicleExtensionRegister.isLoaded = false;
@@ -16,105 +18,21 @@ function AIVehicleExtensionRegister:loadMap(name)
 			g_careerScreen.saveSavegame = Utils.appendedFunction(g_careerScreen.saveSavegame, AIVehicleExtensionRegister.saveSavegame);
 		end
   end;	
+	
+	-- GUI Stuff
+	g_AIVEScreen = AIVEScreen:new();
+	g_gui:loadGui(AIVehicleExtensionRegister.g_currentModDirectory .. "gui/AIVEScreen.xml", "AIVEScreen", g_AIVEScreen);	
 end;
 
 function AIVehicleExtensionRegister:saveSavegame( savegame )
-	local dir = g_currentMission.missionInfo.savegameDirectory	
---	local bvm = createBitVectorMap("FieldOwnership")
---
---	loadBitVectorMapNew(bvm, 2048, 2048, 2, true)
---	setBitVectorMapParallelogram(bvm, 70, 20, 30, 40, 50, 60, 0, 2, 1)
---	setBitVectorMapParallelogram(bvm, 10, 20, 30, 40, 50, 60, 0, 1, 1)
---	setBitVectorMapParallelogram(bvm, 10, 20, 30, 40, 50, 60, 1, 1, 1)
---	
---	saveBitVectorMapToFile(bvm, dir .. "/" .. "bvm.grle")
 end
 
 function AIVehicleExtensionRegister:loadSavegame()
-	local dir = g_currentMission.missionInfo.savegameDirectory	
---	local bvm = createBitVectorMap("FieldOwnership")
---
---	local cb     = {}
---	cb.fileFound = false
---	cb.filename  = "bvm.grle"
---	cb.getFilesCallback = function( self, filename )
---		if filename == self.filename then
---			self.fileFound = true
---		end
---	end
---	
---	getFiles(dir, "getFilesCallback", cb);	
---	
---	if cb.fileFound then
---		loadBitVectorMapFromFile(bvm, dir .. "/" .. "bvm.grle")
---		print("BVM loaded ")
---
---		local value
---		value = getBitVectorMapNumChannels( bvm )
---		print(tostring(value).." "..type(value))
---		local w, h = getBitVectorMapSize( bvm )
---		print(tostring(w).." "..tostring(h))
---		value = getBitVectorMapParallelogram( bvm, 70, 20, 30, 40, 50, 60, 0, 2 )				
---		print(tostring(value).." "..type(value))
---		value = getBitVectorMapParallelogram( bvm, 10, 20, 30, 40, 50, 60, 0, 2 )				
---		print(tostring(value).." "..type(value))
---		value = getBitVectorMapParallelogram( bvm, 10, 20, 30, 40, 50, 60, 0, 1 )				
---		print(tostring(value).." "..type(value))
---		value = getBitVectorMapParallelogram( bvm, 10, 20, 30, 40, 50, 60, 1, 1 )				
---		print(tostring(value).." "..type(value))
---		value = getBitVectorMapPoint( bvm, 11, 21, 0, 2 )				
---		print(tostring(value).." "..type(value))
---		value = getBitVectorMapPoint( bvm, 11, 21, 0, 1 )				
---		print(tostring(value).." "..type(value))
---		value = getBitVectorMapPoint( bvm, 11, 21, 1, 1 )				
---		print(tostring(value).." "..type(value))
---		print("BVM loaded ")
---	else
---		print("BVM not loaded")
---	end
---
---	local bvm2 = createBitVectorMap("FieldOwnership")
---	loadBitVectorMapNew(bvm2, 2048, 2048, 1, true)
---
---	local x = 5
---	local a,b,c = getBitVectorMapParallelogram( bvm2, x-1, 4, 2, 0, 0, 4, 0, 1 )				
---		print(" 0 "..tostring(a).." "..tostring(b).." "..tostring(c))
---		
---		value = getBitVectorMapPoint( bvm2, x, 5, 0, 1 )				
---		print(" A "..tostring(value))
---
---		setBitVectorMapParallelogram(bvm2, x, 5, 1, 0, 0, 1, 0, 1, 1)
---		value = getBitVectorMapPoint( bvm2, x, 5, 0, 1 )				
---		print(" A "..tostring(value))
---		value = getBitVectorMapPoint( bvm2, x+1, 5, 0, 1 )				
---		print(" A "..tostring(value))
---		value = getBitVectorMapPoint( bvm2, x-1, 5, 0, 1 )				
---		print(" A "..tostring(value))
---		value = getBitVectorMapPoint( bvm2, x+2, 7, 0, 1 )				
---		print(" A "..tostring(value))
---		value = getBitVectorMapPoint( bvm2, x-1, 4, 0, 1 )				
---		print(" A "..tostring(value))
---		value = getBitVectorMapParallelogram( bvm2, x-1, 4, 2, 0, 0, 2, 0, 1 )				
---		print(" B "..tostring(value))
---
---		setBitVectorMapParallelogram(bvm2, x-1, 7, 2, 0, 0, 2, 0, 1, 1)
---		value = getBitVectorMapPoint( bvm2, x, 8, 0, 1 )				
---		print(" C "..tostring(value))
---		value = getBitVectorMapPoint( bvm2, x+1, 9, 0, 1 )				
---		print(" C "..tostring(value))
---		value = getBitVectorMapPoint( bvm2, x+2, 10, 0, 1 )				
---		print(" C "..tostring(value))
---		value = getBitVectorMapPoint( bvm2, x+3, 11, 0, 1 )				
---		print(" C "..tostring(value))
---		value = getBitVectorMapParallelogram( bvm2, x-1, 7, 2, 0, 0, 2, 0, 1 )				
---		print(" D "..tostring(value))
 end
 
 function AIVehicleExtensionRegister:deleteMap()
   --AIVehicleExtensionRegister.isLoaded = false;
-	if MogliButton ~= nil then
-		MogliButton.onDeleteMap()
-	end
+	g_AIVEScreen:delete()
 end;
 
 function AIVehicleExtensionRegister:mouseEvent(posX, posY, isDown, isUp, button)
@@ -154,14 +72,14 @@ function AIVehicleExtensionRegister:add()
 			end;
 		end;
 		
-		--for i = 1, table.maxn(v.specializations) do
-		--	local vs = v.specializations[i];
-		--	if      vs ~= nil 
-		--			and vs == SpecializationUtil.getSpecialization("articulatedAxis") then
-		--		doNotAdd = false;
-		--		break;
-		--	end;
-		--end;
+		for i = 1, table.maxn(v.specializations) do
+			local vs = v.specializations[i];
+			if      vs ~= nil 
+					and vs == SpecializationUtil.getSpecialization("articulatedAxis") then
+				doNotAdd = false;
+				break;
+			end;
+		end;
 		
 		for i = 1, table.maxn(v.specializations) do
 			local vs = v.specializations[i];
@@ -188,13 +106,6 @@ function AIVehicleExtensionRegister:add()
 		if doNotAdd and correctLocation then
 			table.insert(v.specializations, SpecializationUtil.getSpecialization("AIVehicleExtension"));
 		  print("  AIVehicleExtension was inserted on " .. k);
-	--elseif doNotAdd and ( specMask == 28 or specMask == 30 ) then
-	--	if specMask == 28 then
-	--		table.insert(v.specializations, SpecializationUtil.getSpecialization("hirable"));
-	--	end
-	--	table.insert(v.specializations, SpecializationUtil.getSpecialization("aiVehicle"));
-	--	table.insert(v.specializations, SpecializationUtil.getSpecialization("AIVehicleExtension"));
-	--  print("  AIVehicleExtension was inserted on " .. k);
 		elseif correctLocation and not doNotAdd then
 			print("  Failed to inserting AIVehicleExtension on " .. k);
 		end;
@@ -261,6 +172,8 @@ function AIVehicleExtensionRegister:add()
 	
 	g_i18n.globalI18N.texts["AUTO_TRACTOR_START_AIVE"]               = g_i18n:getText("AUTO_TRACTOR_START_AIVE"); 
 	
+
+	g_i18n.globalI18N.texts["AUTO_TRACTOR_STEERING"]                 = g_i18n:getText("AUTO_TRACTOR_STEERING");
 end;
 
 addModEventListener(AIVehicleExtensionRegister);
