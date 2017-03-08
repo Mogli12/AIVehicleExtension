@@ -1683,7 +1683,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 	--if veh.acDimensions.zBack > 0 then
 		if veh.aiveHas.combineVehicle then
-			local dist   = turn75.radius + 1
+			local dist   = turn75.radius
 			if -z > dist then				
 				AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)		
 				inactive          = true
@@ -1707,37 +1707,53 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 -- turn 90°
 	elseif turnData.stage == 89 then		
 
-		detected, angle2, border = AutoSteeringEngine.processChain( veh )
-		inactive = true
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh );
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 
-		if     border    > 0 then
-			-- giving up
-			if veh.turnTimer < 0 then
-				turnData.stage   = 93
-				veh.turnTimer     = veh.acDeltaTimeoutRun;
-				veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
-			end
-			angle  = veh.acDimensions.maxSteeringAngle
-			angle2 = nil
-		elseif not detected then
-			-- hmm, nothing found
-			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
-			angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )		
-			angle2 = nil
-		elseif turnAngle > 90 - angleOffset or math.abs( x ) > turn75.radius then		
-			-- this is far enough 
-			turnData.stage      = -1
-			veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
+		local radius = turn75.radius
+		
+		local alpha
+		if veh.acDimensions.distance > radius then
+			alpha = 45
 		else
-			-- great!
-			veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
-			angle = nil
+			alpha  = math.deg( math.atan2( veh.acDimensions.distance, radius ) )
+		end
+		
+		if math.abs( turnAngle ) < alpha - angleOffsetStrict then
+			-- do not detect until we turned far enough 
+			angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )		
+		else
+			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			inactive = true
+
+			if     border    > 0 then
+				-- giving up
+				if veh.turnTimer < 0 then
+					turnData.stage   = 93
+					veh.turnTimer     = veh.acDeltaTimeoutRun;
+					veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
+				end
+				angle  = veh.acDimensions.maxSteeringAngle
+				angle2 = nil
+			elseif not detected then
+				-- hmm, nothing found
+				veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
+				angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )		
+				angle2 = nil
+			elseif turnAngle > 90 - angleOffset or math.abs( x ) > turn75.radius then		
+				-- this is far enough 
+				turnData.stage      = -1
+				veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
+			else
+				-- great!
+				veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
+				angle = nil
+			end
 		end
 		
 		veh:acDebugPrint("T89: "..AutoSteeringEngine.degToString( turnAngle )
 						.." "..AutoSteeringEngine.radToString(angle2)
+						.." "..AutoSteeringEngine.degToString(alpha)
 						.." "..tostring(turnData.stage)
 						.." "..tostring(detected)
 						.." "..tostring(border))

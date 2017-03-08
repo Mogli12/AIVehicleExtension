@@ -518,7 +518,23 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		isInField = true
 	end
 	
-	detected, angle2, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( veh, isInField )
+	if math.abs( veh.acAxisSide ) > 0.1 then
+		detected   = false
+		border     = 0
+		angle2     = 0
+		tX         = nil
+		tZ         = nil
+		dist       = math.huge
+		speedLevel = 4
+		
+		veh.turnTimer = veh.turnTimer + dt;
+		veh.waitForTurnTime = veh.waitForTurnTime + dt;
+		if veh.acTurnStage <= 0 then
+			veh.aiRescueTimer = veh.aiRescueTimer + dt;
+		end			
+	else
+		detected, angle2, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( veh, isInField )
+	end
 	
 	local absAngle = angle2 
 	if not veh.acParameters.leftAreaActive then
@@ -936,7 +952,35 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	end
 	
 	local smooth = nil
-	if angle ~= nil then
+	if math.abs( veh.acAxisSide ) > 0.1 then
+		absAngle = veh.acLastAbsAngle
+		local a  = 0
+		
+		if     veh.acAxisSide <= -0.999 then
+			a =  veh.acDimensions.maxSteeringAngle
+  		smooth = 0.05
+		elseif veh.acAxisSide >=  0.999 then
+			a = -veh.acDimensions.maxSteeringAngle
+  		smooth = 0.05
+		else
+			local midAngle = veh.acLastAbsAngle
+			if not veh.acParameters.leftAreaActive then
+				midAngle = -midAngle
+			end
+			
+			local f = -veh.acAxisSide
+			local a = midAngle 
+			
+			if f < 0 then
+				a = midAngle + f * ( veh.acDimensions.maxSteeringAngle + midAngle )
+			else
+				a = midAngle + f * ( veh.acDimensions.maxSteeringAngle - midAngle )
+			end
+		end
+		
+		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, a )
+
+	elseif angle ~= nil then
 		if not veh.acParameters.leftAreaActive then
 			angle = -angle 
 		end
@@ -1001,7 +1045,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		end
 	end
 	
-	if self.search ~= nil and self.search == AIDriveStrategyMogli.searchStart then
+	if math.abs( veh.acAxisSide ) > 0.1 then
+		AIVehicleExtension.setStatus( veh, 2 )
+	elseif self.search ~= nil and self.search == AIDriveStrategyMogli.searchStart then
 		if detected then
 			AIVehicleExtension.setStatus( veh, 2 ) 
 		else

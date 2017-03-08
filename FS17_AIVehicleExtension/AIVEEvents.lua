@@ -184,7 +184,8 @@ function AIVehicleExtension:setInt32Value( name, value, noEventSend )
 		else
 			immediate = false
 		end
-		
+	elseif name == "axisSide" then
+		self.acAxisSide = 1e-6 * ( value - 1e6 )
 	end
 end
 
