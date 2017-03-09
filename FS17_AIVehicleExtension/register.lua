@@ -112,68 +112,11 @@ function AIVehicleExtensionRegister:add()
 	end;
 	
 	-- make l10n global 
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_VERSION"]                  = g_i18n:getText("AUTO_TRACTOR_VERSION");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_START"]                    = g_i18n:getText("AUTO_TRACTOR_START");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_STOP"]                     = g_i18n:getText("AUTO_TRACTOR_STOP");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_WORKWIDTH"]                = g_i18n:getText("AUTO_TRACTOR_WORKWIDTH");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_ACTIVESIDELEFT"]           = g_i18n:getText("AUTO_TRACTOR_ACTIVESIDELEFT");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_ACTIVESIDERIGHT"]          = g_i18n:getText("AUTO_TRACTOR_ACTIVESIDERIGHT");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_STEERING_ON"]              = g_i18n:getText("AUTO_TRACTOR_STEERING_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_STEERING_OFF"]             = g_i18n:getText("AUTO_TRACTOR_STEERING_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_CONTINUE"]                 = g_i18n:getText("AUTO_TRACTOR_CONTINUE");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_WAITMODE_ON"]              = g_i18n:getText("AUTO_TRACTOR_WAITMODE_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_WAITMODE_OFF"]             = g_i18n:getText("AUTO_TRACTOR_WAITMODE_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON"]  = g_i18n:getText("AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF"] = g_i18n:getText("AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TEXTHELPPANELOFF"]         = g_i18n:getText("AUTO_TRACTOR_TEXTHELPPANELOFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TEXTHELPPANELON"]          = g_i18n:getText("AUTO_TRACTOR_TEXTHELPPANELON");
---g_i18n.globalI18N.texts["AUTO_TRACTOR_STARTSTOP"]                = g_i18n:getText("AUTO_TRACTOR_STARTSTOP");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_COLLISION_OTHER"]          = g_i18n:getText("AUTO_TRACTOR_COLLISION_OTHER");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_COLLISION_BACK"]           = g_i18n:getText("AUTO_TRACTOR_COLLISION_BACK");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_UTURN_ON"]                 = g_i18n:getText("AUTO_TRACTOR_UTURN_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_UTURN_OFF"]                = g_i18n:getText("AUTO_TRACTOR_UTURN_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_REVERSE_ON"]               = g_i18n:getText("AUTO_TRACTOR_REVERSE_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_REVERSE_OFF"]              = g_i18n:getText("AUTO_TRACTOR_REVERSE_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_INVERTED_ON"]              = g_i18n:getText("AUTO_TRACTOR_INVERTED_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_INVERTED_OFF"]             = g_i18n:getText("AUTO_TRACTOR_INVERTED_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_WIDTH_OFFSET"]             = g_i18n:getText("AUTO_TRACTOR_WIDTH_OFFSET");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TURN_OFFSET"]              = g_i18n:getText("AUTO_TRACTOR_TURN_OFFSET");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_ANGLE_OFFSET"]             = g_i18n:getText("AUTO_TRACTOR_ANGLE_OFFSET");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_SAFETY_FACTOR"]            = g_i18n:getText("AUTO_TRACTOR_SAFETY_FACTOR");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_ERROR"]                    = g_i18n:getText("AUTO_TRACTOR_ERROR");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_NEXTTURNSTAGE"]            = g_i18n:getText("AUTO_TRACTOR_NEXTTURNSTAGE");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_CP_ON"]                    = g_i18n:getText("AUTO_TRACTOR_CP_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_CP_OFF"]                   = g_i18n:getText("AUTO_TRACTOR_CP_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_STEER_ON"]                 = g_i18n:getText("AUTO_TRACTOR_STEER_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_STEER_OFF"]                = g_i18n:getText("AUTO_TRACTOR_STEER_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_HEADLAND_ON"]              = g_i18n:getText("AUTO_TRACTOR_HEADLAND_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_HEADLAND_OFF"]             = g_i18n:getText("AUTO_TRACTOR_HEADLAND_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_FRONT_PACKER_ON"]          = g_i18n:getText("AUTO_TRACTOR_FRONT_PACKER_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_FRONT_PACKER_OFF"]         = g_i18n:getText("AUTO_TRACTOR_FRONT_PACKER_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_COLLISION_ON"]             = g_i18n:getText("AUTO_TRACTOR_COLLISION_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_COLLISION_OFF"]            = g_i18n:getText("AUTO_TRACTOR_COLLISION_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_HIRE_ON"]                  = g_i18n:getText("AUTO_TRACTOR_HIRE_ON");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_HIRE_OFF"]                 = g_i18n:getText("AUTO_TRACTOR_HIRE_OFF");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_HEADLAND"]                 = g_i18n:getText("AUTO_TRACTOR_HEADLAND");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TURN_MODE_O"]              = g_i18n:getText("AUTO_TRACTOR_TURN_MODE_O");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TURN_MODE_A"]              = g_i18n:getText("AUTO_TRACTOR_TURN_MODE_A");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TURN_MODE_Y"]              = g_i18n:getText("AUTO_TRACTOR_TURN_MODE_Y");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TURN_MODE_T"]              = g_i18n:getText("AUTO_TRACTOR_TURN_MODE_T");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TURN_MODE_C"]              = g_i18n:getText("AUTO_TRACTOR_TURN_MODE_C");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TURN_MODE_L"]              = g_i18n:getText("AUTO_TRACTOR_TURN_MODE_L");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TURN_MODE_K"]              = g_i18n:getText("AUTO_TRACTOR_TURN_MODE_K");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TURN_MODE_8"]              = g_i18n:getText("AUTO_TRACTOR_TURN_MODE_8");
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_PAUSE_ON"]                 = g_i18n:getText("AUTO_TRACTOR_PAUSE_ON");    
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_PAUSE_OFF"]                = g_i18n:getText("AUTO_TRACTOR_PAUSE_OFF");  
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_STEER_RAISE"]              = g_i18n:getText("AUTO_TRACTOR_STEER_RAISE"); 
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_STEER_LOWER"]              = g_i18n:getText("AUTO_TRACTOR_STEER_LOWER"); 
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_TRACE"]                    = g_i18n:getText("AUTO_TRACTOR_TRACE"); 
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_MAGIC"]                    = g_i18n:getText("AUTO_TRACTOR_MAGIC"); 
-	
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_START_AIVE"]               = g_i18n:getText("AUTO_TRACTOR_START_AIVE"); 
-	
-
-	g_i18n.globalI18N.texts["AUTO_TRACTOR_STEERING"]                 = g_i18n:getText("AUTO_TRACTOR_STEERING");
+	for n,t in pairs( g_i18n.texts ) do
+		if string.sub( n, 1, 12 ) == "AUTO_TRACTOR" then
+			g_i18n.globalI18N.texts[n] = t
+		end
+	end
 end;
 
 addModEventListener(AIVehicleExtensionRegister);

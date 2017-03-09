@@ -5,11 +5,14 @@
 
 	<texts>
 		<!--AutoTractor helpPanel text-->
+		<text name="AUTO_TRACTOR_SETTINGS"                 text="Helfereinstellungen" />
+		<text name="AUTO_TRACTOR_ENABLED"                  text="Alternativer Helfer" />
 		<text name="AUTO_TRACTOR_START"                    text="Alternativen Helfer einstellen" />
 		<text name="AUTO_TRACTOR_STOP"                     text="Alternativen Helfer entlassen" />
 		<text name="AUTO_TRACTOR_WORKWIDTH"                text="Arbeitsbreite:" />
-		<text name="AUTO_TRACTOR_ACTIVESIDELEFT"           text="Aktive Seite: LINKS" />
-		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT"          text="Aktive Seite: RECHTS" />		
+		<text name="AUTO_TRACTOR_ACTIVESIDE"          		 text="Aktive Seite" />
+		<text name="AUTO_TRACTOR_ACTIVESIDELEFT"           text="Links" />
+		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT"          text="Rechts" />		
 		
 		<text name="AUTO_TRACTOR_UTURN_ON_OFF"             text="AutoTractor-Modus wechseln"/>
 		<text name="AUTO_TRACTOR_STEERING"                 text="Manueller Lenkeingriff"/>
@@ -28,10 +31,11 @@
 		<!--AutoTractor inputbinding text-->
 		<text name="AUTO_TRACTOR_COLLISION_OTHER"          text="Kollision vorne" />
 		<text name="AUTO_TRACTOR_COLLISION_BACK"           text="Kollision hinten" />
-		<text name="AUTO_TRACTOR_UTURN_ON"                 text="AutoTractor-Modus [auf/ab]" />	
-		<text name="AUTO_TRACTOR_UTURN_OFF"                text="AutoTractor-Modus [Kreisfahrt]" />
+		<text name="AUTO_TRACTOR_UTURN_ON"                 text="auf/ab" />	
+		<text name="AUTO_TRACTOR_UTURN_OFF"                text="Kreisfahrt" />
 		<text name="AUTO_TRACTOR_REVERSE_ON"               text="Wendemodus [rückwärts]		" />	
 		<text name="AUTO_TRACTOR_REVERSE_OFF"              text="Wendemodus [vorwärts]" />
+		<text name="AUTO_TRACTOR_INVERTED"             		 text="Rückfahreinrichtung" />	
 		<text name="AUTO_TRACTOR_INVERTED_ON"              text="Arbeitsmodus [rückwärts]" />	
 		<text name="AUTO_TRACTOR_INVERTED_OFF"             text="Arbeitsmodus [vorwärts]" />
 		<text name="AUTO_TRACTOR_WIDTH_OFFSET"             text="Offset (Breite)" />	
@@ -53,16 +57,18 @@
 		<text name="AUTO_TRACTOR_HIRE_ON"                  text="Saatgutverbrauch [aus]" />
 		<text name="AUTO_TRACTOR_HIRE_OFF"                 text="Saatgutverbrauch [an]" />
 		<text name="AUTO_TRACTOR_HEADLAND"                 text="Vorgewende" />
-		<text name="AUTO_TRACTOR_TURN_MODE_O"              text="180° Wende ohne Rückwärts" />
-		<text name="AUTO_TRACTOR_TURN_MODE_A"              text="Kleine 180° Wende" />
+		<text name="AUTO_TRACTOR_TURN_MODE"                text="Form des Wendemanövers" />
+		<text name="AUTO_TRACTOR_TURN_MODE_O"              text="Wende in Form eines O" />
+		<text name="AUTO_TRACTOR_TURN_MODE_A"              text="Rückwärts mit Kurve" />
 		<text name="AUTO_TRACTOR_TURN_MODE_Y"              text="Mittlere 180° Wende" />
-		<text name="AUTO_TRACTOR_TURN_MODE_T"              text="Große 180° Wende" />
-		<text name="AUTO_TRACTOR_TURN_MODE_C"              text="90° Wende ohne Rückwärts" />
-		<text name="AUTO_TRACTOR_TURN_MODE_L"              text="Kleine 90° Wende" />
+		<text name="AUTO_TRACTOR_TURN_MODE_T"              text="Rückwärts nur gerade" />
+		<text name="AUTO_TRACTOR_TURN_MODE_C"              text="Wende in Form eines O" />
+		<text name="AUTO_TRACTOR_TURN_MODE_L"              text="Rückwärts mit Kurve" />
+		<text name="AUTO_TRACTOR_TURN_MODE_7"              text="Rückwärts nur gerade" />
 		<text name="AUTO_TRACTOR_TURN_MODE_K"              text="Große 90° Wende" />
-		<text name="AUTO_TRACTOR_TURN_MODE_8"              text="180° Wende ohne Rückwärts" />
-		<text name="AUTO_TRACTOR_PAUSE_ON"                 text="Pause [an]" />
-		<text name="AUTO_TRACTOR_PAUSE_OFF"                text="Pause [aus]" />
+		<text name="AUTO_TRACTOR_TURN_MODE_8"              text="Wende in Form einer Acht" />
+		<text name="AUTO_TRACTOR_PAUSE_ON"                 text="Weiterfahren" />
+		<text name="AUTO_TRACTOR_PAUSE_OFF"                text="Pause" />
 		<text name="AUTO_TRACTOR_STEER_RAISE"              text="Geräte hoch/aus" />
 		<text name="AUTO_TRACTOR_STEER_LOWER"              text="Geräte runter/an" />
 		<text name="AUTO_TRACTOR_TRACE"                    text="Spur anzeigen" />

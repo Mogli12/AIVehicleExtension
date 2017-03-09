@@ -24,59 +24,86 @@ function AIVEScreen:onOpen()
 		for name,s in pairs( self.aiveElements ) do
 			local element = s.element
 			
-			local struct 
-			if self.vehicle.acParameters[name] == nil then
-				struct = self.vehicle
-			else
+			local struct = nil 
+			local getter = nil
+			if type( AIVehicleExtension["getSettings"..name] ) == "function" then
+				getter = AIVehicleExtension["getSettings"..name]
+			elseif self.vehicle.acParameters[name] ~= nil then
 				struct = self.vehicle.acParameters
+			elseif self.vehicle.atHud[name]    ~= nil then
+				struct = self.vehicle.atHud 
+			else
+				struct = self.vehicle
 			end
 			
-			if     struct[name] == nil then
+			if     getter == nil and struct[name] == nil then
 				print("Invalid UI element ID: "..tostring(name))
-			elseif element:isa( ToggleButtonElement2 ) then
-				local b = struct[name]
-				if s.parameter then
-					b = not b
+			else
+				local value
+				if struct == nil then
+					value = getter( self.vehicle )
+				else
+					value = struct[name]
 				end
-				element:setIsChecked( b )
-			elseif element:isa( MultiTextOptionElement ) then
-				local i = 1
-				if     s.parameter == "percent10" then
-					i = math.floor( struct[name] * 10 + 0.5 )
-				elseif s.parameter == "percent5" then
-					i = math.floor( struct[name] * 20 + 0.5 )
-				elseif s.parameter == "distance_2_0125" then
-					i = math.floor( struct[name] * 8 + 17.5 )
-				elseif s.parameter == "distance" then
-					i = table.getn(AIVEScreen.Distance)
-					for j=1,i-1 do
-						local d2 = 0.5 * ( AIVEScreen.Distance[j] + AIVEScreen.Distance[j+1] )
-						if struct[name] < d2 then
-							i = j
-							break
+				
+				if     element:isa( ToggleButtonElement2 ) then
+					local b = value
+					if s.parameter then
+						b = not b
+					end
+					element:setIsChecked( b )
+				elseif element:isa( MultiTextOptionElement ) then
+					local i = 1
+					if     s.parameter == "percent10" then
+						i = math.floor( value * 10 + 0.5 )
+					elseif s.parameter == "percent5" then
+						i = math.floor( value * 20 + 0.5 )
+					elseif s.parameter == "distance_2_0125" then
+						i = math.floor( value * 8 + 17.5 )
+					elseif s.parameter == "distance" then
+						i = table.getn(AIVEScreen.Distance)
+						for j=1,i-1 do
+							local d2 = 0.5 * ( AIVEScreen.Distance[j] + AIVEScreen.Distance[j+1] )
+							if value < d2 then
+								i = j
+								break
+							end
 						end
-					end
-				elseif s.parameter == "headland" then
-					if not struct.headland then
-						i = 1
-					elseif not struct.bigHeadland then
-						i = 2
-					else
-						i = 3
-					end
+					elseif s.parameter == "headland" then
+						if not struct.headland then
+							i = 1
+						elseif not struct.bigHeadland then
+							i = 2
+						else
+							i = 3
+						end
+						
+						local s, b = AIVehicleExtension.getHeadlandSmallBig( self.vehicle )
+						
+						element:setTexts({ AIVEHud.getText("AUTO_TRACTOR_HEADLAND_ON"),
+															 AIVEHud.getText("AUTO_TRACTOR_HEADLAND")..string.format(" (%5.2fm)",s),
+															 AIVEHud.getText("AUTO_TRACTOR_HEADLAND")..string.format(" (%5.2fm)",b) })
+					elseif s.parameter == "turnModeIndex"  then
 					
-					element:setTexts({ AIVEHud.getText("AUTO_TRACTOR_HEADLAND_ON"),
-														 AIVEHud.getText("AUTO_TRACTOR_HEADLAND").." (-)",
-														 AIVEHud.getText("AUTO_TRACTOR_HEADLAND").." (+)" })
-				elseif s.parameter == "rightLeft" then
-					if struct[name] then
-						i = 2
-					else
-						i = 1
-					end
+						local c = AIVehicleExtension.getTurnIndexComp( self.vehicle )
+						i = struct[c]
+						
+						local texts = {}
+						for _,t in pairs( self.vehicle.acTurnModes ) do
+							table.insert( texts, AIVEHud.getText("AUTO_TRACTOR_TURN_MODE_"..t) )
+						end
+						element:setTexts( texts )
+						
+					elseif s.parameter == "rightLeft" then
+						if value then
+							i = 2
+						else
+							i = 1
+						end
+					end			
+					element:setState( i )
 				end			
-				element:setState( i )
-			end			
+			end
 		end
 	end
 	
@@ -90,42 +117,56 @@ function AIVEScreen:onClickOk()
 		for name,s in pairs( self.aiveElements ) do
 			local element = s.element
 			
-			local struct 
-			if self.vehicle.acParameters[name] == nil then
-				struct = self.vehicle
-			else
+			local struct = nil 
+			local setter = nil
+			if type( AIVehicleExtension["setSettings"..name] ) == "function" then
+				setter = AIVehicleExtension["setSettings"..name]
+			elseif self.vehicle.acParameters[name] ~= nil then
 				struct = self.vehicle.acParameters
+			elseif self.vehicle.atHud[name]    ~= nil then
+				struct = self.vehicle.atHud 
+			else
+				struct = self.vehicle
 			end
 			
-			if     struct[name] == nil then
+			if setter == nil and struct[name] == nil then
 				print("Invalid UI element ID: "..tostring(name))
-			elseif element:isa( ToggleButtonElement2 ) then
-				local b = element:getIsChecked()
-				if s.parameter then
-					b = not b
+			else
+				if setter == nil then
+					setter = function( vehicle, value ) struct[name] = value end
 				end
-				if name == "acShowTrace" then
-					self.vehicle.acShowTrace = b
-				else
-					struct[name] = b
+				
+				if     element:isa( ToggleButtonElement2 ) then
+					local b = element:getIsChecked()
+					if s.parameter then
+						b = not b
+					end
+					if name == "acShowTrace" then
+						self.vehicle.acShowTrace = b
+					else
+						setter( self.vehicle, b )
+					end
+				elseif element:isa( MultiTextOptionElement ) then
+					local i = element:getState()
+					if     s.parameter == "percent10" then
+						setter( self.vehicle, i / 10 )
+					elseif s.parameter == "percent5" then
+						setter( self.vehicle, i / 20 )
+					elseif s.parameter == "distance_2_0125" then
+						setter( self.vehicle, ( i - 17 ) / 8 )
+					elseif s.parameter == "distance" then
+						setter( self.vehicle, AIVEScreen.Distance[i] )
+					elseif s.parameter == "headland" then
+						struct.headland    = ( i > 1 )
+						struct.bigHeadland = ( i > 2 )
+					elseif s.parameter == "turnModeIndex"  then
+						local c = AIVehicleExtension.getTurnIndexComp( self.vehicle )
+						struct[c] = i
+					elseif s.parameter == "rightLeft" then					
+						struct.rightAreaActive = ( i ~= 1 )
+						struct.leftAreaActive	= ( i == 1 )
+					end			
 				end
-			elseif element:isa( MultiTextOptionElement ) then
-				local i = element:getState()
-				if     s.parameter == "percent10" then
-					struct[name] = i / 10
-				elseif s.parameter == "percent5" then
-					struct[name] = i / 20
-				elseif s.parameter == "distance_2_0125" then
-					struct[name] = ( i - 17 ) / 8
-				elseif s.parameter == "distance" then
-					struct[name] = AIVEScreen.Distance[i]
-				elseif s.parameter == "headland" then
-					struct.headland    = ( i > 1 )
-					struct.bigHeadland = ( i > 2 )
-				elseif s.parameter == "rightLeft" then					
-					struct.rightAreaActive = ( i ~= 1 )
-					struct.leftAreaActive	= ( i == 1 )
-				end			
 			end
 		end
 	end
@@ -204,6 +245,8 @@ function AIVEScreen:onCreateSubElement( element, parameter )
 			element:setTexts(texts)
 		elseif parameter == "headland" then
 			element:setTexts({"off","small","big"})
+		elseif parameter == "turnModeIndex" then
+			element:setTexts({"O"})
 		elseif parameter == "rightLeft" then
 			element:setTexts({ AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDELEFT"),  AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDERIGHT") })
 		else
