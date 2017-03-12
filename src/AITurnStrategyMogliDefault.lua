@@ -148,9 +148,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		offsetOutside = 1;
 	end;
 	
-	veh.turnTimer          = veh.turnTimer - dt;
-	veh.acFullAngle        = true
-	self.acHighPrec        = true
+	veh.turnTimer = veh.turnTimer - dt;
 
 --==============================================================				
 	

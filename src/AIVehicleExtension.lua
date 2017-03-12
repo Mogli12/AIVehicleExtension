@@ -159,7 +159,7 @@ function AIVehicleExtension:load(saveGame)
 	self.acSteeringSpeed      = self.aiSteeringSpeed
 	
 	self.acAutoRotateBackSpeedBackup = self.autoRotateBackSpeed;	
-
+	
 	local tempNode = self.aiVehicleDirectionNode;
 	if self.aiVehicleDirectionNode == nil then
 		tempNode = self.components[1].node
@@ -192,6 +192,54 @@ function AIVehicleExtension:load(saveGame)
 			end
 		end
 	end	
+	
+--self.acI3D = getChild(Utils.loadSharedI3DFile("AutoCombine.i3d", AtDirectory),"AutoCombine")	
+--self.acBackTrafficCollisionTrigger   = getChild(self.acI3D,"backCollisionTrigger")
+--self.acOtherCombineCollisionTriggerL = getChild(self.acI3D,"otherCombColliTriggerL")
+--self.acOtherCombineCollisionTriggerR = getChild(self.acI3D,"otherCombColliTriggerR")
+--self.acCollisionCounter = {}
+--self.acCollisionCounter[self.acBackTrafficCollisionTrigger]   = 0
+--self.acCollisionCounter[self.acOtherCombineCollisionTriggerL] = 0
+--self.acCollisionCounter[self.acOtherCombineCollisionTriggerR] = 0
+--self.acOnCollision = AIVehicleExtension.acOnCollision
+--
+--addTrigger( self.acBackTrafficCollisionTrigger  , "acOnCollision", self )
+--addTrigger( self.acOtherCombineCollisionTriggerL, "acOnCollision", self )
+--addTrigger( self.acOtherCombineCollisionTriggerR, "acOnCollision", self )
+--
+--link(self.acRefNode,self.acI3D)
+end
+
+------------------------------------------------------------------------
+-- acOnCollision
+------------------------------------------------------------------------
+function AIVehicleExtension:acOnCollision(triggerId, otherId, onEnter, onLeave, onStay, otherShapeId)
+	if onEnter or onLeave then
+		local count = false
+		if g_currentMission.players[otherId] ~= nil then
+			count = true
+		else
+			local vehicle = g_currentMission.nodeToVehicle[otherId]
+			if vehicle ~= nil then
+				if vehicle.specializations ~= nil and SpecializationUtil.hasSpecialization(Steerable, vehicle.specializations) then
+					count = true
+				elseif type( vehicle.getRootAttacherVehicle ) == "function" then
+					root  = vehicle:getRootAttacherVehicle()
+					if root ~= vehicle and root ~= self then
+						count = true
+					end
+				end
+			end
+		end
+		
+		if count then
+			if onEnter then
+				self.acCollisionCounter[triggerId] = self.acCollisionCounter[triggerId] + 1
+			elseif onLeave then
+				self.acCollisionCounter[triggerId] = math.max( 0, self.acCollisionCounter[triggerId] - 1 )
+			end
+		end
+	end
 end
 
 ------------------------------------------------------------------------
@@ -210,33 +258,36 @@ function AIVehicleExtension:initMogliHud()
 	end
 	
 	local mogliRows = 1
-	local mogliCols = 8
-	if AIVEGlobals.devFeatures > 0 then
-		mogliCols = mogliCols + 2
+	local mogliCols = 9
+	if AIVEGlobals.showTrace > 0 or AIVEGlobals.devFeatures > 0 then
+		mogliCols = mogliCols + 1
 	end
 	--(												directory,	 hudName, hudBackground, onTextID, offTextID, showHudKey, x,y, nx, ny, w, h, cbOnClick )
 	AIVEHud.init( self, AtDirectory, "AIVEHud", 0.4, "AUTO_TRACTOR_TEXTHELPPANELON", "AUTO_TRACTOR_TEXTHELPPANELOFF", InputBinding.AUTO_TRACTOR_HELPPANEL, 0.5-0.015*mogliCols, 0.0108, mogliCols, mogliRows, AIVehicleExtension.sendParameters )--, nil, nil, 0.8 )
 	AIVEHud.setTitle( self, "AUTO_TRACTOR_VERSION" )
 	
+	if AIVEGlobals.showTrace > 0 or AIVEGlobals.devFeatures > 0 then
+		AIVEHud.addButton(self, "dds/safety_ina.dds", nil, AIVehicleExtension.onToggleTrace, nil, mogliCols,1, "AUTO_TRACTOR_TRACE", nil );
+
 --if AIVEGlobals.devFeatures > 0 then
 --	AIVEHud.addButton(self, nil, nil, AIVehicleExtension.test1, nil, mogliCols-1,1, "Turn Outside");
 --	AIVEHud.addButton(self, nil, nil, AIVehicleExtension.test2, nil, mogliCols-1,2, "Turn Inside" );
 --	AIVEHud.addButton(self, nil, nil, AIVehicleExtension.test3, nil, mogliCols,  1, "Trace" );
 --	AIVEHud.addButton(self, nil, nil, AIVehicleExtension.test4, nil, mogliCols,  2, "Points" );
---end
+	end
 
 	AIVEHud.addButton(self, "dds/ai_combine.dds",     "dds/auto_combine.dds",  AIVehicleExtension.onEnable,      AIVehicleExtension.evalEnable,     1,1, "AUTO_TRACTOR_STOP", "AUTO_TRACTOR_START" );
 	AIVEHud.addButton(self, "dds/active_right.dds",   "dds/active_left.dds",   AIVehicleExtension.setAreaLeft,   AIVehicleExtension.evalAreaLeft,   2,1, "AUTO_TRACTOR_ACTIVESIDERIGHT", "AUTO_TRACTOR_ACTIVESIDELEFT" );
 	AIVEHud.addButton(self, "dds/no_uturn2.dds",      "dds/uturn.dds",         AIVehicleExtension.setUTurn,      AIVehicleExtension.evalUTurn,      3,1, "AUTO_TRACTOR_UTURN_OFF", "AUTO_TRACTOR_UTURN_ON") ;
-	AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds", AIVehicleExtension.onAutoSteer,   AIVehicleExtension.evalAutoSteer,  4,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" );
-	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaisePause,  nil,                               5,1, "AUTO_TRACTOR_PAUSE_OFF", "AUTO_TRACTOR_PAUSE_ON", AIVehicleExtension.getRaisePauseText, AIVehicleExtension.getRaisePauseImage );
-	AIVEHud.addButton(self, "dds/next.dds",           "dds/no_next.dds",       AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,  6,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
-	AIVEHud.addButton(self, "dds/refresh.dds",        nil,                     AIVehicleExtension.onMagic,       nil,                               7,1, "AUTO_TRACTOR_MAGIC", nil );
-	AIVEHud.addButton(self, "dds/setings.dds",        nil,                     AIVehicleExtension.onAIVEScreen,  nil,                               8,1, "AUTO_TRACTOR_SETTINGS", "AUTO_TRACTOR_SETTINGS" );
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.setTurnMode,   nil,                               4,1, nil, nil, AIVehicleExtension.getTurnModeText, AIVehicleExtension.getTurnModeImage );
+	AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds", AIVehicleExtension.onAutoSteer,   AIVehicleExtension.evalAutoSteer,  5,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" );
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaisePause,  nil,                               6,1, "AUTO_TRACTOR_PAUSE_OFF", "AUTO_TRACTOR_PAUSE_ON", AIVehicleExtension.getRaisePauseText, AIVehicleExtension.getRaisePauseImage );
+	AIVEHud.addButton(self, "dds/next.dds",           "dds/no_next.dds",       AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,  7,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
+	AIVEHud.addButton(self, "dds/refresh.dds",        nil,                     AIVehicleExtension.onMagic,       nil,                               8,1, "AUTO_TRACTOR_MAGIC", nil );
+	AIVEHud.addButton(self, "dds/setings.dds",        nil,                     AIVehicleExtension.onAIVEScreen,  nil,                               9,1, "AUTO_TRACTOR_SETTINGS", "AUTO_TRACTOR_SETTINGS" );
 
 	
 --AIVEHud.addButton(self, "dds/off.dds",            "dds/on.dds",            AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,      1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage );
---AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.setTurnMode,   nil,                               5,1, nil, nil, AIVehicleExtension.getTurnModeText, AIVehicleExtension.getTurnModeImage );
 	
 	if type( self.atHud ) == "table" then
 		self.atMogliInitDone = true
@@ -321,6 +372,9 @@ end
 -- delete
 ------------------------------------------------------------------------
 function AIVehicleExtension:delete()
+--removeTrigger( self.acBackTrafficCollisionTrigger   )
+--removeTrigger( self.acOtherCombineCollisionTriggerL )
+--removeTrigger( self.acOtherCombineCollisionTriggerR )
 	if self.atMogliInitDone then
 		AIVEHud.delete(self)
 	end
@@ -1285,15 +1339,8 @@ function AIVehicleExtension:checkState( force )
 		h = self.acDimensions.headlandDist
 	end
 	
-	local maxLooking = self.acDimensions.maxLookingAngle
-	if     maxLooking >= self.acDimensions.maxSteeringAngle then
-		self.acFullAngle = true
-	elseif self.acFullAngle then
-		maxLooking = self.acDimensions.maxSteeringAngle
-	end
-	
 	if self.isServer then --and self.aiveIsStarted then 
-		AutoSteeringEngine.initTools( self, maxLooking, self.acParameters.leftAreaActive, self.acParameters.widthOffset, self.acParameters.safetyFactor, h, c, self.acTurnMode );
+		AutoSteeringEngine.initTools( self, self.acDimensions.maxSteeringAngle, self.acParameters.leftAreaActive, self.acParameters.widthOffset, self.acParameters.safetyFactor, h, c, self.acTurnMode );
 	end
 end
 

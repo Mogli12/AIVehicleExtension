@@ -21,9 +21,9 @@
 		
     <angleFactorInside type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
     <angleFactorNoFix type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
-    <chainDivideIn  value="4" />
-    <chainDivideOut value="12" />
-    <chainDivideP1  value="4" />
+    <chainDivideP1 value="4" />
+    <chainDivideP2 value="8" />
+    <chainDivideP3 value="8" />
 		
 		<staticRoot type="bool" value="true" />
 		<straightTA type="bool" value="false" />
@@ -100,10 +100,11 @@
 
 		<maxDtSumT  value="1000"/>  <!-- 10 fps => 100 ms -->
 		<maxDtSumD  value="0"/>   
+		<maxDtSumP0 value="-1"/>   
 		<maxDtSumP1 value="500"/>   
-		<maxDtProd  type="float" value="0.25"/> <!-- meter (dt * lastSpeed) -->
-		<maxDtSumP0 value="30"/>   
-		<maxDtSumF  value="0"/>
+		<maxDtProd  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
+		<maxDtSumF  value="100"/>
+		<fruitBuffer value="2"/> <!-- 0 built in; 1 round x/z values; 2 buffer on -->
 		
 		<maxDtDistF type="float" value="0.077284" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
 		<maxDtDistD type="float" value="0.01" />
