@@ -5,71 +5,78 @@
 
 	<texts>
 		<!--AIVehicle helpPanel text-->
-		<text name="AUTO_TRACTOR_START" 					text="Нанять альтернативного рабочего" />
-		<text name="AUTO_TRACTOR_STOP" 						text="Использовать штатного рабочего" />
-		<text name="AUTO_TRACTOR_WORKWIDTH" 				text="Ширина разворота:" />
-		<text name="AUTO_TRACTOR_ACTIVESIDELEFT" 			text="Активная сторона: ЛЕВАЯ" />
-		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT" 			text="Активная сторона: ПРАВАЯ" />
+		<text name="AUTO_TRACTOR_SETTINGS"                  text="Настройки рабочего" />
+		<text name="AUTO_TRACTOR_ENABLED"                   text="Альтернативный рабочий" />
+		<text name="AUTO_TRACTOR_START"                     text="Использовать альтернативного рабочего" />
+		<text name="AUTO_TRACTOR_STOP"                      text="Использовать стандартного рабочего" />
+		<text name="AUTO_TRACTOR_WORKWIDTH"                 text="Ширина разворота:" />
+		<text name="AUTO_TRACTOR_ACTIVESIDE"                text="Активная сторона:" />
+		<text name="AUTO_TRACTOR_ACTIVESIDELEFT"            text="Левая" />
+		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT"           text="Правая" />
 		
-		<text name="AUTO_TRACTOR_UTURN_ON_OFF"				text="Изменить режим AIVehicle"/>
-		<text name="AUTO_TRACTOR_STEERING"					text="Ручное управление"/>
-		<text name="AUTO_TRACTOR_STEERING_ON"				text="Ручное управление [ВКЛ]"/>
-		<text name="AUTO_TRACTOR_STEERING_OFF"				text="Ручное управление [ВЫКЛ]"/>
-		<text name="AUTO_TRACTOR_CONTINUE"					text="Продолжить"/>
+		<text name="AUTO_TRACTOR_UTURN_ON_OFF"              text="Изменить режим AIVehicle"/>
+		<text name="AUTO_TRACTOR_STEERING"                  text="Ручное управление"/>
+		<text name="AUTO_TRACTOR_STEERING_ON"               text="Ручное управление [ВКЛ]"/>
+		<text name="AUTO_TRACTOR_STEERING_OFF"              text="Ручное управление [ВЫКЛ]"/>
+		<text name="AUTO_TRACTOR_CONTINUE"                  text="Продолжить"/>
+		<text name="AUTO_TRACTOR_RAISE"                     text="Поднять/Опустить все оборудование"/>
 
-		<text name="AUTO_TRACTOR_WAITMODE_ON" 				text="Режим разгрузки [останавливаясь]" />
-		<text name="AUTO_TRACTOR_WAITMODE_OFF" 				text="Режим разгрузки [в движении]" />
-		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON" 	text="Удерживать дистанцию" />
-		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" 	text="Не удерживать дистанцию" />
+		<text name="AUTO_TRACTOR_WAITMODE_ON"               text="Режим разгрузки [останавливаясь]" />
+		<text name="AUTO_TRACTOR_WAITMODE_OFF"              text="Режим разгрузки [в движении]" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON"   text="Удерживать дистанцию" />
+		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF"  text="Не удерживать дистанцию" />
 		<!--AIVehicle help text-->
-		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF" 			text="Скрыть AIVehicle" />
-		<text name="AUTO_TRACTOR_TEXTHELPPANELON" 			text="Показать AIVehicle" />
+		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF"          text="Скрыть AIVehicle" />
+		<text name="AUTO_TRACTOR_TEXTHELPPANELON"           text="Показать AIVehicle" />
 		<!--AIVehicle inputbinding text-->
-		<text name="AUTO_TRACTOR_COLLISION_OTHER" 			text="Столкновение спереди" />
-		<text name="AUTO_TRACTOR_COLLISION_BACK" 			text="Столкновение сзади" />
-		<text name="AUTO_TRACTOR_UTURN_ON"					text="Режим AIVehicle [челночный]" />
-		<text name="AUTO_TRACTOR_UTURN_OFF"					text="Режим AIVehicle [по периметру]" />
-		<text name="AUTO_TRACTOR_REVERSE_ON"				text="Режим разворота [реверс]" />
-		<text name="AUTO_TRACTOR_REVERSE_OFF"				text="Режим разворота [вперёд]" />
-		<text name="AUTO_TRACTOR_INVERTED_ON"				text="Режим работы [реверс]" />
-		<text name="AUTO_TRACTOR_INVERTED_OFF"				text="Режим работы [нормальный]" />
-		<text name="AUTO_TRACTOR_WIDTH_OFFSET"				text="Ширина смещения" />
-		<text name="AUTO_TRACTOR_TURN_OFFSET"				text="Отступ для разворота" />
-		<text name="AUTO_TRACTOR_ANGLE_OFFSET" 				text="Угол разворота" />
-		<text name="AUTO_TRACTOR_SAFETY_FACTOR"				text="Безопасное расстояние" />
-		<text name="AUTO_TRACTOR_ERROR"						text="ошибка" />
-		<text name="AUTO_TRACTOR_NEXTTURNSTAGE"				text="К следующему этапу" />
-		<text name="AUTO_TRACTOR_CP_ON"						text="Режим courseplay [ВЫКЛ]" />
-		<text name="AUTO_TRACTOR_CP_OFF"					text="Режим courseplay [ВКЛ]" />
-		<text name="AUTO_TRACTOR_STEER_ON"					text="Авторуление [ВЫКЛ]" />
-		<text name="AUTO_TRACTOR_STEER_OFF"					text="Авторуление [ВКЛ]" />
-		<text name="AUTO_TRACTOR_HEADLAND_ON"				text="Мыс [ВЫКЛ]" />
-		<text name="AUTO_TRACTOR_HEADLAND_OFF"				text="Мыс [ВКЛ]" />
-		<text name="AUTO_TRACTOR_FRONT_PACKER_ON"			text="Передний культиватор [ВКЛ]" />
-		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF"			text="Передний культиватор [ВЫКЛ]" />
-		<text name="AUTO_TRACTOR_COLLISION_ON"				text="Проверка коллизий [ВКЛ]" />
-		<text name="AUTO_TRACTOR_COLLISION_OFF"				text="Проверка коллизий [ВЫКЛ]" />
-		<text name="AUTO_TRACTOR_HIRE_ON"					text="Не расходовать семена" />
-		<text name="AUTO_TRACTOR_HIRE_OFF"					text="Расходовать семена" />
-		<text name ="AUTO_TRACTOR_HEADLAND"					text="Мыс" />
-		<text name="AUTO_TRACTOR_TURN_MODE_O"				text="Разворот на 180° без реверса" />
-		<text name="AUTO_TRACTOR_TURN_MODE_A"				text="Малый разворот на 180°" />
-		<text name="AUTO_TRACTOR_TURN_MODE_Y"				text="Средний разворот на 180°" />
-		<text name="AUTO_TRACTOR_TURN_MODE_T"				text="Большой разворот на 180°" />
-		<text name="AUTO_TRACTOR_TURN_MODE_C"				text="Поворот на 90° без реверса" />
-		<text name="AUTO_TRACTOR_TURN_MODE_L"				text="Малый поворот на 90°" />
-		<text name="AUTO_TRACTOR_TURN_MODE_K"				text="Большой поворот на 90°" />
-		<text name="AUTO_TRACTOR_TURN_MODE_8"				text="Разворот на 180° без реверса" />
-		<text name="AUTO_TRACTOR_PAUSE_ON"					text="Пауза [ВКЛ]" />
-		<text name="AUTO_TRACTOR_PAUSE_OFF"					text="Пауза [ВЫКЛ]" />
-		<text name="AUTO_TRACTOR_STEER_RAISE"				text="Оборудование поднять [ВЫКЛ]" />
-		<text name="AUTO_TRACTOR_STEER_LOWER"				text="Оборудование опустить [ВКЛ]" />
-		<text name="AUTO_TRACTOR_TRACE"                    	text="Показать трасирование" />
-		<text name="AUTO_TRACTOR_MAGIC"                    	text="Обновить поле" />	
+		<text name="AUTO_TRACTOR_COLLISION_OTHER"           text="Столкновение спереди" />
+		<text name="AUTO_TRACTOR_COLLISION_BACK"            text="Столкновение сзади" />
+		<text name="AUTO_TRACTOR_UTURN_ON"                  text="Режим AIVehicle [челночный]" />
+		<text name="AUTO_TRACTOR_UTURN_OFF"                 text="Режим AIVehicle [по периметру]" />
+		<text name="AUTO_TRACTOR_REVERSE_ON"                text="Режим разворота [реверс]" />
+		<text name="AUTO_TRACTOR_REVERSE_OFF"               text="Режим разворота [вперёд]" />
+		<text name="AUTO_TRACTOR_INVERTED"                  text="Режим AIVehicle [челночный]" />
+		<text name="AUTO_TRACTOR_INVERTED_ON"               text="Режим работы [реверс]" />
+		<text name="AUTO_TRACTOR_INVERTED_OFF"              text="Режим работы [нормальный]" />
+		<text name="AUTO_TRACTOR_WIDTH_OFFSET"              text="Ширина смещения" />
+		<text name="AUTO_TRACTOR_TURN_OFFSET"               text="Отступ для разворота" />
+		<text name="AUTO_TRACTOR_ANGLE_OFFSET"              text="Угол разворота" />
+		<text name="AUTO_TRACTOR_SAFETY_FACTOR"             text="Безопасное расстояние" />
+		<text name="AUTO_TRACTOR_ERROR"                     text="ошибка" />
+		<text name="AUTO_TRACTOR_NEXTTURNSTAGE"             text="К следующему этапу" />
+		<text name="AUTO_TRACTOR_CP_ON"                     text="Режим courseplay [ВЫКЛ]" />
+		<text name="AUTO_TRACTOR_CP_OFF"                    text="Режим courseplay [ВКЛ]" />
+		<text name="AUTO_TRACTOR_STEER_ON"                  text="Авторуление [ВЫКЛ]" />
+		<text name="AUTO_TRACTOR_STEER_OFF"                 text="Авторуление [ВКЛ]" />
+		<text name="AUTO_TRACTOR_HEADLAND_ON"               text="Мыс [ВЫКЛ]" />
+		<text name="AUTO_TRACTOR_HEADLAND_OFF"              text="Мыс [ВКЛ]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_ON"           text="Передний культиватор [ВКЛ]" />
+		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF"          text="Передний культиватор [ВЫКЛ]" />
+		<text name="AUTO_TRACTOR_COLLISION_ON"              text="Проверка коллизий [ВКЛ]" />
+		<text name="AUTO_TRACTOR_COLLISION_OFF"             text="Проверка коллизий [ВЫКЛ]" />
+		<text name="AUTO_TRACTOR_HIRE_ON"                   text="Не расходовать семена" />
+		<text name="AUTO_TRACTOR_HIRE_OFF"                  text="Расходовать семена" />
+		<text name="AUTO_TRACTOR_HEADLAND"                  text="Мыс" />
+		<text name="AUTO_TRACTOR_TURN_MODE"                 text="Тип маневра разворота" />
+		<text name="AUTO_TRACTOR_TURN_MODE_O"               text="Разворот в виде O" />
+		<text name="AUTO_TRACTOR_TURN_MODE_A"               text="Разворот с кривой" />
+		<text name="AUTO_TRACTOR_TURN_MODE_Y"               text="Средний разворот на 180°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_T"               text="Только назад" />
+		<text name="AUTO_TRACTOR_TURN_MODE_C"               text="Разворот в виде O" />
+		<text name="AUTO_TRACTOR_TURN_MODE_L"               text="Разворот с кривой" />
+		<text name="AUTO_TRACTOR_TURN_MODE_7"               text="Только назад" />
+		<text name="AUTO_TRACTOR_TURN_MODE_K"               text="Большой поворот на 90°" />
+		<text name="AUTO_TRACTOR_TURN_MODE_8"               text="Разворот восьмёркой" />
+		<text name="AUTO_TRACTOR_PAUSE_ON"                  text="Продолжить" />
+		<text name="AUTO_TRACTOR_PAUSE_OFF"                 text="Пауза" />
+		<text name="AUTO_TRACTOR_STEER_RAISE"               text="Оборудование поднять и выключить" />
+		<text name="AUTO_TRACTOR_STEER_LOWER"               text="Оборудование опустить и включить" />
+		<text name="AUTO_TRACTOR_TRACE"                     text="Отобразить трасирование" />
+		<text name="AUTO_TRACTOR_MAGIC"                     text="Обновить поле" />	
 
-		<text name="AUTO_TRACTOR_1"							text="Скоростной режим 1" />
-		<text name="AUTO_TRACTOR_2"							text="Скоростной режим 2" />
-		<text name="AUTO_TRACTOR_3"							text="Скоростной режим 3" />
-		<text name="AUTO_TRACTOR_4"							text="Скоростной режим 4" />
+		<text name="AUTO_TRACTOR_1"                         text="Скоростной режим 1" />
+		<text name="AUTO_TRACTOR_2"                         text="Скоростной режим 2" />
+		<text name="AUTO_TRACTOR_3"                         text="Скоростной режим 3" />
+		<text name="AUTO_TRACTOR_4"                         text="Скоростной режим 4" />
 	</texts>
 </l10n>
