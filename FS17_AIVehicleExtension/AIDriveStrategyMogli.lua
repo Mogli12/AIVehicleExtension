@@ -1001,6 +1001,17 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	local useReduceSpeed = false
 	local slowFactor     = 1
 	
+	if      self.search == nil 
+			and angle2 ~= nil 
+			and math.abs( angle2+angle2 ) > veh.acDimensions.maxSteeringAngle then
+		slowFactor = math.min( 1, AutoSteeringEngine.getWantedSpeed( veh, 4 ) / AutoSteeringEngine.getWantedSpeed( veh, 2 ) )
+		if slowFactor < 1 and math.abs( angle2 ) < veh.acDimensions.maxSteeringAngle then
+			slowFactor = slowFactor + ( 1 - slowFactor ) * 2 * ( 1 - math.abs( angle2 ) / veh.acDimensions.maxSteeringAngle ) 
+		end
+		speedLevel     = 2
+		useReduceSpeed = true
+	end
+	
 	maxSpeed = AutoSteeringEngine.getMaxSpeed( veh, dt, 1, true, true, speedLevel, useReduceSpeed, slowFactor )
 			
 	if self.search == nil then
