@@ -4095,7 +4095,7 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 						end
 						
 						local offsetInside = toolParam.offsetStd
-						if false then --i == 1 then
+						if i == 1 then
 							offsetInside = 0
 						elseif vehicle.aiveChain.widthDec ~= 0 then
 							local w = toolParam.width
@@ -4364,6 +4364,11 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 		local offset = AutoSteeringEngine.getWidthOffset( vehicle, width, widthOffset, widthFactor )
 		toolParam.offsetStd = AutoSteeringEngine.getWidthOffsetStd( vehicle, width )
 		
+		if offset > 0 then
+			toolParam.offsetStd = toolParam.offsetStd + offset * 0.7
+			offset = offset * 0.5
+		end
+		
 		width = width - offset - offset
 
 		if vehicle.aiveChain.leftActive	then
@@ -4478,6 +4483,11 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 		local offset = AutoSteeringEngine.getWidthOffset( vehicle, width, widthOffset, widthFactor )
 		toolParam.offsetStd = AutoSteeringEngine.getWidthOffsetStd( vehicle, width )
 
+		if offset > 0 then
+			toolParam.offsetStd = toolParam.offsetStd + offset * 0.7
+			offset = offset * 0.5
+		end
+		
 		width = width - offset - offset
 
 		if vehicle.aiveChain.leftActive	then
