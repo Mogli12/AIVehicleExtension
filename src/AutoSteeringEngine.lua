@@ -4532,7 +4532,7 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 		end
 		
 		
-		if AIVEGlobals.shiftFixZ > 0 and z1 < 0 then
+		if AIVEGlobals.shiftFixZ > 0 and z1 < 0 and not tool.isPlough then
 			z1 = math.max( z1-2, zb )
 		end
 		
@@ -5925,7 +5925,7 @@ function AutoSteeringEngine.getTurnAngle( vehicle )
 		return vehicle.aiveChain.buffer.getTurnAngle
 	end
 
-	if     vehicle.aiveChain.refNode         == nil
+	if     vehicle.aiveChain.refNode == nil
 			or vehicle.aiveChain.trace   == nil then
 		vehicle.aiveChain.buffer.getTurnAngle = 0
 		return 0

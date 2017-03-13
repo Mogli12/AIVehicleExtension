@@ -150,12 +150,9 @@ end
 function AITurnStrategyMogli:raiseOrLower( moveForwards, noLower )
 	if not moveForwards or noLower then
 	-- make sure that tools are raised if going backwards
-		AutoSteeringEngine.ensureToolIsLowered( self.vehicle, false )
-	elseif self.vehicle.aiveHas.combine then
-	-- lower tool on fruits if combine is going forwards
-		if AutoSteeringEngine.hasFruits( self.vehicle, 0.8 ) then
-			AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, false )
-		end
+		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, false, true )
+	elseif AutoSteeringEngine.hasFruits( self.vehicle ) then 
+		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, false )
 	end
 end
 

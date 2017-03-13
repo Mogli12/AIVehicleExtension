@@ -380,7 +380,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	if      allowedToDrive
 			and ( fruitsDetected 
 				or ( self.search == nil and AIVEGlobals.raiseNoFruits <= 0 )
-				or self.acImplementsMoveDown )
+			)--or self.acImplementsMoveDown )
 			and not AutoSteeringEngine.getIsAIReadyForWork( veh ) then
 		allowedToDrive = false
 	end
@@ -607,8 +607,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		AutoSteeringEngine.shiftTurnVector( veh, -1 )
 	end
 	
---if	    self.search    == nil
-	if false
+	if	    self.search    == nil
+--if false
 			and border         <= 0
 			and ( veh.turnTimer < 0 
 				 or AutoSteeringEngine.getIsAtEnd( veh ) 
@@ -643,12 +643,14 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	-- start of hired worker
 		if     turn2Outside then
 			angle =  veh.acDimensions.maxSteeringAngle
-		elseif fruitsDetected then
-			angle = -veh.acDimensions.maxLookingAngle
-		elseif AutoSteeringEngine.getIsAtEnd( veh ) then
-			angle = 0
+	--elseif fruitsDetected then
+	--	angle = -veh.acDimensions.maxLookingAngle
+	--elseif AutoSteeringEngine.getIsAtEnd( veh ) then
+	--	angle = 0
+	--else
+	--	angle = -veh.acDimensions.maxLookingAngle
 		else
-			angle = -veh.acDimensions.maxLookingAngle
+			angle = 0
 		end
 	elseif  turn2Outside
 			and self.search ~= nil
@@ -700,13 +702,14 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			end	
 		elseif turn2Outside then
 	
-			if	 self.search ~= nil then 
-				angle = veh.acDimensions.maxSteeringAngle
-			elseif noReverseIndex > 0 then 
-				angle = veh.acDimensions.maxLookingAngle 
-			else 
-				angle = 0
-			end 
+		--if	 self.search ~= nil then 
+			angle = veh.acDimensions.maxSteeringAngle
+		--elseif noReverseIndex > 0 then 
+		--	angle = veh.acDimensions.maxLookingAngle 
+		--else 
+		----angle = 0
+		--	angle = math.max( absAngle, 0.25 * veh.acDimensions.maxLookingAngle )
+		--end 
 		elseif self.search == AIDriveStrategyMogli.searchCircle then
 		-- after 90° turn
 			a, o, tX, tZ = AutoSteeringEngine.navigateToSavePoint( veh, 4, AIVehicleExtension.navigationFallbackRotateMinus )
@@ -718,8 +721,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			--end	
 				angle = -veh.acDimensions.maxLookingAngle
 			end
-		elseif self.search == nil then
-			angle = math.min( math.max( math.rad( 0.5 * turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
+	--elseif self.search == nil then
+	--	angle = math.min( math.max( math.rad( 0.5 * turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
 		else
 			angle = -veh.acDimensions.maxLookingAngle
 		end
@@ -960,10 +963,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			angle = -angle 
 		end
 		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, angle )
-		smooth = 0.05
+	--smooth = 0.05
 	elseif tX == nil and angle2 ~= nil then
 		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, angle2 )
-		smooth = 0.05
+	--smooth = 0.05
 	elseif true then
 		veh.aiSteeringSpeed = 1
 	elseif border > 0 then

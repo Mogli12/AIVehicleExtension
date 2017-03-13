@@ -60,7 +60,7 @@
 		<correctionIn  type="float" value="1.0" />
 		<correctionOut type="float" value="1.0" />
 		
-		<shiftFixZ type="bool" value="true" />
+		<shiftFixZ type="bool" value="false" />
 		<colliMask type="bool" value="true" />
 		<colliStep type="float" value="0.2" />
 		<ignoreDist type="float" value="1.5" />
@@ -84,7 +84,7 @@
     <stepLog2 value="2" />
     <yieldCount value="2500" />
 		
-    <widthDec type="float" value="0.00125"/> 
+    <widthDec type="float" value="0.01"/> 
 		<safetyFactor value="2"/>
     <widthDec type="float" value="0"/> 
     <widthMaxDec type="float" value="3" />
@@ -98,7 +98,7 @@
 		<limitOutside type="bool" value="true" />
 		<limitInside type="bool" value="true" />
 
-		<maxDtSumT  value="1000"/>  <!-- 10 fps => 100 ms -->
+		<maxDtSumT  value="50"/>  <!-- 10 fps => 100 ms -->
 		<maxDtSumD  value="0"/>   
 		<maxDtSumP0 value="-1"/>   
 		<maxDtSumP1 value="500"/>   

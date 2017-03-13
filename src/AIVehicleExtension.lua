@@ -1208,7 +1208,9 @@ function AIVehicleExtension:setAIImplementsMoveDown( moveDown, immediate, noEven
 		self.acImplementsMoveDown = moveDown
 		AutoSteeringEngine.setToolsAreLowered( self, moveDown, immediate )
 	end
-
+	if immediate then
+		AutoSteeringEngine.ensureToolIsLowered( self, self.acImplementsMoveDown )
+	end
 end
 
 ------------------------------------------------------------------------
