@@ -260,3 +260,15 @@ function AIVEScreen:onCreateSubElement( element, parameter )
 		print("Error inserting UI element with ID: "..tostring(element.id))
 	end
 end
+
+function AIVEScreen:onClickMagic()
+	if self.vehicle ~= nil then
+		AIVehicleExtension.onMagic( self.vehicle )
+	end
+end
+
+function AIVEScreen:onClickNext()
+	if self.vehicle ~= nil then
+		AIVehicleExtension.nextTurnStage( self.vehicle )
+	end
+end

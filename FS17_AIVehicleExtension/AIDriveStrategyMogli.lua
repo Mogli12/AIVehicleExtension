@@ -143,6 +143,8 @@ function AIDriveStrategyMogli:delete()
 	
 	AIVehicleExtension.resetAIMarker( veh )
 	veh.acImplementsMoveDown = false
+	AIVehicleExtension.setStatus( veh, 0 )
+	veh.acTurnStage = -3
 --==============================================================				
 --==============================================================				
 		
@@ -333,7 +335,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		return;
 	end
 	
-	local allowedToDrive =  AutoSteeringEngine.checkAllowedToDrive( veh, not ( veh.acParameters.isHired  ) )
+	local allowedToDrive =  AutoSteeringEngine.checkAllowedToDrive( veh, false, self.search == AIDriveStrategyMogli.searchStart ) --not ( veh.acParameters.isHired  ) )
 		
 	self.noSneak	   = false
 	self.isAnimPlaying = false
@@ -573,23 +575,15 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	end
 	
 --==============================================================				
-		
-	local minDistanceToStop = 3 * veh.turnTimer / veh.acDeltaTimeoutRun
 	if self.search == nil and AutoSteeringEngine.getIsAtEnd( veh ) then
-		distanceToStop = minDistanceToStop
-		self.lastDistancePos = nil
+		veh.acMinDistanceToStop = math.max( 0.5, veh.acMinDistanceToStop - dt * veh.lastSpeed )
+		distanceToStop = veh.acMinDistanceToStop
 	else
+		veh.acMinDistanceToStop = 5
 		if self.search ~= nil then
 			distanceToStop = math.huge 
-			self.lastDistancePos = nil
 		else
-			if     self.lastDistancePos    == nil
-					or self.lastDistancePos[4] ~= dist then
-				self.lastDistancePos = { vX, vY, vZ, distanceToStop }
-				distanceToStop = math.max( minDistanceToStop, dist )
-			else
-				distanceToStop = math.max( minDistanceToStop, self.lastDistancePos[4] - Utils.vector2Length( vX - self.lastDistancePos[1], vZ - self.lastDistancePos[3] ) )
-			end
+			distanceToStop = math.max( veh.acMinDistanceToStop, dist )
 		end
 	end		
 	

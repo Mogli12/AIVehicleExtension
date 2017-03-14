@@ -75,7 +75,7 @@ AIVehicleExtension.saveAttributesMapping = {
 																			angleFactor		  = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
 																			speedFactor		  = { xml = "acSpeedFactor", tp = "F", default = 1 },
 																			noSteering			= { xml = "acNoSteering",	 tp = "B", default = false } };																															
-AIVehicleExtension.turnStageNoNext = { 21, 22, 23 } --{ 0 }
+AIVehicleExtension.turnStageNoNext = { -3, -2, -1, 21, 22, 23 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { { 4, -1 },
 															{ 8, -1 },
 															{ 9, -1 },
@@ -140,7 +140,7 @@ function AIVehicleExtension:load(saveGame)
 	self.acSentSpeedFactor		= 0.8
 	self.acDebugPrint			  	= AIVehicleExtension.debugPrint
 	self.aiveAddDebugText     = AIVehicleExtension.aiveAddDebugText
-	self.acShowTrace					= false
+	self.acShowTrace					= true
 	self.waitForTurnTime      = 0
 	self.turnTimer            = 0
 	self.aiRescueTimer        = 0
@@ -258,16 +258,17 @@ function AIVehicleExtension:initMogliHud()
 	end
 	
 	local mogliRows = 1
-	local mogliCols = 9
+	local mogliCols = 8
 	if AIVEGlobals.showTrace > 0 or AIVEGlobals.devFeatures > 0 then
-		mogliCols = mogliCols + 1
+	--mogliCols = mogliCols + 2
 	end
 	--(												directory,	 hudName, hudBackground, onTextID, offTextID, showHudKey, x,y, nx, ny, w, h, cbOnClick )
 	AIVEHud.init( self, AtDirectory, "AIVEHud", 0.4, "AUTO_TRACTOR_TEXTHELPPANELON", "AUTO_TRACTOR_TEXTHELPPANELOFF", InputBinding.AUTO_TRACTOR_HELPPANEL, 0.5-0.015*mogliCols, 0.0108, mogliCols, mogliRows, AIVehicleExtension.sendParameters )--, nil, nil, 0.8 )
 	AIVEHud.setTitle( self, "AUTO_TRACTOR_VERSION" )
 	
 	if AIVEGlobals.showTrace > 0 or AIVEGlobals.devFeatures > 0 then
-		AIVEHud.addButton(self, "dds/safety_ina.dds", nil, AIVehicleExtension.onToggleTrace, nil, mogliCols,1, "AUTO_TRACTOR_TRACE", nil );
+	--AIVEHud.addButton(self, "dds/safety_ina.dds", nil, AIVehicleExtension.onToggleTrace, nil, mogliCols,1, "AUTO_TRACTOR_TRACE", nil );
+	--AIVEHud.addButton(self, "dds/refresh.dds",    nil, AIVehicleExtension.onMagic,       nil, mogliCols-1,1, "AUTO_TRACTOR_MAGIC", nil );
 
 --if AIVEGlobals.devFeatures > 0 then
 --	AIVEHud.addButton(self, nil, nil, AIVehicleExtension.test1, nil, mogliCols-1,1, "Turn Outside");
@@ -283,8 +284,7 @@ function AIVehicleExtension:initMogliHud()
 	AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds", AIVehicleExtension.onAutoSteer,   AIVehicleExtension.evalAutoSteer,  5,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" );
 	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaisePause,  nil,                               6,1, "AUTO_TRACTOR_PAUSE_OFF", "AUTO_TRACTOR_PAUSE_ON", AIVehicleExtension.getRaisePauseText, AIVehicleExtension.getRaisePauseImage );
 	AIVEHud.addButton(self, "dds/next.dds",           "dds/no_next.dds",       AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,  7,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil );
-	AIVEHud.addButton(self, "dds/refresh.dds",        nil,                     AIVehicleExtension.onMagic,       nil,                               8,1, "AUTO_TRACTOR_MAGIC", nil );
-	AIVEHud.addButton(self, "dds/setings.dds",        nil,                     AIVehicleExtension.onAIVEScreen,  nil,                               9,1, "AUTO_TRACTOR_SETTINGS", "AUTO_TRACTOR_SETTINGS" );
+	AIVEHud.addButton(self, "dds/setings.dds",        nil,                     AIVehicleExtension.onAIVEScreen,  nil,                               8,1, "AUTO_TRACTOR_SETTINGS", "AUTO_TRACTOR_SETTINGS" );
 
 	
 --AIVEHud.addButton(self, "dds/off.dds",            "dds/on.dds",            AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,      1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage );

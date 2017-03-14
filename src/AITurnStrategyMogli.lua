@@ -43,7 +43,7 @@ function AITurnStrategyMogli:startTurn( turnData )
 	self.vehicle.aiveChain.inField = false
 	self.vehicle.aiveChain.isAtEnd = false
 	
-	AIVehicleExtension.setAIImplementsMoveDown( self.vehicle,false )
+	AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, false, true )
 	
 	self.lastDirection = nil
 	self.stageId       = 0		
@@ -152,6 +152,10 @@ function AITurnStrategyMogli:raiseOrLower( moveForwards, noLower )
 	-- make sure that tools are raised if going backwards
 		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, false, true )
 	elseif AutoSteeringEngine.hasFruits( self.vehicle ) then 
+	-- make sure that tools are lowered 
+		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, true )
+	else
+	-- tools can be lowered in advance
 		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, true, false )
 	end
 end

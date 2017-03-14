@@ -1191,7 +1191,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 		if not veh.acParameters.leftAreaActive then x = -x end
 		
-		if x > 0.2 and 0 > turnAngle and turnAngle > -180 then
+		if x > 0.25 and 0 > turnAngle and turnAngle > -180 then
 			local c = math.cos( math.rad( turnAngle + 180 ) )
 		--print(string.format("%7.4f  %7.4f",x/(1-c), veh.acDimensions.radius ) )
 			angle = -veh.acDimensions.maxSteeringAngle * math.min( 1, veh.acDimensions.radius * ( 1 - c ) / x )
@@ -1201,7 +1201,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			angle = -math.min( veh.acDimensions.maxSteeringAngle, 2 * math.rad( turnAngle - 180 ) )
 		end
 			
-		if turnAngle > 0 or turnAngle < -179 then
+		if turnAngle > 0 or turnAngle < angleOffsetStrict-180 then
 			angle                = 0
 			veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
 			turnData.stage     = turnData.stage + 1;					
@@ -1276,7 +1276,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			or turnData.stage == 61 then
 			
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
-		noLower = false
+		noLower  = false
+		inactive = true
 		
 		detected, angle2, border = AutoSteeringEngine.processChain( veh )
 		
