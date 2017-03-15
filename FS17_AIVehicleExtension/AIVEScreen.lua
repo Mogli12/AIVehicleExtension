@@ -14,10 +14,34 @@ function AIVEScreen:new(target, custom_mt)
 end
 
 function AIVEScreen:setVehicle( vehicle )
-	self.vehicle = vehicle 
+	self.vehicle       = vehicle 
+	self.lastUpNDown   = nil
+	self.turnIndexComp = AIVehicleExtension.getTurnIndexComp( self.vehicle )
+end
+
+function AIVEScreen:update(dt)
+	if      self.vehicle                    ~= nil
+			and self.aiveElements.upNDown       ~= nil 
+			and self.aiveElements.turnModeIndex ~= nil then		
+		up = not ( self.aiveElements.upNDown.element:getIsChecked() )
+		if self.lastUpNDown == nil or self.lastUpNDown ~= up then
+			self.lastUpNDown   = up
+			self.turnIndexComp = AIVehicleExtension.getTurnIndexComp( self.vehicle, up )
+			
+			tm = AIVehicleExtension.getAvailableTurnModes( self.vehicle, up )
+			
+			local texts = {}
+			for _,t in pairs( tm ) do
+				table.insert( texts, AIVEHud.getText("AUTO_TRACTOR_TURN_MODE_"..t) )
+			end
+			self.aiveElements.turnModeIndex.element:setTexts( texts )
+			self.aiveElements.turnModeIndex.element:setState( self.vehicle.acParameters[self.turnIndexComp] )
+		end
+	end
 end
 
 function AIVEScreen:onOpen()
+	g_currentMission.isPlayerFrozen = true
 	if self.vehicle == nil then
 		print("Error: vehicle is empty")
 	else
@@ -83,17 +107,8 @@ function AIVEScreen:onOpen()
 						element:setTexts({ AIVEHud.getText("AUTO_TRACTOR_HEADLAND_ON"),
 															 AIVEHud.getText("AUTO_TRACTOR_HEADLAND")..string.format(" (%5.2fm)",s),
 															 AIVEHud.getText("AUTO_TRACTOR_HEADLAND")..string.format(" (%5.2fm)",b) })
-					elseif s.parameter == "turnModeIndex"  then
-					
-						local c = AIVehicleExtension.getTurnIndexComp( self.vehicle )
-						i = struct[c]
-						
-						local texts = {}
-						for _,t in pairs( self.vehicle.acTurnModes ) do
-							table.insert( texts, AIVEHud.getText("AUTO_TRACTOR_TURN_MODE_"..t) )
-						end
-						element:setTexts( texts )
-						
+					elseif s.parameter == "turnModeIndex"  then					
+						i = struct[self.turnIndexComp]												
 					elseif s.parameter == "rightLeft" then
 						if value then
 							i = 2
@@ -160,8 +175,7 @@ function AIVEScreen:onClickOk()
 						struct.headland    = ( i > 1 )
 						struct.bigHeadland = ( i > 2 )
 					elseif s.parameter == "turnModeIndex"  then
-						local c = AIVehicleExtension.getTurnIndexComp( self.vehicle )
-						struct[c] = i
+						struct[self.turnIndexComp] = i
 					elseif s.parameter == "rightLeft" then					
 						struct.rightAreaActive = ( i ~= 1 )
 						struct.leftAreaActive	= ( i == 1 )
@@ -176,6 +190,7 @@ function AIVEScreen:onClickOk()
 end
 
 function AIVEScreen:onClose()
+	g_currentMission.isPlayerFrozen = false
 	self.vehicle = nil
 	AIVEScreen:superClass().onClose(self);
 end

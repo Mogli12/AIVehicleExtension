@@ -148,6 +148,8 @@ end
 -- raiseOrLower
 --============================================================================================================================
 function AITurnStrategyMogli:raiseOrLower( moveForwards, noLower )
+--print(tostring(self.vehicle.acTurnStage)..": "..tostring(moveForwards)..", "..tostring(noLower))
+
 	if not moveForwards or noLower then
 	-- make sure that tools are raised if going backwards
 		AIVehicleExtension.setAIImplementsMoveDown( self.vehicle, false, true )

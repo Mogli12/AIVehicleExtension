@@ -60,7 +60,7 @@
 		<text name="AUTO_TRACTOR_TURN_MODE"                text="Form des Wendemanövers" />
 		<text name="AUTO_TRACTOR_TURN_MODE_O"              text="Wende in Form eines O" />
 		<text name="AUTO_TRACTOR_TURN_MODE_A"              text="Rückwärts mit Kurve" />
-		<text name="AUTO_TRACTOR_TURN_MODE_Y"              text="Mittlere 180° Wende" />
+		<text name="AUTO_TRACTOR_TURN_MODE_Y"              text="Rückwärts mit Kurve (Drescher)" />
 		<text name="AUTO_TRACTOR_TURN_MODE_T"              text="Rückwärts nur gerade" />
 		<text name="AUTO_TRACTOR_TURN_MODE_C"              text="Wende in Form eines O" />
 		<text name="AUTO_TRACTOR_TURN_MODE_L"              text="Rückwärts mit Kurve" />

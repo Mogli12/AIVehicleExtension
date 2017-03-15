@@ -515,8 +515,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	local isInField = false
 	if self.search == nil then
 		isInField = true
-	elseif fruitsAll then
-		isInField = true
+--elseif fruitsAll then
+--	isInField = true
 	end
 	
 	if math.abs( veh.acAxisSide ) > 0.1 then

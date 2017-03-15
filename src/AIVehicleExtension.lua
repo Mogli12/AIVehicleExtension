@@ -392,6 +392,9 @@ end;
 -- mouse event callbacks
 ------------------------------------------------------------------------
 function AIVehicleExtension:onAIVEScreen()
+	if g_gui:getIsGuiVisible() then
+		return 
+	end
 	if self.atMogliInitDone == nil or not self.atMogliInitDone then
 		AIVehicleExtension.initMogliHud(self)
 	end
@@ -602,8 +605,13 @@ function AIVehicleExtension:getTurnOffset(old)
 	return new
 end
 
-function AIVehicleExtension:getTurnIndexComp()
-	if self.acParameters ~= nil and	not ( self.acParameters.upNDown ) then
+function AIVehicleExtension:getTurnIndexComp( upNDown )
+	local u = upNDown
+	if upNDown == nil and self.acParameters ~= nil then
+		u = self.acParameters.upNDown
+	end
+	
+	if not ( u ) then
 		return "turnModeIndexC"
 	end
 	return "turnModeIndex"
@@ -1225,49 +1233,59 @@ function AIVehicleExtension:setStatus( newStatus, noEventSend )
 end
 
 ------------------------------------------------------------------------
--- checkAvailableTurnModes
+-- getAvailableTurnModes
 ------------------------------------------------------------------------
-function AIVehicleExtension:checkAvailableTurnModes( noEventSend )
+function AIVehicleExtension:getAvailableTurnModes( upNDown )
 
+	turnModes = {}
+	
 	if self.acDimensions == nil then
 		AIVehicleExtension.calculateDimensions( self )
 	end
 
 	local sut, rev, revS, noHire = AutoSteeringEngine.getTurnMode( self )
 
-	if noHire then
-		self.acParameters.isHired = false
-	end
-
-	self.acTurnModes = {}
-	
-	if self.acParameters.upNDown then
+	if upNDown then
 		if rev	then
 			if self.acDimensions.zBack ~= nil and self.acDimensions.zBack > 0 then
-				table.insert( self.acTurnModes, "Y" )
+				table.insert( turnModes, "Y" )
 			elseif AIVEGlobals.enableAUTurn > 0 and sut then
-				table.insert( self.acTurnModes, "A" )
+				table.insert( turnModes, "A" )
 			end
 		end
 		if revS then
-			table.insert( self.acTurnModes, "T" )
+			table.insert( turnModes, "T" )
 		end
-		table.insert( self.acTurnModes, "O" )
+		table.insert( turnModes, "O" )
 		if self.acDimensions.zBack ~= nil and self.acDimensions.zBack < 0 then
-			table.insert( self.acTurnModes, "8" )
+			table.insert( turnModes, "8" )
 		end
 	else
 		if rev	then
-			table.insert( self.acTurnModes, "L"	)
+			table.insert( turnModes, "L"	)
 		end
 		if revS then
-			table.insert( self.acTurnModes, "7"	)
+			table.insert( turnModes, "7"	)
 		end
 		if AIVEGlobals.enableKUTurn > 0 then
-			table.insert( self.acTurnModes, "K"	)
+			table.insert( turnModes, "K"	)
 		end
-		table.insert( self.acTurnModes, "C"	)
+		table.insert( turnModes, "C"	)
 	end
+	
+	return turnModes
+end
+
+------------------------------------------------------------------------
+-- checkAvailableTurnModes
+------------------------------------------------------------------------
+function AIVehicleExtension:checkAvailableTurnModes( noEventSend )
+
+	if noHire then
+		self.acParameters.isHired = false
+	end
+	
+	self.acTurnModes = AIVehicleExtension.getAvailableTurnModes( self, self.acParameters.upNDown )
 	
 	local c = AIVehicleExtension.getTurnIndexComp(self)
 	
