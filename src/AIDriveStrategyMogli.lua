@@ -534,7 +534,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			veh.aiRescueTimer = veh.aiRescueTimer + dt;
 		end			
 	else
-		local ta = nil
+		local ta, af
 		
 		if	    self.search    == nil
 				and ( veh.turnTimer < 0 
@@ -550,7 +550,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			end
 		end
 		
-		detected, angle2, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( veh, isInField, ta )
+		if search == nil then
+			af = veh.acParameters.angleFactor 
+		end
+		
+		detected, angle2, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( veh, isInField, ta, af )
 	end
 	
 	local absAngle = angle2 

@@ -1716,14 +1716,17 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 		if     veh.aiveHas.combineVehicle 
 				or veh.acDimensions.zBack > 0 then
-			local dist   = turn75.radius
-			if -z > dist then				
+			local radius   = veh.acDimensions.radius
+			if veh.acDimensions.toolDistance > 0 then
+				radius = math.sqrt( veh.acDimensions.radius^2 + veh.acDimensions.toolDistance^2 )
+			end
+			if -z > radius + stoppingDist then				
 				AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)		
 				inactive          = true
 				turnData.stage    = 89;					
 				veh.turnTimer     = veh.acDeltaTimeoutRun;
 				veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
-				angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )
+				angle = -veh.acDimensions.maxSteeringAngle * veh.acDimensions.radius / radius
 			end
 		else	
 			local dist   = math.max( turn75.radius + 2, 1.15 * turn75.radius )
@@ -1741,23 +1744,28 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	elseif turnData.stage == 89 then		
 
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh );
-		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
+		local alpha1, alpha2 = 71, 90
 
-		local radius = turn75.radius
+		local radius = veh.acDimensions.radius
+		if veh.acDimensions.toolDistance > 0 then
+			radius = math.sqrt( veh.acDimensions.radius^2 + veh.acDimensions.toolDistance^2 )
+			alpha2 = 90 - math.deg( math.atan2( veh.acDimensions.toolDistance, veh.acDimensions.radius ) )
+		end
 		
-		local alpha
-		if veh.acDimensions.distance > radius then
-			alpha = 45
-		else
-			alpha  = math.deg( math.atan2( veh.acDimensions.distance, radius ) )
+		if veh.acDimensions.distance < 3 * veh.acDimensions.radius then
+			alpha1 = math.deg( math.atan2( veh.acDimensions.distance, radius ) )
 		end
 
 		inactive = true
 		noLower  = false
 		
-		if math.abs( turnAngle ) < alpha - angleOffsetStrict then
+		if      math.abs( turnAngle ) < alpha1 - angleOffsetStrict then
 			-- do not detect until we turned far enough 
-			angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )		
+			angle = -veh.acDimensions.maxSteeringAngle
+		elseif  math.abs( turnAngle ) < alpha2 - angleOffsetStrict 
+				and not AutoSteeringEngine.processOneAngle( veh, 0 ) then
+			-- go all the way around the corner
+			angle = -veh.acDimensions.maxSteeringAngle
 		else
 			detected, angle2, border = AutoSteeringEngine.processChain( veh )
 
@@ -1775,7 +1783,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				veh.turnTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutRun )
 				angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )		
 				angle2 = nil
-			elseif turnAngle > 90 - angleOffset or math.abs( x ) > turn75.radius then		
+			elseif turnAngle > 90 - angleOffset or math.abs( x ) > veh.acDimensions.radius then		
 				-- this is far enough 
 				turnData.stage      = -1
 				veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
@@ -1788,7 +1796,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 		veh:acDebugPrint("T89: "..AutoSteeringEngine.degToString( turnAngle )
 						.." "..AutoSteeringEngine.radToString(angle2)
-						.." "..AutoSteeringEngine.degToString(alpha)
+						.." "..AutoSteeringEngine.degToString(alpha1)
 						.." "..tostring(turnData.stage)
 						.." "..tostring(detected)
 						.." "..tostring(border))

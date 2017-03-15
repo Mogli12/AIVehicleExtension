@@ -988,9 +988,9 @@ function AIVehicleExtension:update(dt)
 	end
 
 	if self.isEntered and self.isClient and self:getIsActive() then
-		if self.acParameters.enabled and self.acTurnStage < 198 and not self.aiveIsStarted then
-			AIVehicleExtension.checkState( self )
-		end
+	--if self.acParameters.enabled and self.acTurnStage < 198 and not self.aiveIsStarted then
+	--	AIVehicleExtension.checkState( self )
+	--end
 	
 		if AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_HELPPANEL" ) then
 			local guiActive = false
@@ -1099,9 +1099,9 @@ function AIVehicleExtension:update(dt)
 					and ( self.aiIsStarted or self.acTurnStage >= 198 ) then	
 				AutoSteeringEngine.drawLines( self );
 			else
-				if not ( self.aiIsStarted or self.acTurnStage >= 198 ) then	
-					AIVehicleExtension.checkState( self )
-				end
+			--if not ( self.aiIsStarted or self.acTurnStage >= 198 ) then	
+			--	AIVehicleExtension.checkState( self )
+			--end
 				AutoSteeringEngine.drawMarker( self );
 			end
 		end
@@ -1261,11 +1261,20 @@ function AIVehicleExtension:getAvailableTurnModes( upNDown )
 			table.insert( turnModes, "8" )
 		end
 	else
-		if rev	then
-			table.insert( turnModes, "L"	)
-		end
-		if revS then
-			table.insert( turnModes, "7"	)
+		if self.acDimensions.zBack ~= nil and self.acDimensions.zBack > 0 then
+			if revS then
+				table.insert( turnModes, "7"	)
+			end
+			if rev	then
+				table.insert( turnModes, "L"	)
+			end
+		else
+			if rev	then
+				table.insert( turnModes, "L"	)
+			end
+			if revS then
+				table.insert( turnModes, "7"	)
+			end
 		end
 		if AIVEGlobals.enableKUTurn > 0 then
 			table.insert( turnModes, "K"	)
@@ -2454,7 +2463,21 @@ function AIVehicleExtension:getLimitedToolAngle( iLimit )
 	return toolAngle
 end
 
+------------------------------------------------------------------------
+-- AIVehicleExtension:onAttachImplement
+------------------------------------------------------------------------
+function AIVehicleExtension:onAttachImplement(implement)
+	AutoSteeringEngine.checkTools1( self, true )
+	AIVehicleExtension.checkState( self, true )
+end
 
+------------------------------------------------------------------------
+-- AIVehicleExtension:onDetachImplement
+------------------------------------------------------------------------
+function AIVehicleExtension:onDetachImplement(implementIndex)
+	AutoSteeringEngine.checkTools1( self, true )
+	AIVehicleExtension.checkState( self, true )
+end
 
 --==============================================================				
 --==============================================================			

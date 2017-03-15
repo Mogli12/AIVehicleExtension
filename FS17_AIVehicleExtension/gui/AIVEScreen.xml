@@ -83,6 +83,14 @@
 					<GuiElement type="text"   profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_HEADLAND"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
+
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="angleFactor" onCreate="onCreateSubElement" onCreateArgs="percent5" toolTip="$l10n_AUTO_TRACTOR_ANGLE_OFFSET" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text"   profile="multiTextOptionText" />
+					<GuiElement type="text"   profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_ANGLE_OFFSET"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
 			</GuiElement>
 
 			<GuiElement type="boxLayout" profile="settingsBox" position="675px 550px">
@@ -117,8 +125,9 @@
 					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AUTO_TRACTOR_COLLISION_ON"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement-->
-				<GuiElement type="button" profile="usersButtonBlank" size="305px 40px" margin="0px 25px 0px 14px" text="$l10n_AUTO_TRACTOR_MAGIC"  onClick="onClickMagic" focusId="100" focusChangeTop="19" focusChangeRight="101" focusChangeBottom="101"/>
-				<GuiElement type="button" profile="usersButtonBlank" size="305px 40px" margin="0px 25px 0px 14px" text="$l10n_AUTO_TRACTOR_NEXTTURNSTAGE"  onClick="onClickNext" focusId="100" focusChangeTop="19" focusChangeRight="101" focusChangeBottom="101"/>
+				
+				<GuiElement type="button" profile="usersButtonBlank" size="305px 36px" margin="0px 25px 0px 14px" text="$l10n_AUTO_TRACTOR_MAGIC"  onClick="onClickMagic" focusId="100" focusChangeTop="19" focusChangeRight="101" focusChangeBottom="101"/>
+				<GuiElement type="button" profile="usersButtonBlank" size="305px 36px" margin="0px 25px 0px 14px" text="$l10n_AUTO_TRACTOR_NEXTTURNSTAGE"  onClick="onClickNext" focusId="100" focusChangeTop="19" focusChangeRight="101" focusChangeBottom="101"/>
 			</GuiElement>
 
 			<GuiElement type="flowLayout" profile="buttonBox" id="buttonsPC" >

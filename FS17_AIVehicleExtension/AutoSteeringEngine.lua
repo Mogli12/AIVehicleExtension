@@ -412,7 +412,7 @@ function AutoSteeringEngine.processChainResult( vehicle, best, a, bi, ti, bo, to
 		best.border3  = bw
 		best.distance = ll
 	end
-	if bi > 0 or bo > 0 then
+	if bi > 0 or bo > 0 or bw > 0 then
 		best.detected = true
 	end
 	return s
@@ -480,7 +480,7 @@ end
 ------------------------------------------------------------------------
 -- processChain
 ------------------------------------------------------------------------
-function AutoSteeringEngine.processChain( vehicle, inField, targetSteering )
+function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insideAngleFactor )
 	AutoSteeringEngine.initWorldToDensity( vehicle )
 
 	if vehicle.aiveChain.toolParams == nil or table.getn( vehicle.aiveChain.toolParams ) < 1 then
@@ -659,6 +659,11 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering )
 						delta1 = delta2 
 					end
 				
+					if plusMinus == 2 and delta3 < 2.999999 and insideAngleFactor ~= nil and 0 < insideAngleFactor and insideAngleFactor < 1 then
+						delta1 = delta1 * insideAngleFactor
+						delta3 = delta3 * insideAngleFactor
+					end
+										
 					local a = a0 + delta1 
 					while math.abs( a ) <= 1 do
 						local j = indexMax
@@ -680,7 +685,6 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering )
 						end
 						
 						if math.abs( a0 - a ) > delta3 + 1e-6 then
-						--if best.border <= 0 and best.detected then
 							if best.border <= 0 then
 								break
 							end
