@@ -2,7 +2,7 @@
 
 <i3D name="AutoCombineI3D" version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">
   <Asset>
-    <Export program="GIANTS Editor" version="4.1.7"/>
+    <Export program="GIANTS Editor 64bit" version="7.0.5"/>
   </Asset>
 
   <Files>
@@ -10,15 +10,15 @@
 
 
   <Materials>
-    <Material name="Material.001" materialId="11" diffuseColor="1 1 1 1" ambientColor="1 1 1">
+    <Material name="Material.001" materialId="6" diffuseColor="1 1 1 1" ambientColor="1 1 1">
     </Material>
-    <Material name="Material.001" materialId="17" diffuseColor="0.8 0.8 0.8 1" ambientColor="1 1 1">
+    <Material name="Material.001" materialId="7" diffuseColor="0.8 0.8 0.8 1" ambientColor="1 1 1">
     </Material>
   </Materials>
 
 
   <Shapes>
-    <IndexedTriangleSet name="trafficColliTrigger" shapeId="4">
+    <IndexedTriangleSet name="trafficColliTrigger" shapeId="2" bvCenter="0.3138 0.39017 0.0623503" bvRadius="12.6064" isOptimized="true">
       <Vertices count="36" normal="true" uv0="true">
         <v p="4.8138 2.89017 11.5698" n="0 -1 0" t0="0 0"/>
         <v p="-4.1862 2.89017 11.2915" n="0 -1 0" t0="0 1"/>
@@ -75,7 +75,7 @@
         <Subset firstVertex="0" numVertices="36" firstIndex="0" numIndices="36"/>
       </Subsets>
     </IndexedTriangleSet>
-    <IndexedTriangleSet name="trafficCollisionTrigg" shapeId="3">
+    <IndexedTriangleSet name="trafficCollisionTrigg" shapeId="1" bvCenter="-2.53936 0 -3.95425e-08" bvRadius="4.70769" isOptimized="true">
       <Vertices count="42" normal="true" uv0="true">
         <v p="0.407537 -2.02426 -3.06276" n="-0.009705 -0.999953 -0" t0="0 0"/>
         <v p="0.407537 -2.02426 3.06276" n="-0.009705 -0.999953 -0" t0="0 1"/>
@@ -147,10 +147,10 @@
   </Dynamics>
 
   <Scene>
-    <TransformGroup name="AutoCombine" translation="0 0 0" nodeId="30">
-      <Shape name="backCollisionTrigger" translation="0 2 -5.62676" rotation="0 -90 0" kinematic="true" trigger="true" collisionMask="1056768" nodeId="54" materialIds="17" shapeId="3" castsShadows="true" receiveShadows="true" nonRenderable="true"/>
-      <Shape name="otherCombColliTriggerL" translation="7.63365 2.26392 15.8973" rotation="0 90 0" kinematic="true" trigger="true" collisionMask="1056768" nodeId="55" materialIds="11" shapeId="4" nonRenderable="true"/>
-      <Shape name="otherCombColliTriggerR" translation="-8.61727 2.26392 15.8973" rotation="0 90 0" kinematic="true" trigger="true" collisionMask="1056768" nodeId="56" materialIds="11" shapeId="4" nonRenderable="true"/>
+    <TransformGroup name="AutoCombine" nodeId="11">
+      <Shape shapeId="1" name="backCollisionTrigger" translation="0 2 -5.62676" rotation="0 -90 0" kinematic="true" trigger="true" collisionMask="1056768" nodeId="12" materialIds="7" castsShadows="true" receiveShadows="true" nonRenderable="true"/>
+      <Shape shapeId="2" name="otherCombColliTriggerL" translation="7.63365 2.26392 10.661" rotation="0 90 0" scale="2 1 1" kinematic="true" trigger="true" collisionMask="1056768" nodeId="13" materialIds="6" nonRenderable="true"/>
+      <Shape shapeId="2" name="otherCombColliTriggerR" translation="-8.61727 2.26392 10.661" rotation="0 90 0" scale="2 1 1" kinematic="true" trigger="true" collisionMask="1056768" nodeId="14" materialIds="6" nonRenderable="true"/>
     </TransformGroup>
   </Scene>
 

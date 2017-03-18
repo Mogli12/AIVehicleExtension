@@ -21,9 +21,9 @@
 		
     <angleFactorInside type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
     <angleFactorNoFix type="float" value="1.0" /> <!-- 2x3° with fix attacher / 2x6° with trailer or trailer_low -->
-    <chainDivideP1 value="3" />
+    <chainDivideP1 value="8" />
     <chainDivideP2 value="8" />
-    <chainDivideP3 value="6" />
+    <chainDivideP3 value="8" />
 		
 		<staticRoot type="bool" value="true" />
 		<straightTA type="bool" value="false" />
@@ -33,8 +33,8 @@
     <!--                               1   2   3   4  5 6 7 8 9 0 1 2 3 4-->
     <chainLen    type="vector" value="1.5 1.5 1.5 1.5 2 2 3 4 5 5 5 5 5 5"/> 
 		<chainStep0  value="5" /> <!-- initial part of the chain that always rotates    -->                           
-		<chainStep1  value="8" /> <!-- steps to outside, can be smaller than chainStep2 -->
-		<chainStep2  value="11"/>  <!-- steps to check, increased only if nothing found  -->
+		<chainStep1  value="10" /> <!-- steps to outside, can be smaller than chainStep2 -->
+		<chainStep2  value="10"/>  <!-- steps to check, increased only if nothing found  -->
 		<chainStep3  value="99"/> <!-- test inside up to this step                     -->
 		<chainStep4  value="99"/>  <!-- test outside up to this step                     -->
 	
@@ -82,9 +82,9 @@
 		<chainIgnoreSq type="float" value="9" />
 		
     <stepLog2 value="2" />
-    <yieldCount value="2500" />
+    <yieldCount value="100" />
 		
-    <widthDec type="float" value="0.005"/> 
+    <widthDec type="float" value="0"/> 0.005
 		<safetyFactor value="2"/>
     <widthMaxDec type="float" value="3" />
 		
@@ -99,7 +99,7 @@
 
 		<maxDtSumT  value="50"/>  <!-- 10 fps => 100 ms -->
 		<maxDtSumD  value="0"/>   
-		<maxDtSumP0 value="-1"/>   
+		<maxDtSumP0 value="30"/>   
 		<maxDtSumP1 value="500"/>   
 		<maxDtProd  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
 		<maxDtSumF  value="100"/>
@@ -132,7 +132,8 @@
 		<aiRescueDistSq type="float" value="1600" />
 		<raiseNoFruits type="bool" value="false" />
 		<fruitsAdvance type="float" value="1.5" />
-		<lowerAdvance type="float" value="2.5" />
+		<lowerAdvance type="float" value="3.0" />
+		<upperAdvance type="float" value="0.5" />
 		
 		<borderBuffer type="bool" value="true" />
 		
