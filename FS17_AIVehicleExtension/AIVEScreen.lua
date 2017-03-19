@@ -32,7 +32,7 @@ function AIVEScreen:update(dt)
 			
 			local texts = {}
 			for _,t in pairs( tm ) do
-				table.insert( texts, AIVEHud.getText("AUTO_TRACTOR_TURN_MODE_"..t) )
+				table.insert( texts, AIVEHud.getText("AIVE_TURN_MODE_"..t) )
 			end
 			self.aiveElements.turnModeIndex.element:setTexts( texts )
 			self.aiveElements.turnModeIndex.element:setState( self.vehicle.acParameters[self.turnIndexComp] )
@@ -104,9 +104,9 @@ function AIVEScreen:onOpen()
 						
 						local s, b = AIVehicleExtension.getHeadlandSmallBig( self.vehicle )
 						
-						element:setTexts({ AIVEHud.getText("AUTO_TRACTOR_HEADLAND_ON"),
-															 AIVEHud.getText("AUTO_TRACTOR_HEADLAND")..string.format(" (%5.2fm)",s),
-															 AIVEHud.getText("AUTO_TRACTOR_HEADLAND")..string.format(" (%5.2fm)",b) })
+						element:setTexts({ AIVEHud.getText("AIVE_HEADLAND_ON"),
+															 AIVEHud.getText("AIVE_HEADLAND")..string.format(" (%5.2fm)",s),
+															 AIVEHud.getText("AIVE_HEADLAND")..string.format(" (%5.2fm)",b) })
 					elseif s.parameter == "turnModeIndex"  then					
 						i = struct[self.turnIndexComp]												
 					elseif s.parameter == "rightLeft" then
@@ -263,7 +263,7 @@ function AIVEScreen:onCreateSubElement( element, parameter )
 		elseif parameter == "turnModeIndex" then
 			element:setTexts({"O"})
 		elseif parameter == "rightLeft" then
-			element:setTexts({ AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDELEFT"),  AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDERIGHT") })
+			element:setTexts({ AIVEHud.getText("AIVE_ACTIVESIDELEFT"),  AIVEHud.getText("AIVE_ACTIVESIDERIGHT") })
 		else
 			print("Invalid MultiTextOptionElement parameter: "..tostring(parameter))
 			checked = false

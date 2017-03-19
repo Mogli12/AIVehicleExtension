@@ -55,7 +55,7 @@ end;
 
 function AIVehicleExtensionRegister:add()
 
-	print("--- loading "..g_i18n:getText("AUTO_TRACTOR_VERSION").." by mogli ---")
+	print("--- loading "..g_i18n:getText("AIVE_VERSION").." by mogli ---")
 
 	local searchTable = { "Autopilot", "AutoTractor", "AutoCombine" };	
 	
@@ -113,7 +113,7 @@ function AIVehicleExtensionRegister:add()
 	
 	-- make l10n global 
 	for n,t in pairs( g_i18n.texts ) do
-		if string.sub( n, 1, 12 ) == "AUTO_TRACTOR" then
+		if string.sub( n, 1, 4 ) == "AIVE" then
 			g_i18n.globalI18N.texts[n] = t
 		end
 	end

@@ -689,6 +689,8 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 					iCleanupFunction( )
 				end
 				
+			--print(string.format("A %6d: %5d, %f", g_currentMission.time, count, sqrm*fo1*fo1*0.0001 ))
+				
 				coroutine.yield( nil, sqrm*fo1*fo1*0.0001 )
 				
 				if iPrepareFunction ~= nil then
@@ -717,6 +719,8 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 					print("ERROR: FieldBitmap error code 10")
 				end
 				count = 1
+				
+			--print(string.format("B %6d: %5d, %f", g_currentMission.time, count, sqrm*fo1*fo1*0.0001 ))				
 			end
 			
 			if not field.tileExists( x, z ) then

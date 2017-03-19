@@ -763,6 +763,15 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 				AIVehicleExtension.statEvent( vehicle, "p4", 0 )
 			end
 			
+			if      targetSteering == nil 
+					and vehicle.aiveChain.lastBest ~= nil 
+					and AIVEGlobals.chainDivideP2 > 0 
+					and vehicle.aiveChain.fullSpeed 
+					and not best.detected then
+				vehicle.aiveChain.fullSpeed = false
+				best.detected = vehicle.aiveChain.lastBest.detected 
+			end
+			
 			if vehicle.aiveChain.fullSpeed then
 				if vehicle.aiveChain.valid == nil then
 					vehicle.aiveChain.fullSpeed = false
@@ -2715,7 +2724,14 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle, moveForwards )
 
-	local invR = vehicle.aiveChain.invWheelBase * math.tan( angle )	
+	if     vehicle.aiveChain              == nil
+			or vehicle.aiveChain.invWheelBase == nil
+			or vehicle.aiveChain.maxSteering  == nil
+			or vehicle.aiveChain.refNode      == nil then
+		return 
+	end
+
+	local invR = vehicle.aiveChain.invWheelBase * math.tan( Utils.clamp( angle, -vehicle.aiveChain.maxSteering, vehicle.aiveChain.maxSteering ) )	
 	local l    = math.max( 1, 0.2 * vehicle.aiveChain.radius ) -- math.min( 5, vehicle.aiveChain.radius )
 	local rot  = 2 * math.asin( invR * 0.5 * l )
 	local lz   = l * math.cos( rot )
@@ -2729,6 +2745,12 @@ end
 -- getSteeringAngleFromWorldTarget
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getSteeringAngleFromWorldTarget( vehicle, tX, tY, tZ )
+
+	if     vehicle.aiveChain              == nil
+			or vehicle.aiveChain.wheelBase    == nil
+			or vehicle.aiveChain.refNode      == nil then
+		return 0
+	end
 
 	local y
 	if tY == nil then
@@ -3717,6 +3739,7 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 		local status, hektar = false, 0
 		
 		if vehicle.aiveCurrentFieldCo == nil then
+			vehicle.aiveCurrentFieldCt = 0
 			local checkFunction, areaTotalFunction = AutoSteeringEngine.getCheckFunction( vehicle )
 			local x1,_,z1 = AutoSteeringEngine.getAiWorldPosition( vehicle )
 			if vehicle.aiveChain.lastX ~= nil and vehicle.aiveChain.lastZ ~= nil then
@@ -3780,7 +3803,9 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 					end
 				end
 			end
-		elseif vehicle.aiveCurrentFieldCS ~= 'dead' then
+		elseif  vehicle.aiveCurrentFieldCS ~= 'dead' 
+				and vehicle.aiveCurrentFieldCt < g_currentMission.time then
+			vehicle.aiveCurrentFieldCt = g_currentMission.time
 			status, vehicle.aiveCurrentField, hektar = coroutine.resume( vehicle.aiveCurrentFieldCo )				
 			if status then
 				vehicle.aiveCurrentFieldCS = coroutine.status( vehicle.aiveCurrentFieldCo )
@@ -3790,17 +3815,15 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 				vehicle.aiveCurrentFieldCo = nil
 				vehicle.aiveCurrentFieldCS = 'dead'
 			end
+			g_currentMission:showBlinkingWarning( string.format("Field detection is running (%0.3f ha)", hektar), 500 )
 		end
 		
 		if vehicle.aiveCurrentFieldCo ~= nil then
 			if vehicle.aiveCurrentFieldCS == 'dead' then
 				vehicle.aiveCurrentFieldCo = nil
-			else
-			--g_currentMission:addWarning(string.format("Field detection is running (%0.3f ha)", hektar), 0.018, 0.033)
-				if vehicle.aiveCurrentField ~= nil then
-					print("ups")
-					vehicle.aiveCurrentField = nil
-				end
+			elseif vehicle.aiveCurrentField ~= nil then
+				print("ups")
+				vehicle.aiveCurrentField = nil
 			end
 		end
 	end
@@ -6409,7 +6432,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 			and ( object.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILERLOW
 			   or object.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILER ) then
 		tool.aiForceTurnNoBackward = true
-	elseif object.aiForceTurnNoBackward == nil then
+	else --if object.aiForceTurnNoBackward == nil then
 		tool.aiForceTurnNoBackward = false
 	end
 	
@@ -6431,10 +6454,14 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		tool.ploughTransport = true
 	end
 		
-	if tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhndc401.xml" then
+	if     tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhndc401.xml" then
 		tool.isPlough        = true
 		tool.isCultivator    = false
 		tool.ploughTransport = false
+	elseif tool.configFileName == "data/vehicles/trailers/grimme/grimmerootster604.xml" then
+		tool.aiForceTurnNoBackward = true
+	elseif tool.configFileName == "data/vehicles/tools/greatplains/gp3p1006nt.xml" then
+		tool.aiForceTurnNoBackward = false 
 	end
 	
 	if tool.isPlough and tool.aiForceTurnNoBackward then
@@ -7735,7 +7762,7 @@ function AutoSteeringEngine.setToolIsLowered( vehicle, tool, isLowered )
 --end
 
 	tool.currentLowerState  = isLowered
-	tool.waitUntilIsLowered = g_currentMission.time + vehicle.acDeltaTimeoutStart
+	tool.waitUntilIsLowered = g_currentMission.time + vehicle.acDeltaTimeoutWait
 	if tool.targetLowerState == nil then
 		tool.targetLowerState = isLowered 
 	end

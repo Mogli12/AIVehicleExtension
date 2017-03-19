@@ -4,60 +4,63 @@
 	<description><![CDATA[Auto Tractor - French traduction by Waylan]]></description>
 
 	<texts>
-		<!--AutoTractor helpPanel text-->
-		<text name="AUTO_TRACTOR_START" text="AutoTractor On" />
-		<text name="AUTO_TRACTOR_STOP" text="AutoTractor Off" />
-		<text name="AUTO_TRACTOR_WORKWIDTH" text="Larg. travail:" />
-		<text name="AUTO_TRACTOR_ACTIVESIDELEFT" text="Côté actif: Gauche" />
-		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT" text="Côté actif: Droit" />		
+		<!--AI Vehicle helpPanel text-->
+		<text name="AIVE_START" text="AI Vehicle On" />
+		<text name="AIVE_STOP" text="AI Vehicle Off" />
+		<text name="AIVE_WORKWIDTH" text="Larg. travail:" />
+		<text name="AIVE_ACTIVESIDELEFT" text="Côté actif: Gauche" />
+		<text name="AIVE_ACTIVESIDERIGHT" text="Côté actif: Droit" />		
 
-		<text name="AUTO_TRACTOR_WAITMODE_ON" text="Déchargement [A l'arrêt]" />	
-		<text name="AUTO_TRACTOR_WAITMODE_OFF" text="Déchargement [En marche]" />
-		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON" text="Distance de sécurité On" />	
-		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" text="Distance de sécurité Off" />
-		<!--AutoTractor help text-->
-		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF" text="Masquer Infos AutoTractor" />	
-		<text name="AUTO_TRACTOR_TEXTHELPPANELON" text="Afficher Infos AutoTractor" />		
-		<!--AutoTractor inputbinding text-->
-		<text name="AUTO_TRACTOR_COLLISION_OTHER" text="Collision frontale" />
-		<text name="AUTO_TRACTOR_COLLISION_BACK" text="Collision arrière" />
-		<text name="AUTO_TRACTOR_UTURN_ON" text="Mode AutoTractor [Haut/Bas]" />	
-		<text name="AUTO_TRACTOR_UTURN_OFF" text="Mode AutoTractor [cercle]" />
-		<text name="AUTO_TRACTOR_REVERSE_ON" text="Virage [manoeuvre]" />	
-		<text name="AUTO_TRACTOR_REVERSE_OFF" text="Virage [En avançant]" />
-		<text name="AUTO_TRACTOR_INVERTED_ON" text="Mode travail [inversé]" />	
-		<text name="AUTO_TRACTOR_INVERTED_OFF" text="Mode travail [normal]" />
-		<text name="AUTO_TRACTOR_WIDTH_OFFSET" text="Décalage Largeur" />	
-		<text name="AUTO_TRACTOR_TURN_OFFSET" text="Décalage virage" />
-		<text name="AUTO_TRACTOR_ANGLE_OFFSET" text="Angle virage" />
-		<text name="AUTO_TRACTOR_SAFETY_FACTOR" text="Distance de sécurité" />
-		<text name="AUTO_TRACTOR_ERROR" text="Erreur" />
-		<text name="AUTO_TRACTOR_NEXTTURNSTAGE" text="Point virage suivant" />
-		<text name="AUTO_TRACTOR_CP_ON" text="courseplay mode [off]" />
-		<text name="AUTO_TRACTOR_CP_OFF" text="courseplay mode [on]" />
-		<text name="AUTO_TRACTOR_STEER_ON" text="Pilotage auto [off]" />
-		<text name="AUTO_TRACTOR_STEER_OFF" text="Pilotage auto [on]" />
-		<text name="AUTO_TRACTOR_HEADLAND_ON" text="Headland Off" />
-		<text name="AUTO_TRACTOR_HEADLAND_OFF" text="Headland On" />
-		<text name="AUTO_TRACTOR_FRONT_PACKER_ON" text="Compacteur frontal On" />
-		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF" text="Compacteur frontal Off" />		
-		<text name="AUTO_TRACTOR_COLLISION_ON" text="Vérif. collision On" />
-		<text name="AUTO_TRACTOR_COLLISION_OFF" text="Vérif. collision Off" />
-		<text name="AUTO_TRACTOR_HIRE_ON" text="Conso. semences On" />
-		<text name="AUTO_TRACTOR_HIRE_OFF" text="Conso. semences Off" />
-		<text name ="AUTO_TRACTOR_HEADLAND" text="Headland" />
-		<text name="AUTO_TRACTOR_TURN_MODE_O" text="Virage U sans marche arrière" />
-		<text name="AUTO_TRACTOR_TURN_MODE_A" text="Virage U serré" />
-		<text name="AUTO_TRACTOR_TURN_MODE_Y" text="Virage U moyen" />
-		<text name="AUTO_TRACTOR_TURN_MODE_T" text="Virage U large" />
-		<text name="AUTO_TRACTOR_TURN_MODE_C" text="Virage 90° sans marche arrière" />
-		<text name="AUTO_TRACTOR_TURN_MODE_L" text="Virage serré 90°" />
-		<text name="AUTO_TRACTOR_TURN_MODE_K" text="Large virage 90°" />
-		<text name="AUTO_TRACTOR_TURN_MODE_8" text="Virage U sans marche arrière" />
-		
-		<text name="AUTO_TRACTOR_1" text="Limiteur vit. 1" />
-		<text name="AUTO_TRACTOR_2" text="Limiteur vit. 2" />
-		<text name="AUTO_TRACTOR_3" text="Limiteur vit. 3" />
-		<text name="AUTO_TRACTOR_4" text="Limiteur vit. 4" />
+		<text name="AIVE_WAIT_FOR_PIPE" text="Déchargement [A l'arrêt]" />	
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON" text="Distance de sécurité On" />	
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="Distance de sécurité Off" />
+		<!--AI Vehicle help text-->
+		<text name="AIVE_TEXTHELPPANELOFF" text="Masquer Infos AI Vehicle" />	
+		<text name="AIVE_TEXTHELPPANELON" text="Afficher Infos AI Vehicle" />		
+		<!--AI Vehicle inputbinding text-->
+		<text name="AIVE_COLLISION_OTHER" text="Collision frontale" />
+		<text name="AIVE_COLLISION_BACK" text="Collision arrière" />
+		<text name="AIVE_UTURN_ON" text="Mode AI Vehicle [Haut/Bas]" />	
+		<text name="AIVE_UTURN_OFF" text="Mode AI Vehicle [cercle]" />
+		<text name="AIVE_REVERSE_ON" text="Virage [manoeuvre]" />	
+		<text name="AIVE_REVERSE_OFF" text="Virage [En avançant]" />
+		<text name="AIVE_INVERTED_ON" text="Mode travail [inversé]" />	
+		<text name="AIVE_INVERTED_OFF" text="Mode travail [normal]" />
+		<text name="AIVE_WIDTH_OFFSET" text="Décalage Largeur" />	
+		<text name="AIVE_TURN_OFFSET" text="Décalage virage" />
+		<text name="AIVE_ANGLE_OFFSET" text="Angle virage" />
+		<text name="AIVE_SAFETY_FACTOR" text="Distance de sécurité" />
+		<text name="AIVE_ERROR" text="Erreur" />
+		<text name="AIVE_NEXTTURNSTAGE" text="Point virage suivant" />
+		<text name="AIVE_CP_ON" text="courseplay mode [off]" />
+		<text name="AIVE_CP_OFF" text="courseplay mode [on]" />
+		<text name="AIVE_STEER_ON" text="Pilotage auto [off]" />
+		<text name="AIVE_STEER_OFF" text="Pilotage auto [on]" />
+		<text name="AIVE_HEADLAND_ON" text="Headland Off" />
+		<text name="AIVE_HEADLAND_OFF" text="Headland On" />
+		<text name="AIVE_FRONT_PACKER_ON" text="Compacteur frontal On" />
+		<text name="AIVE_FRONT_PACKER_OFF" text="Compacteur frontal Off" />		
+		<text name="AIVE_COLLISION_ON" text="Vérif. collision On" />
+		<text name="AIVE_COLLISION_OFF" text="Vérif. collision Off" />
+		<text name="AIVE_HIRE_ON" text="Conso. semences On" />
+		<text name="AIVE_HIRE_OFF" text="Conso. semences Off" />
+		<text name ="AIVE_HEADLAND" text="Headland" />
+		<text name="AIVE_TURN_MODE_O" text="Virage U sans marche arrière" />
+		<text name="AIVE_TURN_MODE_A" text="Virage U serré" />
+		<text name="AIVE_TURN_MODE_Y" text="Virage U moyen" />
+		<text name="AIVE_TURN_MODE_T" text="Virage U large" />
+		<text name="AIVE_TURN_MODE_C" text="Virage 90° sans marche arrière" />
+		<text name="AIVE_TURN_MODE_L" text="Virage serré 90°" />
+		<text name="AIVE_TURN_MODE_K" text="Large virage 90°" />
+		<text name="AIVE_TURN_MODE_8" text="Virage U sans marche arrière" />
+				
+		<text name="input_AIVE_HELPPANEL" 	       text="AI Vehicle: ???"/>
+		<text name="input_AIVE_STEER"              text="AI Vehicle: ???"/>
+		<text name="input_AIVE_SWAP_SIDE"          text="AI Vehicle: ???"/>
+		<text name="input_AIVE_ENABLE"             text="AI Vehicle: ???"/>
+		<text name="input_AIVE_UTURN_ON_OFF"       text="AI Vehicle: ???"/>
+		<text name="input_AIVE_STEERING"           text="AI Vehicle: ???"/>
+		<text name="input_AIVE_RAISE"       		   text="AI Vehicle: ???"/>
+		<text name="input_AIVE_START_AIVE"  		   text="AI Vehicle: ???"/>
 	</texts>
 </l10n>

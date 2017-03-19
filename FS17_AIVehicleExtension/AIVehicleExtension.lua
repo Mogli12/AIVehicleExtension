@@ -75,7 +75,8 @@ AIVehicleExtension.saveAttributesMapping = {
 																			safetyFactor		= { xml = "acSafetyFactor",tp = "I", default = AIVEGlobals.safetyFactor },
 																			angleFactor		  = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
 																			speedFactor		  = { xml = "acSpeedFactor", tp = "F", default = 1 },
-																			noSteering			= { xml = "acNoSteering",	 tp = "B", default = false } }																															
+																			noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
+																			waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true } }																															
 AIVehicleExtension.turnStageNoNext = { -3, -2, -1, 21, 22, 23 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { { 4, -1 },
 															{ 8, -1 },
@@ -221,22 +222,22 @@ function AIVehicleExtension:initMogliHud()
 	--mogliCols = mogliCols + 2
 	end
 	--(												directory,	 hudName, hudBackground, onTextID, offTextID, showHudKey, x,y, nx, ny, w, h, cbOnClick )
-	AIVEHud.init( self, AtDirectory, "AIVEHud", 0.4, "AUTO_TRACTOR_TEXTHELPPANELON", "AUTO_TRACTOR_TEXTHELPPANELOFF", InputBinding.AUTO_TRACTOR_HELPPANEL, 0.5-0.015*mogliCols, 0.0108, mogliCols, mogliRows, AIVehicleExtension.sendParameters )--, nil, nil, 0.8 )
-	AIVEHud.setTitle( self, "AUTO_TRACTOR_VERSION" )
+	AIVEHud.init( self, AtDirectory, "AIVEHud", 0.4, "AIVE_TEXTHELPPANELON", "AIVE_TEXTHELPPANELOFF", InputBinding.AIVE_HELPPANEL, 0.5-0.015*mogliCols, 0.0108, mogliCols, mogliRows, AIVehicleExtension.sendParameters )--, nil, nil, 0.8 )
+	AIVEHud.setTitle( self, "AIVE_VERSION" )
 	
 	if AIVEGlobals.showTrace > 0 or AIVEGlobals.devFeatures > 0 then
-	--AIVEHud.addButton(self, "dds/safety_ina.dds", nil, AIVehicleExtension.onToggleTrace, nil, mogliCols,1, "AUTO_TRACTOR_TRACE", nil )
-	--AIVEHud.addButton(self, "dds/refresh.dds",    nil, AIVehicleExtension.onMagic,       nil, mogliCols-1,1, "AUTO_TRACTOR_MAGIC", nil )
+	--AIVEHud.addButton(self, "dds/safety_ina.dds", nil, AIVehicleExtension.onToggleTrace, nil, mogliCols,1, "AIVE_TRACE", nil )
+	--AIVEHud.addButton(self, "dds/refresh.dds",    nil, AIVehicleExtension.onMagic,       nil, mogliCols-1,1, "AIVE_MAGIC", nil )
 	end
 
-	AIVEHud.addButton(self, "dds/ai_combine.dds",     "dds/auto_combine.dds",  AIVehicleExtension.onEnable,      AIVehicleExtension.evalEnable,     1,1, "AUTO_TRACTOR_STOP", "AUTO_TRACTOR_START" )
-	AIVEHud.addButton(self, "dds/active_right.dds",   "dds/active_left.dds",   AIVehicleExtension.setAreaLeft,   AIVehicleExtension.evalAreaLeft,   2,1, "AUTO_TRACTOR_ACTIVESIDERIGHT", "AUTO_TRACTOR_ACTIVESIDELEFT" )
-	AIVEHud.addButton(self, "dds/no_uturn2.dds",      "dds/uturn.dds",         AIVehicleExtension.setUTurn,      AIVehicleExtension.evalUTurn,      3,1, "AUTO_TRACTOR_UTURN_OFF", "AUTO_TRACTOR_UTURN_ON") 
+	AIVEHud.addButton(self, "dds/ai_combine.dds",     "dds/auto_combine.dds",  AIVehicleExtension.onEnable,      AIVehicleExtension.evalEnable,     1,1, "AIVE_STOP", "AIVE_START" )
+	AIVEHud.addButton(self, "dds/active_right.dds",   "dds/active_left.dds",   AIVehicleExtension.setAreaLeft,   AIVehicleExtension.evalAreaLeft,   2,1, "AIVE_ACTIVESIDERIGHT", "AIVE_ACTIVESIDELEFT" )
+	AIVEHud.addButton(self, "dds/no_uturn2.dds",      "dds/uturn.dds",         AIVehicleExtension.setUTurn,      AIVehicleExtension.evalUTurn,      3,1, "AIVE_UTURN_OFF", "AIVE_UTURN_ON") 
 	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.setTurnMode,   nil,                               4,1, nil, nil, AIVehicleExtension.getTurnModeText, AIVehicleExtension.getTurnModeImage )
-	AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds", AIVehicleExtension.onAutoSteer,   AIVehicleExtension.evalAutoSteer,  5,1, "AUTO_TRACTOR_STEER_ON", "AUTO_TRACTOR_STEER_OFF" )
-	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaisePause,  nil,                               6,1, "AUTO_TRACTOR_PAUSE_OFF", "AUTO_TRACTOR_PAUSE_ON", AIVehicleExtension.getRaisePauseText, AIVehicleExtension.getRaisePauseImage )
-	AIVEHud.addButton(self, "dds/next.dds",           "dds/no_next.dds",       AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,  7,1, "AUTO_TRACTOR_NEXTTURNSTAGE", nil )
-	AIVEHud.addButton(self, "dds/setings.dds",        nil,                     AIVehicleExtension.onAIVEScreen,  nil,                               8,1, "AUTO_TRACTOR_SETTINGS", "AUTO_TRACTOR_SETTINGS" )
+	AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds", AIVehicleExtension.onAutoSteer,   AIVehicleExtension.evalAutoSteer,  5,1, "AIVE_STEER_ON", "AIVE_STEER_OFF" )
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaisePause,  nil,                               6,1, "AIVE_PAUSE_OFF", "AIVE_PAUSE_ON", AIVehicleExtension.getRaisePauseText, AIVehicleExtension.getRaisePauseImage )
+	AIVEHud.addButton(self, "dds/next.dds",           "dds/no_next.dds",       AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,  7,1, "AIVE_NEXTTURNSTAGE", nil )
+	AIVEHud.addButton(self, "dds/setings.dds",        nil,                     AIVehicleExtension.onAIVEScreen,  nil,                               8,1, "AIVE_SETTINGS", "AIVE_SETTINGS" )
 
 	
 --AIVEHud.addButton(self, "dds/off.dds",            "dds/on.dds",            AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,      1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage )
@@ -261,34 +262,18 @@ function AIVehicleExtension:draw()
 		AIVEHud.draw(self,true,alwaysDrawTitle)
 	end
 
-	if     self.acLCtrlPressed then
+	if     self.acLAltPressed then
 		if AIVehicleExtension.evalAutoSteer(self) then
-			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_STEER_ON"), InputBinding.AUTO_TRACTOR_STEER)
+			g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_STEER_ON"), InputBinding.AIVE_STEER)
 		elseif self.acTurnStage >= 198 then
-			g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_STEER_OFF"),InputBinding.AUTO_TRACTOR_STEER)
+			g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_STEER_OFF"),InputBinding.AIVE_STEER)
 		end	
-	elseif self.acLAltPressed then
-		if self.aiveIsStarted or self.acTurnStage >= 198 then
-			if self.acParameters.upNDown then
-				g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_UTURN_ON"), InputBinding.AUTO_TRACTOR_UTURN_ON_OFF)
-			else
-				g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_UTURN_OFF"), InputBinding.AUTO_TRACTOR_UTURN_ON_OFF)
-			end
-		end
-	elseif self.acLShiftPressed then
-		if self.aiveIsStarted or self.acTurnStage >= 198 then
-			if self.acParameters.rightAreaActive then
-				g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDERIGHT"), InputBinding.AUTO_TRACTOR_SWAP_SIDE)
-			else
-				g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_ACTIVESIDELEFT"), InputBinding.AUTO_TRACTOR_SWAP_SIDE)
-			end
-		end
 	else
-		g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_SETTINGS"), InputBinding.AUTO_TRACTOR_START_AIVE)		
+		g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_SETTINGS"), InputBinding.AIVE_START_AIVE)		
 	end	
 	
 	if self.acPause then
-		g_currentMission:addHelpButtonText(AIVEHud.getText("AUTO_TRACTOR_CONTINUE"), InputBinding.TOGGLE_CRUISE_CONTROL)
+		g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_CONTINUE"), InputBinding.TOGGLE_CRUISE_CONTROL)
 	end
 	
 end
@@ -379,15 +364,15 @@ function AIVehicleExtension:getRaisePauseText()
 		if not self.aiveIsStarted then 
 			return ""
 		elseif self.acPause then
-			return AIVEHud.getText( "AUTO_TRACTOR_PAUSE_OFF" )
+			return AIVEHud.getText( "AIVE_PAUSE_OFF" )
 		else
-			return AIVEHud.getText( "AUTO_TRACTOR_PAUSE_ON" )
+			return AIVEHud.getText( "AIVE_PAUSE_ON" )
 		end
 	else
 		if self.acImplementsMoveDown then
-			return AIVEHud.getText( "AUTO_TRACTOR_STEER_RAISE" )
+			return AIVEHud.getText( "AIVE_STEER_RAISE" )
 		else
-			return AIVEHud.getText( "AUTO_TRACTOR_STEER_LOWER" )
+			return AIVEHud.getText( "AIVE_STEER_LOWER" )
 		end
 	end
 end
@@ -838,7 +823,7 @@ function AIVehicleExtension:getTurnModeImage()
 end
 
 function AIVehicleExtension:getTurnModeText(old)
-	return AIVEHud.getText("AUTO_TRACTOR_TURN_MODE_"..self.acTurnMode)
+	return AIVEHud.getText("AIVE_TURN_MODE_"..self.acTurnMode)
 end
 
 function AIVehicleExtension:setBigHeadland()
@@ -944,14 +929,14 @@ function AIVehicleExtension:update(dt)
 	--	AIVehicleExtension.checkState( self )
 	--end
 	
-		if AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_HELPPANEL" ) then
+		if AIVehicleExtension.mbHasInputEvent( "AIVE_HELPPANEL" ) then
 			local guiActive = false
 			if self.atHud ~= nil and self.atHud.GuiActive ~= nil then
 				guiActive = self.atHud.GuiActive
 			end
 			AIVehicleExtension.showGui( self, not guiActive )
 		end
-		if      AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_START_AIVE" ) then
+		if      AIVehicleExtension.mbHasInputEvent( "AIVE_START_AIVE" ) then
 		--if self.aiIsStarted then
 		--	if self.aiveIsStarted then
 		--		self:stopAIVehicle()
@@ -960,7 +945,7 @@ function AIVehicleExtension:update(dt)
 		--	AIVehicleExtension.setAIVEStarted( self, true )
 		--end
 			AIVehicleExtension.onAIVEScreen( self )
-		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_SWAP_SIDE" ) then
+		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_SWAP_SIDE" ) then
 			self.acParameters.leftAreaActive	= self.acParameters.rightAreaActive
 			self.acParameters.rightAreaActive = not self.acParameters.leftAreaActive
 			AIVehicleExtension.sendParameters(self)
@@ -973,21 +958,21 @@ function AIVehicleExtension:update(dt)
 					AIVehicle.aiRotateRight(self)
 				end			
 			end
-		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_STEER" ) then
+		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_STEER" ) then
 			if self.acTurnStage < 198 then
 				AIVehicleExtension.onAutoSteer(self, true)
 			else
 				AIVehicleExtension.onAutoSteer(self, false)
 			end
-		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_UTURN_ON_OFF" ) then
+		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_UTURN_ON_OFF" ) then
 			self.acParameters.upNDown = not self.acParameters.upNDown
 			AIVehicleExtension.sendParameters(self)
-		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_STEERING" ) then
+		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_STEERING" ) then
 			self.acParameters.noSteering = not self.acParameters.noSteering
 			AIVehicleExtension.sendParameters(self)
 		elseif AIVehicleExtension.mbHasInputEvent( "IMPLEMENT_EXTRA" ) then
 			self.acCheckPloughSide = true
-		elseif AIVehicleExtension.mbHasInputEvent( "AUTO_TRACTOR_RAISE" ) then
+		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_RAISE" ) then
 			AIVehicleExtension.onRaiseImpl( self, AIVehicleExtension.evalRaiseImpl( self ) )
 		end
 		
@@ -1025,7 +1010,7 @@ function AIVehicleExtension:update(dt)
 		if AIVEGlobals.devFeatures <= 0 or self.atHud.InfoText == nil or self.atHud.InfoText == "" then
 			AIVEHud.setInfoText( self )
 			if self.acDimensions ~= nil and self.acDimensions.distance ~= nil then
-				AIVEHud.setInfoText( self, AIVEHud.getText( "AUTO_TRACTOR_WORKWIDTH" ) .. string.format(" %0.2fm", self.acDimensions.distance+self.acDimensions.distance) )
+				AIVEHud.setInfoText( self, AIVEHud.getText( "AIVE_WORKWIDTH" ) .. string.format(" %0.2fm", self.acDimensions.distance+self.acDimensions.distance) )
 			end
 			if self.acTurnStage ~= nil and self.acTurnStage ~= 0 and self.acTurnStage < 198 then
 				AIVEHud.setInfoText( self, AIVEHud.getInfoText(self) .. string.format(" (%i)", self.acTurnStage) )
@@ -1356,7 +1341,31 @@ function AIVehicleExtension:autoSteer(dt)
 		
 	local vX,vY,vZ = getWorldTranslation( self.acRefNode )
 	AutoSteeringEngine.setAiWorldPosition( self, vX, vY, vZ )
-	local detected, angle, border, tX, _, tZ, dist = AIVehicleExtension.detectAngle( self )			
+	
+	local inField, target, angleFactor, nilAngle
+
+	if self.acTurnStage == 199 then
+		inField     = true
+		angleFactor = self.acParameters.angleFactor
+		nilAngle    = "L"
+		
+		if	   self.turnTimer < 0 
+				or AutoSteeringEngine.processIsAtEnd( self ) then
+			target = math.min( math.max( 0.5 * AutoSteeringEngine.getTurnAngle(self), -self.acDimensions.maxSteeringAngle ), self.acDimensions.maxSteeringAngle )
+			if noReverseIndex <= 0 then
+				target = math.max( target, 0 )
+			end
+			if not self.acParameters.leftAreaActive then
+				target = -target
+			end
+		end
+	else
+		inField     = false
+		angleFactor = 1
+		nilAngle    = "M"
+	end
+
+	local detected, angle, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( self, inField, target, angleFactor, nilAngle )	
 --==============================================================						
 		
 	self.turnTimer = self.turnTimer - dt
@@ -1586,6 +1595,10 @@ end
 -- getHeadlandSmallBig
 ------------------------------------------------------------------------
 function AIVehicleExtension:getHeadlandSmallBig()
+	if self.acDimensions == nil then
+		AIVehicleExtension.calculateDimensions( self )
+	end
+	AIVehicleExtension.calculateDistances( self )
 	local nri   = AutoSteeringEngine.getNoReverseIndex( self )
   local small = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, false, nri )
 	local big   = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, true,  nri )

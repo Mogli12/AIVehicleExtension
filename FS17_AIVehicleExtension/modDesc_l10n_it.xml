@@ -4,73 +4,75 @@
 	<description><![CDATA[Auto Tractor]]></description>
 
 	<texts>
-		<!--AutoTractor helpPanel text-->
-		<text name="AUTO_TRACTOR_START" text="AutoTractor on" />
-		<text name="AUTO_TRACTOR_STOP" text="AutoTractor off" />
-		<text name="AUTO_TRACTOR_WORKWIDTH" text="larg. lavoro:" />
-		<text name="AUTO_TRACTOR_ACTIVESIDELEFT" text="lato attivo: sinistro" />
-		<text name="AUTO_TRACTOR_ACTIVESIDERIGHT" text="lato attivo: destro" />
+		<!--AI Vehicle helpPanel text-->
+		<text name="AIVE_START" text="AI Vehicle on" />
+		<text name="AIVE_STOP" text="AI Vehicle off" />
+		<text name="AIVE_WORKWIDTH" text="larg. lavoro:" />
+		<text name="AIVE_ACTIVESIDELEFT" text="lato attivo: sinistro" />
+		<text name="AIVE_ACTIVESIDERIGHT" text="lato attivo: destro" />
 
-		<text name="AUTO_TRACTOR_UTURN_ON_OFF"             text="AutoTractor cambia modo"/>
-		<text name="AUTO_TRACTOR_STEERING"                 text="sterzo manuale"/>
-		<text name="AUTO_TRACTOR_STEERING_ON"              text="sterzo manuale [on]"/>
-		<text name="AUTO_TRACTOR_STEERING_OFF"             text="sterzo manuale [off]"/>
-		<text name="AUTO_TRACTOR_CONTINUE"                 text="continua"/>
+		<text name="AIVE_UTURN_ON_OFF"             text="AI Vehicle cambia modo"/>
+		<text name="AIVE_STEERING"                 text="sterzo manuale"/>
+		<text name="AIVE_STEERING_ON"              text="sterzo manuale [on]"/>
+		<text name="AIVE_STEERING_OFF"             text="sterzo manuale [off]"/>
+		<text name="AIVE_CONTINUE"                 text="continua"/>
 		
-		<text name="AUTO_TRACTOR_WAITMODE_ON" text="modo scarico [fermo]" />
-		<text name="AUTO_TRACTOR_WAITMODE_OFF" text="modo scarico [in movimento]" />
-		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_ON" text="mantieni la distanza è ON" />
-		<text name="AUTO_TRACTOR_COLLISIONTRIGGERMODE_OFF" text="mantieni la distanza è OFF" />
-		<!--AutoTractor help text-->
-		<text name="AUTO_TRACTOR_TEXTHELPPANELOFF" text="nascondi dettagli AutoTractor" />
-		<text name="AUTO_TRACTOR_TEXTHELPPANELON" text="mostra dettagli AutoTractor" />
-		<!--AutoTractor inputbinding text-->
-		<text name="AUTO_TRACTOR_COLLISION_OTHER" text="collisioni anteriori" />
-		<text name="AUTO_TRACTOR_COLLISION_BACK" text="collisioni posteriori" />
-		<text name="AUTO_TRACTOR_UTURN_ON" text="modo AutoTractor [su/giù]" />
-		<text name="AUTO_TRACTOR_UTURN_OFF" text="modo AutoTractor [cerchio]" />
-		<text name="AUTO_TRACTOR_REVERSE_ON" text="Manovra [svolta]" />
-		<text name="AUTO_TRACTOR_REVERSE_OFF" text="Manovra [movimento]" />
-		<text name="AUTO_TRACTOR_INVERTED_ON" text="modo lavoro [reverse]" />
-		<text name="AUTO_TRACTOR_INVERTED_OFF" text="modo lavoro [normale]" />
-		<text name="AUTO_TRACTOR_WIDTH_OFFSET" text="larghezza spostamento" />
-		<text name="AUTO_TRACTOR_TURN_OFFSET" text="spostamento svolta" />
-		<text name="AUTO_TRACTOR_ANGLE_OFFSET" text="anglolo di svolta" />
-		<text name="AUTO_TRACTOR_SAFETY_FACTOR" text="distanza di sicurezza" />
-		<text name="AUTO_TRACTOR_ERROR" text="errore" />
-		<text name="AUTO_TRACTOR_NEXTTURNSTAGE" text="vai prossimo turno di svolta" />
-		<text name="AUTO_TRACTOR_CP_ON" text="modo courseplay [off]" />
-		<text name="AUTO_TRACTOR_CP_OFF" text="modo courseplay [on]" />
-		<text name="AUTO_TRACTOR_STEER_ON" text="sterzo automatico [off]" />
-		<text name="AUTO_TRACTOR_STEER_OFF" text="sterzo automatico [on]" />
-		<text name="AUTO_TRACTOR_HEADLAND_ON" text="testa del campo [off]" />
-		<text name="AUTO_TRACTOR_HEADLAND_OFF" text="testa del campo [on]" />
-		<text name="AUTO_TRACTOR_FRONT_PACKER_ON" text="compattatore frontale [on]" />
-		<text name="AUTO_TRACTOR_FRONT_PACKER_OFF" text="compattatore frontale [off]" />
-		<text name="AUTO_TRACTOR_COLLISION_ON" text="rileva collisioni [on]" />
-		<text name="AUTO_TRACTOR_COLLISION_OFF" text="rileva collisioni [off]" />
-		<text name="AUTO_TRACTOR_HIRE_ON" text="uso dei semi [off]" />
-		<text name="AUTO_TRACTOR_HIRE_OFF" text="uso dei semi [on]" />
-		<text name ="AUTO_TRACTOR_HEADLAND" text="testa del campo" />
-		<text name="AUTO_TRACTOR_TURN_MODE_O" text="svolta a U senza retro" />
-		<text name="AUTO_TRACTOR_TURN_MODE_A" text="svolta a U piccola" />
-		<text name="AUTO_TRACTOR_TURN_MODE_Y" text="svolta a U media" />
-		<text name="AUTO_TRACTOR_TURN_MODE_T" text="svolta a U grande" />
-		<text name="AUTO_TRACTOR_TURN_MODE_C" text="svolta di 90° senza retro" />
-		<text name="AUTO_TRACTOR_TURN_MODE_L" text="svolta di 90° piccola" />
-		<text name="AUTO_TRACTOR_TURN_MODE_K" text="svolta di 90° grande" />
-		<text name="AUTO_TRACTOR_TURN_MODE_8" text="svolta a U senza retro" />
-		<text name="AUTO_TRACTOR_PAUSE_ON"                 text="pausa [on]" />
-		<text name="AUTO_TRACTOR_PAUSE_OFF"                text="pausa [off]" />
-		<text name="AUTO_TRACTOR_STEER_RAISE"              text="solleva tutti gli attrezzi" />
-		<text name="AUTO_TRACTOR_STEER_LOWER"              text="abbassa tutti gli attrezzi" />
-		<text name="AUTO_TRACTOR_TRACE"                    text="mostra traccia" />
-		<text name="AUTO_TRACTOR_MAGIC"                    text="aggiorna il campo" />
+		<text name="AIVE_WAIT_FOR_PIPE" text="modo scarico [fermo]" />
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON" text="mantieni la distanza è ON" />
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="mantieni la distanza è OFF" />
+		<!--AI Vehicle help text-->
+		<text name="AIVE_TEXTHELPPANELOFF" text="nascondi dettagli AI Vehicle" />
+		<text name="AIVE_TEXTHELPPANELON" text="mostra dettagli AI Vehicle" />
+		<!--AI Vehicle inputbinding text-->
+		<text name="AIVE_COLLISION_OTHER" text="collisioni anteriori" />
+		<text name="AIVE_COLLISION_BACK" text="collisioni posteriori" />
+		<text name="AIVE_UTURN_ON" text="modo AI Vehicle [su/giù]" />
+		<text name="AIVE_UTURN_OFF" text="modo AI Vehicle [cerchio]" />
+		<text name="AIVE_REVERSE_ON" text="Manovra [svolta]" />
+		<text name="AIVE_REVERSE_OFF" text="Manovra [movimento]" />
+		<text name="AIVE_INVERTED_ON" text="modo lavoro [reverse]" />
+		<text name="AIVE_INVERTED_OFF" text="modo lavoro [normale]" />
+		<text name="AIVE_WIDTH_OFFSET" text="larghezza spostamento" />
+		<text name="AIVE_TURN_OFFSET" text="spostamento svolta" />
+		<text name="AIVE_ANGLE_OFFSET" text="anglolo di svolta" />
+		<text name="AIVE_SAFETY_FACTOR" text="distanza di sicurezza" />
+		<text name="AIVE_ERROR" text="errore" />
+		<text name="AIVE_NEXTTURNSTAGE" text="vai prossimo turno di svolta" />
+		<text name="AIVE_CP_ON" text="modo courseplay [off]" />
+		<text name="AIVE_CP_OFF" text="modo courseplay [on]" />
+		<text name="AIVE_STEER_ON" text="sterzo automatico [off]" />
+		<text name="AIVE_STEER_OFF" text="sterzo automatico [on]" />
+		<text name="AIVE_HEADLAND_ON" text="testa del campo [off]" />
+		<text name="AIVE_HEADLAND_OFF" text="testa del campo [on]" />
+		<text name="AIVE_FRONT_PACKER_ON" text="compattatore frontale [on]" />
+		<text name="AIVE_FRONT_PACKER_OFF" text="compattatore frontale [off]" />
+		<text name="AIVE_COLLISION_ON" text="rileva collisioni [on]" />
+		<text name="AIVE_COLLISION_OFF" text="rileva collisioni [off]" />
+		<text name="AIVE_HIRE_ON" text="uso dei semi [off]" />
+		<text name="AIVE_HIRE_OFF" text="uso dei semi [on]" />
+		<text name ="AIVE_HEADLAND" text="testa del campo" />
+		<text name="AIVE_TURN_MODE_O" text="svolta a U senza retro" />
+		<text name="AIVE_TURN_MODE_A" text="svolta a U piccola" />
+		<text name="AIVE_TURN_MODE_Y" text="svolta a U media" />
+		<text name="AIVE_TURN_MODE_T" text="svolta a U grande" />
+		<text name="AIVE_TURN_MODE_C" text="svolta di 90° senza retro" />
+		<text name="AIVE_TURN_MODE_L" text="svolta di 90° piccola" />
+		<text name="AIVE_TURN_MODE_K" text="svolta di 90° grande" />
+		<text name="AIVE_TURN_MODE_8" text="svolta a U senza retro" />
+		<text name="AIVE_PAUSE_ON"                 text="pausa [on]" />
+		<text name="AIVE_PAUSE_OFF"                text="pausa [off]" />
+		<text name="AIVE_STEER_RAISE"              text="solleva tutti gli attrezzi" />
+		<text name="AIVE_STEER_LOWER"              text="abbassa tutti gli attrezzi" />
+		<text name="AIVE_TRACE"                    text="mostra traccia" />
+		<text name="AIVE_MAGIC"                    text="aggiorna il campo" />
 				
-		
-		<text name="AUTO_TRACTOR_1" text="livello velocità 1" />
-		<text name="AUTO_TRACTOR_2" text="livello velocità 2" />
-		<text name="AUTO_TRACTOR_3" text="livello velocità 3" />
-		<text name="AUTO_TRACTOR_4" text="livello velocità 4" />
+		<text name="input_AIVE_HELPPANEL" 	       text="AI Vehicle: ???"/>
+		<text name="input_AIVE_STEER"              text="AI Vehicle: ???"/>
+		<text name="input_AIVE_SWAP_SIDE"          text="AI Vehicle: ???"/>
+		<text name="input_AIVE_ENABLE"             text="AI Vehicle: ???"/>
+		<text name="input_AIVE_UTURN_ON_OFF"       text="AI Vehicle: ???"/>
+		<text name="input_AIVE_STEERING"           text="AI Vehicle: ???"/>
+		<text name="input_AIVE_RAISE"       		   text="AI Vehicle: ???"/>
+		<text name="input_AIVE_START_AIVE"  		   text="AI Vehicle: ???"/>
 	</texts>
 </l10n>

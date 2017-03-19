@@ -523,7 +523,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			veh.aiRescueTimer = veh.aiRescueTimer + dt;
 		end			
 	else
-		local ta, af
+		local ta, af, na
 		
 		if	    self.search    == nil
 				and ( veh.turnTimer < 0 

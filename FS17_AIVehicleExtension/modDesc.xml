@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="34">
 	<author>Mogli</author>
-	<version>0.4.0.9</version>
+	<version>0.9.0.1</version>
 	<l10n filenamePrefix="modDesc_l10n">
-		<text name="AUTO_TRACTOR_VERSION">
-			<en>AI Vehicle Extension v0.4.0.9</en>
-			<de>AI Vehicle Extension v0.4.0.9</de>
-			<fr>AI Vehicle Extension v0.4.0.9</fr>
-			<it>AI Vehicle Extension v0.4.0.9</it>
-			<ru>AI Vehicle Extension v0.4.0.9</ru>
-			<cz>AI Vehicle Extension v0.4.0.9</cz>
-			<pl>AI Vehicle Extension v0.4.0.9</pl>
-										<cs>车辆助手 v0.4.0.9</cs>
+		<text name="AIVE_VERSION">
+			<en>AI Vehicle Extension v1.0 beta 1</en>
+			<de>AI Vehicle Extension v1.0 beta 1</de>
+			<fr>AI Vehicle Extension v1.0 beta 1</fr>
+			<it>AI Vehicle Extension v1.0 beta 1</it>
+			<ru>AI Vehicle Extension v1.0 beta 1</ru>
+			<cz>AI Vehicle Extension v1.0 beta 1</cz>
+			<pl>AI Vehicle Extension v1.0 beta 1</pl>
+										<cs>车辆助手 v1.0 beta 1</cs>
 		</text>
 	</l10n>
 	<title>
@@ -50,13 +50,13 @@
 	</extraSourceFiles>
 
 	<inputBindings>
-		<input name="AUTO_TRACTOR_HELPPANEL" 	     category="VEHICLE" key1="KEY_lshift KEY_5" key2="" button="" device="0" mouse="" visible="false" />
-		<input name="AUTO_TRACTOR_STEER"           category="VEHICLE" key1="KEY_lctrl KEY_6"  key2="" button="" device="0" mouse="" visible="false" />
-		<input name="AUTO_TRACTOR_SWAP_SIDE"       category="VEHICLE" key1="KEY_lshift KEY_6" key2="" button="" device="0" mouse="" visible="false" />
-		<input name="AUTO_TRACTOR_ENABLE"          category="VEHICLE" key1="KEY_lctrl KEY_5"  key2="" button="" device="0" mouse="" visible="false" />
-		<input name="AUTO_TRACTOR_UTURN_ON_OFF"    category="VEHICLE" key1="KEY_lalt KEY_5"   key2="" button="" device="0" mouse="" visible="false" />
-		<input name="AUTO_TRACTOR_STEERING"        category="VEHICLE" key1="KEY_lalt KEY_6"   key2="" button="" device="0" mouse="" visible="false" />
-		<input name="AUTO_TRACTOR_RAISE"           category="VEHICLE" key1="KEY_lalt KEY_v"   key2="" button="" device="0" mouse="" visible="false" />
-		<input name="AUTO_TRACTOR_START_AIVE"      category="VEHICLE" key1="KEY_lshift KEY_h" key2="" button="" device="0" mouse="" visible="false" />
+		<input name="AIVE_HELPPANEL" 	     category="VEHICLE" key1="KEY_lctrl KEY_h" 	key2="" button="" device="0" mouse="" />
+		<input name="AIVE_STEER"           category="VEHICLE" key1="KEY_lalt KEY_h"   key2="" button="" device="0" mouse="" />
+		<input name="AIVE_SWAP_SIDE"       category="VEHICLE" key1="KEY_lalt KEY_6" 	key2="" button="" device="0" mouse="" />
+		<input name="AIVE_ENABLE"          category="VEHICLE" key1=""  								key2="" button="" device="0" mouse="" />
+		<input name="AIVE_UTURN_ON_OFF"    category="VEHICLE" key1="KEY_lalt KEY_5"   key2="" button="" device="0" mouse="" />
+		<input name="AIVE_STEERING"        category="VEHICLE" key1=""   							key2="" button="" device="0" mouse="" />
+		<input name="AIVE_RAISE"           category="VEHICLE" key1="KEY_lalt KEY_v"   key2="" button="" device="0" mouse="" />
+		<input name="AIVE_START_AIVE"      category="VEHICLE" key1="KEY_lshift KEY_h" key2="" button="" device="0" mouse="" />
 	</inputBindings>
 </modDesc>

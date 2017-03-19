@@ -95,9 +95,16 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 				end
 			end
 			
-			if fillLevel == capacity then
+			if     fillLevel <= 0 then
+				self.wasEmpty = true
+			elseif fillLevel >= 0.1 * capacity then
+				self.wasEmpty = false
+			elseif self.wasEmpty == nil then
+				self.wasEmpty = false
+			end
+			
+			if fillLevel >= capacity then
 				pipeState = 2
-				self.wasCompletelyFull = true
 				if self.notificationFullGrainTankShown ~= true then
 					g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, string.format(g_i18n:getText(AIVehicle.REASON_TEXT_MAPPING[AIVehicle.STOP_REASON_GRAINTANK_IS_FULL]), self.vehicle.currentHelper.name) )
 					self.notificationFullGrainTankShown = true
@@ -106,32 +113,33 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 				self.notificationFullGrainTankShown = false
 			end
 
-			if validTrailer and fillLevel > 0 then
+			if     self.wasEmpty then
+			-- close pipe if combine was empty
+				pipeState = 1
+			elseif validTrailer ~= nil then
+			-- open pipe if trailer is in reach
 				pipeState = 2
-			else
-				if fillLevel < capacity then
-					self.wasCompletelyFull = false
-				end
-			end
-			
-			if validTrailer == nil then
+			elseif fillLevel < 0.95 * capacity then
+			-- close pipe if not nearly full
 				pipeState = 1
 			end
-
+			
 			if combine.pipeTargetState ~= pipeState then
 				combine:setPipeState(pipeState)
 			end
 			
-			allowedToDrive = fillLevel < capacity
-			
-			if pipeState == 2 and self.wasCompletelyFull then
+			if      pipeState                 == 2
+					and validTrailer              ~= nil 
+					and self.vehicle.acParameters ~= nil 
+					and self.vehicle.acParameters.waitForPipe then
+			-- trailer is in reach => wait
 				allowedToDrive = false
+			else
+				allowedToDrive = true
 			end
 
-			if isTurning and validTrailer ~= nil then
-				if combine.trailerFound ~= 0 then
-					allowedToDrive = fillLevel == 0
-				end
+			if isTurning and validTrailer ~= nil and combine.trailerFound ~= 0 then
+				allowedToDrive = self.wasEmpty	 
 			end
 		end
 
