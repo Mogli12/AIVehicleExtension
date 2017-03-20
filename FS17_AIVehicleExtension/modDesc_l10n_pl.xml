@@ -59,7 +59,7 @@
 		<text name="AIVE_TURN_MODE"                text="Sposoby nawracania" />
 		<text name="AIVE_TURN_MODE_O"              text="nawrót w kształcie O" />
 		<text name="AIVE_TURN_MODE_A"              text="cofanie po krzywej" />
-		<text name="AIVE_TURN_MODE_Y"              text="średni nawrót" />
+		<text name="AIVE_TURN_MODE_Y"              text="cofanie po krzywej (młocarnia)" />
 		<text name="AIVE_TURN_MODE_T"              text="cofanie po prostej" />
 		<text name="AIVE_TURN_MODE_C"              text="nawrót w kształcie O" />
 		<text name="AIVE_TURN_MODE_L"              text="cofanie po krzywej" />
@@ -68,18 +68,18 @@
 		<text name="AIVE_TURN_MODE_8"              text="nawrót w kształcie 8" />
 		<text name="AIVE_PAUSE_ON"                 text="Wznów" />
  		<text name="AIVE_PAUSE_OFF"                text="Wstrzymaj" />
-  	<text name="AIVE_STEER_RAISE"              text="Podnieś maszyny/wył." />
-  	<text name="AIVE_STEER_LOWER"              text="Opuść maszyny/wł." />
-  	<text name="AIVE_TRACE"                    text="Pokaż ścieżkę" />
+		<text name="AIVE_STEER_RAISE"              text="Podnieś maszyny/wył." />
+  		<text name="AIVE_STEER_LOWER"              text="Opuść maszyny/wł." />
+  		<text name="AIVE_TRACE"                    text="Pokaż ścieżkę" />
  		<text name="AIVE_MAGIC"                    text="Rozpoznawanie pola" />
 				
-		<text name="input_AIVE_HELPPANEL" 	       text="AI Vehicle: ???"/>
-		<text name="input_AIVE_STEER"              text="AI Vehicle: ???"/>
-		<text name="input_AIVE_SWAP_SIDE"          text="AI Vehicle: ???"/>
-		<text name="input_AIVE_ENABLE"             text="AI Vehicle: ???"/>
-		<text name="input_AIVE_UTURN_ON_OFF"       text="AI Vehicle: ???"/>
-		<text name="input_AIVE_STEERING"           text="AI Vehicle: ???"/>
-		<text name="input_AIVE_RAISE"       		   text="AI Vehicle: ???"/>
-		<text name="input_AIVE_START_AIVE"  		   text="AI Vehicle: ???"/>
+		<text name="input_AIVE_HELPPANEL"          text="Alternatywny pomocnik: Pokaż/ukryj HUD"/>
+		<text name="input_AIVE_STEER"              text="Alternatywny pomocnik: Sterowanie automatyczne"/>
+		<text name="input_AIVE_SWAP_SIDE"          text="Alternatywny pomocnik: Zamiana aktywnej strony"/>
+		<text name="input_AIVE_ENABLE"             text="Alternatywny pomocnik: Zmiana pracownika"/>
+		<text name="input_AIVE_UTURN_ON_OFF"       text="Alternatywny pomocnik: Jazda na około wł./wył."/>
+		<text name="input_AIVE_STEERING"           text="Alternatywny pomocnik: Sterowanie ręczne"/>
+		<text name="input_AIVE_RAISE"              text="Alternatywny pomocnik: Podnieś/opuść wszystkie maszyny"/>
+		<text name="input_AIVE_START_AIVE"         text="Alternatywny pomocnik: Ustawienia"/>
 	</texts>
 </l10n>
