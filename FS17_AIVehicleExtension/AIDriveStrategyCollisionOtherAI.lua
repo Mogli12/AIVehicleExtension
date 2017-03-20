@@ -21,39 +21,16 @@ end
 
 function AIDriveStrategyCollisionOtherAI:delete()
 	AIDriveStrategyCollisionOtherAI:superClass().delete(self)
-
-	if self.vehicle.isServer then
-		for triggerID,list in pairs(self.collidingVehicles) do
-			removeTrigger(triggerID)
-		end
-		self.collidingVehicles = {}
-	end
 end
 
 function AIDriveStrategyCollisionOtherAI:setAIVehicle(vehicle)
 	AIDriveStrategyCollisionOtherAI:superClass().setAIVehicle(self, vehicle)
-
-	if self.vehicle.isServer then
-		self.collidingVehicles = {}
-		if self.vehicle.acOtherCombineCollisionTriggerR ~= nil then
-			local triggerID = self.vehicle.acOtherCombineCollisionTriggerR
-			self.collidingVehicles[triggerID] = {}
-			addTrigger( triggerID, "onOtherAICollisionTrigger", self )
-		end
-		if self.vehicle.acOtherCombineCollisionTriggerL ~= nil then
-			local triggerID = self.vehicle.acOtherCombineCollisionTriggerL
-			self.collidingVehicles[triggerID] = {}
-			addTrigger( triggerID, "onOtherAICollisionTrigger", self )
-		end
-		self.start = true
-	end
 end
 
 function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 	-- we do not check collisions at the back, at least currently
 	self.vehicle.aiveMaxCollisionSpeed = nil
 	self.vehicle.aiveCollisionDistance = nil
-	self.start = nil
 	
 	if self.vehicle.movingDirection < 0 and self.vehicle:getLastSpeed(true) > 2 then
 		return nil, nil, nil, nil, nil
@@ -61,15 +38,16 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 	
 	local triggerId 
 	if     self.vehicle.acParameters == nil 
-			or self.vehicle.acParameters.upNDown then
+			or self.vehicle.acParameters.upNDown 
+			or self.vehicle.acCollidingVehicles == nil then
 	elseif self.vehicle.acParameters.rightAreaActive then
 		triggerId = self.vehicle.acOtherCombineCollisionTriggerR
 	else
 		triggerId = self.vehicle.acOtherCombineCollisionTriggerL
 	end
 
-	if triggerId ~= nil then
-		for otherAI,bool in pairs(self.collidingVehicles[triggerId]) do
+	if triggerId ~= nil and self.vehicle.acCollidingVehicles[triggerId] ~= nil then
+		for otherAI,bool in pairs(self.vehicle.acCollidingVehicles[triggerId]) do
 			if bool and otherAI.aiIsStarted then
 				local blocked = true
 				
@@ -132,32 +110,4 @@ end
 function AIDriveStrategyCollisionOtherAI:updateDriving(dt)
 end
 
-function AIDriveStrategyCollisionOtherAI:onOtherAICollisionTrigger(triggerId, otherId, onEnter, onLeave, onStay, otherShapeId)
---print(" HIT @:"..self.vehicle.configFileName.."   IN   "..getName(triggerId).."   BY   "..getName(otherId)..", "..getName(otherShapeId))
-
-	if g_currentMission.players[otherId] == nil then
-		local vehicle = g_currentMission.nodeToVehicle[otherId]
-		local otherAI = nil
-			
-		if vehicle ~= nil then
-			if vehicle.specializations ~= nil and SpecializationUtil.hasSpecialization( AIVehicle, vehicle.specializations ) then
-				otherAI = vehicle 
-			elseif type( vehicle.getRootAttacherVehicle ) == "function" then
-				otherAI = vehicle:getRootAttacherVehicle()
-				if not SpecializationUtil.hasSpecialization( AIVehicle, otherAI.specializations ) then
-					otherAI = nil
-				end
-			end
-		end
-			
-		if      otherAI ~= nil
-				and otherAI ~= self.vehicle then
-			if onLeave then
-				self.collidingVehicles[triggerId][otherAI] = nil
-			else
-				self.collidingVehicles[triggerId][otherAI] = true
-			end
-		end		
-	end
-end
 

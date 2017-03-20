@@ -130,16 +130,21 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 			
 			if      pipeState                 == 2
 					and validTrailer              ~= nil 
+					and combine.trailerFound      ~= 0
 					and self.vehicle.acParameters ~= nil 
 					and self.vehicle.acParameters.waitForPipe then
 			-- trailer is in reach => wait
 				allowedToDrive = false
+			elseif  isTurning
+					and validTrailer              ~= nil 
+					and combine.trailerFound      ~= 0
+					and not self.wasEmpty then
+			-- unloading during turn
+				allowedToDrive = false
+			elseif  fillLevel >= capacity then
+				allowedToDrive = false
 			else
 				allowedToDrive = true
-			end
-
-			if isTurning and validTrailer ~= nil and combine.trailerFound ~= 0 then
-				allowedToDrive = self.wasEmpty	 
 			end
 		end
 

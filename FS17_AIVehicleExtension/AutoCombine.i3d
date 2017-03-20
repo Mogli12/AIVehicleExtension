@@ -147,10 +147,10 @@
   </Dynamics>
 
   <Scene>
-    <TransformGroup name="AutoCombine" nodeId="11">
-      <Shape shapeId="1" name="backCollisionTrigger" translation="0 2 -5.62676" rotation="0 -90 0" kinematic="true" trigger="true" collisionMask="1056768" nodeId="12" materialIds="7" castsShadows="true" receiveShadows="true" nonRenderable="true"/>
-      <Shape shapeId="2" name="otherCombColliTriggerL" translation="7.63365 2.26392 10.661" rotation="0 90 0" scale="2 1 1" kinematic="true" trigger="true" collisionMask="1056768" nodeId="13" materialIds="6" nonRenderable="true"/>
-      <Shape shapeId="2" name="otherCombColliTriggerR" translation="-8.61727 2.26392 10.661" rotation="0 90 0" scale="2 1 1" kinematic="true" trigger="true" collisionMask="1056768" nodeId="14" materialIds="6" nonRenderable="true"/>
+    <TransformGroup name="AutoCombine" nodeId="29">
+      <Shape shapeId="1" name="backCollisionTrigger" translation="0 2 -5.62676" rotation="0 -90 0" kinematic="true" trigger="true" collisionMask="1056768" nodeId="30" materialIds="7" castsShadows="true" receiveShadows="true" nonRenderable="true"/>
+      <Shape shapeId="2" name="otherCombColliTriggerL" translation="7.63365 2.26392 10.661" rotation="0 90 0" scale="2 1 1.5" kinematic="true" trigger="true" collisionMask="1056768" nodeId="31" materialIds="6" nonRenderable="true"/>
+      <Shape shapeId="2" name="otherCombColliTriggerR" translation="-8.61727 2.26392 10.661" rotation="0 90 0" scale="2 1 1.5" kinematic="true" trigger="true" collisionMask="1056768" nodeId="32" materialIds="6" nonRenderable="true"/>
     </TransformGroup>
   </Scene>
 

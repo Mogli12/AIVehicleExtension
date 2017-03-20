@@ -103,7 +103,7 @@
 		<maxDtSumP1 value="500"/>   
 		<maxDtProd  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
 		<maxDtSumF  value="100"/>
-		<fruitBuffer value="2"/> <!-- 0 built in; 1 round x/z values; 2 buffer on -->
+		<fruitBuffer value="0"/> <!-- 0 built in; 1 round x/z values; 2 buffer on -->
 		
 		<maxDtDistF type="float" value="0.077284" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
 		<maxDtDistD type="float" value="0.01" />
@@ -137,7 +137,7 @@
 		
 		<borderBuffer type="bool" value="true" />
 		
-		<detectLevel3 type="float" value="2.9" />
+		<detectLevel3 type="float" value="0" />2.9
 		
 		<testOutside type="float" value="1.5" />
 		<useFBB123   type="bool" value="true"/>

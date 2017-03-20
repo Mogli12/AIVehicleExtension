@@ -133,7 +133,6 @@ end
 function AIVehicleExtension:load(saveGame)
 
 	-- for courseplay	
-	self.acNumCollidingVehicles = 0
 	self.acIsCPStopped				= false
 	self.acTurnStage					= 0
 	self.acPause							= false	
@@ -153,7 +152,6 @@ function AIVehicleExtension:load(saveGame)
 	self.acDeltaTimeoutStart	= math.max(Utils.getNoNil( self.turnTimeoutLong	 , 6000 ), 4000 )
 	self.acDeltaTimeoutNoTurn = 2 * self.acDeltaTimeoutWait --math.max(Utils.getNoNil( self.waitForTurnTimeout , 2000 ), 1000 )
 	self.acRecalculateDt			= 0
-	self.acCollidingVehicles	= {}
 	self.acTurnStageSent			= 0
 	self.acWaitTimer					= 0
 	self.acTurnOutsideTimer   = 0
@@ -199,6 +197,9 @@ function AIVehicleExtension:load(saveGame)
 	self.acOtherCombineCollisionTriggerL = getChild(self.acI3D,"otherCombColliTriggerL")
 	self.acOtherCombineCollisionTriggerR = getChild(self.acI3D,"otherCombColliTriggerR")
 	link(self.acRefNode,self.acI3D)
+	
+	self.acCollidingVehicles = nil
+	self.onOtherAICollisionTrigger = AIVehicleExtension.onOtherAICollisionTrigger
 end
 
 ------------------------------------------------------------------------
@@ -894,6 +895,22 @@ function AIVehicleExtension:update(dt)
 	if self.setIsReverseDriving ~= nil then
 		self.acParameters.inverted = self.isReverseDriving
 	end		
+	
+	
+	if self.isServer and self.acCollidingVehicles == nil then
+		self.acCollidingVehicles = {}
+		if self.acOtherCombineCollisionTriggerR ~= 0 then
+			local triggerID = self.acOtherCombineCollisionTriggerR
+			self.acCollidingVehicles[triggerID] = {}
+			addTrigger( triggerID, "onOtherAICollisionTrigger", self )
+		end
+		if self.acOtherCombineCollisionTriggerL ~= 0 then
+			local triggerID = self.acOtherCombineCollisionTriggerL
+			self.acCollidingVehicles[triggerID] = {}
+			addTrigger( triggerID, "onOtherAICollisionTrigger", self )
+		end
+	end
+	
 
 	if			self.articulatedAxis                          ~= nil 
 			and self.articulatedAxis.componentJoint           ~= nil
@@ -1347,7 +1364,7 @@ function AIVehicleExtension:autoSteer(dt)
 	if self.acTurnStage == 199 then
 		inField     = true
 		angleFactor = self.acParameters.angleFactor
-		nilAngle    = "L"
+		nilAngle    = "I" -- "L"
 		
 		if	   self.turnTimer < 0 
 				or AutoSteeringEngine.processIsAtEnd( self ) then
@@ -2473,3 +2490,35 @@ function AIVehicleExtension:newCanStartAIVehicle( superFunc )
 end
 
 AIVehicle.canStartAIVehicle = Utils.overwrittenFunction( AIVehicle.canStartAIVehicle, AIVehicleExtension.newCanStartAIVehicle )
+
+------------------------------------------------------------------------
+-- onOtherAICollisionTrigger
+------------------------------------------------------------------------
+function AIVehicleExtension:onOtherAICollisionTrigger(triggerId, otherId, onEnter, onLeave, onStay, otherShapeId)
+--print(" HIT @:"..self.configFileName.."   IN   "..getName(triggerId).."   BY   "..getName(otherId)..", "..getName(otherShapeId))
+
+	if g_currentMission.players[otherId] == nil then
+		local vehicle = g_currentMission.nodeToVehicle[otherId]
+		local otherAI = nil
+			
+		if vehicle ~= nil then
+			if vehicle.specializations ~= nil and SpecializationUtil.hasSpecialization( AIVehicle, vehicle.specializations ) then
+				otherAI = vehicle 
+			elseif type( vehicle.getRootAttacherVehicle ) == "function" then
+				otherAI = vehicle:getRootAttacherVehicle()
+				if otherAI.specializations == nil or not SpecializationUtil.hasSpecialization( AIVehicle, otherAI.specializations ) then
+					otherAI = nil
+				end
+			end
+		end
+			
+		if      otherAI ~= nil
+				and otherAI ~= self then
+			if onLeave then
+				self.acCollidingVehicles[triggerId][otherAI] = nil
+			else
+				self.acCollidingVehicles[triggerId][otherAI] = true
+			end
+		end		
+	end
+end
