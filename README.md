@@ -4,7 +4,21 @@
 Minimum patch level is Farming Simulator 2017 patch 1.3.1, but patch 1.4 is supported as well. I only test it with patch 1.4.4.
 The core path finding engine ("AutoSteeringEngine") is working now and most turn maneuvers seem to work quite well. 
 I moved many settings into a new settings GUI. 
-I publish it in GitHub because I need the backup and versioning support from GitHub. 
+
+#### New User Interface
+The idea behind the new user interface is to move as many settings as possible into new settings dialog. This dialog uses standard elements. Only those options needed for visualization or intermediate action are still available in the head up display (HUD).
+
+#### New Input Binding
+I changed the input binding. Main reason is that keys 5 and 6 are used for the radio. This is the new setting:
+- H: Start or stop the hired worker
+- Left shift + H: Open the new settings dialog
+- Left control + H: Open the head up display
+- Left alt. + H: Enable or disable automatic steering
+- Left alt. + V: Raise or lower all tools
+- Left alt. + 6: Swap side
+
+#### Testing
+
 
 ## Motivation
 I do not like maps with rectangular fields. But driving a combine harvester plus the tractor with trailer is a bit tedious in SP mode. 
