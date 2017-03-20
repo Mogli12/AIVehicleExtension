@@ -52,30 +52,19 @@ function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	
 	self.vehicle.aiToolReverserDirectionNode = AIVehicleUtil.getAIToolReverserDirectionNode(self.vehicle);
 	
-	if not ( vehicle.acSpeedFactorVerified ) then
-		vehicle.acSpeedFactorVerified = true
-		local maxSpeed = 3.6 * AutoSteeringEngine.getToolsSpeedLimit( vehicle )
-		local cs = math.min( math.floor( 0.5 + maxSpeed * vehicle.acParameters.speedFactor ), 3.6 * AIVEGlobals.maxSpeed )
-		vehicle.acParameters.speedFactor = cs / maxSpeed
-	end
-		
-	vehicle.acCCSpeed				 = vehicle.cruiseControl.speed
-
 	AutoSteeringEngine.invalidateField( vehicle )
 	
-		AutoSteeringEngine.checkTools1( vehicle, true )
+	AutoSteeringEngine.checkTools1( vehicle, true )
 	
-		AutoSteeringEngine.setToolsAreTurnedOn( vehicle, true, false )
-	
-	AIVehicleExtension.roueInitWheels( vehicle );
+	AutoSteeringEngine.setToolsAreTurnedOn( vehicle, true, false )
 	
 	vehicle.acDimensions	= nil;
 	AIVehicleExtension.checkState( vehicle )
 	
-    self.turnDataIsStable = false;
-    self.turnDataIsStableCounter = 0;
+  self.turnDataIsStable = false;
+  self.turnDataIsStableCounter = 0;
 
-    self.lastLookAheadDistance = 5; -- 30;
+  self.lastLookAheadDistance = 5; -- 30;
 	self:updateTurnData()
 	self.turnData.stage = -3
 	
@@ -138,11 +127,6 @@ function AIDriveStrategyMogli:delete()
 		end
 	end
 	AutoSteeringEngine.invalidateField( veh )		
-	AIVehicleExtension.roueReset( veh )
-	if veh.acCCSpeed ~= nil then
-		veh:setCruiseControlMaxSpeed( veh.acCCSpeed )
-	end
-	
 	AIVehicleExtension.resetAIMarker( veh )
 	veh.acImplementsMoveDown = false
 	AIVehicleExtension.setStatus( veh, 0 )
@@ -485,20 +469,12 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	noReverseIndex  = AutoSteeringEngine.getNoReverseIndex( veh );
 	
 --==============================================================				
-	local smooth	   = 0
-	
 	if self.search == AIDriveStrategyMogli.searchOutside and AutoSteeringEngine.getIsAtEnd( veh ) then
 		AutoSteeringEngine.ensureToolIsLowered( veh, true )	
 		self.search            = nil
 		veh.turnTimer		       = veh.acDeltaTimeoutNoTurn;
 		veh.acTurnOutsideTimer = math.max( veh.turnTimer, veh.acDeltaTimeoutNoTurn );
 		veh.aiRescueTimer	     = veh.acDeltaTimeoutStop;		
-	end
-	
-	if  self.search ~= nil or veh.acTraceSmoothOffset == nil or not fruitsDetected then
-		veh.acTraceSmoothOffset = AutoSteeringEngine.getTraceLength(veh) + 1
-	elseif AIVEGlobals.smoothFactor > 0 and AIVEGlobals.smoothMax > 0 and AutoSteeringEngine.getTraceLength(veh) > 3 then --and fruitsDetected then
-		smooth = Utils.clamp( AIVEGlobals.smoothFactor * ( AutoSteeringEngine.getTraceLength(veh) - veh.acTraceSmoothOffset ), 0, AIVEGlobals.smoothMax ) * Utils.clamp( speedLevelFactor, 0.7, 1.3 ) 
 	end
 	
 	local isInField = false
@@ -930,10 +906,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			angle = -angle 
 		end
 		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, angle )
-	--smooth = 0.05
 	elseif tX == nil and angle2 ~= nil then
 		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, angle2 )
-	--smooth = 0.05
 	elseif true then
 		veh.aiSteeringSpeed = 1
 	elseif border > 0 then

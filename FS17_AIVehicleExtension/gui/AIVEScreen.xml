@@ -99,6 +99,14 @@
 					<GuiElement type="text"   profile="multiTextOptionTitle" text="$l10n_AIVE_ANGLE_OFFSET"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
+
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="useAIFieldFct" onCreate="onCreateSubElement" toolTip="$l10n_AIVE_USE_AI_FIELD" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text" profile="multiTextOptionText" />
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AIVE_USE_AI_FIELD"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
 			</GuiElement>
 
 			<GuiElement type="boxLayout" profile="settingsBox" position="675px 550px">

@@ -72,6 +72,7 @@
 		<text name="AIVE_STEER_LOWER"              text="Geräte runter/an" />
 		<text name="AIVE_TRACE"                    text="Spur anzeigen" />
 		<text name="AIVE_MAGIC"                    text="Feld neu erkennen" />
+		<text name="AIVE_USE_AI_FIELD"             text="Zusammenhängdes Feld erkennen" />
 		
 		<text name="input_AIVE_HELPPANEL" 	       text="Alternativer Helfer: HUD ein-/ausblenden"/>
 		<text name="input_AIVE_STEER"              text="Alternativer Helfer: Automatisch Lenken"/>

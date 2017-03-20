@@ -72,10 +72,9 @@ AIVehicleExtension.saveAttributesMapping = {
 																			turnModeIndexC	= { xml = "acTurnModeC",	 tp = "I", default = 1 },
 																			widthOffset		  = { xml = "acWidthOffset", tp = "F", default = 0 },
 																			turnOffset			= { xml = "acTurnOffset",	 tp = "F", default = 0 },
-																			safetyFactor		= { xml = "acSafetyFactor",tp = "I", default = AIVEGlobals.safetyFactor },
 																			angleFactor		  = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
-																			speedFactor		  = { xml = "acSpeedFactor", tp = "F", default = 1 },
 																			noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
+																			useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
 																			waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true } }																															
 AIVehicleExtension.turnStageNoNext = { -3, -2, -1, 21, 22, 23 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { { 4, -1 },
@@ -138,7 +137,6 @@ function AIVehicleExtension:load(saveGame)
 	self.acPause							= false	
 	self.acParameters				  = AIVehicleExtension.getParameterDefaults( )
 	self.acAxisSide					  = 0
-	self.acSentSpeedFactor		= 0.8
 	self.acDebugPrint			  	= AIVehicleExtension.debugPrint
 	self.aiveAddDebugText     = AIVehicleExtension.aiveAddDebugText
 	self.acShowTrace					= true
@@ -172,25 +170,6 @@ function AIVehicleExtension:load(saveGame)
 	
 	self.acRefNode = createTransformGroup( "acNewRefNode" )
 	link( tempNode, self.acRefNode )
-	
-	self.acHasRoueSpec = false
-	if AIVEGlobals.roueSupport > 0 then
-		for name,entry in pairs( SpecializationUtil.specializations ) do
-			local s,e = string.find( entry.className, ".Roue" )
-			if s ~= nil and e == string.len( entry.className ) then
-				local c = SpecializationUtil.getSpecialization(entry.name)
-				if SpecializationUtil.hasSpecialization(c, self.specializations) then
-					--print("found Roue spec.")--print( self.name.." has Roue spec." )
-					if c.changeSteer ~= nil then
-						self.acHasRoueSpec = true
-						self.acRoueUpdate = c.update
-						c.changeSteer = Utils.appendedFunction( c.changeSteer, AIVehicleExtension.roueChangeSteer )
-						print( "AIVehicleExtension connection to 4-wheel steering registered" )
-					end
-				end
-			end
-		end
-	end	
 	
 	self.acI3D = getChild(Utils.loadSharedI3DFile("AutoCombine.i3d", AtDirectory),"AutoCombine")	
 --self.acBackTrafficCollisionTrigger   = getChild(self.acI3D,"backCollisionTrigger")
@@ -415,55 +394,6 @@ function AIVehicleExtension:setUTurn(enabled)
 	self.acParameters.upNDown = enabled
 end
 
-function AIVehicleExtension:evalHeadland()
-	return not ( self.acParameters.upNDown and self.acParameters.headland )
-end
-
-function AIVehicleExtension:setHeadland(enabled)
-	if not enabled then
-		self.acParameters.headland = enabled
-	elseif	self.acParameters.upNDown 				 
-			and ( not self.aiIsStarted or self.acTurnStage == 0 ) then
-		self.acParameters.headland = enabled
-	end
-end
-
-function AIVehicleExtension:evalIsHired()
-	return not self.acParameters.isHired
-end
-
-function AIVehicleExtension:setIsHired(enabled)
-	self.acParameters.isHired = enabled
-end 
-
-function AIVehicleExtension:evalCollision()
-	return not ( self.acParameters.upNDown and self.acParameters.collision )
-end
-
-function AIVehicleExtension:setCollision(enabled)
-	if not enabled then
-		self.acParameters.collision = enabled
-	elseif	self.acParameters.upNDown then
-		self.acParameters.collision = enabled
-	end
-end
-
-function AIVehicleExtension:evalInverted()
-	return not self.acParameters.inverted
-end
-
-function AIVehicleExtension:setInverted(enabled)
-	self.acParameters.inverted = enabled
-end
-
-function AIVehicleExtension:evalFrontPacker()
-	return not self.acParameters.frontPacker
-end
-
-function AIVehicleExtension:setFrontPacker(enabled)
-	self.acParameters.frontPacker = enabled
-end
-
 function AIVehicleExtension:evalAreaLeft()
 	return not self.acParameters.leftAreaActive
 end
@@ -512,27 +442,6 @@ function AIVehicleExtension:onEnable(enabled)
 	end
 end
 
-function AIVehicleExtension:setWidthUp()
-	self.acParameters.widthOffset = self.acParameters.widthOffset + 0.125
-end
-
-function AIVehicleExtension:setWidthDown()
-	self.acParameters.widthOffset = self.acParameters.widthOffset - 0.125
-end
-
-function AIVehicleExtension:getWidth(old)
-	new = string.format(old..": %0.2fm",self.acParameters.widthOffset+self.acParameters.widthOffset)
-	return new
-end
-
-function AIVehicleExtension:setForward()
-	self.acParameters.turnOffset = self.acParameters.turnOffset + 0.25
-end																							 
-
-function AIVehicleExtension:setBackward()							 
-	self.acParameters.turnOffset = self.acParameters.turnOffset - 0.25
-end
-
 function AIVehicleExtension:getTurnOffset(old)
 	local new = ""
 	if self.acDimensions == nil or self.acDimensions.headlandCount == nil then
@@ -553,78 +462,6 @@ function AIVehicleExtension:getTurnIndexComp( upNDown )
 		return "turnModeIndexC"
 	end
 	return "turnModeIndex"
-end
-
-function AIVehicleExtension:evalSafetyUp()
-	local enabled = self.acParameters.safetyFactor < 10
-	return enabled
-end
-
-function AIVehicleExtension:evalSafetyDown()
-	local enabled = self.acParameters.safetyFactor > 0
-	return enabled
-end
-
-function AIVehicleExtension:setSafetyUp(enabled)
-	if enabled then self.acParameters.safetyFactor = math.min(10, self.acParameters.safetyFactor + 1 ) end
-end
-
-function AIVehicleExtension:setSafetyDown(enabled)
-	if enabled then self.acParameters.safetyFactor = math.max( 0, self.acParameters.safetyFactor - 1 ) end
-end
-
-function AIVehicleExtension:evalAngleUp()
-	local enabled = self.acParameters.angleFactor < 1
-	return enabled
-end
-
-function AIVehicleExtension:evalAngleDown()
-	local enabled = self.acParameters.angleFactor >= 0.1
-	return enabled
-end
-
-function AIVehicleExtension:setAngleUp(enabled)
-	if enabled then self.acParameters.angleFactor = Utils.clamp( self.acParameters.angleFactor + 0.05, 0.1, 1 ) end
-end
-
-function AIVehicleExtension:setAngleDown(enabled)
-	if enabled then self.acParameters.angleFactor = Utils.clamp( self.acParameters.angleFactor - 0.05, 0.1, 1 ) end
-end
-
-function AIVehicleExtension:getMaxLookingAngleValue( noScale )
-	if self.acDimensions == nil then
-		return AIVEGlobals.maxLooking
-	end
-	
-	local ml = Utils.getNoNil( self.acDimensions.maxSteeringAngle, AIVEGlobals.maxLooking )
-	
-	if			self.acParameters									~= nil
-			and self.acParameters.angleFactor			~= nil then
-		ml	= math.max( ml * self.acParameters.angleFactor, 0.0174533 )
-	end
-
-	return ml
-end
-
-function AIVehicleExtension:getAngleFactor(old)
-
-	if			self.acParameters									~= nil
-			and self.acParameters.angleFactor			~= nil then
-		new = string.format(old..": %2.1f°",math.deg(AIVehicleExtension.getMaxLookingAngleValue( self )))
-		new = string.format(new.." / %3d%%",math.floor(20*self.acParameters.angleFactor+0.5) * 5)
-	else
-		return old
-	end
-	
-	return new
-end
-
-function AIVehicleExtension:getSafetyFactor(old)
-	new = old..string.format(": %3d%%",self.acParameters.safetyFactor*10)
-	if self.aseChain ~= nil and self.aseChain.offsetAvg ~= nil and self.aseOffsetStd ~= nil then
-		new = new.. string.format( ": %4.2fm",self.aseChain.offsetAvg - self.aseOffsetStd )
-	end
-	return new
 end
 
 function AIVehicleExtension:evalTurnStage()
@@ -731,8 +568,8 @@ function AIVehicleExtension:onAutoSteer(enabled)
 		end
 	elseif enabled then
 		AIVehicleExtension.initMogliHud(self)
+		AutoSteeringEngine.invalidateField( self, self.acParameters.useAIFieldFct )
 		AutoSteeringEngine.initFruitBuffer( self )
-		AutoSteeringEngine.invalidateField( self )
 		self.acLastSteeringAngle = nil
 		self.acTurnStage	 = 198
 	else
@@ -825,37 +662,6 @@ end
 
 function AIVehicleExtension:getTurnModeText(old)
 	return AIVEHud.getText("AIVE_TURN_MODE_"..self.acTurnMode)
-end
-
-function AIVehicleExtension:setBigHeadland()
-	if self.acParameters.upNDown then
-		self.acParameters.bigHeadland = not self.acParameters.bigHeadland
-	end
-end
-
-function AIVehicleExtension:getBigHeadlandImage()
-	local img = "empty.dds"
-	
-	if self.acParameters ~= nil and self.acParameters.upNDown and self.acParameters.headland then
-		if self.acParameters.bigHeadland then		
-			img = "dds/big_headland.dds"
-		else
-			img = "dds/small_headland.dds"
-		end
-	end
-	
-	return img
-end
-
-function AIVehicleExtension:getBigHeadlandText(old)
-	if			self.acDimensions ~= nil 
-			and self.acDimensions.headlandDist ~= nil
-			and self.acParameters.upNDown then
-		new = string.format(old..": %0.2fm",self.acDimensions.headlandDist )
-	else
-		new = old
-	end
-	return new
 end
 
 function AIVehicleExtension:onToggleTrace()
@@ -1323,7 +1129,7 @@ function AIVehicleExtension:checkState( force )
 	end
 	
 	if self.isServer then --and self.aiveIsStarted then 
-		AutoSteeringEngine.initTools( self, self.acDimensions.maxSteeringAngle, self.acParameters.leftAreaActive, self.acParameters.widthOffset, self.acParameters.safetyFactor, h, c, self.acTurnMode )
+		AutoSteeringEngine.initTools( self, self.acDimensions.maxSteeringAngle, self.acParameters.leftAreaActive, self.acParameters.widthOffset, h, c, self.acTurnMode )
 	end
 end
 
@@ -1504,9 +1310,6 @@ function AIVehicleExtension:loadFromAttributesAndNodes(xmlFile, key, resetVehicl
 			self.acParameters.turnModeIndex = self.acParameters.turnModeIndex - 1
 		end
 	end
-	if version < 2.2 then
-		self.acParameters.speedFactor = math.max( 1, self.acParameters.speedFactor )
-	end
 	
 	return BaseMission.VEHICLE_LOAD_OK
 end
@@ -1536,8 +1339,6 @@ function AIVehicleExtension.calculateDimensions( self )
 		return
 	end
 	
-	AIVehicleExtension.roueSet( self, nil, AIVEGlobals.maxLooking )
-
 	self.acDimensions								 	 = {}
 	self.acDimensions.zOffset				 	 = 0 
 	self.acDimensions.acRefNodeZ       = 0
@@ -1682,13 +1483,7 @@ function AIVehicleExtension.calculateDistances( self )
 	local wb = self.acDimensions.wheelBase
 	local ms = self.acDimensions.maxSteeringAngle
 	
-	self.acDimensions.maxLookingAngle = AIVehicleExtension.getMaxLookingAngleValue( self )
-	
-	------------------------------------------------------------------------
-	-- Roue mode
-	------------------------------------------------------------------------
-	AIVehicleExtension.roueSet( self, nil, self.acDimensions.maxLookingAngle )
-	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.acParameters.inverted, self.acParameters.frontPacker, self.acParameters.speedFactor )
+	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.acParameters.inverted, self.acParameters.frontPacker, self.acParameters.useAIFieldFct )
 
 	self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack = AutoSteeringEngine.checkTools( self )
 	
@@ -1734,177 +1529,6 @@ function AIVehicleExtension.calculateDistances( self )
 		--self.acDimensions.headlandDist	 = w * self.acDimensions.headlandCount
 	end
 	--self.acDimensions.headlandDist		 = math.min( math.max( self.acDimensions.headlandDist, 0 ), AIVEGlobals.chainMinLen )
-end
-
-------------------------------------------------------------------------
--- AIVehicleExtension:roueChangeSteer
-------------------------------------------------------------------------
-function AIVehicleExtension:roueChangeSteer( ... )
-	AIVehicleExtension.roueSaveWheels( self )
-end
-
-------------------------------------------------------------------------
--- AIVehicleExtension:roueInitWheels
-------------------------------------------------------------------------
-function AIVehicleExtension:roueInitWheels()
-	
-	AIVehicleExtension.roueSaveWheels( self )
-
-	if self.acRoueWheels == nil then return end
-	
-	for i=1,table.getn(self.wheels) do
-		self.acRoueWheels[i].rotMax2	 = self.wheels[i].rotMax
-		self.acRoueWheels[i].rotMin2	 = self.wheels[i].rotMin
-		self.acRoueWheels[i].rotSpeed2 = self.wheels[i].rotSpeed		
-	end
-	
-	for i=0,99 do
-		self.changeWheel = i
-		self.acRoueUpdate( self, 0 )
-		
-		if self.changeWheel == 0 then break end
-	
-		for i=1,table.getn(self.wheels) do
-			self.acRoueWheels[i].rotMax2	 = math.max( self.acRoueWheels[i].rotMax2	, self.wheels[i].rotMax	 )
-			self.acRoueWheels[i].rotMin2	 = math.min( self.acRoueWheels[i].rotMin2	, self.wheels[i].rotMin	 )
-			self.acRoueWheels[i].rotSpeed2 = math.max( self.acRoueWheels[i].rotSpeed2, self.wheels[i].rotSpeed )
-		end
-	end
-end
-
-------------------------------------------------------------------------
--- AIVehicleExtension:roueSaveWheels
-------------------------------------------------------------------------
-function AIVehicleExtension:roueSaveWheels()
-
-	if self.acHasRoueSpec then
-		if self.acRoueWheels == nil then
-			self.acRoueWheels = {}
-			for i=1,table.getn(self.wheels) do
-				wheel = {}
-				wheel.rotMax	 = self.wheels[i].rotMax
-				wheel.rotMin	 = self.wheels[i].rotMin
-				wheel.rotSpeed = self.wheels[i].rotSpeed		
-				self.acRoueWheels[i] = wheel
-			end
-		else
-			for i=1,table.getn(self.wheels) do
-				self.acRoueWheels[i].rotMax	 = self.wheels[i].rotMax
-				self.acRoueWheels[i].rotMin	 = self.wheels[i].rotMin
-				self.acRoueWheels[i].rotSpeed = self.wheels[i].rotSpeed	
-			end
-		end
-	else
-		self.acRoueWheels = nil
-	end	
-	
-end
-
-------------------------------------------------------------------------
---AIVehicleExtension:roueReset
-------------------------------------------------------------------------
-function AIVehicleExtension:roueReset( )
-	if self.acRoueWheels ~= nil then 
-		for i=1,table.getn(self.wheels) do
-			self.wheels[i].rotMax	 = self.acRoueWheels[i].rotMax
-			self.wheels[i].rotMin	 = self.acRoueWheels[i].rotMin
-			self.wheels[i].rotSpeed = self.acRoueWheels[i].rotSpeed		
-		end
-		
-		self.acRoueWheels				= nil
-		self.acRoueWheelsChanged = nil
-
-		AIVehicleExtension.roueSetMR( self )
-	end
-end
-
-------------------------------------------------------------------------
---AIVehicleExtension:roueSet
-------------------------------------------------------------------------
-function AIVehicleExtension:roueSet( target, angleMax )
-
-	if self.acRoueWheels == nil then return 0, angleMax end
-	
-	local zShift = 0
-	local iRef, iOther = 1,3
-	local x1,_,z1 = AutoSteeringEngine.getRelativeTranslation( self.acRefNode, self.wheels[1].driveNode )
-	local x3,_,z3 = AutoSteeringEngine.getRelativeTranslation( self.acRefNode, self.wheels[3].driveNode )
-	local wb			= z1 - z3
-	
-	if z1 < z3 then
-		iRef		= 3
-		iOthers = 1
-		wb			= z3 - z1
-	end
-	
-	if		 target == nil 
-			or target > 0
-			or wb		 < 1
-			or table.getn(self.wheels) ~= 4
-			or self.wheels[iRef].rotMax <= math.tan( self.acDimensions.maxLookingAngle ) or math.abs( self.wheels[iRef].rotSpeed ) < 1E-3 then
-		if self.acRoueWheelsChanged then
-			self.acRoueWheelsChanged = false
-			
-			for i=1,table.getn(self.wheels) do
-				self.wheels[i].rotMax	 = self.acRoueWheels[i].rotMax2
-				self.wheels[i].rotMin	 = self.acRoueWheels[i].rotMin2
-				self.wheels[i].rotSpeed = self.acRoueWheels[i].rotSpeed2		
-			end
-		else
-			return 0, angleMax
-		end
-	else
-		self.acRoueWheelsChanged = true
-		local angleMax = math.atan( math.tan( self.acDimensions.maxLookingAngle ) * ( 1 - target / wb ) )
-		
-		if angleMax > self.wheels[iRef].rotMax then
-			zShift	 = ( math.tan( self.wheels[iRef].rotMax ) / math.tan( self.acDimensions.maxLookingAngle ) - 1 ) * wb
-			angleMax = self.wheels[iRef].rotMax
-		else
-			zShift	 = -target
-		end
-		
-		local f = zShift / ( wb + zShift )
-		
-		for i=0,1 do
-			self.wheels[iOther+i].rotMax	 = math.atan( math.tan( self.wheels[iRef+i].rotMax ) * f )
-			self.wheels[iOther+i].rotMin	 = math.atan( math.tan( self.wheels[iRef+i].rotMin ) * f )
-			self.wheels[iOther+i].rotSpeed = self.wheels[iRef+i].rotSpeed * self.wheels[iOther+i].rotMax / self.wheels[iRef+i].rotMax
-		end
-	end
-	
-	AIVehicleExtension.roueSetMR( self )
-
-	return zShift, angleMax
-end
-
-------------------------------------------------------------------------
---AIVehicleExtension:roueSetMR
-------------------------------------------------------------------------
-function AIVehicleExtension:roueSetMR( )
-	if self.isRealistic then
-		for i=1,table.getn(self.wheels) do
-			self.wheels[i].realRotMaxSpeed = 0
-			self.wheels[i].realRotMinSpeed = 0
-	
-			if self.wheels[i].rotMax~=0 and self.wheels[i].rotMin~=0 and self.wheels[i].rotSpeed~=0 then	
-
-				if math.abs(self.wheels[i].rotMax)>math.abs(self.wheels[i].rotMin) then
-					self.wheels[i].realRotMaxSpeed = self.wheels[i].rotSpeed
-					self.wheels[i].realRotMinSpeed = math.abs(self.wheels[i].rotMin/self.wheels[i].rotMax)*self.wheels[i].rotSpeed
-				else
-					self.wheels[i].realRotMinSpeed = self.wheels[i].rotSpeed
-					self.wheels[i].realRotMaxSpeed = math.abs(self.wheels[i].rotMax/self.wheels[i].rotMin)*self.wheels[i].rotSpeed
-				end
-		
-				if self.wheels[i].rotSpeed<0 then
-					local tmp = self.wheels[i].realRotMaxSpeed
-					self.wheels[i].realRotMaxSpeed = self.wheels[i].realRotMinSpeed
-					self.wheels[i].realRotMinSpeed = tmp
-				end
-			end
-		end
-	end
 end
 
 ------------------------------------------------------------------------
@@ -1955,7 +1579,6 @@ function AIVehicleExtension:getParameters()
 		self.acParameters = AIVehicleExtension.getParameterDefaults( )
 	end
 	self.acParameters.leftAreaActive	= not self.acParameters.rightAreaActive
-	self.acSentSpeedFactor						= self.acParameters.speedFactor
 
 	return self.acParameters
 end
@@ -2017,7 +1640,6 @@ function AIVehicleExtension:setParameters(parameters)
 	end
 
 	self.acParameters.leftAreaActive	= not self.acParameters.rightAreaActive
-	self.acSentSpeedFactor						= self.acParameters.speedFactor
 end
 
 function AIVehicleExtension:readStream(streamId, connection)
@@ -2454,7 +2076,8 @@ function AIVehicleExtension:afterSetDriveStrategies()
 		local driveStrategyOtherAI = AIDriveStrategyCollisionOtherAI:new()
 		driveStrategyOtherAI:setAIVehicle(self)
 		table.insert( self.driveStrategies, 1, driveStrategyOtherAI )
-				
+		
+		AutoSteeringEngine.invalidateField( self, self.acParameters.useAIFieldFct )
 		AutoSteeringEngine.initFruitBuffer( self )
 		self.aiRescueTimer = self.acDeltaTimeoutStop
 		self.hasStopped    = true

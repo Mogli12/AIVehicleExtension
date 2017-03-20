@@ -25,8 +25,6 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.angleStepDec = 0
 	AIVEGlobals.angleStepMax = 0
 	AIVEGlobals.fixAngleStep = 0
-	AIVEGlobals.angleFactorInside = 0
-	AIVEGlobals.angleFactorNoFix = 0
 	AIVEGlobals.angleSafety  = 0
 	AIVEGlobals.maxLooking   = 0
 	AIVEGlobals.minLooking   = 0
@@ -46,7 +44,6 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.minMidDist   = 0
 	AIVEGlobals.showTrace    = 0
 	AIVEGlobals.minLength    = 0
-	AIVEGlobals.roueSupport  = 0
 	AIVEGlobals.artAxisRot   = 0
 	AIVEGlobals.artAxisShift = 0
 	AIVEGlobals.showChannels = 0
@@ -54,16 +51,10 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.yieldCount   = 0
 	AIVEGlobals.zeroAngle    = 0
 	AIVEGlobals.colliMask    = 0
-	AIVEGlobals.fruitIgnoreSq= 0
-	AIVEGlobals.chainIgnoreSq= 0
 	AIVEGlobals.ignoreDist   = 0
 	AIVEGlobals.colliStep    = 0
-	AIVEGlobals.getIsHired   = 0
-	AIVEGlobals.widthOffset  = 0
 	AIVEGlobals.shiftFixZ    = 0
 	AIVEGlobals.zeroWidth    = 0
-	AIVEGlobals.smoothFactor = 0
-	AIVEGlobals.smoothMax    = 0
 	AIVEGlobals.limitOutside = 0
 	AIVEGlobals.limitInside  = 0
 	AIVEGlobals.maxDtSumT     = 0
@@ -74,17 +65,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.maxDtSumF     = 0
 	AIVEGlobals.maxDtDistF    = 0
 	AIVEGlobals.fruitBuffer   = 0
-	AIVEGlobals.maxDtAngle    = 0
-	AIVEGlobals.maxDetectDt   = 0
-	AIVEGlobals.maxDetectZ0   = 0
-	AIVEGlobals.maxDetectZ1   = 0
-	AIVEGlobals.maxDetectZ2   = 0
-	AIVEGlobals.maxDetectZ3   = 0
-	AIVEGlobals.maxDetectMin  = 0
-	AIVEGlobals.maxDetectMax  = 0
 	AIVEGlobals.showStat      = 0
-	AIVEGlobals.ploughTransport = 0
-	AIVEGlobals.maxSpeed      = 0
 	AIVEGlobals.maxTurnCheck  = 0
 	AIVEGlobals.maxToolAngle  = 0
 	AIVEGlobals.maxToolAngle2 = 0
@@ -116,14 +97,10 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.chain3Step4   = 0
 	AIVEGlobals.collectCbr    = 0
 	AIVEGlobals.testOutside   = 0
-	AIVEGlobals.safetyFactor  = 0
 	AIVEGlobals.debug1        = 0
 	AIVEGlobals.debug2        = 0
-	AIVEGlobals.straightTA    = 0
 	AIVEGlobals.detectLevel3  = 0
 	AIVEGlobals.useFBB123     = 0
-	AIVEGlobals.correctionOut = 0
-	AIVEGlobals.correctionIn  = 0
 	AIVEGlobals.angleBuffer   = 0
 	
 	
@@ -913,16 +890,6 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 			i = i + 1
 		end		
 		wx,wy,wz = getWorldTranslation( vehicle.aiveChain.nodes[i].index )
-		local scaleX = 1
-		if best.angle > 0 then
-			scaleX = AIVEGlobals.correctionOut
-		else
-			scaleX = AIVEGlobals.correctionIn 
-		end
-		if math.abs( scaleX - 1 ) > 0.01 then
-			local lx,ly,lz = worldToLocal( vehicle.aiveChain.refNode, wx,wy,wz )
-			wx,wy,wz = localToWorld( vehicle.aiveChain.refNode, lx*scaleX, ly, lz )
-		end
 	end
 	vehicle.aiveChain.lastWorldTarget = { wx, wy, wz }
 	
@@ -1090,7 +1057,7 @@ end
 ------------------------------------------------------------------------
 -- checkChain
 ------------------------------------------------------------------------
-function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteering, widthOffset, turnOffset, isInverted, useFrontPacker, speedFactor )
+function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteering, widthOffset, turnOffset, isInverted, useFrontPacker, useAIFieldFct )
 
 	local resetTools = false
 	
@@ -1114,6 +1081,12 @@ function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteerin
 		vehicle.aiveChain.maxSteering = maxSteering
 	end	
 
+	if      vehicle.aiveChain.useAIFieldFct ~= nil
+			and vehicle.aiveChain.useAIFieldFct ~= useAIFieldFct then
+		AutoSteeringEngine.invalidateField( vehicle, true )
+	end
+	vehicle.aiveChain.useAIFieldFct = useAIFieldFct
+
 	AutoSteeringEngine.currentSteeringAngle( vehicle, isInverted )
 
 	if getfenv(0)["modSoilMod2"] == nil then
@@ -1134,7 +1107,7 @@ function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteerin
 	vehicle.aiveChain.useFrontPacker = useFrontPacker 
 	
 	AutoSteeringEngine.checkTools1( vehicle, resetTools )
-	vehicle.aiveChain.wantedSpeed    = speedFactor * AutoSteeringEngine.getToolsSpeedLimit( vehicle )
+	vehicle.aiveChain.wantedSpeed    = AutoSteeringEngine.getToolsSpeedLimit( vehicle )
 	
 end
 
@@ -1370,7 +1343,7 @@ end
 ------------------------------------------------------------------------
 -- initTools
 ------------------------------------------------------------------------
-function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOffset, safetyFactor, headlandDist, collisionDist, turnMode )
+function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOffset, headlandDist, collisionDist, turnMode )
 
 	isTurnMode7 = ( vehicle.aiveChain.turnMode == "7" )
 	
@@ -2634,24 +2607,8 @@ function AutoSteeringEngine.currentSteeringAngle( vehicle, isInverted )
 		end
 	end	
 	
-	--if isInverted or ( isInverted == nil and vehicle.aiveChain ~= nil and vehicle.aiveChain.isInverted ) then
-	--	steeringAngle = -steeringAngle
-	--end
-
 	vehicle.aiveChain.realSteeringAngle = steeringAngle 
-	
-	if vehicle.aiveChain.currentSteeringAngle ~= nil and 0 < AIVEGlobals.average and AIVEGlobals.average < 1 then
-		steeringAngle = AIVEGlobals.average * steeringAngle + (1-AIVEGlobals.average) * vehicle.aiveChain.currentSteeringAngle
-	end
-	
-	--local neg = false
-	--if steeringAngle < 0 then neg = true end
-	--
-	--local f = math.rad(3)
-	--
-	--steeringAngle = f * math.floor( math.abs( steeringAngle / f ) + 0.5 )
-	--if neg then steeringAngle = -steeringAngle end
-	
+		
 	if AutoSteeringEngine.isSetAngleZero( vehicle ) then
 		AutoSteeringEngine.setSteeringAngle( vehicle, 0 )
 	else
@@ -3705,9 +3662,26 @@ function AutoSteeringEngine.getCheckFunction( vehicle )
 
 	local checkFct, areaTotalFct
 	
-	checkFct     = FieldBitmap.isFieldFast
-	areaTotalFct = FieldBitmap.getAreaTotal
-
+	if vehicle.aiveChain.useAIFieldFct then
+		areaTotalFct = function( lx1,lz1,lx2,lz2,lx3,lz3 )
+			local a, t = 0, 0
+			for i,tp in pairs(vehicle.aiveChain.toolParams) do
+				if not tp.skip then
+					local ta, tt = AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, tp.i, lx1,lz1,lx2,lz2,lx3,lz3, true )
+					a = a + ta
+					t = t + tt
+				end
+			end
+			return a, t
+		end
+		checkFct     = function( lx1,lz1,lx2,lz2,lx3,lz3 )
+			return areaTotalFct( lx1,lz1,lx2,lz2,lx3,lz3 ) > 0
+		end
+	else
+		areaTotalFct = FieldBitmap.getAreaTotal
+		checkFct     = FieldBitmap.isFieldFast
+	end
+	
 	return checkFct, areaTotalFct
 end
 
@@ -3717,7 +3691,8 @@ end
 function AutoSteeringEngine.checkField( vehicle, x, z )
 
 	local stepLog2 = AIVEGlobals.stepLog2
-
+	local checkFunction, areaTotalFunction 
+	
 	if vehicle.aiveFieldIsInvalid then
 		vehicle.aiveChain.lastX = nil
 		vehicle.aiveChain.lastZ = nil 
@@ -3731,7 +3706,7 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 			--											..AutoSteeringEngine.posToString(x1)..", "..AutoSteeringEngine.posToString(z1)..")")			
 				vehicle.aiveFieldIsInvalid = false			
 			else
-				local checkFunction, areaTotalFunction = AutoSteeringEngine.getCheckFunction( vehicle )
+				checkFunction, areaTotalFunction = AutoSteeringEngine.getCheckFunction( vehicle )
 				if AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction ) then
 				--print("Not valid: ("..AutoSteeringEngine.posToString(x )..", "..AutoSteeringEngine.posToString(z )..") ("
 				--										..AutoSteeringEngine.posToString(x1)..", "..AutoSteeringEngine.posToString(z1)..")")			
@@ -3751,7 +3726,9 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 		
 		if vehicle.aiveCurrentFieldCo == nil then
 			vehicle.aiveCurrentFieldCt = 0
-			local checkFunction, areaTotalFunction = AutoSteeringEngine.getCheckFunction( vehicle )
+			if checkFunction == nil then
+				checkFunction, areaTotalFunction = AutoSteeringEngine.getCheckFunction( vehicle )
+			end
 			local x1,_,z1 = AutoSteeringEngine.getAiWorldPosition( vehicle )
 			if vehicle.aiveChain.lastX ~= nil and vehicle.aiveChain.lastZ ~= nil then
 				if Utils.vector2LengthSq( vehicle.aiveChain.lastX - x1, vehicle.aiveChain.lastZ - z1 ) < 1 then
@@ -3789,7 +3766,7 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 				stepLog2 = math.log( 2 * g_currentMission.terrainDetailMapSize / g_currentMission.terrainSize ) / math.log( 2 )
 	
 				if AIVEGlobals.yieldCount < 1 then
-					if checkFunction == AutoSteeringEngine.checkMowerField then
+					if areaTotalFunction and areaTotalFunction ~= FieldBitmap.getAreaTotal then
 						vehicle.aiveCurrentField, hektar = FieldBitmap.createForFieldAtWorldPosition( x1, z1, stepLog2, 1, areaTotalFunction, nil, nil, 0 )
 					else
 						vehicle.aiveCurrentField, hektar = FieldBitmap.createForFieldAtWorldPositionSimple( x1, z1, stepLog2, 1, checkFunction )
@@ -3797,7 +3774,7 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 					vehicle.aiveCurrentFieldCo = nil
 					vehicle.aiveCurrentFieldCS = 'dead'
 				else
-					if checkFunction == AutoSteeringEngine.checkMowerField then
+					if areaTotalFunction and areaTotalFunction ~= FieldBitmap.getAreaTotal then
 						vehicle.aiveCurrentFieldCo = coroutine.create( FieldBitmap.createForFieldAtWorldPosition )
 						status, vehicle.aiveCurrentField, hektar = coroutine.resume( vehicle.aiveCurrentFieldCo, x1, z1, stepLog2, 1, areaTotalFunction, nil, nil, AIVEGlobals.yieldCount )
 					else
@@ -4896,8 +4873,6 @@ function AutoSteeringEngine.initSteering( vehicle )
 			vehicle.aiveChain.chainStep3 = AIVEGlobals.chain3Step3
 			vehicle.aiveChain.chainStep4 = AIVEGlobals.chain3Step4
 		end
-	elseif AIVEGlobals.angleFactorNoFix > 0 then
-		vehicle.aiveChain.angleFactor = vehicle.aiveChain.angleFactor * AIVEGlobals.angleFactorNoFix
 	end
 	vehicle.aiveChain.chainMax = table.getn( vehicle.aiveChain.nodes ) - 1
 	
