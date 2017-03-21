@@ -691,8 +691,8 @@ end
 function AIVehicleExtension:onMagic(enabled)
 	AIVehicleExtension.initMogliHud(self)
 	AutoSteeringEngine.invalidateField( self, true )		
-	AutoSteeringEngine.checkTools1( self, true )
---AIVehicleExtension.processImplementsOfImplement(self,self,true)	
+	AutoSteeringEngine.initFruitBuffer( self )
+	AIVehicleExtension.checkState( self, true )
 end
 
 function AIVehicleExtension:onRaiseImpl(enabled)
@@ -1237,9 +1237,9 @@ function AIVehicleExtension:checkState( force )
 		h = self.acDimensions.headlandDist
 	end
 	
-	if self.isServer then --and self.aiveIsStarted then 
+--if self.isServer then --and self.aiveIsStarted then 
 		AutoSteeringEngine.initTools( self, self.acDimensions.maxSteeringAngle, self.acParameters.leftAreaActive, self.acParameters.widthOffset, h, c, self.acTurnMode )
-	end
+--end
 end
 
 ------------------------------------------------------------------------

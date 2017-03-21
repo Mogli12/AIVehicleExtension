@@ -2027,7 +2027,7 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle )
 				
 				local back, dxb, dzb, dxf, dzf 
 				
-				if     toolParam.skip then
+				if tool.ignoreAI then
 					break
 				elseif j== 1 then
 					back = 1.02 * math.max( 5, vehicle.aiveChain.radius )
@@ -3431,6 +3431,8 @@ function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tool, lx1,lz1,lx2,lz2,l
 		end
 		
 		return a, t
+	elseif tool.isMower then
+		return Utils.getFruitArea(FruitUtil.FRUITTYPE_GRASS, lx1,lz1,lx2,lz2,lx3,lz3,false)
 	end
 	return AIVehicleUtil.getAIAreaOfVehicle( tool.obj, lx1,lz1,lx2,lz2,lx3,lz3, true )
 end
