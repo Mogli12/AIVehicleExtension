@@ -72,6 +72,7 @@
   		<text name="AIVE_STEER_LOWER"              text="Opuść maszyny/wł." />
   		<text name="AIVE_TRACE"                    text="Pokaż ścieżkę" />
  		<text name="AIVE_MAGIC"                    text="Rozpoznawanie pola" />
+		<text name="AIVE_USE_AI_FIELD"             text="Tylko połączone pole" />
 				
 		<text name="input_AIVE_HELPPANEL"          text="Alternatywny pomocnik: Pokaż/ukryj HUD"/>
 		<text name="input_AIVE_STEER"              text="Alternatywny pomocnik: Sterowanie automatyczne"/>
