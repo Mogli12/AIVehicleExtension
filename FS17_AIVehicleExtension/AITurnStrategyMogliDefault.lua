@@ -166,7 +166,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 --==============================================================				
 	local angle, angle2;
-	local angleMax = veh.acDimensions.maxLookingAngle;
+	local angleMax = veh.acDimensions.maxSteeringAngle;
 	local detected = false;
 	local border   = 0;
 	local angleFactor;
@@ -346,7 +346,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			elseif math.abs( turnAngle ) > endAngle - angleOffset then
 				angle = math.rad( endAngle - math.abs( turnAngle ) )
 			elseif veh_acTurn2Outside then
-				angle = -veh.acDimensions.maxLookingAngle
+				angle = -veh.acDimensions.maxSteeringAngle
 			else
 				angle = veh.acDimensions.maxSteeringAngle
 			end
@@ -463,7 +463,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		inactive = true
 		noLower  = false
 	
-		if turnAngle < 90 + angleOffset then -- math.deg( veh.acDimensions.maxLookingAngle ) then
+		if turnAngle < 90 + angleOffset then -- math.deg( veh.acDimensions.maxSteeringAngle ) then
 			detected, angle2, border = AutoSteeringEngine.processChain( veh )
 		else
 			detected = false
@@ -676,7 +676,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 		if     fruitsDetected
 				or math.abs( turnAngle )   >= 180 - angleOffset
-				or ( math.abs( turnAngle ) >= 180 - math.min( math.deg( veh.acDimensions.maxLookingAngle ), math.deg( 0.3 * veh.acDimensions.maxSteeringAngle ) )
+				or ( math.abs( turnAngle ) >= 180 - math.min( math.deg( veh.acDimensions.maxSteeringAngle ), math.deg( 0.3 * veh.acDimensions.maxSteeringAngle ) )
 					and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 ) then
 			detected, angle2, border = AutoSteeringEngine.processChain( veh )
 			noLower = false
@@ -839,7 +839,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 
 		detected, angle2, border = AutoSteeringEngine.processChain( veh )
 			
-		if turnAngle < 90 - math.deg( veh.acDimensions.maxLookingAngle ) then
+		if turnAngle < 90 - math.deg( veh.acDimensions.maxSteeringAngle ) then
 			angle = -veh.acDimensions.maxSteeringAngle;
 		elseif fruitsDetected or detected or border <= 0 or math.abs( turnAngle ) > 90 or x < 0 then
 			turnData.stage = -1;					
@@ -1039,7 +1039,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			if detected then
 				angle  = nil
 				angle2 = -angle2
-				if math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then
+				if math.abs( angle2 ) > veh.acDimensions.maxSteeringAngle then
 					detected = false
 				end
 			end
@@ -1205,7 +1205,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			if detected then
 				angle  = nil
 				angle2 = -angle2
-				if math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then
+				if math.abs( angle2 ) > veh.acDimensions.maxSteeringAngle then
 					detected = false
 				end
 			else

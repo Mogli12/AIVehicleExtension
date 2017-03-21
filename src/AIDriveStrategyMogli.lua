@@ -435,7 +435,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		
 --==============================================================				
 	local angle, angle2 = nil, nil
-	local angleMax = veh.acDimensions.maxLookingAngle;
+	local angleMax = veh.acDimensions.maxSteeringAngle;
 	local detected = false;
 	local border   = 0;
 	local angleFactor;
@@ -653,7 +653,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	-- after U-turn
 		local a, o, tX, tZ = AutoSteeringEngine.navigateToSavePoint( veh, 3, AIVehicleExtension.navigationFallbackRetry )
 		if not o then
-			angle = -veh.acDimensions.maxLookingAngle 
+			angle = -veh.acDimensions.maxSteeringAngle 
 		end
 	elseif self.search == AIDriveStrategyMogli.searchOutside then
 	-- after turn 2 outside 
@@ -665,10 +665,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	-- after 90° turn
 		a, o, tX, tZ = AutoSteeringEngine.navigateToSavePoint( veh, 4, AIVehicleExtension.navigationFallbackRotateMinus )
 		if not o then
-			angle = -veh.acDimensions.maxLookingAngle
+			angle = -veh.acDimensions.maxSteeringAngle
 		end
 	else
-		angle = -veh.acDimensions.maxLookingAngle
+		angle = -veh.acDimensions.maxSteeringAngle
 	end
 	
 	

@@ -77,7 +77,7 @@ function AITurnStrategyMogli_C_R:detect4( dt, vX,vY,vZ, turnData, tX, tZ, moveFo
 			checkIt = 1
 		end
 	elseif  turnAngle >= 0.45 * math.pi -- 9° tolerance
-			and turnAngle >=  0.5 * math.pi - veh.acDimensions.maxLookingAngle then
+			and turnAngle >=  0.5 * math.pi - veh.acDimensions.maxSteeringAngle then
 		checkIt = 1
 	end
 	
@@ -104,7 +104,7 @@ function AITurnStrategyMogli_C_R:detect5( dt, vX,vY,vZ, turnData )
 	local veh = self.vehicle 
 		
 	local detected, angle2, border = AutoSteeringEngine.processChain( veh )
-	if border > 0 or math.abs( angle2 ) > veh.acDimensions.maxLookingAngle then			
+	if border > 0 or math.abs( angle2 ) > veh.acDimensions.maxSteeringAngle then			
 		return nil, nil, false, true, math.huge, 0, false
 	end 
 end
