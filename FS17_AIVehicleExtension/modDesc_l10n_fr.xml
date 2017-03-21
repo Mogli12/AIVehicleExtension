@@ -15,7 +15,7 @@
 		<text name="AIVE_ACTIVESIDERIGHT"          text="Droite" />		
 		
 		<text name="AIVE_UTURN_ON_OFF"             text="Changer mode AI Vehicle"/>
-		<text name="AIVE_STEERING"                 text="Direction manuellle"/>
+		<text name="AIVE_STEERING"                 text="Direction manuelle"/>
 		<text name="AIVE_STEERING_ON"              text="Direction manuelle [ON]"/>
 		<text name="AIVE_STEERING_OFF"             text="Direction manuelle [OFF]"/>
 		<text name="AIVE_CONTINUE"                 text="Continuer"/>
@@ -31,8 +31,8 @@
 		<text name="AIVE_COLLISION_OTHER"          text="Collision avant" />
 		<text name="AIVE_COLLISION_BACK"           text="Collision arrière" />
 		<text name="AIVE_UTURN_ON"                 text="Aller/retour" />	
-		<text name="AIVE_UTURN_OFF"                text="Circulaire" />
-		<text name="AIVE_REVERSE_ON"               text="Virage [en arrière]		" />	
+		<text name="AIVE_UTURN_OFF"                text="Mode circulaire" />
+		<text name="AIVE_REVERSE_ON"               text="Virage [en arrière]" />	
 		<text name="AIVE_REVERSE_OFF"              text="Virage [en avant]" />
 		<text name="AIVE_INVERTED"             	   text="Poste de conduite inversé" />	
 		<text name="AIVE_INVERTED_ON"              text="Mode de travail [inversé]" />	
