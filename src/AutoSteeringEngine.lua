@@ -2021,105 +2021,112 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle )
 			local toolParam = vehicle.aiveChain.toolParams[i]
 			local tool      = vehicle.aiveChain.tools[toolParam.i]		
 
-			local gotFruits
-			for j=1,2 do
-				gotFruits = false
-				
-				local back, dxb, dzb, dxf, dzf 
-				
-				if tool.ignoreAI then
-					break
-				elseif j== 1 then
-					back = 1.02 * math.max( 5, vehicle.aiveChain.radius )
-					dxb  = dxh
-					dzb  = dzh
-					dxf  = dx9
-					dzf  = dz9
-				else
-					back = math.max( 5, vehicle.aiveChain.radius ) - 2
-					dxb  = dxd
-					dzb  = dzd
-					dxf  = dxd
-					dzf  = dzd
-				end
-				
-				local w = toolParam.width
-				local ofs, idx			
-				if vehicle.aiveChain.leftActive	then
-					ofs = -toolParam.offset 
-					idx = toolParam.nodeLeft 
-				else
-					ofs = toolParam.offset
-					idx = toolParam.nodeRight
-				end
-				
-				w = w + w
-				if vehicle.aiveChain.leftActive then
-					w = -w
-				end
+		--if not ( toolParam.skipOther and toolParam.skip ) then
+			if not ( toolParam.skip ) then
+				local gotFruits
+				for j=1,2 do
+					gotFruits = false
+					
+					local back, dxb, dzb, dxf, dzf 
+					
+					back = math.max( 5, vehicle.aiveChain.radius, vehicle.aiveChain.maxZ - toolParam.zReal + AIVEGlobals.fruitsAdvance )
+					if j== 1 then
+						dxb  = dxh
+						dzb  = dzh
+						dxf  = dx9
+						dzf  = dz9
+					else
+						back = back - 2
+						dxb  = dxd
+						dzb  = dzd
+						dxf  = dxd
+						dzf  = dzd
+					end
+					
+					local w = toolParam.width
+					
+					if vehicle.aiveChain.leftActive then
+						w = toolParam.x - vehicle.aiveChain.otherX
+					else
+						w = vehicle.aiveChain.otherX - toolParam.x 
+					end			
+					
+					local ofs, idx			
+					if vehicle.aiveChain.leftActive	then
+						ofs = -toolParam.offset 
+						idx = toolParam.nodeLeft 
+					else
+						ofs = toolParam.offset
+						idx = toolParam.nodeRight
+					end
+					
+					w = w + w
+					if vehicle.aiveChain.leftActive then
+						w = -w
+					end
 
-				local xw1,y,zw1 = AutoSteeringEngine.toolLocalToWorld( vehicle, toolParam.i, idx, ofs, 0 )
-				xw1 = xw1 + back * dxb
-				zw1 = zw1 + back * dzb
-			
-				local lx1,lz1,lx2,lz2,lx3,lz3,lx4,lz4
-				local dist = 2
-				local xw2, zw2
+					local xw1,y,zw1 = AutoSteeringEngine.toolLocalToWorld( vehicle, toolParam.i, idx, ofs, 0 )
+					xw1 = xw1 + back * dxb
+					zw1 = zw1 + back * dzb
+				
+					local lx1,lz1,lx2,lz2,lx3,lz3,lx4,lz4
+					local dist = 2
+					local xw2, zw2
 
-				repeat 
-					xw2 = xw1 + dist * dxf
-					zw2 = zw1 + dist * dzf
-					lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( xw1,zw1,xw2,zw2, w, true )
+					repeat 
+						xw2 = xw1 + dist * dxf
+						zw2 = zw1 + dist * dzf
+						lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( xw1,zw1,xw2,zw2, w, true )
+						
+						if j == 1 and headlandDist ~= 0 then
+							lx1 = lx1 + headlandDist * dxh
+							lx2 = lx2 + headlandDist * dxh
+							lx3 = lx3 + headlandDist * dxh
+							lz1 = lz1 + headlandDist * dzh
+							lz2 = lz2 + headlandDist * dzh
+							lz3 = lz3 + headlandDist * dzh
+						end
+						lx4 = lx3 + lx2 - lx1
+						lz4 = lz3 + lz2 - lz1
+						
+						dist = dist - math.max( 0.5, dist * 0.2 )
+					until  dist < 0.5
+							or AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
+							or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
+							or AutoSteeringEngine.checkField( vehicle, 0.5 * ( lx3 + lx4 ), 0.5 * ( lz3 + lz4 ) ) 
+
+					local lx5 = 0.25 * ( lx1 + lx2 + lx3 + lx4 )
+					local lz5 = 0.25 * ( lz1 + lz2 + lz3 + lz4 )
+					
+					if     AutoSteeringEngine.checkField( vehicle, lx1, lz1 )
+							or AutoSteeringEngine.checkField( vehicle, lx2, lz2 )
+							or AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
+							or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
+							or AutoSteeringEngine.checkField( vehicle, lx5, lz5 ) then
+						if AutoSteeringEngine.getFruitArea( vehicle, xw1,zw1,xw2,zw2, w, toolParam.i, true ) > 0 then
+							gotFruits = true
+						end			
+					end			
 					
 					if j == 1 and headlandDist ~= 0 then
-						lx1 = lx1 + headlandDist * dxh
-						lx2 = lx2 + headlandDist * dxh
-						lx3 = lx3 + headlandDist * dxh
-						lz1 = lz1 + headlandDist * dzh
-						lz2 = lz2 + headlandDist * dzh
-						lz3 = lz3 + headlandDist * dzh
+					--table.insert( vehicle.aiveFruitAreas[2], { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits } )
+						lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( xw1,zw1,xw2,zw2, w, true )
+						lx4 = lx3 + lx2 - lx1
+						lz4 = lz3 + lz2 - lz1
 					end
-					lx4 = lx3 + lx2 - lx1
-					lz4 = lz3 + lz2 - lz1
+					table.insert( vehicle.aiveFruitAreas[2], { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits } )
 					
-					dist = dist - math.max( 0.5, dist * 0.2 )
-				until  dist < 0.5
-						or AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
-						or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
-						or AutoSteeringEngine.checkField( vehicle, 0.5 * ( lx3 + lx4 ), 0.5 * ( lz3 + lz4 ) ) 
-
-				local lx5 = 0.25 * ( lx1 + lx2 + lx3 + lx4 )
-				local lz5 = 0.25 * ( lz1 + lz2 + lz3 + lz4 )
-				
-				if     AutoSteeringEngine.checkField( vehicle, lx1, lz1 )
-						or AutoSteeringEngine.checkField( vehicle, lx2, lz2 )
-						or AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
-						or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
-						or AutoSteeringEngine.checkField( vehicle, lx5, lz5 ) then
-					if AutoSteeringEngine.getFruitArea( vehicle, xw1,zw1,xw2,zw2, w, toolParam.i, true ) > 0 then
-						gotFruits = true
-					end			
-				end			
-				
-				if j == 1 and headlandDist ~= 0 then
-				--table.insert( vehicle.aiveFruitAreas[2], { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits } )
-					lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( xw1,zw1,xw2,zw2, w, true )
-					lx4 = lx3 + lx2 - lx1
-					lz4 = lz3 + lz2 - lz1
+					if not gotFruits then
+						break
+					end
 				end
-				table.insert( vehicle.aiveFruitAreas[2], { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits } )
-				
-				if not gotFruits then
+			
+				if gotFruits then 
+					fruitsDetected = true
+			--else
+			--	fruitsDetected = false
 					break
 				end
-			end
-			
-			if toolParam.skip then
-			elseif gotFruits then 
-				fruitsDetected = true
-		--else
-		--	fruitsDetected = false
-				break
 			end
 		end
 	end
