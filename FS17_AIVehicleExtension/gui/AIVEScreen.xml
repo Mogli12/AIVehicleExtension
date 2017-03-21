@@ -10,7 +10,8 @@
 			</GuiElement>
 
 			<GuiElement type="boxLayout" profile="settingsBox" position="20px 550px">
-				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="enabled" onCreate="onCreateSubElement" toolTip="$l10n_AIVE_ENABLED" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="enabled" toolTip="$l10n_AIVE_ENABLED"  onCreate="onCreateSubElement" 
+										focusId="11" focusChangeTop="103" focusChangeBottom="21">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -18,7 +19,8 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="rightAreaActive" onCreate="onCreateSubElement" onCreateArgs="rightLeft" toolTip="$l10n_AIVE_ACTIVESIDE" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="rightAreaActive" toolTip="$l10n_AIVE_ACTIVESIDE"  onCreate="onCreateSubElement" onCreateArgs="rightLeft"
+										focusId="12" focusChangeTop="31" focusChangeBottom="22">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -26,7 +28,8 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="upNDown" onCreate="onCreateSubElement" onCreateArgs="inverted" toolTip="$l10n_AIVE_UTURN_OFF" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="upNDown" toolTip="$l10n_AIVE_UTURN_OFF" onCreate="onCreateSubElement" onCreateArgs="inverted"
+										focusId="13" focusChangeTop="32" focusChangeBottom="23">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -34,7 +37,8 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="noSteering" onCreate="onCreateSubElement" onCreateArgs="inverted" toolTip="$l10n_AIVE_STEERING" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="noSteering" toolTip="$l10n_AIVE_STEERING"  onCreate="onCreateSubElement" onCreateArgs="inverted"
+										focusId="14" focusChangeTop="33" focusChangeBottom="24">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -42,7 +46,8 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="inverted" onCreate="onCreateSubElement" toolTip="$l10n_AIVE_INVERTED" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="inverted" toolTip="$l10n_AIVE_INVERTED"  onCreate="onCreateSubElement"
+										focusId="15" focusChangeTop="34" focusChangeBottom="25">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -50,7 +55,8 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="waitForPipe" onCreate="onCreateSubElement" toolTip="$l10n_AIVE_WAIT_FOR_PIPE" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="waitForPipe" toolTip="$l10n_AIVE_WAIT_FOR_PIPE" onCreate="onCreateSubElement"
+										focusId="16" focusChangeTop="35" focusChangeBottom="101">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -60,7 +66,8 @@
 			</GuiElement>
 
 			<GuiElement type="boxLayout" profile="settingsBox" position="347px 550px">
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="widthOffset" onCreate="onCreateSubElement" onCreateArgs="distance_2_0125" toolTip="$l10n_AIVE_WIDTH_OFFSET" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="widthOffset" toolTip="$l10n_AIVE_WIDTH_OFFSET" onCreate="onCreateSubElement" onCreateArgs="distance_2_0125"
+										focusId="21" focusChangeTop="11" focusChangeBottom="31">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -68,15 +75,17 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnModeIndex" onCreate="onCreateSubElement" onCreateArgs="turnModeIndex" toolTip="$l10n_AIVE_TURN_MODE" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnModeIndex" toolTip="$l10n_AIVE_TURN_MODE" onCreate="onCreateSubElement" onCreateArgs="turnModeIndex"
+										focusId="22" focusChangeTop="12" focusChangeBottom="32">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
 					<GuiElement type="text"   profile="multiTextOptionTitle" text="$l10n_AIVE_TURN_MODE"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
-				
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnOffset" onCreate="onCreateSubElement" onCreateArgs="distance" toolTip="$l10n_AIVE_TURN_OFFSET" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnOffset" toolTip="$l10n_AIVE_TURN_OFFSET" onCreate="onCreateSubElement" onCreateArgs="distance"
+										focusId="23" focusChangeTop="13" focusChangeBottom="33">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -84,7 +93,8 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="headland" onCreate="onCreateSubElement" onCreateArgs="headland" toolTip="$l10n_AIVE_HEADLAND" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="headland" toolTip="$l10n_AIVE_HEADLAND" onCreate="onCreateSubElement" onCreateArgs="headland"
+										focusId="24" focusChangeTop="14" focusChangeBottom="34">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -92,41 +102,37 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="angleFactor" onCreate="onCreateSubElement" onCreateArgs="percent5" toolTip="$l10n_AIVE_ANGLE_OFFSET" focusId="615" focusChangeTop="614" focusChangeBottom="616">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="angleFactor" toolTip="$l10n_AIVE_ANGLE_OFFSET" onCreate="onCreateSubElement" onCreateArgs="percent5"
+										focusId="25" focusChangeTop="15" focusChangeBottom="35">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
 					<GuiElement type="text"   profile="multiTextOptionTitle" text="$l10n_AIVE_ANGLE_OFFSET"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
-
-				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="useAIFieldFct" onCreate="onCreateSubElement" toolTip="$l10n_AIVE_USE_AI_FIELD" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
-					<GuiElement type="button" profile="multiTextOptionLeft" />
-					<GuiElement type="button" profile="multiTextOptionRight"/>
-					<GuiElement type="text" profile="multiTextOptionText" />
-					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AIVE_USE_AI_FIELD"/>
-					<GuiElement type="bitmap" profile="multiTextOptionBg" />
-				</GuiElement>
 			</GuiElement>
 
 			<GuiElement type="boxLayout" profile="settingsBox" position="675px 550px">
-				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="GuiActive" onCreate="onCreateSubElement" toolTip="$l10n_AIVE_TEXTHELPPANELON" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="GuiActive" toolTip="$l10n_AIVE_TEXTHELPPANELON" onCreate="onCreateSubElement"
+										focusId="31" focusChangeTop="21" focusChangeBottom="12">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
 					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AIVE_TEXTHELPPANELON"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
-				
-				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="acShowTrace" onCreate="onCreateSubElement" toolTip="$l10n_AIVE_TRACE" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="acShowTrace" toolTip="$l10n_AIVE_TRACE" onCreate="onCreateSubElement"
+										focusId="32" focusChangeTop="22" focusChangeBottom="13">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
 					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AIVE_TRACE"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
-				
-				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="acPause" onCreate="onCreateSubElement" toolTip="$l10n_AIVE_PAUSE_OFF" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="acPause" toolTip="$l10n_AIVE_PAUSE_OFF" onCreate="onCreateSubElement"
+										focusId="33" focusChangeTop="23" focusChangeBottom="14">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -134,22 +140,31 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 				
-				<!--GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="collision" onCreate="onCreateSubElement" toolTip="$l10n_AIVE_COLLISION_ON" onFocus="onFocusElement" onLeave="onLeaveElement" focusChangeTop="1" focusChangeBottom="4" focusId="3">
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="useAIFieldFct" toolTip="$l10n_AIVE_USE_AI_FIELD" onCreate="onCreateSubElement"
+										focusId="34" focusChangeTop="24" focusChangeBottom="15">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text" profile="multiTextOptionText" />
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AIVE_USE_AI_FIELD"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+				
+				<GuiElement type="toggleButton2" profile="multiTextOptionSettings" id="collision" toolTip="$l10n_AIVE_COLLISION_ON" onCreate="onCreateSubElement"
+										focusId="35" focusChangeTop="25" focusChangeBottom="16">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
 					<GuiElement type="text" profile="multiTextOptionTitle" text="$l10n_AIVE_COLLISION_ON"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
-				</GuiElement-->
-				
-				<GuiElement type="button" profile="usersButtonBlank" size="305px 36px" margin="0px 25px 0px 14px" text="$l10n_AIVE_MAGIC"  onClick="onClickMagic" focusId="100" focusChangeTop="19" focusChangeRight="101" focusChangeBottom="101"/>
-				<GuiElement type="button" profile="usersButtonBlank" size="305px 36px" margin="0px 25px 0px 14px" text="$l10n_AIVE_NEXTTURNSTAGE"  onClick="onClickNext" focusId="100" focusChangeTop="19" focusChangeRight="101" focusChangeBottom="101"/>
+				</GuiElement>
 			</GuiElement>
 
 			<GuiElement type="flowLayout" profile="buttonBox" id="buttonsPC" >
-				<GuiElement type="button" profile="buttonBack"   size="499px 40px" text="$l10n_button_back"  onClick="onClickBack" focusId="100" focusChangeTop="19" focusChangeRight="101" focusChangeBottom="101" focusInit="onOpen"/>
-				<GuiElement type="button" profile="buttonOK"     size="500px 40px" text="$l10n_button_ok"    onClick="onClickOk"   focusId="101" focusChangeTop="100" focusChangeLeft="100" focusChangeBottom="1"/>
+				<GuiElement type="button" profile="buttonBack"   size="333px 40px" text="$l10n_button_back" onClick="onClickBack"  focusId="101" focusChangeTop="16"  focusChangeBottom="102" />
+				<GuiElement type="button" profile="buttonReload" size="333px 40px" text="$l10n_AIVE_MAGIC"  onClick="onClickMagic" focusId="102" focusChangeTop="101" focusChangeBottom="103" />
+				<GuiElement type="button" profile="buttonSave"   size="334px 40px" text="$l10n_button_ok"   onClick="onClickOk"    focusId="103" focusChangeTop="102" focusChangeBottom="11" />
 			</GuiElement>
+			
 		</GuiElement>
 	</GuiElement>
 </GUI>

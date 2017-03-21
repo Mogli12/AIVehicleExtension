@@ -130,7 +130,7 @@ function AIDriveStrategyMogli:delete()
 	AIVehicleExtension.resetAIMarker( veh )
 	veh.acImplementsMoveDown = false
 	AIVehicleExtension.setStatus( veh, 0 )
-	veh.acTurnStage = -3
+	veh.acTurnStage = 0
 --==============================================================				
 --==============================================================				
 		

@@ -76,10 +76,10 @@ AIVehicleExtension.saveAttributesMapping = {
 																			noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
 																			useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
 																			waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true } }																															
-AIVehicleExtension.turnStageNoNext = { -3, -2, -1, 21, 22, 23 } --{ 0 }
-AIVehicleExtension.turnStageEnd	= { { 4, -1 },
-															{ 8, -1 },
-															{ 9, -1 },
+AIVehicleExtension.turnStageNoNext = { -4, -3, -2, -1, 0, 21, 22, 23, 198, 199 } --{ 0 }
+AIVehicleExtension.turnStageEnd	= { 
+														--{ 4, -1 },
+															{ 14, -1 },
 														--{ 23, 25 },
 															{ 25, 27 },
 															{ 27, -2 },
@@ -197,27 +197,23 @@ function AIVehicleExtension:initMogliHud()
 	end
 	
 	local mogliRows = 1
-	local mogliCols = 8
-	if AIVEGlobals.showTrace > 0 or AIVEGlobals.devFeatures > 0 then
-	--mogliCols = mogliCols + 2
-	end
+	local mogliCols = 7
 	--(												directory,	 hudName, hudBackground, onTextID, offTextID, showHudKey, x,y, nx, ny, w, h, cbOnClick )
 	AIVEHud.init( self, AtDirectory, "AIVEHud", 0.4, "AIVE_TEXTHELPPANELON", "AIVE_TEXTHELPPANELOFF", InputBinding.AIVE_HELPPANEL, 0.5-0.015*mogliCols, 0.0108, mogliCols, mogliRows, AIVehicleExtension.sendParameters )--, nil, nil, 0.8 )
 	AIVEHud.setTitle( self, "AIVE_VERSION" )
-	
-	if AIVEGlobals.showTrace > 0 or AIVEGlobals.devFeatures > 0 then
-	--AIVEHud.addButton(self, "dds/safety_ina.dds", nil, AIVehicleExtension.onToggleTrace, nil, mogliCols,1, "AIVE_TRACE", nil )
-	--AIVEHud.addButton(self, "dds/refresh.dds",    nil, AIVehicleExtension.onMagic,       nil, mogliCols-1,1, "AIVE_MAGIC", nil )
-	end
 
 	AIVEHud.addButton(self, "dds/ai_combine.dds",     "dds/auto_combine.dds",  AIVehicleExtension.onEnable,      AIVehicleExtension.evalEnable,     1,1, "AIVE_STOP", "AIVE_START" )
 	AIVEHud.addButton(self, "dds/active_right.dds",   "dds/active_left.dds",   AIVehicleExtension.setAreaLeft,   AIVehicleExtension.evalAreaLeft,   2,1, "AIVE_ACTIVESIDERIGHT", "AIVE_ACTIVESIDELEFT" )
 	AIVEHud.addButton(self, "dds/no_uturn2.dds",      "dds/uturn.dds",         AIVehicleExtension.setUTurn,      AIVehicleExtension.evalUTurn,      3,1, "AIVE_UTURN_OFF", "AIVE_UTURN_ON") 
 	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.setTurnMode,   nil,                               4,1, nil, nil, AIVehicleExtension.getTurnModeText, AIVehicleExtension.getTurnModeImage )
-	AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds", AIVehicleExtension.onAutoSteer,   AIVehicleExtension.evalAutoSteer,  5,1, "AIVE_STEER_ON", "AIVE_STEER_OFF" )
-	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaisePause,  nil,                               6,1, "AIVE_PAUSE_OFF", "AIVE_PAUSE_ON", AIVehicleExtension.getRaisePauseText, AIVehicleExtension.getRaisePauseImage )
-	AIVEHud.addButton(self, "dds/next.dds",           "dds/no_next.dds",       AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,  7,1, "AIVE_NEXTTURNSTAGE", nil )
-	AIVEHud.addButton(self, "dds/setings.dds",        nil,                     AIVehicleExtension.onAIVEScreen,  nil,                               8,1, "AIVE_SETTINGS", "AIVE_SETTINGS" )
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onSteerPause,  nil,                               5,1, "AIVE_PAUSE_OFF", "AIVE_PAUSE_ON", AIVehicleExtension.getSteerPauseText, AIVehicleExtension.getSteerPauseImage )
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaiseNext,   nil,                               6,1, "AIVE_STEER_ON", "AIVE_STEER_OFF", AIVehicleExtension.getRaiseNextText, AIVehicleExtension.getRaiseNextImage )
+	AIVEHud.addButton(self, "dds/setings.dds",        nil,                     AIVehicleExtension.onAIVEScreen,  nil,                               7,1, "AIVE_SETTINGS", "AIVE_SETTINGS" )
+
+
+--AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds", AIVehicleExtension.onAutoSteer,   AIVehicleExtension.evalAutoSteer,  5,1, "AIVE_STEER_ON", "AIVE_STEER_OFF" )
+--AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaisePause,  nil,                               6,1, "AIVE_PAUSE_OFF", "AIVE_PAUSE_ON", AIVehicleExtension.getRaisePauseText, AIVehicleExtension.getRaisePauseImage )
+--AIVEHud.addButton(self, "dds/next.dds",           "dds/no_next.dds",       AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,  7,1, "AIVE_NEXTTURNSTAGE", nil )
 
 	
 --AIVEHud.addButton(self, "dds/off.dds",            "dds/on.dds",            AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,      1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage )
@@ -319,10 +315,66 @@ function AIVehicleExtension:onAIVEScreen()
 	g_gui:showGui( "AIVEScreen" )
 end
 
+function AIVehicleExtension:onRaiseNext()
+	if self.aiIsStarted then
+		if self.aiveIsStarted then 
+			AIVehicleExtension.setNextTurnStage(self)
+		end
+	else
+		local moveDown = not self.acImplementsMoveDown
+		self.acImplementsMoveDown = nil
+		AIVehicleExtension.setAIImplementsMoveDown(self, moveDown,true)
+		if self.acParameters ~= nil and not moveDown and self.acParameters.upNDown then
+			self.acParameters.leftAreaActive	= not self.acParameters.leftAreaActive 
+			self.acParameters.rightAreaActive = not self.acParameters.rightAreaActive
+			AIVehicleExtension.sendParameters( self )
+		end
+	end
+end
+
+function AIVehicleExtension:getRaiseNextText()
+	if self.aiIsStarted then
+		if not self.aiveIsStarted then 
+			return ""
+		else
+			for _,ts in pairs( AIVehicleExtension.turnStageNoNext ) do
+				if self.acTurnStage == ts then
+					return ""
+				end
+			end
+			return AIVEHud.getText( "AIVE_NEXTTURNSTAGE" )
+		end
+	else
+		if self.acImplementsMoveDown then
+			return AIVEHud.getText( "AIVE_STEER_RAISE" )
+		else
+			return AIVEHud.getText( "AIVE_STEER_LOWER" )
+		end
+	end
+end
+
+function AIVehicleExtension:getRaiseNextImage()
+	if self.aiIsStarted then
+		if not self.aiveIsStarted then 
+			return "empty.dds"
+		else
+			for _,ts in pairs( AIVehicleExtension.turnStageNoNext ) do
+				if self.acTurnStage == ts then
+					return "dds/no_next.dds"
+				end
+			end
+			return "dds/next.dds"
+		end
+	else
+		if self.acImplementsMoveDown then
+			return "dds/raise_impl.dds"
+		else
+			return "dds/lower_impl.dds"
+		end
+	end
+end
+
 function AIVehicleExtension:onRaisePause()
-	if self.aiveIsStarted then 
-		return "empty.dds"
-	end 
 	if self.aiIsStarted then
 		if self.aiveIsStarted then 
 			self.acPause = not self.acPause
@@ -371,6 +423,63 @@ function AIVehicleExtension:getRaisePauseImage()
 			return "dds/raise_impl.dds"
 		else
 			return "dds/lower_impl.dds"
+		end
+	end
+end
+
+function AIVehicleExtension:onSteerPause()
+	if self.aiIsStarted then
+		if self.aiveIsStarted then 
+			self.acPause = not self.acPause
+		end
+	else
+		if self.acTurnStage >= 198 then
+			AIVehicleExtension.setStatus( self, 0 )
+			self.acTurnStage = 0
+			self.stopMotorOnLeave = true
+			self.deactivateOnLeave = true
+		else
+			AIVehicleExtension.initMogliHud(self)
+			AutoSteeringEngine.invalidateField( self, self.acParameters.useAIFieldFct )
+			AutoSteeringEngine.initFruitBuffer( self )
+			self.acLastSteeringAngle = nil
+			self.acTurnStage	 = 198
+		end
+	end
+end
+
+function AIVehicleExtension:getSteerPauseText()
+	if self.aiIsStarted then
+		if not self.aiveIsStarted then 
+			return ""
+		elseif self.acPause then
+			return AIVEHud.getText( "AIVE_PAUSE_OFF" )
+		else
+			return AIVEHud.getText( "AIVE_PAUSE_ON" )
+		end
+	else
+		if self.acTurnStage >= 198 then
+			return AIVEHud.getText( "AIVE_STEER_OFF" )
+		else
+			return AIVEHud.getText( "AIVE_STEER_ON" )
+		end
+	end
+end
+
+function AIVehicleExtension:getSteerPauseImage()
+	if self.aiIsStarted then
+		if not self.aiveIsStarted then 
+			return "empty.dds"
+		elseif self.acPause then
+			return "dds/pause.dds"
+		else
+			return "dds/no_pause.dds"
+		end
+	else
+		if self.acTurnStage >= 198 then
+			return "dds/auto_steer_off.dds"
+		else
+			return "dds/auto_steer_on.dds"
 		end
 	end
 end

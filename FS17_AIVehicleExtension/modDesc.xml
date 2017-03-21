@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="34">
 	<author>Mogli</author>
-	<version>0.9.0.3</version>
+	<version>0.9.0.4</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v1.0 beta 3</en>
-			<de>AI Vehicle Extension v1.0 beta 3</de>
-			<fr>AI Vehicle Extension v1.0 beta 3</fr>
-			<it>AI Vehicle Extension v1.0 beta 3</it>
-			<ru>AI Vehicle Extension v1.0 beta 3</ru>
-			<cz>AI Vehicle Extension v1.0 beta 3</cz>
-			<pl>AI Vehicle Extension v1.0 beta 3</pl>
-										<cs>车辆助手 v1.0 beta 3</cs>
+			<en>AI Vehicle Extension v1.0 beta 4</en>
+			<de>AI Vehicle Extension v1.0 beta 4</de>
+			<fr>AI Vehicle Extension v1.0 beta 4</fr>
+			<it>AI Vehicle Extension v1.0 beta 4</it>
+			<ru>AI Vehicle Extension v1.0 beta 4</ru>
+			<cz>AI Vehicle Extension v1.0 beta 4</cz>
+			<pl>AI Vehicle Extension v1.0 beta 4</pl>
+										<cs>车辆助手 v1.0 beta 4</cs>
 		</text>
 	</l10n>
 	<title>
@@ -25,10 +25,42 @@
 		<cs>车辆助手</cs>
 	</title>
 	<description>
-		<en>
-			<![CDATA[AI Vehicle]]></en>
-		<de>
-			<![CDATA[AI Vehicle]]></de>
+		<en><![CDATA[
+AIVehicleExtension contains an alternative hired worker that can work on fields with irregular edges. It has some additional features like a circular mode and headland support.
+
+This mod automatically inserts itself into all vehicles if they already support the normal hired worker. Only exception are vehicles with articulated axis.
+
+When starting this alternative helper it briefly scans the field at the current vehicle position. But apart from this, the alternative hired worker has only a little idea of where it is on the field. Instead, this mod looks, starting from the current position, for the border between untouched and already worked area is. 
+
+On beautiful rectangular fields with lots of free space around you can better use the normal hired worker. If you want to follow a a certain path on the field then I recommend using CoursePlay. The mod FollowMe is great for simple following tasks. I have the two mods together with AIVehicleExtension in my mods folder.
+
+Here are the most important input bindings:
+* H: Start or stop the hired worker
+* Left shift + H: Open the settings dialog
+* Left control + H: Open the head up display
+* Left alt. + H: Toggle automatic steering
+* Left alt. + V: Raise or lower all tools
+* Left alt. + 5: Toggle circular mode 
+* Left alt. + 6: Swap side
+]]></en>
+		<de><![CDATA[
+AIVehicleExtension beinhaltet einen alternativen Helfer, der auch Felder mit unregelmäßigen Kanten bearbeiten kann. Darüber hinaus bietet er weitere Möglichkeiten wie Kreisfahrt oder Vorgewendet.
+		
+Dieser Mod baut sich automatisch in alle Fahrzeuge ein, wenn diese bereits den normalen Helfer unterstützen. Einzige Ausnahme sind derzeit Fahrzeuge mit Knicklenkung.
+
+Beim Start dieses alternativen Helfers überprüft er kurz das Feld an der aktuellen Fahrzeugposition. Abgesehen davon hat der alternative Helfer aber wenig Ahnung, wo er sich gerade auf dem Feld bedindet. Stattdessen schaut dieser Mod ausgehend von der aktuellen Position, wo noch unbearbeitetes Feld und wo bereits bearbeites Feld ist. 
+
+Auf schönen rechteckigen Feldern mit viel Platz drumherum kann man besser den normalen Helfer benutzen. Wenn man einen bestimmten Weg auf dem Feld abfahren will, dann empfehle ich CoursePlay. Für einfaches Hinterherfahren ist auch FollowMe ganz toll. Ich habe meistens alle 3 Mods installiert.
+
+Hier ist die Tastaturbelegung:
+* H: Helfer einstellen oder entlassen
+* Left shift + H: Einstellungsdialog öffnen
+* Left control + H: AI Vehicle-Info öffnen
+* Left alt. + H: Automatische Lenkung
+* Left alt. + V: Alle Geräte heben oder senken
+* Left alt. + 5: AI Vehicle-Modus wechseln
+* Left alt. + 6: Aktive seite wechseln
+]]></de>
 		<fr>
 			<![CDATA[AI Vehicle - French traduction by Waylan]]></fr>
 		<it>
