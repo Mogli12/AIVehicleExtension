@@ -1,78 +1,86 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <l10n>
 	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
-	<description><![CDATA[Auto Tractor]]></description>
+	<description><![CDATA[Aiutante alternativo]]></description>
 
 	<texts>
-		<!--AI Vehicle helpPanel text-->
-		<text name="AIVE_START" text="AI Vehicle on" />
-		<text name="AIVE_STOP" text="AI Vehicle off" />
-		<text name="AIVE_WORKWIDTH" text="larg. lavoro:" />
-		<text name="AIVE_ACTIVESIDELEFT" text="lato attivo: sinistro" />
-		<text name="AIVE_ACTIVESIDERIGHT" text="lato attivo: destro" />
+		<!-- AI Vehicle helpPanel text -->
+		<text name="AIVE_SETTINGS"                 text="Impostazioni aiutanti" />
+		<text name="AIVE_ENABLED"                  text="Aiutante alternativo" />
+		<text name="AIVE_START"                    text="Aiutante alternativo attiva" />
+		<text name="AIVE_STOP"                     text="Aiutante alternativo disattiva" />
+		<text name="AIVE_WORKWIDTH"                text="Larg. lavoro:" />
+		<text name="AIVE_ACTIVESIDE"               text="Lato attivo" />
+		<text name="AIVE_ACTIVESIDELEFT"           text="Sinistro" />
+		<text name="AIVE_ACTIVESIDERIGHT"          text="Destro" />
 
-		<text name="AIVE_UTURN_ON_OFF"             text="AI Vehicle cambia modo"/>
-		<text name="AIVE_STEERING"                 text="sterzo manuale"/>
-		<text name="AIVE_STEERING_ON"              text="sterzo manuale [on]"/>
-		<text name="AIVE_STEERING_OFF"             text="sterzo manuale [off]"/>
-		<text name="AIVE_CONTINUE"                 text="continua"/>
-		
-		<text name="AIVE_WAIT_FOR_PIPE" text="modo scarico [fermo]" />
-		<text name="AIVE_COLLISIONTRIGGERMODE_ON" text="mantieni la distanza è ON" />
-		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="mantieni la distanza è OFF" />
-		<!--AI Vehicle help text-->
-		<text name="AIVE_TEXTHELPPANELOFF" text="nascondi dettagli AI Vehicle" />
-		<text name="AIVE_TEXTHELPPANELON" text="mostra dettagli AI Vehicle" />
-		<!--AI Vehicle inputbinding text-->
-		<text name="AIVE_COLLISION_OTHER" text="collisioni anteriori" />
-		<text name="AIVE_COLLISION_BACK" text="collisioni posteriori" />
-		<text name="AIVE_UTURN_ON" text="modo AI Vehicle [su/giù]" />
-		<text name="AIVE_UTURN_OFF" text="modo AI Vehicle [cerchio]" />
-		<text name="AIVE_REVERSE_ON" text="Manovra [svolta]" />
-		<text name="AIVE_REVERSE_OFF" text="Manovra [movimento]" />
-		<text name="AIVE_INVERTED_ON" text="modo lavoro [reverse]" />
-		<text name="AIVE_INVERTED_OFF" text="modo lavoro [normale]" />
-		<text name="AIVE_WIDTH_OFFSET" text="larghezza spostamento" />
-		<text name="AIVE_TURN_OFFSET" text="spostamento svolta" />
-		<text name="AIVE_ANGLE_OFFSET" text="anglolo di svolta" />
-		<text name="AIVE_SAFETY_FACTOR" text="distanza di sicurezza" />
-		<text name="AIVE_ERROR" text="errore" />
-		<text name="AIVE_NEXTTURNSTAGE" text="vai prossimo turno di svolta" />
-		<text name="AIVE_CP_ON" text="modo courseplay [off]" />
-		<text name="AIVE_CP_OFF" text="modo courseplay [on]" />
-		<text name="AIVE_STEER_ON" text="sterzo automatico [off]" />
-		<text name="AIVE_STEER_OFF" text="sterzo automatico [on]" />
-		<text name="AIVE_HEADLAND_ON" text="testa del campo [off]" />
-		<text name="AIVE_HEADLAND_OFF" text="testa del campo [on]" />
-		<text name="AIVE_FRONT_PACKER_ON" text="compattatore frontale [on]" />
-		<text name="AIVE_FRONT_PACKER_OFF" text="compattatore frontale [off]" />
-		<text name="AIVE_COLLISION_ON" text="rileva collisioni [on]" />
-		<text name="AIVE_COLLISION_OFF" text="rileva collisioni [off]" />
-		<text name="AIVE_HIRE_ON" text="uso dei semi [off]" />
-		<text name="AIVE_HIRE_OFF" text="uso dei semi [on]" />
-		<text name ="AIVE_HEADLAND" text="testa del campo" />
-		<text name="AIVE_TURN_MODE_O" text="svolta a U senza retro" />
-		<text name="AIVE_TURN_MODE_A" text="svolta a U piccola" />
-		<text name="AIVE_TURN_MODE_Y" text="svolta a U media" />
-		<text name="AIVE_TURN_MODE_T" text="svolta a U grande" />
-		<text name="AIVE_TURN_MODE_C" text="svolta di 90° senza retro" />
-		<text name="AIVE_TURN_MODE_L" text="svolta di 90° piccola" />
-		<text name="AIVE_TURN_MODE_K" text="svolta di 90° grande" />
-		<text name="AIVE_TURN_MODE_8" text="svolta a U senza retro" />
-		<text name="AIVE_PAUSE_ON"                 text="pausa [on]" />
-		<text name="AIVE_PAUSE_OFF"                text="pausa [off]" />
-		<text name="AIVE_STEER_RAISE"              text="solleva tutti gli attrezzi" />
-		<text name="AIVE_STEER_LOWER"              text="abbassa tutti gli attrezzi" />
-		<text name="AIVE_TRACE"                    text="mostra traccia" />
-		<text name="AIVE_MAGIC"                    text="aggiorna il campo" />
-				
-		<text name="input_AIVE_HELPPANEL" 	       text="AI Vehicle: ???"/>
-		<text name="input_AIVE_STEER"              text="AI Vehicle: ???"/>
-		<text name="input_AIVE_SWAP_SIDE"          text="AI Vehicle: ???"/>
-		<text name="input_AIVE_ENABLE"             text="AI Vehicle: ???"/>
-		<text name="input_AIVE_UTURN_ON_OFF"       text="AI Vehicle: ???"/>
-		<text name="input_AIVE_STEERING"           text="AI Vehicle: ???"/>
-		<text name="input_AIVE_RAISE"       		   text="AI Vehicle: ???"/>
-		<text name="input_AIVE_START_AIVE"  		   text="AI Vehicle: ???"/>
+		<text name="AIVE_UTURN_ON_OFF"             text="Modificare la modalità Aiutante alternativo" />
+		<text name="AIVE_STEERING"                 text="Intervento sterzo manuale" />
+		<text name="AIVE_STEERING_ON"              text="Intervento sterzo manuale [attivo]" />
+		<text name="AIVE_STEERING_OFF"             text="Intervento sterzo manuale [disattivo]" />
+		<text name="AIVE_CONTINUE"                 text="continuare" />
+		<text name="AIVE_RAISE"                    text="Solleva/abbassa tutti gli attrezzi" />
+
+		<text name="AIVE_WAIT_FOR_PIPE"            text="Modalità scarico" />
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="Mantieni la distanza è attivo" />
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="Mantieni la distanza è disattivo" />
+		<!-- AI Vehicle help text -->
+		<text name="AIVE_TEXTHELPPANELOFF"         text="Nascondi dettagli Aiutante alternativo" />
+		<text name="AIVE_TEXTHELPPANELON"          text="Mostra dettagli Aiutante alternativo" />
+		<!-- AI Vehicle inputbinding text -->
+		<text name="AIVE_COLLISION_OTHER"          text="Collisioni anteriori" />
+		<text name="AIVE_COLLISION_BACK"           text="Collisioni posteriori" />
+		<text name="AIVE_UTURN_ON"                 text="Su/giù" />
+		<text name="AIVE_UTURN_OFF"                text="Circolare" />
+		<text name="AIVE_REVERSE_ON"               text="Modalità svolta [all'indietro]" />
+		<text name="AIVE_REVERSE_OFF"              text="Modalità svolta [in avanti]" />
+		<text name="AIVE_INVERTED"                 text="In retromarcia" />
+		<text name="AIVE_INVERTED_ON"              text="Modalità lavoro [all'indietro]" />
+		<text name="AIVE_INVERTED_OFF"             text="Modalità lavoro [in avanti]" />
+		<text name="AIVE_WIDTH_OFFSET"             text="Offset (larghezza)" />
+		<text name="AIVE_TURN_OFFSET"              text="Offset (Inversioni)" />
+		<text name="AIVE_ANGLE_OFFSET"             text="Angolo di sterzata" />
+		<text name="AIVE_SAFETY_FACTOR"            text="Distanza di sicurezza" />
+		<text name="AIVE_ERROR"                    text="Errore" />
+		<text name="AIVE_NEXTTURNSTAGE"            text="Vai al prossimo punto di svolta" />
+		<text name="AIVE_CP_ON"                    text="Modalità Courseplay [disattiva]" />
+		<text name="AIVE_CP_OFF"                   text="Modalità Courseplay [attiva]" />
+		<text name="AIVE_STEER_ON"                 text="Sterzo automatico [disattivo]" />
+		<text name="AIVE_STEER_OFF"                text="Sterzo automatico [attivo]" />
+		<text name="AIVE_HEADLAND_ON"              text="Testata del campo [disattiva]" />
+		<text name="AIVE_HEADLAND_OFF"             text="Testata del campo [attiva]" />
+		<text name="AIVE_FRONT_PACKER_ON"          text="Compattatore frontale [attivo]" />
+		<text name="AIVE_FRONT_PACKER_OFF"         text="Compattatore frontale [disattivo]" />
+		<text name="AIVE_COLLISION_ON"             text="Rileva collisioni [attivo]" />
+		<text name="AIVE_COLLISION_OFF"            text="Rileva collisioni [disattivo]" />
+		<text name="AIVE_HIRE_ON"                  text="Uso dei semi [disattivo]" />
+		<text name="AIVE_HIRE_OFF"                 text="Uso dei semi [attivo]" />
+		<text name="AIVE_HEADLAND"                 text="Testata del campo" />
+		<text name="AIVE_TURN_MODE"                text="Modalità della manovra di svolta" />
+		<text name="AIVE_TURN_MODE_O"              text="Svolta in forma di O" />
+		<text name="AIVE_TURN_MODE_A"              text="Inversione con svolta" />
+		<text name="AIVE_TURN_MODE_Y"              text="Inversione con svolta (Trebbia)" />
+		<text name="AIVE_TURN_MODE_T"              text="Inversione piccola" />
+		<text name="AIVE_TURN_MODE_C"              text="Svolta in forma di O" />
+		<text name="AIVE_TURN_MODE_L"              text="Inversione con svolta" />
+		<text name="AIVE_TURN_MODE_7"              text="Inversione piccola" />
+		<text name="AIVE_TURN_MODE_K"              text="Grande svolta a 90°" />
+		<text name="AIVE_TURN_MODE_8"              text="Svolta in forma di 8" />
+		<text name="AIVE_PAUSE_ON"                 text="Continuare" />
+		<text name="AIVE_PAUSE_OFF"                text="Pausa" />
+		<text name="AIVE_STEER_RAISE"              text="Solleva tutti gli attrezzi" />
+		<text name="AIVE_STEER_LOWER"              text="Abbassa tutti gli attrezzi" />
+		<text name="AIVE_TRACE"                    text="Mostra traccia" />
+		<text name="AIVE_MAGIC"                    text="Aggiorna il campo" />
+		<text name="AIVE_USE_AI_FIELD"             text="Rileva campo corrente" />
+
+		<text name="input_AIVE_HELPPANEL"          text="Aiutante alternativo: Mostra/nascondi HUD" />
+		<text name="input_AIVE_STEER"              text="Aiutante alternativo: Sterzo automatico" />
+		<text name="input_AIVE_SWAP_SIDE"          text="Aiutante alternativo: Cambia lato attivo" />
+		<text name="input_AIVE_ENABLE"             text="Aiutante alternativo: Cambia aiutante" />
+		<text name="input_AIVE_UTURN_ON_OFF"       text="Aiutante alternativo: Modalità circolare attiva/disattiva" />
+		<text name="input_AIVE_STEERING"           text="Aiutante alternativo: Sterzo manuale" />
+		<text name="input_AIVE_RAISE"              text="Aiutante alternativo: Solleva/abbassa tutti gli attrezzi" />
+		<text name="input_AIVE_START_AIVE"         text="Aiutante alternativo: Impostazioni" />
 	</texts>
 </l10n>
