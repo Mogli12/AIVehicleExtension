@@ -63,8 +63,24 @@ Hier ist die Tastaturbelegung:
 ]]></de>
 		<fr>
 			<![CDATA[AI Vehicle - French traduction by Waylan]]></fr>
-		<it>
-			<![CDATA[AI Vehicle - Traduzione italiana by Cristiano Magro]]></it>
+		<it><![CDATA[
+AIVehicleExtension contiene un aiutante alternativo che può lavorare su campi con bordi irregolari. Ha alcune caratteristiche aggiuntive come una modalità circolare e testate di campo.
+
+Questa mod si inserisce automaticamente in tutti i veicoli se già supportano l'aiutante normale. Unica eccezione sono i veicoli con asse articolato.
+
+All'avvio questo aiutante alternativo scansiona brevemente il campo nella posizione corrente del veicolo. Oltre a questo, l'aiutante alternativo ha poca idea di dove si è sul campo. Invece, questo mod osserva a partire dalla posizione corrente, per il confine tra l'area incontaminata e dove è già lavorato.
+
+Su campi rettangolari con un sacco di spazio libero attorno si può utilizzare l'aiutante normale. Se si vuole seguire un un certo percorso sul campo poi mi consiglia di utilizzare courseplay. Il FollowMe mod è l'ideale per semplici compiti. Ho i due mods insieme AIVehicleExtension nella mia cartella mods.
+
+Qui ci sono le più importanti associazioni di tasti:
+* H: avviare o arrestare l'aiutante
+* SHIFT SINISTRO + H: Aprire la finestra delle impostazioni
+* CONTROL SINISTRO + H: Aprire il display
+* Alt. + H: Sterzo automatico
+* Alt. + V: Sollevare o abbassare tutti gli attrezzi
+* Alt. + 5: Cambia modalità di lavoro
+* Alt. + 6: Lato attivo
+]]></it>
 		<ru>
 			<![CDATA[AI Vehicle - умный наёмный рабочий. Перевод Gonimy_Vetrom]]></ru>
 		<cz>
