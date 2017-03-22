@@ -1983,7 +1983,10 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle )
 	
 	if AIVEGlobals.useFBB123 > 0 then
 		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
-		if vehicle.aiveChain.fbb2 ~= nil and Utils.vector2LengthSq( vehicle.aiveChain.fbb2.x - wx, vehicle.aiveChain.fbb2.z - wz ) < 0.09 then
+		if      vehicle.aiveChain.fbb2   ~= nil 
+				and vehicle.aiveChain.fbb2.x ~= nil 
+				and vehicle.aiveChain.fbb2.z ~= nil 
+				and Utils.vector2LengthSq( vehicle.aiveChain.fbb2.x - wx, vehicle.aiveChain.fbb2.z - wz ) < 0.09 then
 			return vehicle.aiveChain.fbb2.d
 		end
 	end
@@ -2176,7 +2179,10 @@ function AutoSteeringEngine.hasFruits( vehicle )
 		if vehicle.aiveChain.inField then
 			fbbd = 0.09
 		end
-		if vehicle.aiveChain.fbb1 ~= nil and Utils.vector2LengthSq( vehicle.aiveChain.fbb1.x - wx, vehicle.aiveChain.fbb1.z - wz ) < fbbd then
+		if      vehicle.aiveChain.fbb1   ~= nil 
+				and vehicle.aiveChain.fbb1.x ~= nil 
+				and vehicle.aiveChain.fbb1.z ~= nil 
+				and Utils.vector2LengthSq( vehicle.aiveChain.fbb1.x - wx, vehicle.aiveChain.fbb1.z - wz ) < fbbd then
 			return vehicle.aiveChain.fbb1.d, vehicle.aiveChain.fbb1.a 
 		end
 	end
