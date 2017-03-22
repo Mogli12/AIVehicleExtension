@@ -62,6 +62,7 @@ Hier ist die Tastaturbelegung:
 * Left alt. + 6: Aktive seite wechseln
 ]]></de>
 		<fr>
+<<<<<<< HEAD
 			<![CDATA[AI Vehicle - French traduction by Waylan]]></fr>
 		<it><![CDATA[
 AIVehicleExtension contiene un aiutante alternativo che può lavorare su campi con bordi irregolari. Ha alcune caratteristiche aggiuntive come una modalità circolare e testate di campo.
@@ -81,6 +82,28 @@ Qui ci sono le più importanti associazioni di tasti:
 * Alt. + 5: Cambia modalità di lavoro
 * Alt. + 6: Lato attivo
 ]]></it>
+=======
+			<![CDATA[
+AIVehicleExtension fournit un ouvrier alternatif capable de travailler les champs aux formes irrégulières. Il rajoute aussi d'autres fonctionnalités comme un mode circulaire et la gestion des fourrières.
+
+Ce mod se rajoute automatiquement à tous les véhicules supportant l'ouvrier classique. La seule exception pour l'instant concerne les véhicules articulés.
+
+Lors du démarrage de cet ouvrier alternatif, il vérifie rapidement le champ à la position actuelle du véhicule. Toutefois, cet ouvrier alternatif n'a pas vraiment conscience d'où il se situe dans une parcelle. Tout ce qu'il fait c'est vérifier à partir de sa position actuelle où se trouve la limite entre la surface déjà travaillée et celle encore à travailler.
+
+Pour les parcelles bien rectangulaires et dégagées, il vaut mieux avoir recours à l'ouvrier standard. Si vous voulez suivre un certain chemin sur un champ, alors je vous conseille d'utiliser Courseplay. Quand il s'agit simplement de devoir suivre un autre véhicule, FollowMe sera parfait. J'ai constamment ces deux mods avec AIVehiculeExtension dans mon répertoire de mods.
+
+Voici les principaux raccourcis clavier :
+* H: Engager ou renvoyer un ouvrier
+* shift gauche + H: Ouvrir la fenêtre des paramètres
+* ctrl gauche + H: Afficher le panneau d'information
+* alt gauche + H: Direction automatique
+* alt gauche + V: Lever ou baisser tous les outils
+* alt gauche + 5: Changer de mode (circulaire/Aller-retour)
+* alt gauche + 6: Changer de sens
+]]></fr>
+		<it>
+			<![CDATA[AI Vehicle - Traduzione italiana by Cristiano Magro]]></it>
+>>>>>>> 6fd43a77fd95abd176ca04971520721aded90a6a
 		<ru>
 			<![CDATA[AI Vehicle - умный наёмный рабочий. Перевод Gonimy_Vetrom]]></ru>
 		<cz>
