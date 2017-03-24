@@ -6823,7 +6823,7 @@ function AutoSteeringEngine.checkIsAnimPlaying( vehicle, moveDown )
 			if      tool.isTurnOnVehicle
 					and tool.obj:getCanBeTurnedOn( )
 					and not tool.obj:getIsTurnedOn( ) then
-				tool.obj:setIsTurnedOn()
+				tool.obj:setIsTurnedOn( true )
 				tool.obj:aiTurnOn()
 			end
 			

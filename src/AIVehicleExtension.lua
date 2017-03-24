@@ -179,6 +179,8 @@ function AIVehicleExtension:load(saveGame)
 	
 	self.acCollidingVehicles = nil
 	self.onOtherAICollisionTrigger = AIVehicleExtension.onOtherAICollisionTrigger
+	
+	self.acChopperWithCourseplay = false 
 end
 
 ------------------------------------------------------------------------
@@ -948,6 +950,18 @@ function AIVehicleExtension:update(dt)
 				AIVEHud.setInfoText( self, AIVEHud.getInfoText(self) .. string.format(" (%i)", self.acTurnStage) )
 			end
 		end
+		
+		if      self.courseplayers              ~= nil 
+				and table.getn( self.courseplayers ) > 0
+				and self.specializations            ~= nil
+				and self.overloading                ~= nil					
+				and SpecializationUtil.hasSpecialization(Combine, self.specializations)
+				and self:getUnitCapacity(self.overloading.fillUnitIndex) <= 0 then
+			self.acChopperWithCourseplay = true
+		else
+			self.acChopperWithCourseplay = false 
+		end
+		
 	elseif self.acTurnStage >= 198 then
 		self.stopMotorOnLeave = false
 		self.deactivateOnLeave = false
@@ -1131,7 +1145,7 @@ function AIVehicleExtension:getAvailableTurnModes( upNDown )
 		end
 	else
 		if self.acDimensions.zBack ~= nil and self.acDimensions.zBack > 0 then
-			if revS and not ( self.courseplayers ~= nil and table.getn( self.courseplayers ) > 0 ) then
+			if revS and not self.acChopperWithCourseplay then
 				table.insert( turnModes, "7"	)
 			end
 			if rev	then

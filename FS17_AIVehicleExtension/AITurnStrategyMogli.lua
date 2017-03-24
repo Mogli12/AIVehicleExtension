@@ -200,7 +200,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 	while self.activeStage ~= nil do
 		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive, noLower = self.activeStage.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( self.activeStage.parameter ) )
 		
-		if vehicle.courseplayers ~= nil and table.getn( vehicle.courseplayers ) > 0 then
+		if self.acChopperWithCourseplay then
 			if inactive and moveForwards then
 				vehicle.acTurnStage = 0
 			else
