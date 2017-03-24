@@ -1,5 +1,8 @@
 # AIVehicleExtension for Farming Simulator 2017
 
+## Testing
+**It would be greate if everybody would retest the issues she/he created and close issues that are resolved. Thanks!**
+
 ## Status
 Minimum patch level is Farming Simulator 2017 patch 1.3.1, but patch 1.4 is supported as well. I only test it with patch 1.4.4.
 The core path finding engine ("AutoSteeringEngine") is working now and most turn maneuvers seem to work quite well. 
@@ -16,9 +19,6 @@ I changed the input binding. Main reason is that keys 5 and 6 are used for the r
 - Left alt. + H: Enable or disable automatic steering
 - Left alt. + V: Raise or lower all tools
 - Left alt. + 6: Swap side
-
-#### Testing
-**It would be greate if everybody would retest the issues she/he created and close issues that are resolved. Thanks!**
 
 ## Motivation
 I do not like maps with rectangular fields. But driving a combine harvester plus the tractor with trailer is a bit tedious in SP mode. 
