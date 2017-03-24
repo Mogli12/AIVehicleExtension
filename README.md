@@ -18,7 +18,7 @@ I changed the input binding. Main reason is that keys 5 and 6 are used for the r
 - Left alt. + 6: Swap side
 
 #### Testing
-
+**It would be greate if everybody would retest the issues she/he created and close issues that are resolved. Thanks!**
 
 ## Motivation
 I do not like maps with rectangular fields. But driving a combine harvester plus the tractor with trailer is a bit tedious in SP mode. 
