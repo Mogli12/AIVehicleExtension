@@ -79,6 +79,8 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 			end
 			if isTurning then
 				allowedToDrive = true
+			elseif not AutoSteeringEngine.hasFruits( self.vehicle ) then
+				allowedToDrive = true
 			else
 				allowedToDrive = validTrailer ~= nil and ( combine:getIsOverloadingAllowed() or (self.lastValidInputFruitType == FruitUtil.FRUITTYPE_UNKNOWN) )
 			end

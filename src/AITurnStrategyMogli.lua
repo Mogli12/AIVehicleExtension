@@ -200,6 +200,15 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 	while self.activeStage ~= nil do
 		local tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle, inactive, noLower = self.activeStage.getDriveData( self, dt, vX,vY,vZ, turnData, unpack( self.activeStage.parameter ) )
 		
+		if vehicle.courseplayers ~= nil and table.getn( vehicle.courseplayers ) > 0 then
+			if inactive and moveForwards then
+				vehicle.acTurnStage = 0
+			else
+				inactive = false
+				noLower  = true
+			end
+		end
+		
 		if tX == nil and angle ~= nil then
 			tX, tZ = AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle )
 		end

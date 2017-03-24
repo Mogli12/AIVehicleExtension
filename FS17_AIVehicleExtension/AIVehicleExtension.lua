@@ -1131,7 +1131,7 @@ function AIVehicleExtension:getAvailableTurnModes( upNDown )
 		end
 	else
 		if self.acDimensions.zBack ~= nil and self.acDimensions.zBack > 0 then
-			if revS then
+			if revS and not ( self.courseplayers ~= nil and table.getn( self.courseplayers ) > 0 ) then
 				table.insert( turnModes, "7"	)
 			end
 			if rev	then
