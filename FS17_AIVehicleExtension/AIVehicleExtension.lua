@@ -59,71 +59,67 @@ function AIVehicleExtension:aiveAddDebugText( s )
 end
 
 AIVehicleExtension.saveAttributesMapping = { 
-																			enabled         = { xml = "acDefaultOn",	 tp = "B", default = true,  always = true },
-																			upNDown				  = { xml = "acUTurn",			 tp = "B", default = false, always = true },
-																			rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false, always = true },
-																			headland				= { xml = "acHeadland",		 tp = "B", default = false },
-																			collision			  = { xml = "acCollision",	 tp = "B", default = false },
-																			inverted				= { xml = "acInverted",		 tp = "B", default = false },
-																			frontPacker		  = { xml = "acFrontPacker", tp = "B", default = false },
-																			isHired				  = { xml = "acIsHired",		 tp = "B", default = false },
-																			bigHeadland		  = { xml = "acBigHeadland", tp = "B", default = true },
-																			turnModeIndex	  = { xml = "acTurnMode",		 tp = "I", default = 1 },
-																			turnModeIndexC	= { xml = "acTurnModeC",	 tp = "I", default = 1 },
-																			widthOffset		  = { xml = "acWidthOffset", tp = "F", default = 0 },
-																			turnOffset			= { xml = "acTurnOffset",	 tp = "F", default = 0 },
-																			angleFactor		  = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
-																			noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
-																			useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
-																			waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true } }																															
+		enabled         = { xml = "acDefaultOn",	 tp = "B", default = true,  always = true },
+		upNDown				  = { xml = "acUTurn",			 tp = "B", default = false, always = true },
+		rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false, always = true },
+		headland				= { xml = "acHeadland",		 tp = "B", default = false },
+		collision			  = { xml = "acCollision",	 tp = "B", default = false },
+		inverted				= { xml = "acInverted",		 tp = "B", default = false },
+		frontPacker		  = { xml = "acFrontPacker", tp = "B", default = false },
+		isHired				  = { xml = "acIsHired",		 tp = "B", default = false },
+		bigHeadland		  = { xml = "acBigHeadland", tp = "B", default = true },
+		turnModeIndex	  = { xml = "acTurnMode",		 tp = "I", default = 1 },
+		turnModeIndexC	= { xml = "acTurnModeC",	 tp = "I", default = 1 },
+		widthOffset		  = { xml = "acWidthOffset", tp = "F", default = 0 },
+		turnOffset			= { xml = "acTurnOffset",	 tp = "F", default = 0 },
+		angleFactor		  = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
+		noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
+		useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
+		waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true } }																															
 AIVehicleExtension.turnStageNoNext = { -4, -3, -2, -1, 0, 21, 22, 23, 198, 199 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { 
-														--{ 4, -1 },
-															{ 14, -1 },
-														--{ 23, 25 },
-															{ 25, 27 },
-															{ 27, -2 },
-															{ 28, -2 },
-															{ 29, -2 },
-															{ 33, 36 },
-															{ 34, 36 },
-															{ 36, 38 },
-															{ 38, -1 },
-															{ 41, 43 },
-															{ 43, 45 },
-															{ 45, 49 },
-															{ 46, 49 },
-															{ 47, 49 },
-															{ 49, -2 },
-															{ 53, 56 },
-															{ 54, 56 },
-															{ 59, -2 },
-															{ 60, -2 },
-															{ 75, 79 },
-															{ 76, 79 },
-															{ 77, 79 },
-															{ 78, 79 },
-															{ 79, -2 },
-															{ 83, 85 },
-															{ 86, -2 },
-															{ 89, -1 },
-															{ 99, -1 },
-															{103, -1 },
-															{108, -1 },
-															{114, -2 },
-															{119, -2 },
-															{124, -1 }}
+	--{ 4, -1 },
+		{ 14, -1 },
+	--{ 23, 25 },
+		{ 25, 27 },
+		{ 27, -2 },
+		{ 28, -2 },
+		{ 29, -2 },
+		{ 33, 36 },
+		{ 34, 36 },
+		{ 36, 38 },
+		{ 38, -1 },
+		{ 41, 43 },
+		{ 43, 45 },
+		{ 45, 49 },
+		{ 46, 49 },
+		{ 47, 49 },
+		{ 49, -2 },
+		{ 53, 56 },
+		{ 54, 56 },
+		{ 59, -2 },
+		{ 60, -2 },
+		{ 75, 79 },
+		{ 76, 79 },
+		{ 77, 79 },
+		{ 78, 79 },
+		{ 79, -2 },
+		{ 83, 85 },
+		{ 86, -2 },
+		{ 89, -1 },
+		{ 99, -1 },
+		{103, -1 },
+		{108, -1 },
+		{114, -2 },
+		{119, -2 },
+		{124, -1 }}
 
 ------------------------------------------------------------------------
 -- prerequisitesPresent
 ------------------------------------------------------------------------
 function AIVehicleExtension.prerequisitesPresent(specializations)
 	return SpecializationUtil.hasSpecialization(Hirable, specializations) 
-		 and SpecializationUtil.hasSpecialization(AIVehicle, specializations) -- )
-			--or ( SpecializationUtil.hasSpecialization(Motorized, specializations)	
-			 --and SpecializationUtil.hasSpecialization(Steerable, specializations)
-			 --and SpecializationUtil.hasSpecialization(Mower, specializations) )
-		 --and not SpecializationUtil.hasSpecialization(ArticulatedAxis, specializations)
+		 and SpecializationUtil.hasSpecialization(AIVehicle, specializations)
 end
 
 ------------------------------------------------------------------------
@@ -286,10 +282,11 @@ end
 ------------------------------------------------------------------------
 -- delete
 ------------------------------------------------------------------------
-function AIVehicleExtension:delete()
+function AIVehicleExtension:preDelete()
 --removeTrigger( self.acBackTrafficCollisionTrigger   )
---removeTrigger( self.acOtherCombineCollisionTriggerL )
---removeTrigger( self.acOtherCombineCollisionTriggerR )
+	removeTrigger( self.acOtherCombineCollisionTriggerL )
+	removeTrigger( self.acOtherCombineCollisionTriggerR )
+	
 	if self.atMogliInitDone then
 		AIVEHud.delete(self)
 	end
@@ -301,6 +298,12 @@ function AIVehicleExtension:delete()
 		end
 		self.atShiftedMarker = nil
 	end
+end
+
+------------------------------------------------------------------------
+-- delete
+------------------------------------------------------------------------
+function AIVehicleExtension:delete()
 end
 
 ------------------------------------------------------------------------
@@ -1298,7 +1301,7 @@ function AIVehicleExtension:autoSteer(dt)
 		if	   self.turnTimer < 0 
 				or AutoSteeringEngine.processIsAtEnd( self ) then
 			target = math.min( math.max( 0.5 * AutoSteeringEngine.getTurnAngle(self), -self.acDimensions.maxSteeringAngle ), self.acDimensions.maxSteeringAngle )
-			if noReverseIndex <= 0 then
+			if AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then
 				target = math.max( target, 0 )
 			end
 			if not self.acParameters.leftAreaActive then
