@@ -47,14 +47,14 @@
 		<text name="AIVE_CP_OFF"                    text="Режим courseplay [ВКЛ]" />
 		<text name="AIVE_STEER_ON"                  text="Авторуление [ВЫКЛ]" />
 		<text name="AIVE_STEER_OFF"                 text="Авторуление [ВКЛ]" />
-		<text name="AIVE_HEADLAND_ON"               text="Разв. полоса [ВЫКЛ]" />
-		<text name="AIVE_HEADLAND_OFF"              text="Разв. полоса [ВКЛ]" />
+		<text name="AIVE_HEADLAND_ON"               text="Разворот. полоса [ВЫКЛ]" />
+		<text name="AIVE_HEADLAND_OFF"              text="Разворот. полоса [ВКЛ]" /> <!-- Not used ?-->
 		<text name="AIVE_FRONT_PACKER_ON"           text="Передний культиватор [ВКЛ]" />
 		<text name="AIVE_FRONT_PACKER_OFF"          text="Передний культиватор [ВЫКЛ]" />
-		<text name="AIVE_COLLISION_ON"              text="Проверка коллизий [ВКЛ]" />
-		<text name="AIVE_COLLISION_OFF"             text="Проверка коллизий [ВЫКЛ]" />
-		<text name="AIVE_HIRE_ON"                   text="Не расходовать семена" />
-		<text name="AIVE_HIRE_OFF"                  text="Расходовать семена" />
+		<text name="AIVE_COLLISION_ON"              text="Проверка коллизий" />
+		<text name="AIVE_COLLISION_OFF"             text="Проверка коллизий" /> <!-- Not used ?-->
+		<text name="AIVE_HIRE_ON"                   text="Не расходовать семена" /> <!-- Not used ?-->
+		<text name="AIVE_HIRE_OFF"                  text="Расходовать семена" /> <!-- Not used ?-->
 		<text name="AIVE_HEADLAND"                  text="Разворотн.полоса" />
 		<text name="AIVE_TURN_MODE"                 text="Тип маневра разворота" />
 		<text name="AIVE_TURN_MODE_O"               text="Разворот в виде O" />
@@ -72,6 +72,7 @@
 		<text name="AIVE_STEER_LOWER"               text="Оборудование опустить и включить" />
 		<text name="AIVE_TRACE"                     text="Трасирование движения" />
 		<text name="AIVE_MAGIC"                     text="Обновить поле" /> 
+		<text name="AIVE_USE_AI_FIELD"              text="Только объединённые поля" />
 				
 		<text name="input_AIVE_HELPPANEL"          text="Альтернативный рабочий: HUD показать/скрыть"/>
 		<text name="input_AIVE_STEER"              text="Альтернативный рабочий: Автоматическое руление"/>
