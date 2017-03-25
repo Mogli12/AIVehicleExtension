@@ -166,15 +166,17 @@ function AIVehicleExtension:load(saveGame)
 	
 	self.acRefNode = createTransformGroup( "acNewRefNode" )
 	link( tempNode, self.acRefNode )
-	
-	self.acI3D = getChild(Utils.loadSharedI3DFile("AutoCombine.i3d", AtDirectory),"AutoCombine")	
---self.acBackTrafficCollisionTrigger   = getChild(self.acI3D,"backCollisionTrigger")
-	self.acOtherCombineCollisionTriggerL = getChild(self.acI3D,"otherCombColliTriggerL")
-	self.acOtherCombineCollisionTriggerR = getChild(self.acI3D,"otherCombColliTriggerR")
-	link(self.acRefNode,self.acI3D)
-	
-	self.acCollidingVehicles = nil
-	self.onOtherAICollisionTrigger = AIVehicleExtension.onOtherAICollisionTrigger
+
+	if AIVEGlobals.otherAIColli > 0 then
+		self.acI3D = getChild(Utils.loadSharedI3DFile("AutoCombine.i3d", AtDirectory),"AutoCombine")	
+	--self.acBackTrafficCollisionTrigger   = getChild(self.acI3D,"backCollisionTrigger")
+		self.acOtherCombineCollisionTriggerL = getChild(self.acI3D,"otherCombColliTriggerL")
+		self.acOtherCombineCollisionTriggerR = getChild(self.acI3D,"otherCombColliTriggerR")
+		link(self.acRefNode,self.acI3D)
+		
+		self.acCollidingVehicles = nil
+		self.onOtherAICollisionTrigger = AIVehicleExtension.onOtherAICollisionTrigger
+	end
 	
 	self.acChopperWithCourseplay = false 
 end
@@ -283,9 +285,11 @@ end
 -- delete
 ------------------------------------------------------------------------
 function AIVehicleExtension:preDelete()
---removeTrigger( self.acBackTrafficCollisionTrigger   )
-	removeTrigger( self.acOtherCombineCollisionTriggerL )
-	removeTrigger( self.acOtherCombineCollisionTriggerR )
+	if AIVEGlobals.otherAIColli > 0 then
+	--removeTrigger( self.acBackTrafficCollisionTrigger   )
+		removeTrigger( self.acOtherCombineCollisionTriggerL )
+		removeTrigger( self.acOtherCombineCollisionTriggerR )
+	end
 	
 	if self.atMogliInitDone then
 		AIVEHud.delete(self)
@@ -817,7 +821,7 @@ function AIVehicleExtension:update(dt)
 	end		
 	
 	
-	if self.isServer and self.acCollidingVehicles == nil then
+	if AIVEGlobals.otherAIColli > 0 and self.isServer and self.acCollidingVehicles == nil then
 		self.acCollidingVehicles = {}
 		if self.acOtherCombineCollisionTriggerR ~= 0 then
 			local triggerID = self.acOtherCombineCollisionTriggerR
@@ -2199,9 +2203,11 @@ function AIVehicleExtension:afterSetDriveStrategies()
 			end
 		end
 		
-		local driveStrategyOtherAI = AIDriveStrategyCollisionOtherAI:new()
-		driveStrategyOtherAI:setAIVehicle(self)
-		table.insert( self.driveStrategies, 1, driveStrategyOtherAI )
+		if AIVEGlobals.otherAIColli > 0 then
+			local driveStrategyOtherAI = AIDriveStrategyCollisionOtherAI:new()
+			driveStrategyOtherAI:setAIVehicle(self)
+			table.insert( self.driveStrategies, 1, driveStrategyOtherAI )
+		end
 		
 		AutoSteeringEngine.invalidateField( self, self.acParameters.useAIFieldFct )
 		AutoSteeringEngine.initFruitBuffer( self )

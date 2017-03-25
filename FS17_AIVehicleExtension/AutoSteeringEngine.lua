@@ -102,6 +102,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.detectLevel3  = 0
 	AIVEGlobals.useFBB123     = 0
 	AIVEGlobals.angleBuffer   = 0
+	AIVEGlobals.otherAIColli  = 0
 	
 	
 	local file
