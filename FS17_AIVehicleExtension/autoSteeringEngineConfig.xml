@@ -18,7 +18,7 @@
 		<fixAngleStep type="bool" value="true"/>
 		
     <chainDivideP1 value="8" />
-    <chainDivideP2 value="8" />
+    <chainDivideP2 value="12" />
     <chainDivideP3 value="8" />
 		
 		<staticRoot type="bool" value="true" />
@@ -33,11 +33,11 @@
 		<chainStep3  value="8"/> <!-- test inside up to this step                     -->
 		<chainStep4  value="99"/>  <!-- test outside up to this step                     -->
 	
-    <!--                                    1 1 2 3 3 4 5 6-->
-    <!--                              2 5 9 4 9 4 0 6 3 1 0-->
+    <!--                                    1 1 1 2 3 3 4 5-->
+    <!--                              2 4 7 0 4 9 5 1 8 6 5-->
     <!--                              1 2 3 4 5 6 7 8 9 0 1-->
-    <chain2Len   type="vector" value="2 3 4 5 5 5 6 6 7 8 9"/> 
-		<chain2Step0 value="2"/>
+    <chain2Len   type="vector" value="2 2 3 3 4 5 6 6 7 8 9"/> 
+		<chain2Step0 value="4"/>
 		<chain2Step1 value="6"/>
 		<chain2Step2 value="11"/>
 		<chain2Step3 value="99"/>     
@@ -74,8 +74,8 @@
     <stepLog2 value="2" />
     <yieldCount value="2000" />
 		
-    <widthDec type="float" value="0"/> 0.005
-    <widthMaxDec type="float" value="3" />
+    <widthDec type="float" value="0"/>0.0011111 0.005
+    <widthMaxDec type="float" value="9" />9 3
 	
 		<limitOutside type="bool" value="true" />
 		<limitInside type="bool" value="true" />
@@ -83,7 +83,7 @@
 		<maxDtSumT  value="50"/>  <!-- 10 fps => 100 ms -->
 		<maxDtSumD  value="0"/>   
 		<maxDtSumP0 value="30"/>   
-		<maxDtSumP1 value="500"/>   
+		<maxDtSumP1 value="800"/>   
 		<maxDtProd  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
 		<maxDtSumF  value="100"/>
 		<fruitBuffer value="0"/> <!-- 0 built in; 1 round x/z values; 2 buffer on -->
@@ -100,13 +100,15 @@
 		<aiRescueDistSq type="float" value="1600" />
 		<raiseNoFruits type="bool" value="false" />
 		<fruitsAdvance type="float" value="1.5" />
-		<lowerAdvance type="float" value="3.0" />
+		<lowerAdvance type="float" value="3.5" />
 		<upperAdvance type="float" value="0.5" />
 		
 		<borderBuffer type="bool" value="true" />
 		
 		<detectLevel3 type="float" value="0" />2.9
 		
+		<ignoreBorder value="1"/>
+		<minOffset   type="float" value="0.25" />
 		<testOutside type="float" value="1.5" />
 		<useFBB123   type="bool" value="true"/>
 		<angleBuffer type="bool" value="true"/>

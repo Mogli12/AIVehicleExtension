@@ -105,9 +105,9 @@ function AIVehicleExtensionRegister:add()
 		
 		if doNotAdd and correctLocation then
 			table.insert(v.specializations, SpecializationUtil.getSpecialization("AIVehicleExtension"));
-		  print("  AIVehicleExtension was inserted on " .. k);
+		--print("  AIVehicleExtension was inserted on " .. k);
 		elseif correctLocation and not doNotAdd then
-			print("  Failed to inserting AIVehicleExtension on " .. k);
+		--print("  Failed to inserting AIVehicleExtension on " .. k);
 		end;
 	end;
 	

@@ -1300,7 +1300,7 @@ function AIVehicleExtension:autoSteer(dt)
 	if self.acTurnStage == 199 then
 		inField     = true
 		angleFactor = self.acParameters.angleFactor
-		nilAngle    = "I" -- "L"
+		nilAngle    = "L"
 		
 		if	   self.turnTimer < 0 
 				or AutoSteeringEngine.processIsAtEnd( self ) then
@@ -1630,11 +1630,10 @@ function AIVehicleExtension.calculateDistances( self )
 	end
 
 	self.acDimensions.insideDistance = math.max( 0, self.acDimensions.toolDistance - 1 - self.acDimensions.distance +(self.acDimensions.radius * math.cos( self.acDimensions.maxSteeringAngle )) )
-	self.acDimensions.uTurnDistance	= math.max( 0, 1 + self.acDimensions.toolDistance + self.acDimensions.distance - self.acDimensions.radius)	
+	self.acDimensions.uTurnDistance	= math.max( 0, veh.acDimensions.toolDistance, veh.acDimensions.distance - veh.acDimensions.radius )
 	self.acDimensions.headlandDist	 = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
 	self.acDimensions.collisionDist	= 1 + AIVehicleExtension.calculateHeadland( self.acTurnMode, math.max( self.acDimensions.distance, 1.5 ), self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
-	local r = self.acDimensions.radius
-	self.acDimensions.uTurnDist4x   = 1 + math.max( self.acDimensions.toolDistance - r-r, self.acDimensions.toolDistance + self.acDimensions.distance - r, 0 )
+	self.acDimensions.uTurnDist4x   = 1 + math.max( math.max( self.acDimensions.toolDistance - self.acDimensions.radius, self.acDimensions.distance ) - self.acDimensions.radius, 0 )
 	--if self.acShowDistOnce == nil then
 	--	self.acShowDistOnce = 1
 	--else

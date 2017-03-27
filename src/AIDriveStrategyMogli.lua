@@ -519,7 +519,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		
 		if search == nil then
 			af = veh.acParameters.angleFactor 
-			na = "I" -- "L"
+			na = "L"
 		elseif search == AIDriveStrategyMogli.searchStart  then
 			na = "M"
 		elseif search == AIDriveStrategyMogli.searchUTurn  then
@@ -559,7 +559,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		veh.acMinDistanceToStop = math.max( 0.5, veh.acMinDistanceToStop - dt * veh.lastSpeed )
 		distanceToStop = veh.acMinDistanceToStop
 	else
-		veh.acMinDistanceToStop = 5
+		veh.acMinDistanceToStop = 6
 		if self.search ~= nil then
 			distanceToStop = math.huge 
 		else
@@ -610,7 +610,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		speedLevel   = 4
 		
 		if     self.search == nil then
-			if noReverseIndex <= 0 and veh.acDimensions.zBack < 0 then
+		--if noReverseIndex <= 0 and veh.acDimensions.zBack < 0 then
+			if veh.acDimensions.zBack < 0 then
 			-- keep calm and don't move!!! Going to outside would just make it worse
 				angle  = math.min( 0, straightAbsAngle, absAngle )
 			end			
