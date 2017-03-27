@@ -119,7 +119,25 @@ AIVehicleExtension это альтернативный наемный работ
 		<cz>
 			<![CDATA[AI Vehicle - český překlad by Albi]]></cz>
 		<pl>
-			<![CDATA[AI Vehicle - Polskie tłumaczenie Dzi4d3k]]></pl>
+			<![CDATA[
+AIVehicleExtension udostępnia alternatywnego pracownika, który potrafi pracować na polach o nieregularnym kształcie. Posiada dodatkowe funkcjonalności, takie jak praca na około pola i zachowywanie odstępu.
+
+Ten mod automatycznie instaluje się we wszystkich pojazdach, które posiadają zwykłego pracownika. Jedynym wyjątkiem są pojazdy przegubowe.
+
+Podczas startu alternatywnego pracownika skanuje on wstępnie pole w okolicy swojej pozycji. Oprócz tego, alternatywny pracownik posiada jedynie niewielką wiedzę, w którym miejscu pola się znajduje, uwzględniając pozycję startową poszukuje on krawędzi pomiędzy obszarem do pracy, a już obrobionym. 
+
+Na perfekcyjnie prostokątnych polach z dużą ilością wolnego miejsca wokół, zalecane jest używanie zwykłego pracownika. Jeżeli chciałbyś by pojazd podążał określoną ścieżką po polu, to zalecanym modem jest CoursePlay. Mod FollowMe idealnie nadaje się do prostych zadań podążania za pojazdami. Osobiście używam obu wraz z AIVehicleExtension.
+
+Poniżej znajduje się lista najbardziej użytecznych skrótów klawiszowych:
+* H: Uruchomienie lub zatrzymanie pracownika
+* Lewy Shift + H: Okno ustawień
+* Lewy Ctrl + H: Panel sterowania
+* Lewy Alt + H: Przełączenie na automatyczne sterownie
+* Lewy Alt + V: Podniesienie lub opuszczenie wszystkich maszyn
+* Lewy Alt + 5: Przełączenie w tryb na około 
+* Lewy Alt + 6: Zamiana stron
+
+AIVehicleExtension - Polskie tłumaczenie Dzi4d3k]]></pl>
 		<cs>
 			<![CDATA[自动驾驶]]></cs>
 	</description>
