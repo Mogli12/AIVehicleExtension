@@ -105,6 +105,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.otherAIColli  = 0
 	AIVEGlobals.minOffset     = 0
 	AIVEGlobals.ignoreBorder  = 0
+	AIVEGlobals.minTraceLen   = 0
 	
 	local file
 	file = AIVECurrentModDir.."autoSteeringEngineConfig.xml"
@@ -343,11 +344,11 @@ function AutoSteeringEngine.processChainGetScore( vehicle, a, bi, ti, bo, to, bw
 	end
 	
 	if bw > 0 then
-		return math.min( -a - 1 - bw, 0 )
+		return math.min( a - 1 - bw, 0 )
 	end
 		
 	--     1..3
-	return 1 + b + AutoSteeringEngine.nothingFoundMin 
+	return b + AutoSteeringEngine.nothingFoundMin 
 end
 
 ------------------------------------------------------------------------
@@ -1013,10 +1014,12 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.processIsAtEnd( vehicle )		
 
-	vehicle.aiveChain.isAtEnd = vehicle.aiveChain.inField
-
-	if vehicle.aiveChain.isAtEnd and AutoSteeringEngine.hasFruitsInFront( vehicle ) then
-		vehicle.aiveChain.isAtEnd = false
+	vehicle.aiveChain.isAtEnd = false
+	
+	if      vehicle.aiveChain.inField 
+			and AutoSteeringEngine.getTraceLength( vehicle ) > AIVEGlobals.minTraceLen
+			and not AutoSteeringEngine.hasFruitsInFront( vehicle ) then
+		vehicle.aiveChain.isAtEnd = true
 	end
 
 	return vehicle.aiveChain.isAtEnd 
@@ -1406,11 +1409,11 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 	end
 	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then	
-		for i,tool in pairs(vehicle.aiveChain.tools) do
-			if tool.obj.aiForceTurnNoBackward then
-				vehicle.aiveChain.tools[i].aiForceTurnNoBackward = true
-			end
-		end
+	--for i,tool in pairs(vehicle.aiveChain.tools) do
+	--	if tool.obj.aiForceTurnNoBackward and tool.configFileName ~= "data/vehicles/tools/greatplains/gp3p1006nt.xml" then
+	--		vehicle.aiveChain.tools[i].aiForceTurnNoBackward = true
+	--	end
+	--end
 	
 		local xa = {}
 		local xo = {}

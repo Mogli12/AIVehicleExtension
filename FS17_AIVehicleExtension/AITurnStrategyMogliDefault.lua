@@ -672,7 +672,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		if     fruitsDetected
 				or math.abs( turnAngle )   >= 180 - angleOffset
 				or ( math.abs( turnAngle ) >= 180 - math.min( math.deg( veh.acDimensions.maxSteeringAngle ), math.deg( 0.3 * veh.acDimensions.maxSteeringAngle ) )
-					and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 ) then
+					and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2
+					and z < veh.acDimensions.toolDistance + 3) then
 			detected, angle2, border = AutoSteeringEngine.processChain( veh )
 			noLower = false
 		end		

@@ -112,4 +112,5 @@
 		<testOutside type="float" value="1.5" />
 		<useFBB123   type="bool" value="true"/>
 		<angleBuffer type="bool" value="true"/>
+		<minTraceLen value="5"/>
 </AIVEGlobals>

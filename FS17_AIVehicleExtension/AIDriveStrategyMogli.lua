@@ -587,7 +587,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			and border         <= 0
 			and ( veh.turnTimer < 0 
 				 or isAtEnd 
-				 or ( AutoSteeringEngine.getTraceLength(veh) > 5 and not detected ) )
+				 or ( AutoSteeringEngine.getTraceLength(veh) > AIVEGlobals.minTraceLen and not detected ) )
 			then
 		
 		local ta = straightAbsAngle
@@ -685,7 +685,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			if fruitsDetected and veh.turnTimer < 0 then
 				doTurn = true
 				
-				if AutoSteeringEngine.getTraceLength(veh) < 3 and veh.acParameters.upNDown then		
+				if AutoSteeringEngine.getTraceLength(veh) < AIVEGlobals.minTraceLen and veh.acParameters.upNDown then		
 					uTurn = false
 					veh.acClearTraceAfterTurn = false
 				elseif veh.acParameters.upNDown then
@@ -697,14 +697,14 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 				end
 			end
 		elseif fruitsDetected or not isAtEnd then		
-			if detected then
+		--if detected then
 				veh.turnTimer   		   = math.max(veh.turnTimer,veh.acDeltaTimeoutRun);
 				veh.acTurnOutsideTimer = math.max( veh.acTurnOutsideTimer, veh.acDeltaTimeoutNoTurn );
-			end
+		--end
 		elseif veh.turnTimer < 0 then 
 			doTurn = true
 			turn2Outside = false
-			if AutoSteeringEngine.getTraceLength(veh) < 3 and veh.acParameters.upNDown then		
+			if AutoSteeringEngine.getTraceLength(veh) < AIVEGlobals.minTraceLen and veh.acParameters.upNDown then		
 				uTurn = false
 				veh.acClearTraceAfterTurn = false
 			else
