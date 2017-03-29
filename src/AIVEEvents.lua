@@ -205,7 +205,7 @@ function AIVehicleExtension:showWarning( text, wait, noEventSend )
 		end
 	end
 	
-	if self.isClient then
+	if self.isClient and self.isEntered then
 		g_currentMission:showBlinkingWarning( text, wait )
 	end
 end
