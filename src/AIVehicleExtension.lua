@@ -214,9 +214,6 @@ function AIVehicleExtension:initMogliHud()
 --AIVEHud.addButton(self, "dds/auto_steer_off.dds", "dds/auto_steer_on.dds", AIVehicleExtension.onAutoSteer,   AIVehicleExtension.evalAutoSteer,  5,1, "AIVE_STEER_ON", "AIVE_STEER_OFF" )
 --AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaisePause,  nil,                               6,1, "AIVE_PAUSE_OFF", "AIVE_PAUSE_ON", AIVehicleExtension.getRaisePauseText, AIVehicleExtension.getRaisePauseImage )
 --AIVEHud.addButton(self, "dds/next.dds",           "dds/no_next.dds",       AIVehicleExtension.nextTurnStage, AIVehicleExtension.evalTurnStage,  7,1, "AIVE_NEXTTURNSTAGE", nil )
-
-	
---AIVEHud.addButton(self, "dds/off.dds",            "dds/on.dds",            AIVehicleExtension.setAIVEStarted,AIVehicleExtension.evalStart,      1,1, "HireEmployee", "DismissEmployee", nil, AIVehicleExtension.getStartImage )
 	
 	if type( self.atHud ) == "table" then
 		self.atMogliInitDone = true
@@ -642,26 +639,6 @@ function AIVehicleExtension:setPause(enabled)
 end
 
 
-function AIVehicleExtension:setAIVEStarted(enabled)
-	if enabled and not self.aiIsStarted and AIVehicle.canStartAIVehicle(self) then
-		self.aiveIsStarted = true 
-		if g_server ~= nil then
-			g_server:broadcastEvent(AIVEStartEvent:new(self,enabled), nil, nil, self)
-		else
-			g_client:getServerConnection():sendEvent(AIVEStartEvent:new(self,enabled))
-		end
-		AIVehicleExtension.setInt32Value( self, "speed2Level", 2 )
-		self:startAIVehicle()
-	elseif not enabled and self.aiveIsStarted then
-		if self.aiIsStarted then
-			self:stopAIVehicle()
-		else
-			self.aiveIsStarted = false 
-		end
-	end
-end
-
-
 function AIVehicleExtension:getPauseImage()
 	if not self.aiveIsStarted then 
 		return "empty.dds"
@@ -878,13 +855,6 @@ function AIVehicleExtension:update(dt)
 			AIVehicleExtension.showGui( self, not guiActive )
 		end
 		if      AIVehicleExtension.mbHasInputEvent( "AIVE_START_AIVE" ) then
-		--if self.aiIsStarted then
-		--	if self.aiveIsStarted then
-		--		self:stopAIVehicle()
-		--	end
-		--elseif AIVehicle.canStartAIVehicle(self) and self.acParameters ~= nil then
-		--	AIVehicleExtension.setAIVEStarted( self, true )
-		--end
 			AIVehicleExtension.onAIVEScreen( self )
 		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_SWAP_SIDE" ) then
 			self.acParameters.leftAreaActive	= self.acParameters.rightAreaActive

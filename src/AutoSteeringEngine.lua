@@ -330,23 +330,24 @@ function AutoSteeringEngine.processChainGetScore( vehicle, a, bi, ti, bo, to, bw
 		end
 		return 1e4 + 5 + math.ceil( ( 100 - ll ) * 4 ) - a
 	end
-
-	if bo > AIVEGlobals.ignoreBorder then
+	
+	if bo > 0 and ( bw <= 0 or bo * lo > 10 ) then
 		local ls = math.max( 0, 43 - lo ) * 22
-		local bs = math.min( bo - AIVEGlobals.ignoreBorder, 7 ) * 3
+		local bs = math.min( bo, 10 ) * 2.1
 		
 		return - a + math.min( AutoSteeringEngine.nothingFoundMin - 13, math.max( 11, ls + bs ) )
 	end
 	
+	if bw > 0 then
+		return math.min( a - 1 - bw * 22 + math.min( bo, 10 ) * 2.1 , 0 )
+	end
+	
+		
 	local b = a + 1
 	if vehicle.aiveChain.nilAngle ~= nil and vehicle.aiveChain.nilAngle > -1 then
 		b = math.abs( a - vehicle.aiveChain.nilAngle )
 	end
 	
-	if bw > 0 then
-		return math.min( a - 1 - bw, 0 )
-	end
-		
 	--     1..3
 	return b + AutoSteeringEngine.nothingFoundMin 
 end
@@ -3811,7 +3812,7 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 				vehicle.aiveCurrentFieldCo = nil
 				vehicle.aiveCurrentFieldCS = 'dead'
 			end
-			g_currentMission:showBlinkingWarning( string.format("Field detection is running (%0.3f ha)", hektar), 500 )
+			AIVehicleExtension.showWarning( vehicle, string.format("Field detection is running (%0.3f ha)", hektar), 500 )
 		end
 		
 		if vehicle.aiveCurrentFieldCo ~= nil then
@@ -4220,7 +4221,8 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 						end
 						
 						local offsetInside = toolParam.offsetStd
-						if     i == 1 then
+						if AIVEGlobals.widthDec < 0 then
+						elseif i == 1 then
 							offsetInside = 0
 						elseif AIVEGlobals.widthDec > 0 then
 							local w = toolParam.width
@@ -4232,7 +4234,6 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 							if AIVEGlobals.fruitBuffer > 0 then
 								offsetInside = math.max( vehicle.aiveChain.worldToDensityI, offsetInside )
 							end
-						elseif AIVEGlobals.widthDec < 0 then
 						elseif i == 2 then
 							offsetInside = 0.333333 * offsetInside
 						elseif i == 3 then

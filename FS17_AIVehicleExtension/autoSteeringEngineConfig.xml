@@ -33,19 +33,19 @@
 		<chainStep3  value="8"/> <!-- test inside up to this step                     -->
 		<chainStep4  value="99"/>  <!-- test outside up to this step                     -->
 	
-    <!--                                    1 1 1 2 3 3 4 5-->
-    <!--                              2 4 7 0 4 9 5 1 8 6 5-->
+    <!--                                  1 1 1 2 2 3 4 4 5-->
+    <!--                              3 6 0 4 8 3 8 4 0 6 2-->
     <!--                              1 2 3 4 5 6 7 8 9 0 1-->
-    <chain2Len   type="vector" value="2 2 3 3 4 5 6 6 7 8 9"/> 
-		<chain2Step0 value="4"/>
-		<chain2Step1 value="6"/>
-		<chain2Step2 value="11"/>
+    <chain2Len   type="vector" value="3 3 4 4 4 5 5 6 6 6 6"/> 
+		<chain2Step0 value="3"/>
+		<chain2Step1 value="9"/>
+		<chain2Step2 value="9"/>
 		<chain2Step3 value="99"/>     
 		<chain2Step4 value="99"/>     
 
 		<chain3Step0 value="2"/>
-		<chain3Step1 value="4"/>
-		<chain3Step2 value="6"/>
+		<chain3Step1 value="5"/>
+		<chain3Step2 value="5"/>
 		<chain3Step3 value="99"/>     
 		<chain3Step4 value="99"/>     
 		
@@ -74,7 +74,7 @@
     <stepLog2 value="2" />
     <yieldCount value="2000" />
 		
-    <widthDec type="float" value="0"/>0.0011111 0.005
+    <widthDec type="float" value="-1"/>0.0011111 0.005
     <widthMaxDec type="float" value="9" />9 3
 	
 		<limitOutside type="bool" value="true" />

@@ -94,50 +94,6 @@ function AIVEPauseEvent:run(connection)
   end
 end
 
-
-------------------------------------------------------------------------
--- AIVEPauseEvent
-------------------------------------------------------------------------
-AIVEStartEvent = {}
-AIVEStartEvent_mt = Class(AIVEStartEvent, Event)
-InitEventClass(AIVEStartEvent, "AIVEStartEvent")
-function AIVEStartEvent:emptyNew()
-  local self = Event:new(AIVEStartEvent_mt)
-  return self
-end
-function AIVEStartEvent:new(object,enabled)
-  local self = AIVEStartEvent:emptyNew()
-  self.object     = object;
-	self.enabled    = enabled
-  return self
-end
-function AIVEStartEvent:readStream(streamId, connection)
-  local id = streamReadInt32(streamId)
-  self.object  = networkGetObject(id)
-	self.enabled = streamReadBool(streamId)
-  self:run(connection)
-end
-function AIVEStartEvent:writeStream(streamId, connection)
-  streamWriteInt32(streamId, networkGetObjectId(self.object))
-	streamWriteBool(streamId, self.enabled)
-end
-function AIVEStartEvent:run(connection)
-	if self.enabled then
-		self.object.aiveIsStarted = true
-		self.object:startAIVehicle()
-	else
-		if self.object.aiIsStarted then
-			self.object:stopAIVehicle()
-		end
-		self.object.aiveIsStarted = false
-	end
-	
-  if not connection:getIsServer() then
-    g_server:broadcastEvent(AIVEStartEvent:new(self.object,self.enabled), nil, connection, self.object)
-  end
-end
-
-
 ------------------------------------------------------------------------
 -- AIVEInt32Event
 ------------------------------------------------------------------------
@@ -222,4 +178,71 @@ function AIVEInt32Event:run(connection)
     g_server:broadcastEvent(AIVEInt32Event:new(self.object,self.name,self.value), nil, connection, self.object)
   end
 end
+
+------------------------------------------------------------------------
+-- AIVEWarningEvent
+------------------------------------------------------------------------
+function AIVehicleExtension:showWarning( text, wait, noEventSend )
+	
+	if self == nil then
+		if AIVESetInt32ValueLog < 10 then
+			AIVESetInt32ValueLog = AIVESetInt32ValueLog + 1;
+			print("------------------------------------------------------------------------");
+			print("AIVehicleExtension:showWarning: self == nil ( "..tostring(text).." / "..tostring(wait).." )");
+			AIVEHud.printCallstack();
+			print("------------------------------------------------------------------------");
+		end
+	
+		g_currentMission:showBlinkingWarning( text, wait )
+		return 
+	end
+	
+	if noEventSend == nil or not noEventSend then
+		if g_server ~= nil then
+			g_server:broadcastEvent(AIVEWarningEvent:new(self,text,wait), nil, nil, self)
+		else
+			g_client:getServerConnection():sendEvent(AIVEWarningEvent:new(self,text,wait))
+		end
+	end
+	
+	if self.isClient then
+		g_currentMission:showBlinkingWarning( text, wait )
+	end
+end
+
+
+AIVEWarningEvent = {}
+AIVEWarningEvent_mt = Class(AIVEWarningEvent, Event)
+InitEventClass(AIVEWarningEvent, "AIVEWarningEvent")
+function AIVEWarningEvent:emptyNew()
+  local self = Event:new(AIVEWarningEvent_mt)
+  return self
+end
+function AIVEWarningEvent:new(object,text,wait)
+  local self = AIVEWarningEvent:emptyNew()
+  self.object = object
+	self.text = text
+	self.wait = wait
+  return self
+end
+function AIVEWarningEvent:readStream(streamId, connection)
+  local id = streamReadInt32(streamId)
+  self.object = networkGetObject(id)
+	self.text   = streamReadString(streamId)
+	self.wait 	= streamReadInt32(streamId)
+  self:run(connection)
+end
+function AIVEWarningEvent:writeStream(streamId, connection)
+  streamWriteInt32(streamId, networkGetObjectId(self.object))
+  streamWriteString(streamId,self.text)
+  streamWriteInt32(streamId, self.wait)
+end
+function AIVEWarningEvent:run(connection)
+  AIVehicleExtension.showWarning( self.object, self.text, self.wait, true )
+  if not connection:getIsServer() then
+    g_server:broadcastEvent(AIVEWarningEvent:new(self.object,self.text,self.wait), nil, connection, self.object)
+  end
+end
+
+
 
