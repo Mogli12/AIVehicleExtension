@@ -4543,9 +4543,11 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 		
 		local b1,b2,b3 = z1, 0, 0
 
-		local r1 = math.sqrt( x1*x1 + b1*b1 )		
-		r1       = ( 1 + AIVEGlobals.minMidDist ) * ( r1 + math.max( 0, -b1 ) )
-		local a1 = math.atan( vehicle.aiveChain.wheelBase / r1 )
+	--local r1 = math.sqrt( x1*x1 + b1*b1 )		
+	--r1       = ( 1 + AIVEGlobals.minMidDist ) * ( r1 + math.max( 0, -b1 ) )
+	--local a1 = math.atan( vehicle.aiveChain.wheelBase / r1 )
+		local r1 = vehicle.aiveChain.radius 
+		local a1 = maxLooking
 		
 		local toolAngle = 0
 	
@@ -4649,38 +4651,68 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 		end
 
 		toolParam.zReal = z1
+				
+		local dx 
+		if vehicle.aiveChain.leftActive	then
+			dx = x1
+		else
+			dx = -x1
+		end
 
-		local r1 = math.sqrt( x1*x1 + z1*z1 )		
-		r1       = ( 1 + AIVEGlobals.minMidDist ) * ( r1 + math.max( 0, -z1 ) )
-		local a1 = math.atan( vehicle.aiveChain.wheelBase / r1 )
-		local a2 = maxLooking 
+		local r0 = vehicle.aiveChain.radius 
+		local r1 = math.max( r0, AIVEGlobals.minMidDist + dx )
+		local r2 = vehicle.aiveChain.wheelBase / math.tan( maxLooking ) 
 		
 		if z1 < 0 and toolParam.offsetStd > 0 and ( toolParam.limitOutside or toolParam.limitInside ) then
-			local of = toolParam.offsetStd
-			local zf = z1 + 0.1 * ( zb-z1 )
-			local r2 = ( zf*zf - of*of ) / ( of+of )
-			if vehicle.aiveChain.leftActive then
-				r2 = r2 + xl
-			else
-				r2 = r2 - xr
-			end
-			--print(tostring(r1).." "..tostring(r2).." "..tostring(z1).." "..tostring(offset).." "..tostring(x1))
-			if r2 < r1 then
-				r2 = r1
+			local of = 0.5 * toolParam.offsetStd			
+		--print(AutoSteeringEngine.posToString(r1).." "..AutoSteeringEngine.posToString(z1).." "..AutoSteeringEngine.posToString(of).." "..AutoSteeringEngine.posToString(dx))			
+			if toolParam.limitOutside then
+				local rn = dx + ( of*of + z1*z1 ) / ( of+of )
+			--print(AutoSteeringEngine.posToString(rn))
+				r1 = math.max( r1, rn )
 			end
 			
-			if     toolParam.limitOutside and toolParam.limitInside then
-				a2 = Utils.clamp(  math.atan( vehicle.aiveChain.wheelBase / r2 ), vehicle.aiveChain.minLooking, a2 )
-				a1 = math.min( a1, a2 )
-			elseif toolParam.limitOutside then
-				a1 = Utils.clamp(  math.atan( vehicle.aiveChain.wheelBase / r2 ), vehicle.aiveChain.minLooking, a1 )
-			end
+			if toolParam.limitInside then
+				local rn = dx + ( of*of + zb*zb ) / ( of+of )
+			--print(AutoSteeringEngine.posToString(rn))
+				r2 = math.max( r2, rn )
+			end			
 		end
 		
+		local a1 = math.max( vehicle.aiveChain.minLooking, math.atan( vehicle.aiveChain.wheelBase / r1 ) )
+		local a2 = math.max( vehicle.aiveChain.minLooking, math.atan( vehicle.aiveChain.wheelBase / r2 ) )
 		
 		if AIVEGlobals.shiftFixZ > 0 and z1 < 0 and not tool.isPlough then
 			z1 = math.max( z1-2, zb )
 		end
+				
+	--local r1 = math.sqrt( x1*x1 + z1*z1 )		
+	--r1       = ( 1 + AIVEGlobals.minMidDist ) * ( r1 + math.max( 0, -z1 ) )
+	--local a1 = math.atan( vehicle.aiveChain.wheelBase / r1 )
+	--local a2 = maxLooking 
+	--
+	--if z1 < 0 and toolParam.offsetStd > 0 and ( toolParam.limitOutside or toolParam.limitInside ) then
+	--	local of = toolParam.offsetStd
+	--	local zf = z1 + 0.1 * ( zb-z1 )
+	--	local r2 = ( zf*zf - of*of ) / ( of+of )
+	--	if vehicle.aiveChain.leftActive then
+	--		r2 = r2 + xl
+	--	else
+	--		r2 = r2 - xr
+	--	end
+	--	print(tostring(r1).." "..tostring(r2).." "..tostring(z1).." "..tostring(of).." "..tostring(x1))
+	--	if r2 < r1 then
+	--		r2 = r1
+	--	end
+	--	
+	--	if     toolParam.limitOutside and toolParam.limitInside then
+	--		a2 = Utils.clamp(  math.atan( vehicle.aiveChain.wheelBase / r2 ), vehicle.aiveChain.minLooking, a2 )
+	--		a1 = math.min( a1, a2 )
+	--	elseif toolParam.limitOutside then
+	--		a1 = Utils.clamp(  math.atan( vehicle.aiveChain.wheelBase / r2 ), vehicle.aiveChain.minLooking, a1 )
+	--	end
+	--end
+		
 		
 		toolParam.x        = x1
 		toolParam.z        = z1
