@@ -3409,16 +3409,40 @@ end
 -- getAIAreaOfVehicle
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tool, lx1,lz1,lx2,lz2,lx3,lz3 )
+	local aiStruct = nil
+
 	if tool.extraTerrainDetail then			
-		local a, t = AIVehicleUtil.getAIAreaOfVehicle( tool, lx1,lz1,lx2,lz2,lx3,lz3, true )
+		aiStruct = tool
+	elseif  tool.obj.aiProhibitedFruitType ~= FruitUtil.FRUITTYPE_UNKNOWN
+			and tool.obj.fruitTypes            == nil
+			and not tool.obj.aiUseDensityHeightMap then
+	-- fix for direct seeding
+		aiStruct = {}
+		
+		aiStruct.terrainDetailRequiredValueRanges = tool.obj.terrainDetailRequiredValueRanges
+		aiStruct.terrainDetailProhibitValueRanges = tool.obj.terrainDetailProhibitValueRanges
+		aiStruct.aiRequiredFruitType              = tool.obj.aiRequiredFruitType
+		aiStruct.aiRequiredMinGrowthState         = tool.obj.aiRequiredMinGrowthState
+		aiStruct.aiRequiredMaxGrowthState         = tool.obj.aiRequiredMaxGrowthState
+		aiStruct.aiProhibitedMinGrowthState       = tool.obj.aiProhibitedMinGrowthState
+		aiStruct.aiProhibitedMaxGrowthState       = tool.obj.aiProhibitedMaxGrowthState
+		aiStruct.aiUseWindrowFruitType            = tool.obj.aiUseWindrowFruitType
+		aiStruct.aiUseDensityHeightMap            = tool.obj.aiUseDensityHeightMap
+		
+		aiStruct.aiProhibitedFruitType2           = tool.obj.aiProhibitedFruitType
+		aiStruct.aiProhibitedFruitType            = FruitUtil.FRUITTYPE_UNKNOWN 
+	end
 	
-		if a > 0 and tool.aiProhibitedFruitType2 ~= FruitUtil.FRUITTYPE_UNKNOWN then
+	if aiStruct ~= nil then
+		local a, t = AIVehicleUtil.getAIAreaOfVehicle( aiStruct, lx1,lz1,lx2,lz2,lx3,lz3, true )
+	
+		if a > 0 and aiStruct.aiProhibitedFruitType2 ~= FruitUtil.FRUITTYPE_UNKNOWN then
 			local detailId = g_currentMission.terrainDetailId;
 			local x,z, widthX,widthZ, heightX,heightZ = Utils.getXZWidthAndHeight(nil, lx1,lz1,lx2,lz2,lx3,lz3)
 			
-			local prohibitedFruitType      = tool.aiProhibitedFruitType2;
-			local prohibitedMinGrowthState = tool.aiProhibitedMinGrowthState;
-			local prohibitedMaxGrowthState = tool.aiProhibitedMaxGrowthState;
+			local prohibitedFruitType      = aiStruct.aiProhibitedFruitType2;
+			local prohibitedMinGrowthState = aiStruct.aiProhibitedMinGrowthState;
+			local prohibitedMaxGrowthState = aiStruct.aiProhibitedMaxGrowthState;
 			
 			local ids = g_currentMission.fruits[prohibitedFruitType]
 		
