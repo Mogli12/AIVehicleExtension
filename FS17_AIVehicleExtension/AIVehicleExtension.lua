@@ -793,8 +793,10 @@ function AIVehicleExtension:update(dt)
 		self.aiSteeringSpeed = self.acSteeringSpeed
 	end
 
-	if self.setIsReverseDriving ~= nil then
-		self.acParameters.inverted = self.isReverseDriving
+	if self.setIsReverseDriving then
+		self.acParameters.inverted = true
+	else
+		self.acParameters.inverted = false
 	end		
 	
 	
@@ -812,30 +814,44 @@ function AIVehicleExtension:update(dt)
 		end
 	end
 	
-
-	if			self.articulatedAxis                          ~= nil 
-			and self.articulatedAxis.componentJoint           ~= nil
-			and self.articulatedAxis.componentJoint.jointNode ~= nil 
-			and self.acDimensions                             ~= nil 
-			and self.acDimensions.wheelBase                   ~= nil 
-			and self.acDimensions.acRefNodeZ                  ~= nil then	
-		
-		local node = getParent( self.acRefNode )
-		local dx = 0
-		local dz = 0
-		local dn = 0
-		for n,i in pairs( self.acDimensions.wheelParents ) do
-			local x,_,z	=AutoSteeringEngine.getRelativeTranslation( node, n )
-			dx = dx + x
-			dz = dz + z
-			dn = dn + i
+	if true then-- self.isActive or self.isHired then
+		if			self.articulatedAxis                          ~= nil 
+				and self.articulatedAxis.componentJoint           ~= nil
+				and self.articulatedAxis.componentJoint.jointNode ~= nil 
+				and self.acDimensions                             ~= nil 
+				and self.acDimensions.wheelBase                   ~= nil 
+				and self.acDimensions.acRefNodeZ                  ~= nil then	
+			
+			local node = getParent( self.acRefNode )
+			local dx = 0
+			local dz = 0
+			local dn = 0
+			for n,i in pairs( self.acDimensions.wheelParents ) do
+				local x,_,z	=AutoSteeringEngine.getRelativeTranslation( node, n )
+				dx = dx + x
+				dz = dz + z
+				dn = dn + i
+			end
+			dx = dx / dn
+			dz = dz / dn
+			local _,angle,_ = getRotation( self.articulatedAxis.componentJoint.jointNode )
+			angle = 0.5 * angle
+			angle = AIVEGlobals.artAxisRot *  angle
+			if self.isReverseDriving then
+				angle = angle + math.pi
+			end
+			setRotation( self.acRefNode, 0, angle, 0 )				
+			setTranslation( self.acRefNode, AIVEGlobals.artAxisShift * dx, 0, AIVEGlobals.artAxisShift * dz + self.acDimensions.acRefNodeZ )			
+		else
+			local angle = 0
+			if self.isReverseDriving then
+				angle = angle + math.pi
+			end
+			local _,y,_ = getRotation( self.acRefNode )
+			if math.abs( y - angle ) > 0.01 then
+				setRotation( self.acRefNode, 0, AIVEGlobals.artAxisRot * angle, 0 )				
+			end
 		end
-		dx = dx / dn
-		dz = dz / dn
-		local _,angle,_ = getRotation( self.articulatedAxis.componentJoint.jointNode )
-		angle = 0.5 * angle
-		setRotation( self.acRefNode, 0, AIVEGlobals.artAxisRot * angle, 0 )				
-		setTranslation( self.acRefNode, AIVEGlobals.artAxisShift * dx, 0, AIVEGlobals.artAxisShift * dz + self.acDimensions.acRefNodeZ )			
 	end
 
 	if atDump and self:getIsActiveForInput(false) then
@@ -1496,11 +1512,6 @@ function AIVehicleExtension.calculateDimensions( self )
 	--self.acDimensions.wheelBase				= self.acDimensions.wheelBase * math.cos( self.acDimensions.maxSteeringAngle ) 
 	end
 	
-	
-	if self.acParameters.inverted then
-		self.acDimensions.wheelBase = -self.acDimensions.wheelBase 
-	end
-	
 	setTranslation( self.acRefNode, 0, 0, self.acDimensions.acRefNodeZ )
 	
 	if AIVEGlobals.devFeatures > 0 then
@@ -1583,7 +1594,7 @@ function AIVehicleExtension.calculateDistances( self )
 	local wb = self.acDimensions.wheelBase
 	local ms = self.acDimensions.maxSteeringAngle
 	
-	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.acParameters.inverted, self.acParameters.frontPacker, self.acParameters.useAIFieldFct )
+	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.isReverseDriving, self.acParameters.frontPacker, self.acParameters.useAIFieldFct )
 
 	self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack = AutoSteeringEngine.checkTools( self )
 	
@@ -1945,7 +1956,7 @@ function AIVehicleExtension:stopWaiting( angle )
 		a = -angle 
 	end
 	
-	if math.abs( a - AutoSteeringEngine.currentSteeringAngle( self, self.acParameters.inverted ) ) < 0.05236 then -- 3° 
+	if math.abs( a - AutoSteeringEngine.currentSteeringAngle( self, self.isReverseDriving ) ) < 0.05236 then -- 3° 
 		return true 
 	end
 	return false
@@ -2201,9 +2212,8 @@ function AIVehicleExtension:newCanStartAIVehicle( superFunc )
 	local backup = self.isReverseDriving
 	
 	if      self.acParameters ~= nil
-			and self.acParameters.enabled
-			and self.acParameters.inverted then
-		self.isReverseDriving = not ( self.isReverseDriving )
+			and self.acParameters.enabled then
+		self.isReverseDriving = false
 	end
 
 	local res = { superFunc( self ) }

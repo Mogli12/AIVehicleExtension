@@ -2002,10 +2002,13 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 		veh:acDebugPrint( "T97: "..AutoSteeringEngine.degToString( turnAngle ).." "..AutoSteeringEngine.radToString( ta ).." "..AutoSteeringEngine.radToString( a2 ).." "..AutoSteeringEngine.degToString( target ).." "..string.format("%2.3fm %2.3fm / %2.3fm", x, z, -veh.acDimensions.toolDistance) )
 		
-		if      x < -veh.acDimensions.toolDistance 
-				and ( border <= 0 or x < -15 ) 
-			--and a2 <= 0
-			--and turnAngle <= 90
+		local xtd = -x-veh.acDimensions.toolDistance 
+		
+		if      xtd > 0
+				and ( border <= 0 or x > 15 ) 
+			
+			-- allow more tool angle if we are far away
+				and math.abs( ta ) < math.rad( xtd )
 				and not fruitsDetected 
 				and not AutoSteeringEngine.hasLeftFruits( veh ) then
 			if veh.turnTimer < 0 then

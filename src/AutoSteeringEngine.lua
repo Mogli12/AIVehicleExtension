@@ -132,27 +132,29 @@ function AutoSteeringEngine.globalsLoad( file, debugPrint )
 	local xmlFile = loadXMLFile( "AIVE", file, "AIVEGlobals" )
 	for name,value in pairs(AIVEGlobals) do
 		local tp = Utils.getNoNil( getXMLString(xmlFile, "AIVEGlobals." .. name .. "#type"), "int" )
+		local nn = false
 		if     tp == "bool" then
 			local bool = getXMLBool( xmlFile, "AIVEGlobals." .. name .. "#value" )
 			if bool ~= nil then
+				nn = debugPrint
 				if bool then AIVEGlobals[name] = 1 else AIVEGlobals[name] = 0 end
 			end
 		elseif tp == "float" then
 			local float = getXMLFloat( xmlFile, "AIVEGlobals." .. name .. "#value" )
-			if float ~= nil then AIVEGlobals[name] = float end
+			if float ~= nil then nn = debugPrint; AIVEGlobals[name] = float end
 		elseif tp == "degree" then
 			local float = getXMLFloat( xmlFile, "AIVEGlobals." .. name .. "#value" )
-			if float ~= nil then AIVEGlobals[name] = math.rad( float ) end
+			if float ~= nil then nn = debugPrint; AIVEGlobals[name] = math.rad( float ) end
 		elseif tp == "int" then
 			local int = getXMLInt( xmlFile, "AIVEGlobals." .. name .. "#value" )
-			if int ~= nil then AIVEGlobals[name] = int end
+			if int ~= nil then nn = debugPrint; AIVEGlobals[name] = int end
 		elseif tp == "vector" then
 			local str = getXMLString( xmlFile, "AIVEGlobals." .. name .. "#value" )
-			if str ~= nil then AIVEGlobals[name] = { Utils.getVectorFromString( str ) } end
+			if str ~= nil then nn = debugPrint; AIVEGlobals[name] = { Utils.getVectorFromString( str ) } end
 		else
 			print(file..": "..name..": invalid XML type : "..tp)
 		end
-		if debugPrint then print('<name type="'..tp..'" value="'..tostring(AIVEGlobals[name])..'"/>') end
+		if nn then print('<'..tostring(name)..' type="'..tostring(tp)..'" value="'..tostring(AIVEGlobals[name])..'"/>') end
 	end
 end
 
@@ -1033,10 +1035,6 @@ function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteerin
 
 	local resetTools = false
 	
---if vehicle.isReverseDriving then
---	isInverted = not isInverted
---end
-
 	if     vehicle.aiveChain == nil
 			or vehicle.aiveChain.resetCounter == nil
 			or vehicle.aiveChain.resetCounter < AutoSteeringEngine.resetCounter then
@@ -1075,7 +1073,6 @@ function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteerin
 		vehicle.aiveChain.radius    = 5
 	end
 	
-	vehicle.aiveChain.isInverted	   = isInverted
 	vehicle.aiveChain.useFrontPacker = useFrontPacker 
 	
 	AutoSteeringEngine.checkTools1( vehicle, resetTools )
@@ -2629,12 +2626,6 @@ function AutoSteeringEngine.steerContinued( vehicle )
 end
 function AutoSteeringEngine.steerDirect( vehicle, dt, angle, aiSteeringSpeed, directSteer )
 -- precondition: vehicle.rotatedTime is filled from last steering
-	if vehicle.aiveChain.isInverted then
-		angle = -angle
-	end
-	if vehicle.isReverseDriving then
-		angle = -angle
-	end
 
 	if     angle == 0 then
 		targetRotTime = 0
@@ -2764,15 +2755,6 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDrive, moveForwards, speedLevel, useReduceSpeed, slowMaxRpmFactor )
 
-	if moveForwards ~= nil then
-		if vehicle.aiveChain.isInverted then
-			moveForwards = not moveForwards
-		end
-		if vehicle.isReverseDriving then
-			moveForwards = not moveForwards
-		end
-	end
-	
   local acc = acceleration
 	local disableChangingDirection = false
 	local doHandBrake = false
@@ -3601,10 +3583,6 @@ function AutoSteeringEngine.applyRotation( vehicle, toIndex )
 					updateSteering = false
 				end
 				
-				--if vehicle.aiveChain.isInverted then
-				--	vehicle.aiveChain.nodes[j].rotation = -vehicle.aiveChain.nodes[j].rotation
-				--end
-				
 				local oldCumulRot = cumulRot
 				cumulRot = cumulRot + vehicle.aiveChain.nodes[j].rotation
 				
@@ -3711,6 +3689,22 @@ function AutoSteeringEngine.getCheckFunction( vehicle )
 end
 
 ------------------------------------------------------------------------
+-- checkFieldNear
+------------------------------------------------------------------------
+function AutoSteeringEngine.checkFieldNear( vehicle, x, z, d )
+	local dist = d
+	if d == nil then
+		dist = 0.5
+	end
+	
+	return AutoSteeringEngine.checkField( vehicle, x, z )
+			or AutoSteeringEngine.checkField( vehicle, x+dist, z )
+			or AutoSteeringEngine.checkField( vehicle, x-dist, z )
+			or AutoSteeringEngine.checkField( vehicle, x, z+dist )
+			or AutoSteeringEngine.checkField( vehicle, x, z-dist )
+end
+
+------------------------------------------------------------------------
 -- checkField
 ------------------------------------------------------------------------
 function AutoSteeringEngine.checkField( vehicle, x, z )
@@ -3726,7 +3720,8 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 	
 	local stepLog2 = AIVEGlobals.stepLog2
 	local checkFunction, areaTotalFunction
-	local x1,_,z1 = localToWorld( vehicle.aiveChain.refNode, 0.5 * ( vehicle.aiveChain.activeX + vehicle.aiveChain.otherX ), 0, vehicle.aiveChain.maxZ + AIVEGlobals.fruitsAdvance )
+	local x1,_,z1 = localToWorld( vehicle.aiveChain.refNode, 0.5 * ( vehicle.aiveChain.activeX + vehicle.aiveChain.otherX ), 0, 
+																													 math.max( 0, vehicle.aiveChain.maxZ + AIVEGlobals.lowerAdvance ) )
 	
 	if vehicle.aiveFieldIsInvalid then
 		vehicle.aiveChain.lastX = nil
@@ -3775,25 +3770,32 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 		
 			local found = AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction )
 			
-			if not found then
-				local i = 1
-				repeat
-					if vehicle.aiveChain.tools == nil or vehicle.aiveChain.tools[i] == nil then
-						break
-					end
-				
-					x1,_,z1 = getWorldTranslation( vehicle.aiveChain.tools[i].steeringAxleNode )
-					found   = AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction )
-					if not found then
-						for m=1,table.getn( vehicle.aiveChain.tools[i].marker ) do
-							x1,_,z1 = getWorldTranslation( vehicle.aiveChain.tools[i].marker[m] )
-							found   = AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction )
-							if found then break end
-						end
-					end
-					i = i + 1
-				until found
+			if     not AutoSteeringEngine.checkFieldNoBuffer( x1-1, z1, checkFunction )
+					or not AutoSteeringEngine.checkFieldNoBuffer( x1+1, z1, checkFunction )
+					or not AutoSteeringEngine.checkFieldNoBuffer( x1, z1-1, checkFunction )
+					or not AutoSteeringEngine.checkFieldNoBuffer( x1, z1+1, checkFunction ) then
+				found = false
 			end
+			
+		--if not found then
+		--	local i = 1
+		--	repeat
+		--		if vehicle.aiveChain.tools == nil or vehicle.aiveChain.tools[i] == nil then
+		--			break
+		--		end
+		--	
+		--		x1,_,z1 = getWorldTranslation( vehicle.aiveChain.tools[i].steeringAxleNode )
+		--		found   = AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction )
+		--		if not found then
+		--			for m=1,table.getn( vehicle.aiveChain.tools[i].marker ) do
+		--				x1,_,z1 = getWorldTranslation( vehicle.aiveChain.tools[i].marker[m] )
+		--				found   = AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction )
+		--				if found then break end
+		--			end
+		--		end
+		--		i = i + 1
+		--	until found
+		--end
 			
 			if found then
 				stepLog2 = math.log( 2 * g_currentMission.terrainDetailMapSize / g_currentMission.terrainSize ) / math.log( 2 )
@@ -5678,7 +5680,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 					local dx, dz
 					dx = xs + x * ddx
 					dz = zs + x * ddz
-					if not AutoSteeringEngine.checkField( vehicle, dx, dz ) then
+					if not AutoSteeringEngine.checkFieldNear( vehicle, dx, dz ) then
 						break
 					end
 					xh = dx
@@ -5854,7 +5856,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 					for _,tp in pairs( vehicle.aiveChain.toolParams ) do
 						local x0 = vehicle.aiveChain.trace.ox + dzx * shiftZ
 						local z0 = vehicle.aiveChain.trace.oz + dzz * shiftZ
-						if AutoSteeringEngine.checkField( vehicle, x0, z0 ) then	
+						if AutoSteeringEngine.checkFieldNear( vehicle, x0, z0 ) then	
 							local xs = x0 - dxx
 							local zs = z0 - dxz
 							local xh = xs + dzx
@@ -5864,7 +5866,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 							for x=1,w,0.5 do
 								vx = x0 + x * dxx
 								vz = z0 + x * dxz
-								local isOnField = AutoSteeringEngine.checkField( vehicle, vx, vz )
+								local isOnField = AutoSteeringEngine.checkFieldNear( vehicle, vx, vz )
 								if isOnField then
 									xw = x0 + x * dxx
 									zw = z0 + x * dxz
@@ -5959,7 +5961,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 				for x=3,10 do
 					vx = xs + x * t[d].sx
 					vz = zs + x * t[d].sz
-					if AutoSteeringEngine.checkField( vehicle, vx, vz ) then
+					if AutoSteeringEngine.checkFieldNear( vehicle, vx, vz ) then
 						xh = vx
 						zh = vz
 						xe = x

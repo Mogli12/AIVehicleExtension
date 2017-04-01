@@ -232,6 +232,10 @@ function AIDriveStrategy:adjustPosition( eX, eZ, moveForwards, distanceToStop, i
 --	end
 --end
 	
+	if vehicle.acParameters.inverted then
+		lX = -lX
+	end
+	
 	local tX,_,tZ  = localToWorld( nOut, lX, lY, lZ )
 	
 --print(string.format("%5.2f %5.2f => %5.2f %5.2f => %5.2f %5.2f", eX, eZ, lX, lZ, tX, tZ ))
