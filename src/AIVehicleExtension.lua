@@ -814,7 +814,7 @@ function AIVehicleExtension:update(dt)
 		end
 	end
 	
-	if true then-- self.isActive or self.isHired then
+	if self.aiveIsStarted or self.acTurnStage >= 198 then
 		if			self.articulatedAxis                          ~= nil 
 				and self.articulatedAxis.componentJoint           ~= nil
 				and self.articulatedAxis.componentJoint.jointNode ~= nil 
