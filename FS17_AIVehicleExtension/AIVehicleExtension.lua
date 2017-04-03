@@ -793,7 +793,7 @@ function AIVehicleExtension:update(dt)
 		self.aiSteeringSpeed = self.acSteeringSpeed
 	end
 
-	if self.setIsReverseDriving then
+	if type( self.setIsReverseDriving ) == "function" and self.isReverseDriving then
 		self.acParameters.inverted = true
 	else
 		self.acParameters.inverted = false
@@ -1416,7 +1416,7 @@ function AIVehicleExtension:loadFromAttributesAndNodes(xmlFile, key, resetVehicl
 	self.acParameters.leftAreaActive	= not self.acParameters.rightAreaActive
 	self.acDimensions								 = nil
 	
-	if self.setIsReverseDriving ~= nil then
+	if type( self.setIsReverseDriving ) == "function" and self.acParameters.inverted then
 		self:setIsReverseDriving( self.acParameters.inverted, false )
 	end
 	

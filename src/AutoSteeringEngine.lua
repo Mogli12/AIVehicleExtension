@@ -6479,7 +6479,8 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		tool.aiForceTurnNoBackward = true
 	elseif  object.aiForceTurnNoBackward then
 		tool.aiForceTurnNoBackward = true
-	elseif  object.attacherJoint              ~= nil
+
+		elseif  object.attacherJoint              ~= nil
 			and object.attacherJoint.jointType    ~= nil
 			and ( object.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILERLOW
 			   or object.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILER ) then
@@ -6519,13 +6520,32 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	if tool.isPlough and tool.aiForceTurnNoBackward then
 		tool.checkZRotation = true
 	end
+	
+	local b1, trailer = AutoSteeringEngine.findComponentJointDistance( vehicle, object )
 
+	if     ( object.aiLeftMarker  == nil and object.aiRightMarker == nil )
+			or SpecializationUtil.hasSpecialization(Windrower,   object.specializations)
+			or SpecializationUtil.hasSpecialization(ForageWagon, object.specializations)
+			or SpecializationUtil.hasSpecialization(Tedder,      object.specializations)
+			or SpecializationUtil.hasSpecialization(Baler,       object.specializations)
+			or SpecializationUtil.hasSpecialization(BaleWrapper, object.specializations)
+			or SpecializationUtil.hasSpecialization(BaleLoader,  object.specializations) then
+		tool.ignoreAI = true
+	end
+	
 	if tool.ignoreAI then
-		marker[1] = reference
-		marker[2] = reference
+		if     ( object.wheels ~= nil and trailer )
+				or tool.isTurnOnVehicle
+				or tool.hasWorkAreas then
+			marker[1] = reference
+			marker[2] = reference
+			tool.aiForceTurnNoBackward = trailer 
+		else
+			return 0
+		end
 	else
 -- tool with AI support		
-		tool.isAITool = true
+		tool.isAITool    = true
 		tool.useAIMarker = true
 		if AtResetCounter == nil or AtResetCounter < 1 then
 			--print("object has AI support")
@@ -6652,7 +6672,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	if tool.doubleJoint then
 	-- do nothing
 	elseif tool.aiForceTurnNoBackward then
-		tool.b1 = AutoSteeringEngine.findComponentJointDistance( vehicle, tool, object )
+		tool.b1 = b1
 	
 		if object.wheels ~= nil then
 			local wna,wza=0,0
@@ -7986,16 +8006,16 @@ end
 ------------------------------------------------------------------------
 -- ensureToolsLowered
 ------------------------------------------------------------------------
-function AutoSteeringEngine.findComponentJointDistance( vehicle, tool, object )
+function AutoSteeringEngine.findComponentJointDistance( vehicle, object )
 	
-	if     object.attacherJoint              ~= nil
+	if      object.attacherJoint              ~= nil
 			and object.attacherJoint.jointType    ~= nil
 			and ( object.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILERLOW
 			   or object.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILER ) then
-		return 0
+		return 0, true
 	end
 	
-	return -0.7
+	return -0.7, false
 end
 
 ------------------------------------------------------------------------
