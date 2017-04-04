@@ -14,6 +14,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.chainBorder  = 0
 	AIVEGlobals.chainLen     = { 2, 4, 6, 8, 10, 12 }
 	AIVEGlobals.chain2Len    = { 2, 4, 6, 8, 10, 12 }
+	AIVEGlobals.chain3Len    = { 2, 4, 6, 8, 10, 12 }
 	AIVEGlobals.chainStart   = 0
 	AIVEGlobals.chainDivideP1 = 0
 	AIVEGlobals.chainDivideP2 = 0
@@ -106,6 +107,8 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.minOffset     = 0
 	AIVEGlobals.ignoreBorder  = 0
 	AIVEGlobals.minTraceLen   = 0
+	AIVEGlobals.offTracking   = 0
+	AIVEGlobals.prohibitAI    = 0
 	
 	local file
 	file = AIVECurrentModDir.."autoSteeringEngineConfig.xml"
@@ -1141,44 +1144,53 @@ function AutoSteeringEngine.checkTools1( vehicle, reset )
 		AutoSteeringEngine.addToolsRec( vehicle, vehicle )
 		
 		for _,tool in pairs(vehicle.aiveChain.tools) do
-			if     ( tool.isPlough        and vehicle.aiveHas.cultivator )
-					or ( tool.isCultivator    and ( vehicle.aiveHas.plough     
-																			 or vehicle.aiveHas.sowingMachine ) )
-					or ( tool.isSowingMachine and vehicle.aiveHas.cultivator ) then
+		--if     ( tool.isPlough        and vehicle.aiveHas.cultivator )
+		--		or ( tool.isCultivator    and ( vehicle.aiveHas.plough     
+		--																 or vehicle.aiveHas.sowingMachine ) )
+		--		or ( tool.isSowingMachine and vehicle.aiveHas.cultivator ) then
+			if     tool.isPlough       
+					or tool.isCultivator    
+					or tool.isSowingMachine then
 				local self = tool.obj
 				
-				tool.extraTerrainDetail               = true
-				tool.terrainDetailRequiredValueRanges = {}
-				tool.terrainDetailProhibitValueRanges = {}
-				tool.aiRequiredFruitType              = self.aiRequiredFruitType;
-				tool.aiRequiredMinGrowthState         = self.aiRequiredMinGrowthState;
-				tool.aiRequiredMaxGrowthState         = self.aiRequiredMaxGrowthState;
-				tool.aiProhibitedFruitType            = FruitUtil.FRUITTYPE_UNKNOWN
-				tool.aiProhibitedFruitType2           = FruitUtil.FRUITTYPE_UNKNOWN
-				tool.aiProhibitedMinGrowthState       = 0
-				tool.aiProhibitedMaxGrowthState       = 0
-				tool.aiUseWindrowFruitType            = self.aiUseWindrowFruitType
-				tool.aiUseDensityHeightMap            = self.aiUseDensityHeightMap
-				tool.fruitTypes                       = self.fruitTypes
+				tool.aiArea                          = {}
+				tool.aiArea.requiredValues           = {}
+				tool.aiArea.prohibitValues           = {}
+				tool.aiArea.requiredFruitType        = self.aiRequiredFruitType;
+				tool.aiArea.requiredMinGrowthState   = self.aiRequiredMinGrowthState;
+				tool.aiArea.requiredMaxGrowthState   = self.aiRequiredMaxGrowthState;
+				tool.aiArea.prohibitedFruitType      = FruitUtil.FRUITTYPE_UNKNOWN
+				tool.aiArea.prohibitedMinGrowthState = 0
+				tool.aiArea.prohibitedMaxGrowthState = 0
+				tool.aiArea.useWindrowFruitType      = self.aiUseWindrowFruitType
+				tool.aiArea.useDensityHeightMap      = self.aiUseDensityHeightMap
+				tool.aiArea.fruitTypes               = self.fruitTypes
+				tool.aiArea.hasSowingChannel         = false
 				
 				-- cultivator channel 
 				if not vehicle.aiveHas.cultivator then
-					table.insert(tool.terrainDetailRequiredValueRanges, {g_currentMission.cultivatorValue, g_currentMission.cultivatorValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
+					table.insert(tool.aiArea.requiredValues, {g_currentMission.cultivatorValue, g_currentMission.cultivatorValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
 				end
 				
 				-- plough channel 
 				if not vehicle.aiveHas.plough     then
-					table.insert(tool.terrainDetailRequiredValueRanges, {g_currentMission.ploughValue, g_currentMission.ploughValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels})
+					table.insert(tool.aiArea.requiredValues, {g_currentMission.ploughValue, g_currentMission.ploughValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels})
 				end
 				
 				-- sowing channel
-				table.insert(tool.terrainDetailRequiredValueRanges, {g_currentMission.sowingValue, g_currentMission.sowingValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels})
+				if     vehicle.aiveHas.cultivator
+						or vehicle.aiveHas.plough
+						or ( tool.isSowingMachine and tool.obj.useDirectPlanting ) then
+					table.insert(tool.aiArea.requiredValues, {g_currentMission.sowingValue, g_currentMission.sowingValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels})
+					tool.aiArea.hasSowingChannel = true
+				end
+				
 				if not vehicle.aiveHas.sowingMachine then
 					table.insert(self.terrainDetailRequiredValueRanges, {g_currentMission.sowingWidthValue, g_currentMission.sowingWidthValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
 					table.insert(self.terrainDetailRequiredValueRanges, {g_currentMission.grassValue, g_currentMission.grassValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
 				end
-			else
-				tool.extraTerrainDetail = false
+			elseif tool.aiArea ~= nil then
+				tool.aiArea = nil
 			end
 		end
 	end
@@ -1392,15 +1404,20 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 				end
 			end
 		end
+		
+		if currentSeed == nil then
+			print("Error finding current seed")
+			currentSeed = FruitUtil.FRUITTYPE_UNKNOWN
+		end
 	
 		for _,tool in pairs(vehicle.aiveChain.tools) do
-			if tool.extraTerrainDetail then
-				tool.aiProhibitedFruitType2     = currentSeed
-				tool.aiProhibitedMinGrowthState = 0
+			if tool.aiArea ~= nil and tool.aiArea.hasSowingChannel then
+				tool.aiArea.prohibitedFruitType      = currentSeed
+				tool.aiArea.prohibitedMinGrowthState = 0
 				if currentSeed ~= FruitUtil.FRUITTYPE_UNKNOWN then
-					tool.aiProhibitedMaxGrowthState = FruitUtil.fruitIndexToDesc[currentSeed].maxHarvestingGrowthState
+					tool.aiArea.prohibitedMaxGrowthState = FruitUtil.fruitIndexToDesc[currentSeed].maxHarvestingGrowthState
 				else	
-					tool.aiProhibitedMaxGrowthState = 0
+					tool.aiArea.prohibitedMaxGrowthState = 0
 				end
 			end
 		end
@@ -1424,11 +1441,13 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 				skipOther = true
 			end
 
-			if      vehicle.aiveChain.tools[i].isCultivator 
-					and vehicle.aiveHas.sowingMachine
-					and vehicle.aiveHas.plough
-					and not vehicle.aiveChain.tools[i].isSowingMachine
-					and not vehicle.aiveChain.tools[i].isPlough then
+		--if      vehicle.aiveChain.tools[i].isCultivator 
+		--		and vehicle.aiveHas.sowingMachine
+		--		and vehicle.aiveHas.plough
+		--		and not vehicle.aiveChain.tools[i].isSowingMachine
+		--		and not vehicle.aiveChain.tools[i].isPlough then
+			if      vehicle.aiveChain.tools[i].aiArea ~= nil 
+					and table.getn( vehicle.aiveChain.tools[i].aiArea.requiredValues ) <= 0 then
 				-- skip the culivator in the middle
 				skip      = true
 				skipOther = true
@@ -3391,47 +3410,46 @@ end
 -- getAIAreaOfVehicle
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tool, lx1,lz1,lx2,lz2,lx3,lz3 )
-	local aiStruct = nil
-
-	if tool.extraTerrainDetail then			
-		aiStruct = tool
-	elseif  tool.obj.aiProhibitedFruitType ~= FruitUtil.FRUITTYPE_UNKNOWN
-			and tool.obj.fruitTypes            == nil
-			and not tool.obj.aiUseDensityHeightMap then
-	-- fix for direct seeding
-		aiStruct = {}
+	if tool.aiArea ~= nil then		
+		if table.getn( tool.aiArea.requiredValues ) <= 0 then
+			return 0, 0
+		end
 		
-		aiStruct.terrainDetailRequiredValueRanges = tool.obj.terrainDetailRequiredValueRanges
-		aiStruct.terrainDetailProhibitValueRanges = tool.obj.terrainDetailProhibitValueRanges
-		aiStruct.aiRequiredFruitType              = tool.obj.aiRequiredFruitType
-		aiStruct.aiRequiredMinGrowthState         = tool.obj.aiRequiredMinGrowthState
-		aiStruct.aiRequiredMaxGrowthState         = tool.obj.aiRequiredMaxGrowthState
-		aiStruct.aiProhibitedMinGrowthState       = tool.obj.aiProhibitedMinGrowthState
-		aiStruct.aiProhibitedMaxGrowthState       = tool.obj.aiProhibitedMaxGrowthState
-		aiStruct.aiUseWindrowFruitType            = tool.obj.aiUseWindrowFruitType
-		aiStruct.aiUseDensityHeightMap            = tool.obj.aiUseDensityHeightMap
+		if AIVEGlobals.prohibitAI <= 0 then
+			return AIVehicleUtil.getAIArea( lx1,lz1,lx2,lz2,lx3,lz3,
+																		tool.aiArea.requiredValues,
+																		tool.aiArea.prohibitValues,
+																		tool.aiArea.requiredFruitType,
+																		tool.aiArea.requiredMinGrowthState,
+																		tool.aiArea.requiredMaxGrowthState,
+																		tool.aiArea.prohibitedFruitType,
+																		tool.aiArea.prohibitedMinGrowthState,
+																		tool.aiArea.prohibitedMaxGrowthState,
+																		tool.aiArea.useWindrowFruitType )
+		end
 		
-		aiStruct.aiProhibitedFruitType2           = tool.obj.aiProhibitedFruitType
-		aiStruct.aiProhibitedFruitType            = FruitUtil.FRUITTYPE_UNKNOWN 
-	end
+		local a, t = AIVehicleUtil.getAIArea( lx1,lz1,lx2,lz2,lx3,lz3,
+																		tool.aiArea.requiredValues,
+																		tool.aiArea.prohibitValues,
+																		tool.aiArea.requiredFruitType,
+																		tool.aiArea.requiredMinGrowthState,
+																		tool.aiArea.requiredMaxGrowthState,
+																		FruitUtil.FRUITTYPE_UNKNOWN, 0, 0,
+																		tool.aiArea.useWindrowFruitType )
 	
-	if aiStruct ~= nil then
-		local a, t = AIVehicleUtil.getAIAreaOfVehicle( aiStruct, lx1,lz1,lx2,lz2,lx3,lz3, true )
-	
-		if a > 0 and aiStruct.aiProhibitedFruitType2 ~= FruitUtil.FRUITTYPE_UNKNOWN then
+		if a > 0 and tool.aiArea.prohibitedFruitType ~= FruitUtil.FRUITTYPE_UNKNOWN then
 			local detailId = g_currentMission.terrainDetailId;
 			local x,z, widthX,widthZ, heightX,heightZ = Utils.getXZWidthAndHeight(nil, lx1,lz1,lx2,lz2,lx3,lz3)
 			
-			local prohibitedFruitType      = aiStruct.aiProhibitedFruitType2;
-			local prohibitedMinGrowthState = aiStruct.aiProhibitedMinGrowthState;
-			local prohibitedMaxGrowthState = aiStruct.aiProhibitedMaxGrowthState;
+			local prohibitedFruitType      = tool.aiArea.prohibitedFruitType;
+			local prohibitedMinGrowthState = tool.aiArea.prohibitedMinGrowthState;
+			local prohibitedMaxGrowthState = tool.aiArea.prohibitedMaxGrowthState;
 			
 			local ids = g_currentMission.fruits[prohibitedFruitType]
 		
 			setDensityMaskParams(detailId, "between", prohibitedMinGrowthState+1, prohibitedMaxGrowthState+1); -- only fruit outside the given range is allowed
 			local _,prohibitedArea,_ = getDensityMaskedParallelogram(detailId, x, z, widthX, widthZ, heightX, heightZ, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, ids.id, 0, g_currentMission.numFruitStateChannels);
 			setDensityMaskParams(detailId, "greater", 0);
-
 			a = math.max( 0, a - prohibitedArea )
 		end
 		
@@ -3439,7 +3457,7 @@ function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tool, lx1,lz1,lx2,lz2,l
 	elseif tool.isMower then
 		return Utils.getFruitArea(FruitUtil.FRUITTYPE_GRASS, lx1,lz1,lx2,lz2,lx3,lz3,false)
 	end
-	return AIVehicleUtil.getAIAreaOfVehicle( tool.obj, lx1,lz1,lx2,lz2,lx3,lz3, true )
+	return AIVehicleUtil.getAIAreaOfVehicle( tool.obj, lx1,lz1,lx2,lz2,lx3,lz3, false )
 end
 
 ------------------------------------------------------------------------
@@ -3705,19 +3723,10 @@ function AutoSteeringEngine.checkFieldNear( vehicle, x, z, d )
 end
 
 ------------------------------------------------------------------------
--- checkField
+-- checkFieldIsValid
 ------------------------------------------------------------------------
-function AutoSteeringEngine.checkField( vehicle, x, z )
+function AutoSteeringEngine.checkFieldIsValid( vehicle )
 
-	if vehicle.aiveChain ~= nil then
-		if      vehicle.aiveChain.lastCheckField ~= nil 
-				and vehicle.aiveChain.lastCheckField.x-0.1 <= x and x <= vehicle.aiveChain.lastCheckField.x+0.1
-				and vehicle.aiveChain.lastCheckField.z-0.1 <= z and z <= vehicle.aiveChain.lastCheckField.z+0.1 then
-				return vehicle.aiveChain.lastCheckField.c
-		end		
-		vehicle.aiveChain.lastCheckField = nil
-	end
-	
 	local stepLog2 = AIVEGlobals.stepLog2
 	local checkFunction, areaTotalFunction
 	local x1,_,z1 = localToWorld( vehicle.aiveChain.refNode, 0.5 * ( vehicle.aiveChain.activeX + vehicle.aiveChain.otherX ), 0, 
@@ -3731,18 +3740,11 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 	
 		if vehicle.aiveCurrentField ~= nil then
 			if vehicle.aiveCurrentField.getBit( x1, z1 ) then
-			--print("Still valid: ("..AutoSteeringEngine.posToString(x )..", "..AutoSteeringEngine.posToString(z )..") ("
-			--											..AutoSteeringEngine.posToString(x1)..", "..AutoSteeringEngine.posToString(z1)..")")			
 				vehicle.aiveFieldIsInvalid = false			
 			else
 				checkFunction, areaTotalFunction = AutoSteeringEngine.getCheckFunction( vehicle )
 				if AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction ) then
-				--print("Not valid: ("..AutoSteeringEngine.posToString(x )..", "..AutoSteeringEngine.posToString(z )..") ("
-				--										..AutoSteeringEngine.posToString(x1)..", "..AutoSteeringEngine.posToString(z1)..")")			
 					vehicle.aiveCurrentField = nil	
-				else
-				--print("No field:  ("..AutoSteeringEngine.posToString(x )..", "..AutoSteeringEngine.posToString(z )..") ("
-				--										..AutoSteeringEngine.posToString(x1)..", "..AutoSteeringEngine.posToString(z1)..")")			
 				end
 			end
 		end
@@ -3776,26 +3778,6 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 					or not AutoSteeringEngine.checkFieldNoBuffer( x1, z1+1, checkFunction ) then
 				found = false
 			end
-			
-		--if not found then
-		--	local i = 1
-		--	repeat
-		--		if vehicle.aiveChain.tools == nil or vehicle.aiveChain.tools[i] == nil then
-		--			break
-		--		end
-		--	
-		--		x1,_,z1 = getWorldTranslation( vehicle.aiveChain.tools[i].steeringAxleNode )
-		--		found   = AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction )
-		--		if not found then
-		--			for m=1,table.getn( vehicle.aiveChain.tools[i].marker ) do
-		--				x1,_,z1 = getWorldTranslation( vehicle.aiveChain.tools[i].marker[m] )
-		--				found   = AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction )
-		--				if found then break end
-		--			end
-		--		end
-		--		i = i + 1
-		--	until found
-		--end
 			
 			if found then
 				stepLog2 = math.log( 2 * g_currentMission.terrainDetailMapSize / g_currentMission.terrainSize ) / math.log( 2 )
@@ -3850,14 +3832,15 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 			end
 		end
 	end
-	
+end
+
+------------------------------------------------------------------------
+-- checkField
+------------------------------------------------------------------------
+function AutoSteeringEngine.checkField( vehicle, x, z )
 	if vehicle.aiveCurrentField == nil then 
 		return true
 	else
-		if vehicle.aiveChain ~= nil then
-			vehicle.aiveChain.lastCheckField = { x = x, z = z, c = vehicle.aiveCurrentField.getBit( x, z ) }
-			return vehicle.aiveChain.lastCheckField.c
-		end
 		return vehicle.aiveCurrentField.getBit( x, z )
 	end
 end
@@ -4043,16 +4026,32 @@ function AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 
 		setTranslation( vehicle.aiveChain.nodes[i].index3, 0, 0, tp.b1 )
 		setTranslation( vehicle.aiveChain.nodes[i].index4, 0, 0, tp.z - tp.b1 )
-			
-		if i > 1 and math.abs( tp.b2 + tp.b3 ) > 1E-3 then
-			if vehicle.aiveChain.nodes[i-1].status < AIVEStatus.position then
-				AutoSteeringEngine.getChainPoint( vehicle, i-1, tp )
+		
+		if math.abs( tp.b2 + tp.b3 ) > 1E-3 and AIVEGlobals.offTracking ~= 0 then
+			if AIVEGlobals.offTracking > 0 then
+				if i > 1 then
+					local dx, dy, dz = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.nodes[i].index, vehicle.aiveChain.nodes[i-1].index4 )
+					dz = dz - tp.b1
+					local oldAngle   = vehicle.aiveChain.nodes[i-1].tool[tp.i].a
+					local newAngle   = math.atan2( dx, -dz )
+					vehicle.aiveChain.nodes[i].tool[tp.i].a = AIVEGlobals.offTracking * newAngle + ( 1 - AIVEGlobals.offTracking ) * oldAngle			
+				end
+			else
+				if i <= vehicle.aiveChain.chainMax then
+					setTranslation( vehicle.aiveChain.nodes[i+1].index3, 0, 0, tp.b1 )
+					local dx, dy, dz = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.nodes[i+1].index, vehicle.aiveChain.nodes[i].index4 )
+					dz = dz - tp.b1
+					local oldAngle   = tp.angle
+					if i > 1 then 
+						oldAngle = vehicle.aiveChain.nodes[i-1].tool[tp.i].a
+					end
+					local newAngle   = math.atan2( dx, -dz )
+					vehicle.aiveChain.nodes[i].tool[tp.i].a = -AIVEGlobals.offTracking * newAngle + ( 1 + AIVEGlobals.offTracking ) * oldAngle			
+				else
+					vehicle.aiveChain.nodes[i].tool[tp.i].a = vehicle.aiveChain.nodes[i-1].tool[tp.i].a
+				end 
 			end
-			
-			local dx, dy, dz = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.nodes[i].index, vehicle.aiveChain.nodes[i-1].index4 )
-				
-			vehicle.aiveChain.nodes[i].tool[tp.i].a = math.atan2( dx, -dz )			
-		end	
+		end
 			
 		setRotation( vehicle.aiveChain.nodes[i].index3, 0, -vehicle.aiveChain.nodes[i].tool[tp.i].a, 0 )
 			
@@ -4942,7 +4941,7 @@ function AutoSteeringEngine.initSteering( vehicle )
 			vehicle.aiveChain.chainStep3 = AIVEGlobals.chainStep3
 			vehicle.aiveChain.chainStep4 = AIVEGlobals.chainStep4
 		else
-			vehicle.aiveChain.nodes      = vehicle.aiveChain.nodesLow
+			vehicle.aiveChain.nodes      = vehicle.aiveChain.nodesCom
 			vehicle.aiveChain.chainStep0 = AIVEGlobals.chain3Step0
 			vehicle.aiveChain.chainStep1 = AIVEGlobals.chain3Step1
 			vehicle.aiveChain.chainStep2 = AIVEGlobals.chain3Step2
@@ -4951,6 +4950,8 @@ function AutoSteeringEngine.initSteering( vehicle )
 		end
 	end
 	vehicle.aiveChain.chainMax = table.getn( vehicle.aiveChain.nodes ) - 1
+	
+	AutoSteeringEngine.checkFieldIsValid( vehicle )	
 	
 	if mi == nil or ma == nil or math.abs( vehicle.aiveChain.minAngle - mi ) > 1E-4 or math.abs( vehicle.aiveChain.maxAngle - ma ) > 1E-4 then
 		AutoSteeringEngine.setChainStatus( vehicle, 1, AIVEStatus.initial )	
@@ -6249,16 +6250,21 @@ function AutoSteeringEngine.initChain( vehicle, iRefNode, wheelBase, maxSteering
 	link( g_currentMission.terrainRootNode, vehicle.aiveChain.startNode )
 	vehicle.aiveChain.respectStartNode = false
 	
-	for chainType=1,2 do
-		local cl0
-		local pre 
+	for chainType=1,3 do
+		local cl0, pre, atr
 		
-		if chainType == 1 then
+		if     chainType == 1 then
 			cl0 = AIVEGlobals.chainLen
 			pre = "acChainA"
-		else
+			atr = "nodesFix"
+		elseif chainType == 2 then
 			cl0 = AIVEGlobals.chain2Len
 			pre = "acChainB"
+			atr = "nodesLow"
+		else
+			cl0 = AIVEGlobals.chain3Len
+			pre = "acChainC"
+			atr = "nodesCom"
 		end
 	
 		local node    = {}
@@ -6312,11 +6318,7 @@ function AutoSteeringEngine.initChain( vehicle, iRefNode, wheelBase, maxSteering
 			nodes[#nodes+1] = node2
 		end
 		
-		if chainType == 1 then
-			vehicle.aiveChain.nodesFix = nodes
-		else
-			vehicle.aiveChain.nodesLow = nodes
-		end
+		vehicle.aiveChain[atr] = nodes
 	end	
 end
 

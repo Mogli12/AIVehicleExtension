@@ -670,10 +670,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		end
 		
 		if     fruitsDetected
-				or math.abs( turnAngle )   >= 180 - angleOffset
-				or ( math.abs( turnAngle ) >= 180 - math.min( math.deg( veh.acDimensions.maxSteeringAngle ), math.deg( 0.3 * veh.acDimensions.maxSteeringAngle ) )
-					and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2
-					and z < veh.acDimensions.toolDistance + 3) then
+				or ( math.abs( turnAngle ) >= 180 - angleOffset
+				 and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 ) then
 			detected, angle2, border = AutoSteeringEngine.processChain( veh )
 			noLower = false
 		end		
@@ -1519,7 +1517,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			angle  = nil
 			
 			if     fruitsDetected
-					or ( math.abs( turnAngle ) >= 170 
+					or ( math.abs( turnAngle ) >= 180 - angleOffset 
 					 and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 ) then
 				detected, angle2, border = AutoSteeringEngine.processChain( veh )
 			else
@@ -1629,7 +1627,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		detected  = false
 		local nav = true
 		if     fruitsDetected
-				or ( math.abs( turnAngle ) >= 170 
+				or ( math.abs( turnAngle ) >= 180 - angleOffset 
 				 and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 ) then
 	--if math.abs( turnAngle ) >= 180-math.deg( angleMax ) then
 			nav = false

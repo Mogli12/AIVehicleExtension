@@ -1227,14 +1227,14 @@ function AIVehicleExtension:checkState( force )
 	
 	local h = 0
 	local c = 0
-	if			self.acParameters.collision
-			and self.acParameters.upNDown
-		--and self.acTurnStage ~=	-3 
-		--and self.acTurnStage ~= -13 
-		--and self.acTurnStage ~= -23 
-			then
-		c = self.acDimensions.collisionDist
-	end
+--if			self.acParameters.collision
+--		and self.acParameters.upNDown
+--	--and self.acTurnStage ~=	-3 
+--	--and self.acTurnStage ~= -13 
+--	--and self.acTurnStage ~= -23 
+--		then
+--	c = self.acDimensions.collisionDist
+--end
 	if			self.acParameters.headland 
 			and self.acParameters.upNDown 
 		--and self.acTurnStage ~=	-3 

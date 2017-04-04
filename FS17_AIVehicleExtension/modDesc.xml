@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="34">
 	<author>Mogli</author>
-	<version>0.9.2.0</version>
+	<version>0.9.2.1</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v1.0 beta 20</en>
-			<de>AI Vehicle Extension v1.0 beta 20</de>
-			<fr>AI Vehicle Extension v1.0 beta 20</fr>
-			<it>AI Vehicle Extension v1.0 beta 20</it>
-			<ru>AI Vehicle Extension v1.0 beta 20</ru>
-			<cz>AI Vehicle Extension v1.0 beta 20</cz>
-			<pl>AI Vehicle Extension v1.0 beta 20</pl>
-										<cs>车辆助手 v1.0 beta 20</cs>
+			<en>AI Vehicle Extension v1.0 beta 21</en>
+			<de>AI Vehicle Extension v1.0 beta 21</de>
+			<fr>AI Vehicle Extension v1.0 beta 21</fr>
+			<it>AI Vehicle Extension v1.0 beta 21</it>
+			<ru>AI Vehicle Extension v1.0 beta 21</ru>
+			<cz>AI Vehicle Extension v1.0 beta 21</cz>
+			<pl>AI Vehicle Extension v1.0 beta 21</pl>
+										<cs>车辆助手 v1.0 beta 21</cs>
 		</text>
 	</l10n>
 	<title>
@@ -32,7 +32,7 @@ This mod automatically inserts itself into all vehicles if they already support 
 
 When starting this alternative helper it briefly scans the field at the current vehicle position. But apart from this, the alternative hired worker has only a little idea of where it is on the field. Instead, this mod looks, starting from the current position, for the border between untouched and already worked area is. 
 
-On beautiful rectangular fields with lots of free space around you can better use the normal hired worker. If you want to follow a a certain path on the field then I recommend using CoursePlay. The mod FollowMe is great for simple following tasks. I have the two mods together with AIVehicleExtension in my mods folder.
+On beautiful rectangular fields with lots of free space around you can better use the normal hired worker. If you want to follow a certain path on the field then I recommend using CoursePlay. The mod FollowMe is great for simple following tasks. I have the two mods together with AIVehicleExtension in my mods folder.
 
 Here are the most important input bindings:
 * H: Start or stop the hired worker
@@ -68,7 +68,7 @@ Questa mod si inserisce automaticamente in tutti i veicoli se già supportano l'
 
 All'avvio questo aiutante alternativo scansiona brevemente il campo nella posizione corrente del veicolo. Oltre a questo, l'aiutante alternativo ha poca idea di dove si è sul campo. Invece, questo mod osserva a partire dalla posizione corrente, per il confine tra l'area incontaminata e dove è già lavorato.
 
-Su campi rettangolari con un sacco di spazio libero attorno si può utilizzare l'aiutante normale. Se si vuole seguire un un certo percorso sul campo poi mi consiglia di utilizzare courseplay. Il FollowMe mod è l'ideale per semplici compiti. Ho i due mods insieme AIVehicleExtension nella mia cartella mods.
+Su campi rettangolari con un sacco di spazio libero attorno si può utilizzare l'aiutante normale. Se si vuole seguire un certo percorso sul campo poi mi consiglia di utilizzare courseplay. Il FollowMe mod è l'ideale per semplici compiti. Ho i due mods insieme AIVehicleExtension nella mia cartella mods.
 
 Qui ci sono le più importanti associazioni di tasti:
 * H: avviare o arrestare l'aiutante
