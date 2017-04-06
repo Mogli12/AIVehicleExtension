@@ -858,7 +858,7 @@ function AIVehicleExtension:update(dt)
 		AIVehicleExtension.acDump2(self)
 	end
 
-	if self.isEntered and self.isClient and self:getIsActive() then
+	if not g_gui:getIsGuiVisible() and not g_currentMission.isPlayerFrozen and self.isEntered then
 	--if self.acParameters.enabled and self.acTurnStage < 198 and not self.aiveIsStarted then
 	--	AIVehicleExtension.checkState( self )
 	--end
@@ -903,6 +903,10 @@ function AIVehicleExtension:update(dt)
 			AIVehicleExtension.onRaiseImpl( self, AIVehicleExtension.evalRaiseImpl( self ) )
 		end
 		
+		if self.isHired and InputBinding.hasEvent(InputBinding.SWITCH_IMPLEMENT) then
+			self:selectNextSelectableImplement();
+		end
+				
 		if  not ( self.aiveIsStarted ) 
 				and ( AIVehicleExtension.mbHasInputEvent( "LOWER_IMPLEMENT" ) or AIVehicleExtension.mbHasInputEvent( "LOWER_ALL_IMPLEMENTS" ) ) then
 			self.acImplementsMoveDown = nil
@@ -2206,7 +2210,7 @@ AIVehicle.setDriveStrategies = Utils.appendedFunction( AIVehicle.setDriveStrateg
 ---Returns true if ai can start
 -- @return boolean canStart can start ai
 -- @includeCode
-function AIVehicleExtension:newCanStartAIVehicle( superFunc )
+function AIVehicleExtension:newCanStartAIVehicle( superFunc, ... )
 	-- check if reverse driving is available and used, we do not allow the AI to work when reverse driving is enabled
 	
 	local backup = self.isReverseDriving
@@ -2216,7 +2220,7 @@ function AIVehicleExtension:newCanStartAIVehicle( superFunc )
 		self.isReverseDriving = false
 	end
 
-	local res = { superFunc( self ) }
+	local res = { superFunc( self, ... ) }
 	
 	self.isReverseDriving = backup
 	

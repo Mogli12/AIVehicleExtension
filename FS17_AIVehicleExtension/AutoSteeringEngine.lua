@@ -1186,8 +1186,8 @@ function AutoSteeringEngine.checkTools1( vehicle, reset )
 				end
 				
 				if not vehicle.aiveHas.sowingMachine then
-					table.insert(self.terrainDetailRequiredValueRanges, {g_currentMission.sowingWidthValue, g_currentMission.sowingWidthValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
-					table.insert(self.terrainDetailRequiredValueRanges, {g_currentMission.grassValue, g_currentMission.grassValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
+					table.insert(tool.aiArea.requiredValues, {g_currentMission.sowingWidthValue, g_currentMission.sowingWidthValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
+					table.insert(tool.aiArea.requiredValues, {g_currentMission.grassValue, g_currentMission.grassValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
 				end
 			elseif tool.aiArea ~= nil then
 				tool.aiArea = nil
@@ -6509,7 +6509,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		tool.ploughTransport = true
 	end
 		
-	if     tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhndc401.xml" then
+	if false and tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhndc401.xml" then
 		tool.isPlough        = true
 		tool.isCultivator    = false
 		tool.ploughTransport = false

@@ -700,7 +700,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 					veh.acClearTraceAfterTurn = true
 				end
 			end
-		elseif fruitsDetected or not isAtEnd then		
+		elseif fruitsDetected or detected or not isAtEnd then		
 			veh.turnTimer   		   = math.max(veh.turnTimer,veh.acDeltaTimeoutRun);
 			veh.acTurnOutsideTimer = math.max( veh.acTurnOutsideTimer, veh.acDeltaTimeoutNoTurn );
 		elseif veh.turnTimer < 0 then 
