@@ -720,44 +720,45 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			AutoSteeringEngine.initTurnVector( veh, uTurn, turn2Outside )
 
 			if not turn2Outside then 
-				local dist	= math.floor( 4 * math.max( 10, veh.acDimensions.distance ) )
-				local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( veh )
-				local stop	= true
-				local lx,lz
-				for i=0,dist do
-					for j=0,dist do
-						for k=1,4 do
-							if     k==1 then 
-								lx = wx + i
-								lz = wz + j
-							elseif k==2 then
-								lx = wx - i
-								lz = wz + j
-							elseif k==3 then
-								lx = wx + i
-								lz = wz - j
-							else
-								lx = wx - i
-								lz = wz - j
-							end
-							if	    AutoSteeringEngine.isChainPointOnField( veh, lx-0.5, lz-0.5 ) 
-									and AutoSteeringEngine.isChainPointOnField( veh, lx-0.5, lz+0.5 ) 
-									and AutoSteeringEngine.isChainPointOnField( veh, lx+0.5, lz-0.5 ) 
-									and AutoSteeringEngine.isChainPointOnField( veh, lx+0.5, lz+0.5 ) 
-									then
-								local x = lx - 0.5
-								local z1= lz - 0.5
-								local z2= lz + 0.5
-								if AutoSteeringEngine.hasFruitsSimple( veh, x,z1,x,z2, 1 ) then
-									stop = false
-									break
-								end
-							end
-						end
-					end
-				end
-						
-				if stop then
+			--local dist	= math.floor( 4 * math.max( 10, veh.acDimensions.distance ) )
+			--local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( veh )
+			--local stop	= true
+			--local lx,lz
+			--for i=0,dist do
+			--	for j=0,dist do
+			--		for k=1,4 do
+			--			if     k==1 then 
+			--				lx = wx + i
+			--				lz = wz + j
+			--			elseif k==2 then
+			--				lx = wx - i
+			--				lz = wz + j
+			--			elseif k==3 then
+			--				lx = wx + i
+			--				lz = wz - j
+			--			else
+			--				lx = wx - i
+			--				lz = wz - j
+			--			end
+			--			if	    AutoSteeringEngine.isChainPointOnField( veh, lx-0.5, lz-0.5 ) 
+			--					and AutoSteeringEngine.isChainPointOnField( veh, lx-0.5, lz+0.5 ) 
+			--					and AutoSteeringEngine.isChainPointOnField( veh, lx+0.5, lz-0.5 ) 
+			--					and AutoSteeringEngine.isChainPointOnField( veh, lx+0.5, lz+0.5 ) 
+			--					then
+			--				local x = lx - 0.5
+			--				local z1= lz - 0.5
+			--				local z2= lz + 0.5
+			--				if AutoSteeringEngine.hasFruitsSimple( veh, x,z1,x,z2, 1 ) then
+			--					stop = false
+			--					break
+			--				end
+			--			end
+			--		end
+			--	end
+			--end
+			--		
+			--if stop then
+				if not ( AutoSteeringEngine.hasFoundNext( veh ) ) then
 					veh:stopAIVehicle(AIVehicle.STOP_REASON_REGULAR)
 					return
 				end

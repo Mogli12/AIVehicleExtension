@@ -5105,6 +5105,9 @@ function AutoSteeringEngine.setChainInt( vehicle, startIndex, mode, angle, facto
 					r = q
 				end
 			end
+			if vehicle.aiveChain.nodes[j-1].cumulRot == nil then
+				vehicle.aiveChain.nodes[j-1].cumulRot = 0
+			end			
 			if r == nil then
 				r = -0.5 * vehicle.aiveChain.nodes[j-1].cumulRot
 			elseif vehicle.aiveChain.nodes[j-1].cumulRot > 0 then
@@ -5250,6 +5253,7 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside, detect
 		vehicle.aiveChain.trace.rx          = nil
 		vehicle.aiveChain.trace.rz          = nil
 		vehicle.aiveChain.trace.tpBuffer    = {}
+		vehicle.aiveChain.trace.foundNext   = nil
 	end
 	
 	if not ( cumulate ) or vehicle.aiveChain.toolParams == nil then
@@ -5338,6 +5342,8 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside, detect
 					end
 
 					stp = true
+					
+					vehicle.aiveChain.trace.foundNext = true
 				end				
 			end				
 			
@@ -5445,6 +5451,19 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, notOutside, detect
 			vehicle.aiveChain.trace.rx, _, vehicle.aiveChain.trace.rz = localToWorld( vehicle.aiveChain.refNode, 0, 0 , vehicle.aiveChain.backZ - 2 )
 		end
 	end
+end
+
+------------------------------------------------------------------------
+-- hasFoundNext
+------------------------------------------------------------------------
+function AutoSteeringEngine.hasFoundNext( vehicle )
+	if vehicle.aiveChain == nil or vehicle.aiveChain.trace == nil then 
+		return false
+	end
+	if vehicle.aiveChain.trace.foundNext then 
+		return true
+	end
+	return false
 end
 
 ------------------------------------------------------------------------
