@@ -1,12 +1,10 @@
 # AIVehicleExtension for Farming Simulator 2017
 
 ## Testing
-**It would be greate if everybody would retest the issues she/he created and close issues that are resolved. Thanks!**
+**I think I will send this mod to ModHub in the next days. Please check Version 1.0 RC1. It would be greate if everybody would retest the issues she/he created and close issues that are resolved. Thanks!**
 
 ## Status
 Minimum patch level is Farming Simulator 2017 patch 1.3.1, but patch 1.4 is supported as well. I only test it with patch 1.4.4.
-The core path finding engine ("AutoSteeringEngine") is working now and most turn maneuvers seem to work quite well. 
-I moved many settings into a new settings GUI. 
 
 #### New User Interface
 The idea behind the new user interface is to move as many settings as possible into new settings dialog. This dialog uses standard elements. Only those options needed for visualization or intermediate action are still available in the head up display (HUD).
@@ -42,7 +40,7 @@ If you're still ok with this, please remember to post possible issues that you f
 That's the only way we can find sources of error and fix them. 
 Be as specific as possible:
 
-* tell us the version number
+* tell the version number
 * only use the vehicles necessary, not 10 other ones at a time
 * which vehicles are involved, what is the intended action?
 * Post! The! Log! to [Gist](https://gist.github.com/) or [PasteBin](http://pastebin.com/)
