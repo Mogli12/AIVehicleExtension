@@ -563,7 +563,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		veh.acMinDistanceToStop = math.max( 0.5, veh.acMinDistanceToStop - dt * veh.lastSpeed )
 		distanceToStop = veh.acMinDistanceToStop
 	else
-		veh.acMinDistanceToStop = 6
+		veh.acMinDistanceToStop = 1 + AIVEGlobals.fruitsInFront
 		if self.search ~= nil then
 			distanceToStop = math.huge 
 		else

@@ -79,6 +79,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.fruitsAdvance = 0
 	AIVEGlobals.lowerAdvance  = 0
 	AIVEGlobals.upperAdvance  = 0
+	AIVEGlobals.fruitsInFront = 0
 	AIVEGlobals.showInfo      = 0
 	AIVEGlobals.borderBuffer  = 0
 	AIVEGlobals.chainStep0    = 0
@@ -517,8 +518,12 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 		vehicle.aiveChain.valid = nil
 	end
 	vehicle.aiveChain.inField = false
+	vehicle.aiveChain.widthDecFactor = nil
 	if inField then
-		vehicle.aiveChain.inField = true		
+		vehicle.aiveChain.inField = true	
+		if insideAngleFactor ~= nil and 0 < insideAngleFactor and insideAngleFactor < 1 then
+			vehicle.aiveChain.widthDecFactor = 1 - insideAngleFactor
+		end
 	end
 				
 	if AIVEGlobals.collectCbr > 0 then
@@ -2021,7 +2026,7 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle )
 					
 					local back, dxb, dzb, dxf, dzf 
 					
-					back = math.max( 5, vehicle.aiveChain.radius, vehicle.aiveChain.maxZ - toolParam.zReal + AIVEGlobals.fruitsAdvance )
+					back = math.max( AIVEGlobals.fruitsInFront, vehicle.aiveChain.radius, vehicle.aiveChain.maxZ - toolParam.zReal + AIVEGlobals.fruitsAdvance )
 					if j== 1 then
 						if tool.aiForceTurnNoBackward then
 							back = back + 2 
@@ -4058,18 +4063,18 @@ function AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 		local idx = vehicle.aiveChain.nodes[i].index4
 		local ofs = tpx
 		
-		if i == 1 and vehicle.aiveChain.tools[tp.i].aiForceTurnNoBackward then
-			if vehicle.aiveChain.leftActive	then
-				ofs = -tp.offset 
-				idx = tp.nodeLeft 
-			else
-				ofs = tp.offset 
-				idx = tp.nodeRight
-			end
-			vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].y, vehicle.aiveChain.nodes[i].tool[tp.i].z = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 0 )
-		else
+	--if i == 1 and vehicle.aiveChain.tools[tp.i].aiForceTurnNoBackward then
+	--	if vehicle.aiveChain.leftActive	then
+	--		ofs = -tp.offset 
+	--		idx = tp.nodeLeft 
+	--	else
+	--		ofs = tp.offset 
+	--		idx = tp.nodeRight
+	--	end
+	--	vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].y, vehicle.aiveChain.nodes[i].tool[tp.i].z = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 0 )
+	--else
 			vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].y, vehicle.aiveChain.nodes[i].tool[tp.i].z = localToWorld( idx, ofs, 0, 0 )
-		end
+	--end
 		
 	--vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].z = AutoSteeringEngine.normalizePosition( vehicle, vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].z )
 		
@@ -4250,14 +4255,17 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 						elseif i == 1 then
 							offsetInside = 0
 						elseif AIVEGlobals.widthDec > 0 then
-							local w = toolParam.width
-							if 0 < AIVEGlobals.widthMaxDec and AIVEGlobals.widthMaxDec < w then
-								w = AIVEGlobals.widthMaxDec
-							end
-							offsetInside = offsetInside + w * AIVEGlobals.widthDec * vehicle.aiveChain.nodes[i].distance
-						--offsetInside = math.max( offsetInside, w * AIVEGlobals.widthDec * vehicle.aiveChain.nodes[i].distance )
-							if AIVEGlobals.fruitBuffer > 0 then
-								offsetInside = math.max( vehicle.aiveChain.worldToDensityI, offsetInside )
+							if vehicle.aiveChain.widthDecFactor ~= nil then
+								local w = toolParam.width
+								if 0 < AIVEGlobals.widthMaxDec and AIVEGlobals.widthMaxDec < w then
+									w = AIVEGlobals.widthMaxDec
+								end
+								w = w * vehicle.aiveChain.widthDecFactor
+								offsetInside = offsetInside + w * AIVEGlobals.widthDec * vehicle.aiveChain.nodes[i].distance
+							--offsetInside = math.max( offsetInside, w * AIVEGlobals.widthDec * vehicle.aiveChain.nodes[i].distance )
+								if AIVEGlobals.fruitBuffer > 0 then
+									offsetInside = math.max( vehicle.aiveChain.worldToDensityI, offsetInside )
+								end
 							end
 						elseif i == 2 then
 							offsetInside = 0.333333 * offsetInside
@@ -4554,9 +4562,13 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 			i1 = ir
 		end
 		
+		if not ( tool.isPlough ) then
+			z1 = 0.5 * ( z1 + zb )
+		end
+		
 		local x0,_,z0 = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.refNode, tool.refNode )
 		
-		zb = zb + z1
+		zb = zb + z0
 		x1 = x1 + x0
 		z1 = z1 + z0
 		toolParam.zReal = z1
