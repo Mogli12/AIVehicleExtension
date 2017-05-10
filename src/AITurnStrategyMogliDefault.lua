@@ -1700,6 +1700,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			if -z > radius + stoppingDist then				
 				AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)		
 				inactive          = true
+				noLower           = false
+				moveForwards      = true
 				turnData.stage    = 89;					
 				veh.turnTimer     = veh.acDeltaTimeoutRun;
 				veh.waitForTurnTime = g_currentMission.time + veh.turnTimer;
