@@ -7067,12 +7067,6 @@ function AutoSteeringEngine.checkAllowedToDrive( vehicle, checkFillLevel, checkF
 		return false
 	end
 
-	if vehicle.acIsCPStopped then
-		vehicle.acIsCPStopped = false
-		if AIVEGlobals.devFeatures > 0 then print("not allowed to drive II") end
-		return false
-	end
-	
 	if vehicle.aiveChain.tools == nil or table.getn(vehicle.aiveChain.tools) < 1 then
 		if AIVEGlobals.devFeatures > 0 then print("not allowed to drive III") end
 		return false

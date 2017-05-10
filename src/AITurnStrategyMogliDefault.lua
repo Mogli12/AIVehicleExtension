@@ -60,6 +60,11 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	end
 	
 	veh.acTurnStage = turnData.stage
+	if veh.acChopperWithCourseplay then
+		if 89 <= turnData.stage and turnData.stage <= 99 then
+			veh.acTurnStage = 0
+		end
+	end
 	
 	if self.lastTurnStage == nil or self.lastTurnStage ~= turnData.stage then
 		self.lastTurnStage = turnData.stage
@@ -1699,6 +1704,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			end
 			if -z > radius + stoppingDist then				
 				AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)		
+				AIVehicleExtension.stopCoursePlayMode2( veh, false )
 				inactive          = true
 				noLower           = false
 				moveForwards      = true

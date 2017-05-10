@@ -106,7 +106,7 @@ function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	for _,turnStrategy in pairs(self.turnStrategies) do
 		turnStrategy:setAIVehicle(self.vehicle);
 	end
-	self.activeTurnStrategy = nil
+	self.currentTurnStrategy = nil
 
 	self.search     = AIDriveStrategyMogli.searchStart 
 	AIVehicleExtension.setAIImplementsMoveDown(self.vehicle,true)
@@ -169,7 +169,7 @@ function AIDriveStrategyMogli:printReturnInfo( tX, vY, tZ, moveForwards, maxSpee
 	end
 	
 	local turnStage = "???"
-	if self.activeTurnStrategy ~= nil then
+	if self.currentTurnStrategy ~= nil then
 		turnStage = tostring(self.turnData.stage)
 	elseif self.search == nil then
 		turnStage = " 0"
@@ -244,8 +244,8 @@ function AIDriveStrategy:adjustPosition( eX, eZ, moveForwards, distanceToStop, i
 end
 
 function AIDriveStrategyMogli:gotoNextStage()
-	if self.activeTurnStrategy ~= nil then
-		self.activeTurnStrategy:gotoNextStage(self.turnData)
+	if self.currentTurnStrategy ~= nil then
+		self.currentTurnStrategy:gotoNextStage(self.turnData)
 	else
 		self.search = nil
 	end
@@ -253,6 +253,13 @@ end
 
 function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	local veh = self.vehicle 
+		
+	if veh.acIsCPStopped then
+		veh.acIsCPStopped = false
+		veh.isHirableBlocked = true		
+		AIVehicleExtension.setStatus( veh, 0 )
+		return vX2, vZ2, moveForwards, 0, 0
+	end
 	
 	if veh.acPause then
 		veh.isHirableBlocked = true		
@@ -279,14 +286,16 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		
 	veh.aiSteeringSpeed = veh.acSteeringSpeed
 	
+	self.activeTurnStrategy = nil
+	
 	local resetState = false 
-	if self.activeTurnStrategy ~= nil then
-		local tX, tZ, moveForwards, maxSpeed, distanceToStop = self.activeTurnStrategy:getDriveData(dt, vX,vY,vZ, self.turnData)
+	if self.currentTurnStrategy ~= nil then
+		local tX, tZ, moveForwards, maxSpeed, distanceToStop = self.currentTurnStrategy:getDriveData(dt, vX,vY,vZ, self.turnData)
 		if tX == nil then
 			for _,turnStrategy in pairs(self.turnStrategies) do
 				turnStrategy:onEndTurn(self.turnLeft)
 			end
-			self.activeTurnStrategy = nil
+			self.currentTurnStrategy = nil
 			veh.turnTimer		   = veh.acDeltaTimeoutRun
 			veh.aiRescueTimer  = math.max( veh.aiRescueTimer, veh.acDeltaTimeoutStop )
 			
@@ -302,6 +311,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			
 			if maxSpeed == 0 then
 				veh.acLastWantedSpeed = nil
+			end
+			
+			if veh.acTurnStage > 0 then
+				self.activeTurnStrategy = self.currentTurnStrategy
+				AIVehicleExtension.stopCoursePlayMode2( veh, false )
 			end
 			
 			AIVehicleExtension.statEvent( veh, "tT", dt )
@@ -558,10 +572,17 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	else
 		self.isAtEndTimer = veh.acDeltaTimeoutWait
 	end
+	
+	local stopCP = false
 		
 	if self.search == nil and isAtEnd then
 		veh.acMinDistanceToStop = math.max( 0.5, veh.acMinDistanceToStop - dt * veh.lastSpeed )
 		distanceToStop = veh.acMinDistanceToStop
+		
+		if veh.acTurnMode == "7" and veh.acChopperWithCourseplay then
+			AIVehicleExtension.stopCoursePlayMode2( veh, true )
+		end
+			
 	else
 		veh.acMinDistanceToStop = 1 + AIVEGlobals.fruitsInFront
 		if self.search ~= nil then
@@ -570,7 +591,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			distanceToStop = math.max( veh.acMinDistanceToStop, dist )
 		end
 	end		
-	
+		
 	if not detected then
 		speedLevel = 4
 	end
@@ -628,23 +649,23 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 				if self.search == AIDriveStrategyMogli.searchUTurn then
 					AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
 					self.turnData.stage = 105
-					self.activeTurnStrategy = self.turnStrategies[1]		
-					self.activeTurnStrategy:startTurn( self.turnData )			
-					return self.activeTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
+					self.currentTurnStrategy = self.turnStrategies[1]		
+					self.currentTurnStrategy:startTurn( self.turnData )			
+					return self.currentTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
 				end
 			else
 				if self.search == AIDriveStrategyMogli.searchUTurn then
 					AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
 					self.turnData.stage = 110
-					self.activeTurnStrategy = self.turnStrategies[1]		
-					self.activeTurnStrategy:startTurn( self.turnData )			
-					return self.activeTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
+					self.currentTurnStrategy = self.turnStrategies[1]		
+					self.currentTurnStrategy:startTurn( self.turnData )			
+					return self.currentTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
 				else
 					AutoSteeringEngine.shiftTurnVector( veh, 0.5 )
 					self.turnData.stage = 115
-					self.activeTurnStrategy = self.turnStrategies[1]		
-					self.activeTurnStrategy:startTurn( self.turnData )			
-					return self.activeTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
+					self.currentTurnStrategy = self.turnStrategies[1]		
+					self.currentTurnStrategy:startTurn( self.turnData )			
+					return self.currentTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
 				end
 			end
 			veh.turnTimer = veh.acDeltaTimeoutWait
@@ -808,7 +829,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 				AutoSteeringEngine.setChainStraight( veh );	
 				
 			--if veh.acTurnMode == "O" then
-			--	self.activeTurnStrategy = self.turnStrategies[self.ts_U_O]
+			--	self.currentTurnStrategy = self.turnStrategies[self.ts_U_O]
 			--end
 			elseif veh.acTurnMode == "C" 
 					or veh.acTurnMode == "8" 
@@ -823,7 +844,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		-- 90° turn with reverse
 			--self.turnData.stage = 1;
 			--veh.turnTimer = veh.acDeltaTimeoutWait;
-				self.activeTurnStrategy = self.turnStrategies[self.ts_C_R]
+				self.currentTurnStrategy = self.turnStrategies[self.ts_C_R]
 			elseif veh.acTurnMode == "7" then 
 		-- 90° new turn with reverse
 				self.turnData.stage = 90;
@@ -834,13 +855,13 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 				veh.turnTimer = veh.acDeltaTimeoutWait;
 			end
 			
-			if self.activeTurnStrategy == nil then
-				self.activeTurnStrategy = self.turnStrategies[1]
+			if self.currentTurnStrategy == nil then
+				self.currentTurnStrategy = self.turnStrategies[1]
 			end
 			
-			self.activeTurnStrategy:startTurn( self.turnData )
+			self.currentTurnStrategy:startTurn( self.turnData )
 			
-			return self.activeTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
+			return self.currentTurnStrategy:getDriveData( dt, vX,vY,vZ, self.turnData )
 			
 	--elseif detected or fruitsDetected then
 		else

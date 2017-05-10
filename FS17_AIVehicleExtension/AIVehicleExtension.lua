@@ -1142,7 +1142,7 @@ function AIVehicleExtension:getAvailableTurnModes( upNDown )
 		end
 	else
 		if self.acDimensions.zBack ~= nil and self.acDimensions.zBack > 0 then
-			if revS and not self.acChopperWithCourseplay then
+			if revS then --and not self.acChopperWithCourseplay then
 				table.insert( turnModes, "7"	)
 			end
 			if rev	then
@@ -2163,6 +2163,27 @@ end
 function AIVehicleExtension:onDetachImplement(implementIndex)
 	AutoSteeringEngine.checkTools1( self, true )
 	AIVehicleExtension.checkState( self, true )
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:stopCoursePlayMode2
+------------------------------------------------------------------------
+function AIVehicleExtension:stopCoursePlayMode2( stopCP )
+	if      ( stopCP or self.acStopCP ) 
+			and self.courseplayers       ~= nil
+			and self.courseplayers[1]    ~= nil
+			and self.courseplayers[1].cp ~= nil then
+		
+		if stopCP then
+			if not ( self.courseplayers[1].cp.forcedToStop ) then
+				self.courseplayers[1].cp.forcedToStop = true
+				self.acStopCP = true
+			end
+		elseif self.acStopCP then
+			self.acStopCP = nil
+			self.courseplayers[1].cp.forcedToStop = false
+		end
+	end
 end
 
 --==============================================================				

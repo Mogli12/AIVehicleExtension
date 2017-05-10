@@ -40,7 +40,7 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 	--# check for turn
 	local isTurning = false
 	for _,strategy in pairs(self.vehicle.driveStrategies) do
-		if strategy.activeTurnStrategy ~= nil and strategy.activeTurnStrategy.isTurning then
+		if strategy.currentTurnStrategy ~= nil and strategy.currentTurnStrategy.isTurning then
 			isTurning = true
 			break
 		end
