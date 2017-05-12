@@ -381,7 +381,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		self.noSneakTimer  = nil
 	end
 	
-	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh, 0.9 )
+	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh )
 	
 	if      allowedToDrive
 			and ( fruitsDetected 

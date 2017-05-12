@@ -192,7 +192,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		turnAngle = -turnAngle;
 	end;
 
-	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh, 0.9 )
+	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh )
 	
 	if fruitsDetected and turnData.stage < 0 then
 		if veh.acFruitAllTimer == nil then

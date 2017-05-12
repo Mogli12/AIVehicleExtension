@@ -236,10 +236,12 @@ function AIVehicleExtension:draw()
 	end
 
 	if     self.acLAltPressed then
-		if AIVehicleExtension.evalAutoSteer(self) then
-			g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_STEER_ON"), InputBinding.AIVE_STEER)
-		elseif self.acTurnStage >= 198 then
-			g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_STEER_OFF"),InputBinding.AIVE_STEER)
+		if self.isServer then
+			if AIVehicleExtension.evalAutoSteer(self) then
+				g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_STEER_ON"), InputBinding.AIVE_STEER)
+			elseif self.acTurnStage >= 198 then
+				g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_STEER_OFF"),InputBinding.AIVE_STEER)
+			end	
 		end	
 	else
 		g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_SETTINGS"), InputBinding.AIVE_START_AIVE)		
@@ -438,7 +440,7 @@ function AIVehicleExtension:onSteerPause()
 		if self.aiveIsStarted then 
 			self.acPause = not self.acPause
 		end
-	else
+	elseif self.isServer then
 		if self.acTurnStage >= 198 then
 			AIVehicleExtension.setStatus( self, 0 )
 			self.acTurnStage = 0
@@ -463,13 +465,14 @@ function AIVehicleExtension:getSteerPauseText()
 		else
 			return AIVEHud.getText( "AIVE_PAUSE_ON" )
 		end
-	else
+	elseif self.isServer then
 		if self.acTurnStage >= 198 then
 			return AIVEHud.getText( "AIVE_STEER_OFF" )
 		else
 			return AIVEHud.getText( "AIVE_STEER_ON" )
 		end
 	end
+	return ""
 end
 
 function AIVehicleExtension:getSteerPauseImage()
@@ -481,13 +484,14 @@ function AIVehicleExtension:getSteerPauseImage()
 		else
 			return "dds/no_pause.dds"
 		end
-	else
+	elseif self.isServer then
 		if self.acTurnStage >= 198 then
 			return "dds/auto_steer_off.dds"
 		else
 			return "dds/auto_steer_on.dds"
 		end
 	end
+	return "empty.dds"
 end
 
 function AIVehicleExtension.showGui(self,on)
@@ -959,7 +963,7 @@ function AIVehicleExtension:update(dt)
 			self.acChopperWithCourseplay = false 
 		end
 		
-	elseif self.acTurnStage >= 198 then
+	elseif self.isServer and self.acTurnStage >= 198 then
 		self.stopMotorOnLeave = false
 		self.deactivateOnLeave = false
 		
@@ -1257,6 +1261,11 @@ end
 -- autoSteer
 ------------------------------------------------------------------------
 function AIVehicleExtension:autoSteer(dt)
+
+	if not self.isServer then
+		self.acTurnStage = 0
+		return
+	end
 	
 	AIVehicleExtension.checkState( self )
 
@@ -1265,7 +1274,15 @@ function AIVehicleExtension:autoSteer(dt)
 		return
 	end
 
-	if not ( AutoSteeringEngine.areToolsLowered( self ) ) then	
+	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( self )
+	local fruitsAdvance = fruitsDetected
+	if not fruitsAdvance and AutoSteeringEngine.hasFruits( self, true ) then
+		fruitsAdvance = true
+	end
+	
+	if     self.movingDirection < -1E-2 
+			or not ( fruitsAdvance or AutoSteeringEngine.areToolsLowered( self ) )
+			then	
 		if self.acImplementsMoveDown then
 			AIVehicleExtension.setAIImplementsMoveDown( self, false, true )
 		end
@@ -1275,9 +1292,7 @@ function AIVehicleExtension:autoSteer(dt)
 	end
 	
 --==============================================================		
-	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( self )
-
-	if fruitsDetected then
+	if fruitsAdvance then
 		AIVehicleExtension.onRaiseImpl( self, true )
 		AutoSteeringEngine.getIsAIReadyForWork( self )
 	end
@@ -1293,7 +1308,7 @@ function AIVehicleExtension:autoSteer(dt)
 		nilAngle    = "L"
 		
 		if	   self.turnTimer < 0 
-				or AutoSteeringEngine.processIsAtEnd( self ) then
+				or AutoSteeringEngine.getIsAtEnd( self ) then
 			target = math.min( math.max( 0.5 * AutoSteeringEngine.getTurnAngle(self), -self.acDimensions.maxSteeringAngle ), self.acDimensions.maxSteeringAngle )
 			if AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then
 				target = math.max( target, 0 )
@@ -1313,14 +1328,12 @@ function AIVehicleExtension:autoSteer(dt)
 		
 	self.turnTimer = self.turnTimer - dt
 	
-	if self.movingDirection < -0.5 then
-		self.acTurnStage = 198
-	elseif fruitsDetected and detected and border <= 0 then
+	if fruitsDetected and detected and border <= 0 then
 		AIVehicleExtension.setStatus( self, 1 )
 		if self.acTurnStage ~= 199 then
 			self.acTurnStage = 199
 			AutoSteeringEngine.clearTrace( self )
-			AutoSteeringEngine.saveDirection( self, false )
+			AutoSteeringEngine.saveDirection( self, false, false, true )
 		elseif AutoSteeringEngine.getIsAtEnd( self ) then
 			if self.acParameters.leftAreaActive then
 				angle = math.max( angle, 0 )
@@ -1328,7 +1341,7 @@ function AIVehicleExtension:autoSteer(dt)
 				angle = math.min( angle, 0 )
 			end
 		end
-		AutoSteeringEngine.saveDirection( self, true )
+		AutoSteeringEngine.saveDirection( self, true, true, true )
 		self.turnTimer = self.acDeltaTimeoutRun
 	elseif self.acTurnStage == 199 and self.turnTimer >= 0 then
 		if border <= 0 then
@@ -1340,30 +1353,20 @@ function AIVehicleExtension:autoSteer(dt)
 			if not self.acParameters.leftAreaActive then
 				angle = -angle		
 			end
+			if fruitsDetected then
+				self.turnTimer = self.acDeltaTimeoutRun
+			end			
 		end
 		AIVehicleExtension.setStatus( self, 2 )
 	else
-		if not fruitsDetected and self.acTurnStage == 199 then
-		--AIVehicleExtension.onRaiseImpl( self, false )
+		if self.acTurnStage == 199 and border <= 0 then
+			AIVehicleExtension.onRaiseImpl( self, false )
 			self:setCruiseControlState( Drivable.CRUISECONTROL_STATE_OFF )
 		end
 		
 		self.acTurnStage = 198
 		AIVehicleExtension.setStatus( self, 2 )
 		angle = 0
-	end
-	
---	if not self.acParameters.leftAreaActive then angle = -angle end
-	if self.movingDirection < -1E-2 then 
-		noReverseIndex = AutoSteeringEngine.getNoReverseIndex( self )
-		if noReverseIndex > 0 then
-			local toolAngle = AutoSteeringEngine.getToolAngle( self )
-			angle = math.min( math.max( toolAngle - angle, -self.acDimensions.maxSteeringAngle ), self.acDimensions.maxSteeringAngle )
-			detected = true
-		else
-			angle = -angle 
-		end
-		self.acTurnStage = 198
 	end
 	
 	if self.isEntered and detected and math.abs( self.acAxisSide ) < 0.1 then

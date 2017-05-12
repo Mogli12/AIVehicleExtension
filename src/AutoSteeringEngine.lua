@@ -716,7 +716,7 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 		local ma = 0.2 * vehicle.aiveChain.maxLooking
 		if -vehicle.aiveChain.maxLooking < turnAngle and turnAngle < ma then
 			local im
-			if AutoSteeringEngine.hasFruits( vehicle, -1 ) then
+			if AutoSteeringEngine.hasFruits( vehicle ) then
 				im = vehicle.aiveChain.chainStep1
 			else
 				im = math.min( indexMax, math.max( 1, AIVEGlobals.chainBorder ) )
@@ -2405,11 +2405,11 @@ end
 ------------------------------------------------------------------------
 -- hasFruits
 ------------------------------------------------------------------------
-function AutoSteeringEngine.hasFruits( vehicle )
+function AutoSteeringEngine.hasFruits( vehicle, checkLowerAdvance )
 
 	if AutoSteeringEngine.skipIfNotServer( vehicle ) then return false end
 		
-	if AIVEGlobals.useFBB123 > 0 then
+	if AIVEGlobals.useFBB123 > 0 and not ( checkLowerAdvance ) then
 		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
 		local fbbd = 0.01
 		if vehicle.aiveChain.inField then
@@ -2461,6 +2461,8 @@ function AutoSteeringEngine.hasFruits( vehicle )
 				front = front + AIVEGlobals.upperAdvance
 			elseif  tool.currentLowerState  then
 				front = front + AIVEGlobals.fruitsAdvance
+			elseif  checkLowerAdvance       then
+				front = front + AIVEGlobals.lowerAdvance
 			else
 				front = front + AIVEGlobals.upperAdvance
 			end
@@ -2636,7 +2638,7 @@ function AutoSteeringEngine.hasFruits( vehicle )
 		fruitsAll      = false
 	end
 	
-	if AIVEGlobals.useFBB123 > 0 then
+	if AIVEGlobals.useFBB123 > 0 and not ( checkLowerAdvance ) then
 		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
 		vehicle.aiveChain.fbb1 = { x=wx, z=wz, d=fruitsDetected, a=fruitsAll }
 	end
@@ -8068,13 +8070,16 @@ function AutoSteeringEngine.areToolsLowered( vehicle )
 		end
 		
 		if self.attacherVehicle ~= nil and ( self.needsLowering or self.aiNeedsLowering ) then
-			for _,implement in pairs(self.attacherVehicle.attachedImplements) do
-				if implement.object == self then
-					local jointDesc = self.attacherVehicle.attacherJoints[implement.jointDescIndex]
-					if not jointDesc.moveDown then
-						return false 
-					end
-				end
+		--for _,implement in pairs(self.attacherVehicle.attachedImplements) do
+		--	if implement.object == self then
+		--		local jointDesc = self.attacherVehicle.attacherJoints[implement.jointDescIndex]
+		--		if not jointDesc.moveDown then
+		--			return false 
+		--		end
+		--	end
+		--end
+			if not ( self:isLowered( true ) ) then
+				return false
 			end
 		end
 	end
