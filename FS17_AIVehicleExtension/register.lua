@@ -22,6 +22,7 @@ function AIVehicleExtensionRegister:loadMap(name)
 	-- GUI Stuff
 	g_AIVEScreen = AIVEScreen:new();
 	g_gui:loadGui(AIVehicleExtensionRegister.g_currentModDirectory .. "gui/AIVEScreen.xml", "AIVEScreen", g_AIVEScreen);	
+	FocusManager:setGui("MPLoadingScreen");
 end;
 
 function AIVehicleExtensionRegister:saveSavegame( savegame )

@@ -6864,7 +6864,11 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 			and object.attacherVehicle ~= nil 
 			and object.attacherVehicle == vehicle 
 			and AutoSteeringEngine.tableGetN( AutoSteeringEngine.getTaJoints2( vehicle, implement, vehicle.aiveChain.refNode, 0 ) ) > 1 then
-		tool.doubleJoint = true
+		if     tool.configFileName == "data/vehicles/tools/vaderstad/vaderstadrapid600s.xml" then
+			tool.doubleJoint = false
+		else
+			tool.doubleJoint = true
+		end
 	end
 	
   --------------------------------------------------------
