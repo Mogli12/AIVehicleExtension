@@ -1280,20 +1280,18 @@ function AIVehicleExtension:autoSteer(dt)
 		fruitsAdvance = true
 	end
 	
-	if     self.movingDirection < -1E-2 
-			or not ( fruitsAdvance or AutoSteeringEngine.areToolsLowered( self ) )
-			then	
-		if self.acImplementsMoveDown then
-			AIVehicleExtension.setAIImplementsMoveDown( self, false, true )
-		end
+	local doSteer = true
+	if self.movingDirection < -1E-2 then	
 		self.acTurnStage          = 198
 		AIVehicleExtension.setStatus( self, 2 )
-		return 
+		return
+	elseif not AutoSteeringEngine.areToolsLowered( self ) then
+		self.acTurnStage          = 198
+		AIVehicleExtension.setStatus( self, 2 )
 	end
 	
 --==============================================================		
-	if fruitsAdvance then
-		AIVehicleExtension.onRaiseImpl( self, true )
+	if fruitsAdvance and self.acImplementsMoveDown then
 		AutoSteeringEngine.getIsAIReadyForWork( self )
 	end
 		
@@ -1360,7 +1358,7 @@ function AIVehicleExtension:autoSteer(dt)
 		AIVehicleExtension.setStatus( self, 2 )
 	else
 		if self.acTurnStage == 199 and border <= 0 then
-			AIVehicleExtension.onRaiseImpl( self, false )
+		--AIVehicleExtension.onRaiseImpl( self, false )
 			self:setCruiseControlState( Drivable.CRUISECONTROL_STATE_OFF )
 		end
 		
@@ -1369,8 +1367,23 @@ function AIVehicleExtension:autoSteer(dt)
 		angle = 0
 	end
 	
-	if self.isEntered and detected and math.abs( self.acAxisSide ) < 0.1 then
-		AutoSteeringEngine.steer( self, dt, angle, self.acSteeringSpeed, self.acTurnStage == 199 )
+	if self.acAxisSideFactor == nil then
+		self.acAxisSideFactor = 0
+	elseif math.abs( self.acAxisSide ) >= 0.1 then
+		self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
+	elseif self.acAxisSideFactor < 1000  then
+		self.acAxisSideFactor = math.min( self.acAxisSideFactor + dt, 1000 )
+	end
+	
+	local f = 0.001 * self.acAxisSideFactor
+	
+	if self.isEntered and doSteer then -- and detected and doSteer then
+		if f <= 0 then
+			angle = -self.acAxisSide * self.acDimensions.maxSteeringAngle
+		elseif f < 1 then
+			angle = f * angle - (1-f) * self.acAxisSide * self.acDimensions.maxSteeringAngle
+		end
+		AutoSteeringEngine.steer( self, dt, angle, self.acSteeringSpeed, (f >= 0.999 ) and (self.acTurnStage == 199) )
 	end
 end
 

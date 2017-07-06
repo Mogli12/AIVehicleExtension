@@ -158,7 +158,7 @@ function AutoSteeringEngine.globalsLoad( file, debugPrint )
 		else
 			print(file..": "..name..": invalid XML type : "..tp)
 		end
-		if nn then print('<'..tostring(name)..' type="'..tostring(tp)..'" value="'..tostring(AIVEGlobals[name])..'"/>') end
+		if nn then print('    <'..tostring(name)..' type="'..tostring(tp)..'" value="'..tostring(AIVEGlobals[name])..'"/>') end
 	end
 end
 
@@ -6946,24 +6946,28 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	if tool.doubleJoint then
 	-- do nothing
 	elseif tool.aiForceTurnNoBackward then
-		tool.b1 = b1
-	
-		if object.wheels ~= nil then
-			local wna,wza=0,0
-			for i,wheel in pairs(object.wheels) do
-				local f = AutoSteeringEngine.getToolWheelFactor( vehicle, tool, object, i )
-				if f > 1E-3 then
-					local _,_,wz = AutoSteeringEngine.getRelativeTranslation(tool.steeringAxleNode,wheel.driveNode)
-					wza = wza + f * wz
-					wna = wna + f		
-				end
-			end
-			if wna > 0 then
-				tool.b2 = wza / wna - tool.zOffset
-				if tool.invert then tool.b2 = -tool.b2 end
-			--print(string.format("wna=%i wza=%f b2=%f ofs=%f",wna,wza,tool.b2,tool.zOffset))
-			end
-		end
+	--tool.b1 = b1
+	--
+	--if object.wheels ~= nil then
+	--	local wna,wza=0,0
+	--	for i,wheel in pairs(object.wheels) do
+	--		local f = AutoSteeringEngine.getToolWheelFactor( vehicle, tool, object, i )
+	--		if f > 1E-3 then
+	--			local _,_,wz = AutoSteeringEngine.getRelativeTranslation(tool.steeringAxleNode,wheel.driveNode)
+	--			wza = wza + f * wz
+	--			wna = wna + f		
+	--		end
+	--	end
+	--	if wna > 0 then
+	--		tool.b2 = math.min( math.max( tool.zb, wza / wna - tool.zOffset ) - tool.b1, 0 )
+	--	--if tool.invert then tool.b2 = -tool.b2 end
+	--		print(string.format("wna=%i wza=%f b2=%f b2=%f ofs=%f zb=%f/%f",wna,wza,tool.b1,tool.b2,tool.zOffset,zb,tool.zb))
+	--	end
+	--end
+		local r
+		tool.r, tool.b1, tool.b2 = AutoSteeringEngine.getToolRadius( vehicle, tool, object )
+		AIVehicleExtension.debugPrint(string.format("r: %6f, b1: %6f, b2: %6f",
+																								tool.r, tool.b1, tool.b2 ) )
 	else
 		tool.b1 = tool.z
 	end
@@ -7010,6 +7014,96 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getToolWheelFactor( vehicle, tool, object, i )
 	return Utils.getNoNil( object.wheels[i].lateralStiffness, 1 )
+end
+
+------------------------------------------------------------------------
+-- getToolRadius
+------------------------------------------------------------------------
+function AutoSteeringEngine.getToolRadius( vehicle, tool, object )
+
+	local radius, b1, b2 = vehicle.aiveChain.radius, 0, 0
+
+	if object.aiTurningRadiusLimitation == nil then
+		AIVehicleExtension.debugPrint("object.aiTurningRadiusLimitation is nil")
+	elseif object.aiTurningRadiusLimitation.rotationJoint == nil then
+		AIVehicleExtension.debugPrint("object.aiTurningRadiusLimitation.rotationJoint is nil")
+	end
+	
+	if object.aiTurningRadiusLimitation ~= nil and object.aiTurningRadiusLimitation.rotationJoint ~= nil then
+
+		local refNode = object.aiTurningRadiusLimitation.rotationJoint
+		local dirNode = tool.refNode
+		local rx,_,rz = localToLocal(refNode, dirNode, 0,0,0)
+		
+		b1 = rz
+		
+		local b2z, b2i = 0, 0
+
+		for _,wheelIndex in pairs(object.aiTurningRadiusLimitation.wheelIndices) do
+
+			-- use first component as cosy?!
+			local wheel = object.wheels[wheelIndex+1]
+			local nx,_,nz = localToLocal(wheel.repr, dirNode, 0,0,0)
+
+			local x,z = nx-rx, nz-rz
+			
+			b2z = b2z + z
+			b2i = b2i + 1
+			
+			local cx,cz = 0,0
+
+			-- get max rotation
+			local rotMax
+			if refNode == object.attacherJoint.node then
+				local jointDesc = object.attacherVehicle.attacherJoints[implement.jointDescIndex]
+				rotMax = math.max(jointDesc.upperRotLimit[2], jointDesc.lowerRotLimit[2]) * object.attacherJoint.lowerRotLimitScale[2]
+			else
+				for _,compJoint in pairs(object.componentJoints) do
+					if refNode == compJoint.jointNode then
+						rotMax = compJoint.rotLimit[2]
+						if object.aiVehicleDirectionNode ~= nil then
+							cx,_,cz = localToLocal(object.aiVehicleDirectionNode, refNode, 0,0,0)
+						end
+						break
+					end
+				end
+			end
+
+			-- calc turning radius
+			local x1 = x*math.cos(rotMax) - z*math.sin(rotMax)
+			local z1 = x*math.sin(rotMax) + z*math.cos(rotMax)
+
+			local dx = -z1
+			local dz = x1
+			if wheel.steeringAxleScale ~= 0 and wheel.steeringAxleRotMax ~= 0 then
+				local tmpx, tmpz = dx, dz
+				dx = tmpx*math.cos(wheel.steeringAxleRotMax) - tmpz*math.sin(wheel.steeringAxleRotMax)
+				dz = tmpx*math.sin(wheel.steeringAxleRotMax) + tmpz*math.cos(wheel.steeringAxleRotMax)
+			end
+
+			local hit,f1,f2 = Utils.getLineLineIntersection2D(cx,cz, 1,0, x1,z1, dx,dz)
+			if hit then
+				radius = math.max(radius, math.abs(f1))
+			end
+
+		end
+		
+		if b2i == 1 then
+			b2 = b2z
+		elseif b2i > 0 then
+			b2 = b2z / b2i
+		end
+
+	end
+
+	if object.aiTurningRadiusLimitation ~= nil then
+		if object.aiTurningRadiusLimitation.radius ~= nil then
+			radius = object.aiTurningRadiusLimitation.radius
+		end
+	end
+
+	return radius, -b1, -b2
+
 end
 
 ------------------------------------------------------------------------
@@ -7357,6 +7451,10 @@ function AutoSteeringEngine.getMaxSteeringAngle75( vehicle, invert )
 		local radiusE = vehicle.aiveChain.radius
 		local diffE   = 0
 		local gammaE  = 0
+		local deltaW  = 1.25
+		if vehicle.maxTurningRadius ~= nil and vehicle.maxTurningRadius > vehicle.aiveChain.radius then
+			deltaW = vehicle.maxTurningRadius - vehicle.aiveChain.radius 
+		end
 		
 		if index > 0 then
 			local tool    = vehicle.aiveChain.tools[index]
@@ -7378,56 +7476,24 @@ function AutoSteeringEngine.getMaxSteeringAngle75( vehicle, invert )
 				b1 = b1 - 0.5
 			end
 
-		--if vehicle.articulatedAxis == nil then
-			--local diff   = math.huge
-			--local alpha1 = 0
-			--local alpha2 = AIVEGlobals.maxToolAngle
-			--for f=0,1,0.01 do
-			--	local a1 = f     * AIVEGlobals.maxToolAngle
-			--	local a2 = (1-f) * AIVEGlobals.maxToolAngle
-			--	local d  = math.abs( b1 * math.sin( a2 ) - b1 * math.sin( a1 ) )
-			--	if diff > d then
-			--		diff   = d
-			--		alpha1 = a1
-			--		alpha2 = a2
-			--	end
-			--end
-			--
-			--local ra
-			--if b1 > b2 then
-			--	ra = b1 / math.sin( alpha1 )
-			--else
-			--	ra = b2 / math.sin( alpha2 )
-			--end
-			--
-			--radius = math.max( r, ra * math.cos( alpha1 ) )
+			for _,implement in pairs(vehicle.aiImplementList) do
+				radius = math.max(radius, AIVehicleUtil.getMaxToolRadius(implement)-deltaW);
+			end
 			
-				for _,implement in pairs(vehicle.aiImplementList) do
-					radius = math.max(radius, AIVehicleUtil.getMaxToolRadius(implement));
-				end
+			alpha  = math.min( vehicle.aiveChain.maxSteering, math.atan( vehicle.aiveChain.wheelBase / radius ) )
 			
-				alpha  = math.min( vehicle.aiveChain.maxSteering, math.atan( vehicle.aiveChain.wheelBase / radius ) )
-		--end
-			
-			-- just a little tweak => add one meter to the radius of the trailer
-			radiusT  = math.min( radius, math.sqrt( math.max( radius*radius + b1*b1 - b2*b2 - b3*b3, 0 ) ) + 1 )
+			radiusT  = math.min( radius, math.sqrt( math.max( radius*radius + b1*b1 - b2*b2 - b3*b3, 0 ) ) )
 			radiusE  = r
-			diffE    = 0.5 * math.max( 0, radiusE - radiusT )
+			diffE    = math.max( 0, radiusE - radiusT )
 			gammaE   = math.acos( math.min(math.max( 1 - diffE / radius, 0), 1 ) )
 		end
 						
 		local diffT = vehicle.aiveChain.otherX
 		
-		if invert then
+		if     ( invert == nil and AIVehicleUtil.invertsMarkerOnTurn( vehicle, vehicle.aiveChain.leftActive ) )
+				or invert then
 			diffT = vehicle.aiveChain.activeX
-		else
-			for i,tool in pairs(vehicle.aiveChain.tools) do
-				if tool.isPlough then
-					diffT = vehicle.aiveChain.activeX
-					break
-				end
-			end
-		end		
+		end
 		
 		if diffT < 0 and ( vehicle.aiveChain.activeX > 0 or vehicle.aiveChain.otherX > 0 ) then -- vehicle.aiveChain.leftActive then
 			diffT = -diffT

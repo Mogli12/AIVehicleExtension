@@ -898,7 +898,18 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	end
 	
 	local smooth = nil
-	if math.abs( veh.acAxisSide ) > 0.1 then
+	
+	if veh.acAxisSideFactor == nil or veh.acLastAbsAngle == nil then
+		veh.acAxisSideFactor = 1000
+	elseif math.abs( veh.acAxisSide ) >= 0.1 then
+		veh.acAxisSideFactor = math.max( veh.acAxisSideFactor - dt, 0 )
+	elseif veh.acAxisSideFactor < 1000  then
+		veh.acAxisSideFactor = math.min( veh.acAxisSideFactor + dt, 1000 )
+	end
+	
+	local f = 0.001 * veh.acAxisSideFactor
+	
+	if f <= 0.999 then
 		absAngle = veh.acLastAbsAngle
 		local a  = 0
 		
@@ -914,13 +925,13 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 				midAngle = -midAngle
 			end
 			
-			local f = -veh.acAxisSide
-			local a = midAngle 
+			local g = (f-1)*veh.acAxisSide
+			local a = f*midAngle 
 			
 			if f < 0 then
-				a = midAngle + f * ( veh.acDimensions.maxSteeringAngle + midAngle )
+				a = midAngle + g * ( veh.acDimensions.maxSteeringAngle + midAngle )
 			else
-				a = midAngle + f * ( veh.acDimensions.maxSteeringAngle - midAngle )
+				a = midAngle + g * ( veh.acDimensions.maxSteeringAngle - midAngle )
 			end
 		end
 		
