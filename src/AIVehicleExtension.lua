@@ -680,9 +680,7 @@ end
 
 function AIVehicleExtension:onMagic(enabled)
 	AIVehicleExtension.initMogliHud(self)
-	AutoSteeringEngine.invalidateField( self, true )		
-	AutoSteeringEngine.initFruitBuffer( self )
-	AIVehicleExtension.checkState( self, true )
+	AIVehicleExtension.invalidateState( self )
 end
 
 function AIVehicleExtension:onRaiseImpl(enabled)
@@ -803,6 +801,10 @@ function AIVehicleExtension:update(dt)
 		self.acParameters.inverted = false
 	end		
 	
+	if self.aiToolsDirtyFlag or self.aiveToolsDirtyFlag then
+		self.aiveToolsDirtyFlag = self.aiToolsDirtyFlag
+		AIVehicleExtension.invalidateState( self )
+	end
 	
 	if AIVEGlobals.otherAIColli > 0 and self.isServer and self.acCollidingVehicles == nil then
 		self.acCollidingVehicles = {}
@@ -968,6 +970,8 @@ function AIVehicleExtension:update(dt)
 		self.deactivateOnLeave = false
 		
 		AIVehicleExtension.autoSteer(self,dt)
+	else
+		self.acTurnStage = 0
 	end
 	
 	if			self.isEntered 
@@ -1165,7 +1169,7 @@ function AIVehicleExtension:getAvailableTurnModes( upNDown )
 		end
 		table.insert( turnModes, "C"	)
 	end
-	
+		
 	return turnModes
 end
 
@@ -1199,10 +1203,33 @@ function AIVehicleExtension:checkAvailableTurnModes( noEventSend )
 end
 
 ------------------------------------------------------------------------
+-- invalidateState
+------------------------------------------------------------------------
+function AIVehicleExtension:invalidateState( detachIndex )
+
+	AIVEHud.setInfoText( self )
+	AutoSteeringEngine.checkTools1( self, true )
+	AutoSteeringEngine.invalidateField( self, true )		
+	AutoSteeringEngine.initFruitBuffer( self )
+	if self.acDimensions ~= nil then
+		self.acDimensions = nil
+		AIVehicleExtension.checkState( self, true, true )
+	end
+	self.acCheckStateTimer = nil
+	
+end
+
+------------------------------------------------------------------------
 -- checkState
 ------------------------------------------------------------------------
-function AIVehicleExtension:checkState( force )
+function AIVehicleExtension:checkState( force, clientOnly )
 
+	if self.aiToolsDirtyFlag then
+		self.acDimensions      = nil
+		self.acCheckStateTimer = nil
+		return 
+	end
+	
 	if      not ( force )
 			and self.acCheckStateTimer ~= nil
 			and self.acDimensions			~= nil
@@ -1252,9 +1279,9 @@ function AIVehicleExtension:checkState( force )
 		h = self.acDimensions.headlandDist
 	end
 	
---if self.isServer then --and self.aiveIsStarted then 
+	if not ( clientOnly ) then
 		AutoSteeringEngine.initTools( self, self.acDimensions.maxSteeringAngle, self.acParameters.leftAreaActive, self.acParameters.widthOffset, h, c, self.acTurnMode )
---end
+	end
 end
 
 ------------------------------------------------------------------------
@@ -1471,7 +1498,10 @@ end
 -- calculateDimensions
 ------------------------------------------------------------------------
 function AIVehicleExtension.calculateDimensions( self )
-	if self.acDimensions ~= nil then
+	if     self.aiToolsDirtyFlag    then
+		self.acDimensions = nil
+		return
+	elseif self.acDimensions ~= nil then
 		return
 	end
 	
@@ -2169,16 +2199,14 @@ end
 -- AIVehicleExtension:onAttachImplement
 ------------------------------------------------------------------------
 function AIVehicleExtension:onAttachImplement(implement)
-	AutoSteeringEngine.checkTools1( self, true )
-	AIVehicleExtension.checkState( self, true )
+	self.aiveToolsDirtyFlag = true
 end
 
 ------------------------------------------------------------------------
 -- AIVehicleExtension:onDetachImplement
 ------------------------------------------------------------------------
 function AIVehicleExtension:onDetachImplement(implementIndex)
-	AutoSteeringEngine.checkTools1( self, true )
-	AIVehicleExtension.checkState( self, true )
+	self.aiveToolsDirtyFlag = true
 end
 
 ------------------------------------------------------------------------

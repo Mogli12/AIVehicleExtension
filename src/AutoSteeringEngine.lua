@@ -1372,69 +1372,85 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.checkTools1( vehicle, reset )
 
-	if vehicle.aiveChain ~= nil and ( vehicle.aiveChain.tools == nil or reset ) then
+	if      vehicle.aiveChain ~= nil 
+			and ( vehicle.aiveChain.tools == nil or reset ) then
 		AutoSteeringEngine.resetFrontPacker( vehicle )
 		AutoSteeringEngine.deleteTools( vehicle )
 		vehicle.aiveChain.collisionDists = nil
 		vehicle.aiveChain.lastBestAngle  = nil
 		vehicle.aiveChain.savedAngles    = nil
 		vehicle.aiveChain.angleBuffer    = nil	
-		vehicle.aiveChain.tools          = {}
+		vehicle.aiveChain.minAngle       = -vehicle.aiveChain.maxSteering
+		vehicle.aiveChain.maxAngle       = vehicle.aiveChain.maxSteering
+		vehicle.aiveChain.width          = 0
+		vehicle.aiveChain.maxZ           = 0
+		vehicle.aiveChain.minZ           = 0
+		vehicle.aiveChain.activeX        = 0
+		vehicle.aiveChain.otherX         = 0
+		vehicle.aiveChain.offsetZ        = 0
+		vehicle.aiveChain.backZ          = 0
+		vehicle.aiveChain.offsetStd      = 0
 		
-		for _,implement in pairs(vehicle.aiImplementList) do
-			AutoSteeringEngine.addTool(vehicle,implement)
-		end
 		
-		AutoSteeringEngine.addToolsRec( vehicle, vehicle )
-		
-		for _,tool in pairs(vehicle.aiveChain.tools) do
-		--if     ( tool.isPlough        and vehicle.aiveHas.cultivator )
-		--		or ( tool.isCultivator    and ( vehicle.aiveHas.plough     
-		--																 or vehicle.aiveHas.sowingMachine ) )
-		--		or ( tool.isSowingMachine and vehicle.aiveHas.cultivator ) then
-			if     tool.isPlough       
-					or tool.isCultivator    
-					or tool.isSowingMachine then
-				local self = tool.obj
-				
-				tool.aiArea                          = {}
-				tool.aiArea.requiredValues           = {}
-				tool.aiArea.prohibitValues           = {}
-				tool.aiArea.requiredFruitType        = self.aiRequiredFruitType;
-				tool.aiArea.requiredMinGrowthState   = self.aiRequiredMinGrowthState;
-				tool.aiArea.requiredMaxGrowthState   = self.aiRequiredMaxGrowthState;
-				tool.aiArea.prohibitedFruitType      = FruitUtil.FRUITTYPE_UNKNOWN
-				tool.aiArea.prohibitedMinGrowthState = 0
-				tool.aiArea.prohibitedMaxGrowthState = 0
-				tool.aiArea.useWindrowFruitType      = self.aiUseWindrowFruitType
-				tool.aiArea.useDensityHeightMap      = self.aiUseDensityHeightMap
-				tool.aiArea.fruitTypes               = self.fruitTypes
-				tool.aiArea.hasSowingChannel         = false
-				
-				-- cultivator channel 
-				if not vehicle.aiveHas.cultivator then
-					table.insert(tool.aiArea.requiredValues, {g_currentMission.cultivatorValue, g_currentMission.cultivatorValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
+		if vehicle.aiToolsDirtyFlag then	
+			vehicle.aiveChain.tools = nil
+		else
+			vehicle.aiveChain.tools = {}
+			for _,implement in pairs(vehicle.aiImplementList) do
+				AutoSteeringEngine.addTool(vehicle,implement)
+			end
+			
+			AutoSteeringEngine.addToolsRec( vehicle, vehicle )
+			
+			for _,tool in pairs(vehicle.aiveChain.tools) do
+			--if     ( tool.isPlough        and vehicle.aiveHas.cultivator )
+			--		or ( tool.isCultivator    and ( vehicle.aiveHas.plough     
+			--																 or vehicle.aiveHas.sowingMachine ) )
+			--		or ( tool.isSowingMachine and vehicle.aiveHas.cultivator ) then
+				if     tool.isPlough       
+						or tool.isCultivator    
+						or tool.isSowingMachine then
+					local self = tool.obj
+					
+					tool.aiArea                          = {}
+					tool.aiArea.requiredValues           = {}
+					tool.aiArea.prohibitValues           = {}
+					tool.aiArea.requiredFruitType        = self.aiRequiredFruitType;
+					tool.aiArea.requiredMinGrowthState   = self.aiRequiredMinGrowthState;
+					tool.aiArea.requiredMaxGrowthState   = self.aiRequiredMaxGrowthState;
+					tool.aiArea.prohibitedFruitType      = FruitUtil.FRUITTYPE_UNKNOWN
+					tool.aiArea.prohibitedMinGrowthState = 0
+					tool.aiArea.prohibitedMaxGrowthState = 0
+					tool.aiArea.useWindrowFruitType      = self.aiUseWindrowFruitType
+					tool.aiArea.useDensityHeightMap      = self.aiUseDensityHeightMap
+					tool.aiArea.fruitTypes               = self.fruitTypes
+					tool.aiArea.hasSowingChannel         = false
+					
+					-- cultivator channel 
+					if not vehicle.aiveHas.cultivator then
+						table.insert(tool.aiArea.requiredValues, {g_currentMission.cultivatorValue, g_currentMission.cultivatorValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
+					end
+					
+					-- plough channel 
+					if not vehicle.aiveHas.plough     then
+						table.insert(tool.aiArea.requiredValues, {g_currentMission.ploughValue, g_currentMission.ploughValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels})
+					end
+					
+					-- sowing channel
+					if     vehicle.aiveHas.cultivator
+							or vehicle.aiveHas.plough
+							or ( tool.isSowingMachine and tool.obj.useDirectPlanting ) then
+						table.insert(tool.aiArea.requiredValues, {g_currentMission.sowingValue, g_currentMission.sowingValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels})
+						tool.aiArea.hasSowingChannel = true
+					end
+					
+					if not vehicle.aiveHas.sowingMachine then
+						table.insert(tool.aiArea.requiredValues, {g_currentMission.sowingWidthValue, g_currentMission.sowingWidthValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
+						table.insert(tool.aiArea.requiredValues, {g_currentMission.grassValue, g_currentMission.grassValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
+					end
+				elseif tool.aiArea ~= nil then
+					tool.aiArea = nil
 				end
-				
-				-- plough channel 
-				if not vehicle.aiveHas.plough     then
-					table.insert(tool.aiArea.requiredValues, {g_currentMission.ploughValue, g_currentMission.ploughValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels})
-				end
-				
-				-- sowing channel
-				if     vehicle.aiveHas.cultivator
-						or vehicle.aiveHas.plough
-						or ( tool.isSowingMachine and tool.obj.useDirectPlanting ) then
-					table.insert(tool.aiArea.requiredValues, {g_currentMission.sowingValue, g_currentMission.sowingValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels})
-					tool.aiArea.hasSowingChannel = true
-				end
-				
-				if not vehicle.aiveHas.sowingMachine then
-					table.insert(tool.aiArea.requiredValues, {g_currentMission.sowingWidthValue, g_currentMission.sowingWidthValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
-					table.insert(tool.aiArea.requiredValues, {g_currentMission.grassValue, g_currentMission.grassValue, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels});
-				end
-			elseif tool.aiArea ~= nil then
-				tool.aiArea = nil
 			end
 		end
 	end
@@ -7015,7 +7031,16 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		AIVehicleExtension.debugPrint("object.aiTurningRadiusLimitation.rotationJoint is nil")
 	end
 	
-	if object.aiTurningRadiusLimitation ~= nil and object.aiTurningRadiusLimitation.rotationJoint ~= nil then
+	local implement 
+	if object.attacherVehicle ~= nil and object.attacherVehicle.attachedImplements ~= nil then
+		for _,impl in pairs( object.attacherVehicle.attachedImplements ) do
+			if impl.object == object then
+				implement = impl
+			end
+		end
+	end
+	
+	if implement ~= nil and object.aiTurningRadiusLimitation ~= nil and object.aiTurningRadiusLimitation.rotationJoint ~= nil then
 
 		local refNode = object.aiTurningRadiusLimitation.rotationJoint
 		local rx,_,rz = localToLocal(refNode, dirNode, 0,0,0)
