@@ -73,14 +73,14 @@ function AIVehicleExtensionRegister:add()
 			end;
 		end;
 		
-		for i = 1, table.maxn(v.specializations) do
-			local vs = v.specializations[i];
-			if      vs ~= nil 
-					and vs == SpecializationUtil.getSpecialization("articulatedAxis") then
-				doNotAdd = false;
-				break;
-			end;
-		end;
+	--for i = 1, table.maxn(v.specializations) do
+	--	local vs = v.specializations[i];
+	--	if      vs ~= nil 
+	--			and vs == SpecializationUtil.getSpecialization("articulatedAxis") then
+	--		doNotAdd = false;
+	--		break;
+	--	end;
+	--end;
 		
 		for i = 1, table.maxn(v.specializations) do
 			local vs = v.specializations[i];

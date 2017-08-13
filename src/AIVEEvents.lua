@@ -128,6 +128,8 @@ function AIVehicleExtension:setInt32Value( name, value, noEventSend )
 		self.acTurnStageSent = value
 	elseif name == "speed2Level" then
 		self.speed2Level = value
+	elseif name == "aiveCanStartArtAxis" then
+		self.aiveCanStartArtAxis = ( value > 0 )
 	elseif name == "moveDown" then
 		local moveDown, immediate
 		if value >= 2 then

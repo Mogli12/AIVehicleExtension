@@ -150,6 +150,7 @@ function AIVehicleExtension:load(saveGame)
 	self.acWaitTimer					= 0
 	self.acTurnOutsideTimer   = 0
 	self.acSteeringSpeed      = self.aiSteeringSpeed
+	self.aiveCanStartArtAxis  = false
 	
 	self.acAutoRotateBackSpeedBackup = self.autoRotateBackSpeed	
 	
@@ -534,13 +535,13 @@ function AIVehicleExtension:setAreaRight(enabled)
 end
 
 function AIVehicleExtension:evalStart()
-	return not self.aiIsStarted or not AIVehicle.canStartAIVehicle(self)
+	return not self.aiIsStarted or not self:canStartAIVehicle()
 end
 
 function AIVehicleExtension:getStartImage()
 	if self.aiIsStarted then
 		return "dds/on.dds"
-	elseif AIVehicle.canStartAIVehicle(self) then
+	elseif self:canStartAIVehicle() then
 		return "dds/off.dds"
 	end
 	return "empty.dds"
@@ -999,6 +1000,34 @@ function AIVehicleExtension:update(dt)
 			and self.acImplementsMoveDown == nil
 			and ( self.attacherJointCombos == nil or not self.attacherJointCombos.isRunning ) then
 		self.acImplementsMoveDown = AutoSteeringEngine.areToolsLowered( self )
+	end
+	
+	if      self.isServer 
+			and self.articulatedAxis ~= nil 
+			and ( self.aiveCanStartArtAxisTimer == nil or g_currentMission.time > self.aiveCanStartArtAxisTimer + 1000 ) then
+		self.aiveCanStartArtAxisTimer = g_currentMission.time
+		AIVehicleExtension.checkState( self )
+		local backup = 0
+		if self.aiveCanStartArtAxis then
+			backup = 1
+		end
+		local canStart = 0
+		
+		if self.aiveChain ~= nil then			
+			AutoSteeringEngine.checkTools( self )
+			for _,tool in pairs(self.aiveChain.tools) do
+				if tool.aiForceTurnNoBackward then
+					canStart = 1
+				else
+					canStart = 0
+					break
+				end
+			end
+		end
+		
+		if canStart ~= backup then
+			AIVehicleExtension.setInt32Value( self, "aiveCanStartArtAxis", canStart )
+		end
 	end
 end
 
@@ -2277,6 +2306,13 @@ AIVehicle.setDriveStrategies = Utils.appendedFunction( AIVehicle.setDriveStrateg
 -- @includeCode
 function AIVehicleExtension:newCanStartAIVehicle( superFunc, ... )
 	-- check if reverse driving is available and used, we do not allow the AI to work when reverse driving is enabled
+
+	if      self.acParameters ~= nil
+			and self.acParameters.enabled
+			and self.articulatedAxis ~= nil
+			and not ( self.aiveCanStartArtAxis ) then
+		return false
+	end
 	
 	local backup = self.isReverseDriving
 	
