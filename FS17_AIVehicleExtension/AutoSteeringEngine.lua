@@ -85,18 +85,12 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.chainStep0    = 0
 	AIVEGlobals.chainStep1    = 0
 	AIVEGlobals.chainStep2    = 0
-	AIVEGlobals.chainStep3    = 0
-	AIVEGlobals.chainStep4    = 0
 	AIVEGlobals.chain2Step0   = 0
 	AIVEGlobals.chain2Step1   = 0
 	AIVEGlobals.chain2Step2   = 0
-	AIVEGlobals.chain2Step3   = 0
-	AIVEGlobals.chain2Step4   = 0
 	AIVEGlobals.chain3Step0   = 0
 	AIVEGlobals.chain3Step1   = 0
 	AIVEGlobals.chain3Step2   = 0
-	AIVEGlobals.chain3Step3   = 0
-	AIVEGlobals.chain3Step4   = 0
 	AIVEGlobals.collectCbr    = 0
 	AIVEGlobals.testOutside   = 0
 	AIVEGlobals.debug1        = 0
@@ -736,10 +730,6 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 		end
 		
 	--print(tostring(math.floor( math.deg( turnAngle ) + 0.5 )).." => "..tostring( indexMax ).." / "..tostring( vehicle.aiveChain.chainStep2 ))
-		
-		chainBorder = Utils.clamp( AIVEGlobals.chainBorder, 1, indexMax )
-	else
-		chainBorder = indexMax
 	end
 	
 	chainBorder = Utils.clamp( AIVEGlobals.chainBorder, 1, indexMax )
@@ -841,7 +831,7 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 		while true do
 			local j0 = math.max(  1, math.min( indexMax,   vehicle.aiveChain.chainStep0 ) )
 			local j1 = j0
-			local j3 = math.max( j0, math.min( indexMax-1, vehicle.aiveChain.chainStep3 ) )
+			local j3 = math.max( j0, indexMax-1 )
 			local j2 = j3
 			local a0 = 0
 			local j  = indexMax 
@@ -3828,10 +3818,14 @@ function AutoSteeringEngine.applyRotation( vehicle, toIndex )
 
 	if AutoSteeringEngine.skipIfNotServer( vehicle ) then return end
 	
-	local cumulRot, turnAngle = 0, 0
-	if vehicle.aiveChain.inField then -- and AutoSteeringEngine.getTraceLength( vehicle ) > AIVEGlobals.maxRotationL then
-		turnAngle = Utils.clamp( AutoSteeringEngine.getTurnAngle( vehicle ), -AIVEGlobals.maxRotation, AIVEGlobals.maxRotation )
-		cumulRot  = turnAngle
+	local cumulRot= 0
+	if vehicle.aiveChain.inField then
+		local f = 1
+		local t = AutoSteeringEngine.getTraceLength( vehicle )
+		if t < AIVEGlobals.maxRotationL then
+			f = t / AIVEGlobals.maxRotationL
+		end
+		cumulRot = Utils.clamp( AutoSteeringEngine.getTurnAngle( vehicle ), -AIVEGlobals.maxRotation * f, AIVEGlobals.maxRotation * f )
 	end 
 
 	AutoSteeringEngine.applySteering( vehicle, toIndex )
@@ -4289,8 +4283,15 @@ function AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 		vehicle.aiveChain.nodes[i].tool[tp.i] = {}
 		vehicle.aiveChain.nodes[i].tool[tp.i].a = tp.angle 
 
-		setTranslation( vehicle.aiveChain.nodes[i].index3, 0, 0, tp.b1 )
-		setTranslation( vehicle.aiveChain.nodes[i].index4, 0, 0, tp.z - tp.b1 )
+		local x,y,z
+		x,y,z = getTranslation( vehicle.aiveChain.nodes[i].index3 )
+		if math.max( math.abs( x ) , math.abs( y ), math.abs( tp.b1 - z ) ) > 1e-4 then
+			setTranslation( vehicle.aiveChain.nodes[i].index3, 0, 0, tp.b1 )
+		end
+		x,y,z = getTranslation( vehicle.aiveChain.nodes[i].index4 )
+		if math.max( math.abs( x ) , math.abs( y ), math.abs( tp.z - tp.b1 - z ) ) > 1e-4 then
+			setTranslation( vehicle.aiveChain.nodes[i].index4, 0, 0, tp.z - tp.b1 )
+		end
 		
 		if math.abs( tp.b2 + tp.b3 ) > 1E-3 and AIVEGlobals.offTracking ~= 0 then
 			if AIVEGlobals.offTracking > 0 then
@@ -4318,7 +4319,10 @@ function AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 			end
 		end
 			
-		setRotation( vehicle.aiveChain.nodes[i].index3, 0, -vehicle.aiveChain.nodes[i].tool[tp.i].a, 0 )
+		x,y,z = getRotation( vehicle.aiveChain.nodes[i].index3 )
+		if math.max( math.abs( x ) , math.abs( y + vehicle.aiveChain.nodes[i].tool[tp.i].a ), math.abs( z ) ) > 1e-5 then		
+			setRotation( vehicle.aiveChain.nodes[i].index3, 0, -vehicle.aiveChain.nodes[i].tool[tp.i].a, 0 )
+		end
 			
 		local idx = vehicle.aiveChain.nodes[i].index4
 		local ofs = tpx
@@ -5179,23 +5183,17 @@ function AutoSteeringEngine.initSteering( vehicle )
 	vehicle.aiveChain.chainStep0 = AIVEGlobals.chain2Step0
 	vehicle.aiveChain.chainStep1 = AIVEGlobals.chain2Step1
 	vehicle.aiveChain.chainStep2 = AIVEGlobals.chain2Step2
-	vehicle.aiveChain.chainStep3 = AIVEGlobals.chain2Step3
-	vehicle.aiveChain.chainStep4 = AIVEGlobals.chain2Step4
 	if fixAttacher then
 		if vehicle.aiveChain.minZ < 0 then
 			vehicle.aiveChain.nodes      = vehicle.aiveChain.nodesFix
 			vehicle.aiveChain.chainStep0 = AIVEGlobals.chainStep0
 			vehicle.aiveChain.chainStep1 = AIVEGlobals.chainStep1
 			vehicle.aiveChain.chainStep2 = AIVEGlobals.chainStep2
-			vehicle.aiveChain.chainStep3 = AIVEGlobals.chainStep3
-			vehicle.aiveChain.chainStep4 = AIVEGlobals.chainStep4
 		else
 			vehicle.aiveChain.nodes      = vehicle.aiveChain.nodesCom
 			vehicle.aiveChain.chainStep0 = AIVEGlobals.chain3Step0
 			vehicle.aiveChain.chainStep1 = AIVEGlobals.chain3Step1
 			vehicle.aiveChain.chainStep2 = AIVEGlobals.chain3Step2
-			vehicle.aiveChain.chainStep3 = AIVEGlobals.chain3Step3
-			vehicle.aiveChain.chainStep4 = AIVEGlobals.chain3Step4
 		end
 	end
 	vehicle.aiveChain.chainMax = table.getn( vehicle.aiveChain.nodes ) - 1
