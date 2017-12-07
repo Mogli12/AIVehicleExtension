@@ -110,6 +110,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.minTraceLen   = 0
 	AIVEGlobals.offTracking   = 0
 	AIVEGlobals.prohibitAI    = 0
+	AIVEGlobals.lastBestFactor= 0
 	
 	local file
 	file = AIVECurrentModDir.."autoSteeringEngineConfig.xml"
@@ -703,15 +704,16 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 	
 	vehicle.aiveProcessChainInfo = ""
 	vehicle.acIamDetecting = true
-		
+
+	local turnAngle = AutoSteeringEngine.getTurnAngle( vehicle )
+	if vehicle.aiveChain.leftActive then
+		turnAngle = -turnAngle
+	end
+	
 	if      vehicle.aiveChain.inField
 			and vehicle.aiveChain.chainStep1 > 0 
 			and vehicle.aiveChain.chainStep1 < indexMax 
 			and vehicle.aiveChain.maxLooking > 0.1 then
-		local turnAngle = AutoSteeringEngine.getTurnAngle( vehicle )
-		if vehicle.aiveChain.leftActive then
-			turnAngle = -turnAngle
-		end
 		
 		local ma = 0.2 * vehicle.aiveChain.maxLooking
 		if -vehicle.aiveChain.maxLooking < turnAngle and turnAngle < ma then
@@ -790,8 +792,9 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 		vehicle.aiveChain.nilAngle =  0
 	elseif nilAngleMode == "O" then
 		vehicle.aiveChain.nilAngle =  1
---elseif nilAngleMode == "L" and vehicle.aiveChain.averageAngle ~= nil then
---	vehicle.aiveChain.nilAngle =  vehicle.aiveChain.averageAngle
+	elseif nilAngleMode == "L" and vehicle.aiveChain.averageAngle ~= nil then
+	--vehicle.aiveChain.nilAngle =  math.max( 0, vehicle.aiveChain.averageAngle )
+		vehicle.aiveChain.nilAngle = nil
 	else
 		vehicle.aiveChain.nilAngle = nil
 	end
@@ -844,8 +847,8 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 			local j  = indexMax 
 			if targetSteering ~= nil then
 				a0 = AutoSteeringEngine.steering2ChainAngle( vehicle, targetSteering )
-			elseif vehicle.aiveChain.lastBest ~= nil then
-				a0 = vehicle.aiveChain.lastBest.angle
+			elseif vehicle.aiveChain.lastBest ~= nil and AIVEGlobals.lastBestFactor > 0 then
+				a0 = vehicle.aiveChain.lastBest.angle * AIVEGlobals.lastBestFactor
 				if     a0 >= 1 then
 					a0 = ( 1 - 1 / AIVEGlobals.chainDivideP3 )
 				elseif a0 <= -1 then
@@ -975,9 +978,9 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 					vehicle.aiveChain.fullSpeed = false
 				end
 			end
-									
+
 			if      vehicle.aiveChain.fixAttacher
-					and best.angle             > 0
+					and turnAngle              > 0				
 					and best.border            > AIVEGlobals.ignoreBorder
 					and vehicle.aiveChain.minZ < 0
 					and best.distance          < -vehicle.aiveChain.minZ-vehicle.aiveChain.minZ then
@@ -3826,10 +3829,10 @@ function AutoSteeringEngine.applyRotation( vehicle, toIndex )
 	if AutoSteeringEngine.skipIfNotServer( vehicle ) then return end
 	
 	local cumulRot, turnAngle = 0, 0
---if vehicle.aiveChain.inField and AutoSteeringEngine.getTraceLength( vehicle ) > AIVEGlobals.maxRotationL then
---	turnAngle = Utils.clamp( AutoSteeringEngine.getTurnAngle( vehicle ), -AIVEGlobals.maxRotation, AIVEGlobals.maxRotation )
---	cumulRot  = turnAngle
---end 
+	if vehicle.aiveChain.inField then -- and AutoSteeringEngine.getTraceLength( vehicle ) > AIVEGlobals.maxRotationL then
+		turnAngle = Utils.clamp( AutoSteeringEngine.getTurnAngle( vehicle ), -AIVEGlobals.maxRotation, AIVEGlobals.maxRotation )
+		cumulRot  = turnAngle
+	end 
 
 	AutoSteeringEngine.applySteering( vehicle, toIndex )
 

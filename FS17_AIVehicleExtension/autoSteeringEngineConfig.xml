@@ -20,6 +20,7 @@
     <chainDivideP1 value="8" />
     <chainDivideP2 value="12" />
     <chainDivideP3 value="8" />
+		<lastBestFactor value="0.9"/>
 		
 		<staticRoot type="bool" value="true" />
 		
