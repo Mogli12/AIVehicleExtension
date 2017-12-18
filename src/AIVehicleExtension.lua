@@ -46,7 +46,7 @@ end
 -- debugPrint
 ------------------------------------------------------------------------
 function AIVehicleExtension:debugPrint( ... )
-	if AIVEGlobals.devFeatures > 0 then
+	if AIVEGlobals.devFeatures > 0 and ( self == nil or self.isEntered ) then
 		print( ... )
 	end
 	if self ~= nil and AIVEGlobals.showInfo > 0 and self.atMogliInitDone then

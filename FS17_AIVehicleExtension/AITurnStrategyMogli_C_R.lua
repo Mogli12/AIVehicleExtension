@@ -217,7 +217,7 @@ end
 -- update
 --============================================================================================================================
 function AITurnStrategyMogli_C_R:update(dt)
-	if AIVEGlobals.showTrace > 0 and self.vehicle ~= nil and self.stages ~= nil and self.vehicle.acShowTrace then
+	if AIVEGlobals.showTrace > 0 and self.vehicle ~= nil and self.vehicle.isEntered and self.stages ~= nil and self.vehicle.acShowTrace then
 		local c  = table.getn( self.stages )		
 		local c1 = 1
 		if c > 1 then
