@@ -2206,7 +2206,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			
 			if      math.abs( targetS ) < 1
 					and math.abs( targetA ) < angleOffset then
-				if math.abs( math.deg( AIVehicleExtension.getToolAngle( veh ) ) ) < angleOffsetStrict then
+				if     AutoSteeringEngine.getNoReverseIndex( veh ) <= 0 
+						or math.abs( math.deg( AIVehicleExtension.getToolAngle( veh ) ) ) < angleOffsetStrict then
 					turnData.stage = turnData.stage + 2;					
 					veh.turnTimer   = veh.acDeltaTimeoutRun;
 					angle            = 0
@@ -2243,7 +2244,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			angle = Utils.clamp( newTurnAngle, AIVehicleExtension.getMaxAngleWithTool( veh, true ), AIVehicleExtension.getMaxAngleWithTool( veh, false ) )
 
 			if      math.abs( math.deg( newTurnAngle ) ) < angleOffset
-					and math.abs( math.deg( AIVehicleExtension.getToolAngle( veh ) ) ) < angleOffsetStrict then
+					and ( AutoSteeringEngine.getNoReverseIndex( veh ) <= 0
+						 or math.abs( math.deg( AIVehicleExtension.getToolAngle( veh ) ) ) < angleOffsetStrict ) then
 				--AIVehicleExtension.setAIImplementsMoveDown(veh,false);
 				turnData.stage = turnData.stage + 1;					
 				veh.turnTimer  = veh.acDeltaTimeoutWait
@@ -2258,7 +2260,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			moveForwards = false
 			angle        = AIVehicleExtension.getStraighBackwardsAngle( veh, targetT )
 			
-			if     math.abs( targetZ ) > 15 then
+			if     math.abs( targetZ ) > 30 then
 				turnData.stage   = turnData.stage + 2
 				veh.turnTimer    = veh.acDeltaTimeoutRun
 			elseif fruitsDetected or targetZ < 0 then

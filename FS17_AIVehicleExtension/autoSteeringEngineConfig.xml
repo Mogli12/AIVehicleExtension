@@ -28,15 +28,15 @@
     <!--                              1 2.5  4  6 8 2 7 2 7 2 7 2 7-->
     <!--                              1  2   3  4 5 6 7 8 9 0 1 2 3 -->
     <chainLen    type="vector" value="1 1.5 1.5 2 2 4 5 5 5 5 5 5 5"/> 
-		<chainStep0  value="4" /> <!-- initial part of the chain that always rotates    -->                           
-		<chainStep1  value="99"/>  <!-- steps to outside, can be smaller than chainStep2 -->
+		<chainStep0  value="3" /> <!-- initial part of the chain that always rotates    -->                           
+		<chainStep1  value="6"/>  <!-- steps to outside, can be smaller than chainStep2 -->
 		<chainStep2  value="99"/> <!-- steps to check, increased only if nothing found  -->
 	
     <!--                                    1 1 1 2 2 3 4 4 5-->
     <!--                              1 3 6 0 4 8 3 8 4 0 6 2-->
     <!--                              1 2 3 4 5 6 7 8 9 0 1 2-->
     <chain2Len   type="vector" value="1 2 3 4 4 4 5 5 6 6 6 6"/> 
-		<chain2Step0 value="4"/>
+		<chain2Step0 value="3"/>
 		<chain2Step1 value="5"/>
 		<chain2Step2 value="9"/>
 
@@ -73,7 +73,7 @@
     <stepLog2 value="2" />
     <yieldCount value="2000" />
 		
-    <widthDec type="float" value="0.005"/>0.0011111 0.005
+    <widthDec type="float" value="0.01"/>0.0011111 0.005
     <widthMaxDec type="float" value="9" />9 3
 	
 		<limitOutside type="bool" value="true" />
@@ -101,7 +101,7 @@
 		<fruitsAdvance type="float" value="1.5" />
 		<lowerAdvance type="float" value="3.5" />
 		<upperAdvance type="float" value="0.5" />
-		<fruitsInFront type="float" value="7.5" />
+		<fruitsInFront type="float" value="10" />
 		
 		<borderBuffer type="bool" value="true" />
 		

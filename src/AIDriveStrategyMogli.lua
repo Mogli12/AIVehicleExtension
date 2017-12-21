@@ -44,7 +44,7 @@ function AIDriveStrategyMogli:setAIVehicle(vehicle)
 --==============================================================					
 	AutoSteeringEngine.invalidateField( vehicle )		
 	AutoSteeringEngine.checkTools1( vehicle, true )
-	AutoSteeringEngine.saveDirection( vehicle, false, true )
+	AutoSteeringEngine.saveDirection( vehicle )
 
 	vehicle.acClearTraceAfterTurn = true
 	AIVehicleExtension.resetAIMarker( vehicle )	
@@ -617,9 +617,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		
 		local ta = straightAbsAngle
 		
-		if noReverseIndex <= 0 and veh.acDimensions.zBack < 0 then
-			ta = 0
-		end
+	--if noReverseIndex <= 0 and veh.acDimensions.zBack < 0 then
+	--	ta = 0 --math.min( 0.2 * veh.acDimensions.maxSteeringAngle, straightAbsAngle )
+	--end
 		
 		if detected then
 			angle = math.max( absAngle, ta )
@@ -635,11 +635,16 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		speedLevel   = 4
 		
 		if     self.search == nil then
-		--if noReverseIndex <= 0 and veh.acDimensions.zBack < 0 then
+			local f = 1
 			if veh.acDimensions.zBack < 0 then
 			-- keep calm and don't move!!! Going to outside would just make it worse
-				angle  = math.min( 0, straightAbsAngle, absAngle )
-			end			
+				if noReverseIndex <= 0 then
+					f = 0.1
+				else
+					f = 0.25
+				end
+			end
+			angle  = math.min( math.min( 0, straightAbsAngle ) + f * veh.acDimensions.maxSteeringAngle, absAngle )
 		elseif self.search == AIDriveStrategyMogli.searchStart then
 			angle = veh.acDimensions.maxSteeringAngle
 		elseif turn2Outside and fruitsDetected then
@@ -865,7 +870,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			
 	--elseif detected or fruitsDetected then
 		else
-			AutoSteeringEngine.saveDirection( veh, true, not turn2Outside, true );
+			AutoSteeringEngine.saveDirection( veh, true, border > 0, true );
 		end
 		
 --==============================================================				
@@ -884,7 +889,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		elseif veh.turnTimer < 0 then
 			if veh.acClearTraceAfterTurn then
 				AutoSteeringEngine.clearTrace( veh );
-				AutoSteeringEngine.saveDirection( veh, false, not turn2Outside );
+				AutoSteeringEngine.saveDirection( veh, false );
 			end
 			AutoSteeringEngine.ensureToolIsLowered( veh, true )	
 			self.search            = nil
