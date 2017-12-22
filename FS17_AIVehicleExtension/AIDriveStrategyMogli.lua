@@ -638,7 +638,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			local f = 1
 			if veh.acDimensions.zBack < 0 then
 			-- keep calm and don't move!!! Going to outside would just make it worse
-				if noReverseIndex <= 0 then
+				if veh.articulatedAxis ~= nil then
+					f = 0
+				elseif noReverseIndex <= 0 then
 					f = 0.1
 				else
 					f = 0.25

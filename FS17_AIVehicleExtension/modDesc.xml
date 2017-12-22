@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="37">
 	<author>Mogli</author>
-	<version>1.0.1.3</version>
+	<version>1.0.1.4</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v1.1 b13</en>
-			<de>AI Vehicle Extension v1.1 b13</de>
-			<fr>AI Vehicle Extension v1.1 b13</fr>
-			<it>AI Vehicle Extension v1.1 b13</it>
-			<ru>AI Vehicle Extension v1.1 b13</ru>
-			<cz>AI Vehicle Extension v1.1 b13</cz>
-			<pl>AI Vehicle Extension v1.1 b13</pl>
-										<cs>车辆助手 v1.1 b13</cs>
+			<en>AI Vehicle Extension v1.1 b14</en>
+			<de>AI Vehicle Extension v1.1 b14</de>
+			<fr>AI Vehicle Extension v1.1 b14</fr>
+			<it>AI Vehicle Extension v1.1 b14</it>
+			<ru>AI Vehicle Extension v1.1 b14</ru>
+			<cz>AI Vehicle Extension v1.1 b14</cz>
+			<pl>AI Vehicle Extension v1.1 b14</pl>
+										<cs>车辆助手 v1.1 b14</cs>
 		</text>
 	</l10n>
 	<title>

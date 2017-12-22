@@ -1006,7 +1006,7 @@ function AIVehicleExtension:update(dt)
 			and self.articulatedAxis ~= nil 
 			and ( self.aiveCanStartArtAxisTimer == nil or g_currentMission.time > self.aiveCanStartArtAxisTimer + 1000 ) then
 		self.aiveCanStartArtAxisTimer = g_currentMission.time
-		AIVehicleExtension.checkState( self )
+		AIVehicleExtension.checkState( self, false, true )
 		local backup = 0
 		if self.aiveCanStartArtAxis then
 			backup = 1

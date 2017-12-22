@@ -1186,7 +1186,7 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.syncRootNode( vehicle, noClear )
 
-	if AIVEGlobals.staticRoot <= 0 then
+	if not ( vehicle.articulatedAxis == nil and AIVEGlobals.staticRoot > 0 ) then
 		return false
 	end
 
@@ -2750,6 +2750,11 @@ function AutoSteeringEngine.getTurnMode( vehicle )
 	local zb         = nil
 	local noHire     = false
 	
+	if vehicle.articulatedAxis ~= nil then
+		revUTurn   = false
+		smallUTurn = false
+	end
+	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
 		for i=1,vehicle.aiveChain.toolCount do
 --		local _,_,z = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.refNode, vehicle.aiveChain.tools[i].refNode ) 
@@ -3419,7 +3424,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 				drawDebugLine(  x,y,z, 1,0,0, x,y+2,z, 1,0,0 )
 				drawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
 				
-				if vehicle.acIamDetecting or AIVEGlobals.staticRoot > 0 then
+				if vehicle.acIamDetecting or ( vehicle.articulatedAxis == nil and AIVEGlobals.staticRoot > 0 ) then
 					local px,py,pz
 					for i=1,indexMax+1 do
 						local wx,wy,wz = AutoSteeringEngine.getChainPoint( vehicle, i, tp )
@@ -4571,11 +4576,14 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 						end
 						
 						local offsetInside = toolParam.offsetStd
+						if     vehicle.articulatedAxis ~= nil then
+							offsetInside = offsetInside + math.min( 0.25 * toolParam.width, 1 )
+						end
+						
 						if     AIVEGlobals.widthDec < 0 then
-						elseif i == 1 then
+						elseif i == 1 or vehicle.aiveChain.nodes[i].distance + vehicle.aiveChain.minZ <= 0 then
 							offsetInside = 0
-						elseif  vehicle.aiveChain.nodes[i].distance + vehicle.aiveChain.minZ > 0
-								and AIVEGlobals.widthDec > 0 then
+						elseif AIVEGlobals.widthDec > 0 then
 							if vehicle.aiveChain.widthDecFactor ~= nil then
 								local w = toolParam.width
 								if 0 < AIVEGlobals.widthMaxDec and AIVEGlobals.widthMaxDec < w then
@@ -4584,6 +4592,9 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 								w = w * vehicle.aiveChain.widthDecFactor
 								if offsetInsideFactor ~= nil then
 									w = w * offsetInsideFactor
+								end
+								if vehicle.articulatedAxis ~= nil then
+									w = w * 3
 								end
 								offsetInside = offsetInside + w * AIVEGlobals.widthDec * ( vehicle.aiveChain.nodes[i].distance + vehicle.aiveChain.minZ )
 								if AIVEGlobals.fruitBuffer > 0 then
@@ -6651,7 +6662,7 @@ function AutoSteeringEngine.initChain( vehicle, iRefNode, wheelBase, maxSteering
 	vehicle.aiveChain.headlandNode = createTransformGroup( "acHeadland" )
 	link( vehicle.aiveChain.refNode, vehicle.aiveChain.headlandNode )
 
-	if AIVEGlobals.staticRoot > 0 then
+	if vehicle.articulatedAxis == nil and AIVEGlobals.staticRoot > 0 then
 		vehicle.aiveChain.rootNode   = createTransformGroup( "acChainRoot" )
 		link( g_currentMission.terrainRootNode, vehicle.aiveChain.rootNode )
 	else
@@ -6778,7 +6789,7 @@ function AutoSteeringEngine.deleteChain( vehicle )
 		vehicle.aiveChain.headlandNode = nil
 	end
 	
-	if AIVEGlobals.staticRoot > 0 then
+	if vehicle.articulatedAxis == nil and AIVEGlobals.staticRoot > 0 then
 		AutoSteeringEngine.deleteNode( vehicle.aiveChain.rootNode )
 		vehicle.aiveChain.rootNode = nil
 	end
@@ -7210,14 +7221,59 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 			wheelIndices = object.aiTurningRadiusLimitation.wheelIndices
 		end
 
-		for _,wheelIndex in pairs(wheelIndices) do
+		-- get max rotation
+		local rotMax
+		if refNode == object.attacherJoint.node then
+			local jointDesc = object.attacherVehicle.attacherJoints[implement.jointDescIndex]
+			rotMax = math.max(jointDesc.upperRotLimit[2], jointDesc.lowerRotLimit[2]) * object.attacherJoint.lowerRotLimitScale[2]
+		else
+			for _,compJoint in pairs(object.componentJoints) do
+				if refNode == compJoint.jointNode then
+					rotMax = compJoint.rotLimit[2]
+					if object.aiVehicleDirectionNode ~= nil then
+						cx,_,cz = localToLocal(object.aiVehicleDirectionNode, refNode, 0,0,0)
+					end
+					break
+				end
+			end
+		end
 
-			-- use first component as cosy?!
-			local wheel = object.wheels[wheelIndex+1]
-		--local nx,_,nz = localToLocal(wheel.repr, dirNode, 0,0,0)
-    --
-		--local x,z = nx-rx, nz-rz
-			local x,_,z = localToLocal(wheel.repr, refNode, 0,0,0)
+		if vehicle.articulatedAxis == nil then
+			for _,wheelIndex in pairs(wheelIndices) do
+
+				-- use first component as cosy?!
+				local wheel = object.wheels[wheelIndex+1]
+			--local nx,_,nz = localToLocal(wheel.repr, dirNode, 0,0,0)
+			--
+			--local x,z = nx-rx, nz-rz
+				local x,_,z = localToLocal(wheel.repr, refNode, 0,0,0)
+				local nx, nz = x+rx,z+rz
+				
+				b2x = b2x + nx
+				b2z = b2z + nz
+				b2i = b2i + 1
+				
+				local cx,cz = 0,0
+
+				-- calc turning radius
+				local x1 = x*math.cos(rotMax) - z*math.sin(rotMax)
+				local z1 = x*math.sin(rotMax) + z*math.cos(rotMax)
+
+				local dx = -z1
+				local dz = x1
+				if wheel.steeringAxleScale ~= 0 and wheel.steeringAxleRotMax ~= 0 then
+					local tmpx, tmpz = dx, dz
+					dx = tmpx*math.cos(wheel.steeringAxleRotMax) - tmpz*math.sin(wheel.steeringAxleRotMax)
+					dz = tmpx*math.sin(wheel.steeringAxleRotMax) + tmpz*math.cos(wheel.steeringAxleRotMax)
+				end
+
+				local hit,f1,f2 = Utils.getLineLineIntersection2D(cx,cz, 1,0, x1,z1, dx,dz)
+				if hit then
+					radius = math.max(radius, math.abs(f1))
+				end
+			end
+		else
+			local x,_,z = localToLocal(vehicle.aiveChain.refNode, refNode, 0,0,0)
 			local nx, nz = x+rx,z+rz
 			
 			b2x = b2x + nx
@@ -7226,40 +7282,22 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 			
 			local cx,cz = 0,0
 
-			-- get max rotation
-			local rotMax
-			if refNode == object.attacherJoint.node then
-				local jointDesc = object.attacherVehicle.attacherJoints[implement.jointDescIndex]
-				rotMax = math.max(jointDesc.upperRotLimit[2], jointDesc.lowerRotLimit[2]) * object.attacherJoint.lowerRotLimitScale[2]
-			else
-				for _,compJoint in pairs(object.componentJoints) do
-					if refNode == compJoint.jointNode then
-						rotMax = compJoint.rotLimit[2]
-						if object.aiVehicleDirectionNode ~= nil then
-							cx,_,cz = localToLocal(object.aiVehicleDirectionNode, refNode, 0,0,0)
-						end
-						break
-					end
-				end
-			end
-
 			-- calc turning radius
 			local x1 = x*math.cos(rotMax) - z*math.sin(rotMax)
 			local z1 = x*math.sin(rotMax) + z*math.cos(rotMax)
 
 			local dx = -z1
 			local dz = x1
-			if wheel.steeringAxleScale ~= 0 and wheel.steeringAxleRotMax ~= 0 then
+			if vehicle.articulatedAxis.rotMax ~= nil then
 				local tmpx, tmpz = dx, dz
-				dx = tmpx*math.cos(wheel.steeringAxleRotMax) - tmpz*math.sin(wheel.steeringAxleRotMax)
-				dz = tmpx*math.sin(wheel.steeringAxleRotMax) + tmpz*math.cos(wheel.steeringAxleRotMax)
+				dx = tmpx*math.cos(vehicle.articulatedAxis.rotMax) - tmpz*math.sin(vehicle.articulatedAxis.rotMax)
+				dz = tmpx*math.sin(vehicle.articulatedAxis.rotMax) + tmpz*math.cos(vehicle.articulatedAxis.rotMax)
 			end
 
 			local hit,f1,f2 = Utils.getLineLineIntersection2D(cx,cz, 1,0, x1,z1, dx,dz)
 			if hit then
 				radius = math.max(radius, math.abs(f1))
 			end
-
 		end
 		
 		if b2i == 1 then
@@ -7274,6 +7312,10 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 			b2 = 0
 		end
 
+	end
+	
+	if radius > 20 then
+		radius = 20.1
 	end
 
 	if object.aiTurningRadiusLimitation ~= nil then
