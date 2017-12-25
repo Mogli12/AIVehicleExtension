@@ -1967,28 +1967,28 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:getMaxAngleWithTool( outside )
 	
---local angle
---local toolAngle = AutoSteeringEngine.getToolAngle( self )	
---if not self.acParameters.leftAreaActive then
---	toolAngle = -toolAngle
---end
---
---if outside then
---	angle = -self.acDimensions.maxSteeringAngle + math.min( 2 * math.max( -toolAngle - AIVEGlobals.maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
---else
---	angle =  self.acDimensions.maxSteeringAngle - math.min( 2 * math.max(  toolAngle - AIVEGlobals.maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
---end
---
---if AIVEGlobals.devFeatures > 0 and math.abs( toolAngle ) >= AIVEGlobals.maxToolAngle - 0.01745 then
---	self:acDebugPrint( string.format("Tool angle: a: %0.1f° ms: %0.1f° to: %0.1f°", math.deg(angle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
---end
---
---
---return angle
-	if outside then
-		return -self.acDimensions.maxSteeringAngle
+	local angle
+	local toolAngle = AutoSteeringEngine.getToolAngle( self )	
+	if not self.acParameters.leftAreaActive then
+		toolAngle = -toolAngle
 	end
-	return self.acDimensions.maxSteeringAngle
+	
+	if outside then
+		angle = -self.acDimensions.maxSteeringAngle + math.min( 2 * math.max( -toolAngle - AIVEGlobals.maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
+	else
+		angle =  self.acDimensions.maxSteeringAngle - math.min( 2 * math.max(  toolAngle - AIVEGlobals.maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
+	end
+	
+	if AIVEGlobals.devFeatures > 0 and math.abs( toolAngle ) >= AIVEGlobals.maxToolAngle - 0.01745 then
+		self:acDebugPrint( string.format("Tool angle: a: %0.1f° ms: %0.1f° to: %0.1f°", math.deg(angle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
+	end
+	
+	return angle
+	
+--if outside then
+--	return -self.acDimensions.maxSteeringAngle
+--end
+--return self.acDimensions.maxSteeringAngle
 end
 
 ------------------------------------------------------------------------

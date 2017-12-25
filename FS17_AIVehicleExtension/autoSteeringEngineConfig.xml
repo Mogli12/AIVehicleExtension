@@ -109,6 +109,7 @@
 		
 		<ignoreBorder value="3"/>
 		<minOffset   type="float" value="0.25" />
+		<minOffsetArt type="float" value="0.5" />
 		<testOutside type="float" value="1.5" />
 		<useFBB123   type="bool" value="true"/>
 		<angleBuffer type="bool" value="true"/>

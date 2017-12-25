@@ -100,6 +100,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.angleBuffer   = 0
 	AIVEGlobals.otherAIColli  = 0
 	AIVEGlobals.minOffset     = 0
+	AIVEGlobals.minOffsetArt  = 0
 	AIVEGlobals.ignoreBorder  = 0
 	AIVEGlobals.minTraceLen   = 0
 	AIVEGlobals.offTracking   = 0
@@ -1137,11 +1138,11 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 	if math.abs( best.angle ) < 1e-6 then
 		wx,wy,wz = localToWorld( vehicle.aiveChain.refNode, 0, 0, dist )
 	else
-		angle = vehicle.aiveChain.nodes[1].steering
-		local i = 2
-		while i <= indexMax and vehicle.aiveChain.nodes[i].distance < dist do
-			i = i + 1
-		end		
+		angle = vehicle.aiveChain.nodes[vehicle.aiveChain.chainStep0].steering
+		local i = vehicle.aiveChain.chainStep0
+	--while i <= indexMax and vehicle.aiveChain.nodes[i].distance < dist do
+	--	i = i + 1
+	--end		
 		wx,wy,wz = getWorldTranslation( vehicle.aiveChain.nodes[i].index )
 	end
 	vehicle.aiveChain.lastWorldTarget = { wx, wy, wz }
@@ -1367,6 +1368,10 @@ end
 function AutoSteeringEngine.getWidthOffsetStd( vehicle, width )
 	local scale  = Utils.getNoNil( vehicle.aiTurnWidthScale, 0.95 )
 	local diff   = Utils.getNoNil( vehicle.aiTurnWidthMaxDifference, 0.5 )
+	local minOfs = AIVEGlobals.minOffset
+	if vehicle.articulatedAxis ~= nil then
+		minOfs = AIVEGlobals.minOffsetArt
+	end
 	return math.max( AIVEGlobals.minOffset, 0.5 * ( width - math.max(width * scale, width - diff) ) )
 end
 ------------------------------------------------------------------------
@@ -1402,7 +1407,7 @@ function AutoSteeringEngine.addToolsRec( vehicle, obj )
 end
 
 ------------------------------------------------------------------------
--- checkTools
+-- checkTools1
 ------------------------------------------------------------------------
 function AutoSteeringEngine.checkTools1( vehicle, reset )
 
@@ -1489,6 +1494,10 @@ function AutoSteeringEngine.checkTools1( vehicle, reset )
 		end
 	end
 end
+
+------------------------------------------------------------------------
+-- checkTools
+------------------------------------------------------------------------
 function AutoSteeringEngine.checkTools( vehicle, reset )
 	
 	AutoSteeringEngine.checkTools1( vehicle, reset )
@@ -1508,11 +1517,12 @@ function AutoSteeringEngine.checkTools( vehicle, reset )
 		--	doNotIgnore = false
 		--end
 			if doNotIgnore then
-				local _,_,zDist   = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.refNode, vehicle.aiveChain.tools[i].refNode )
+				local _,_,zDist      = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.refNode, vehicle.aiveChain.tools[i].refNode )
+				local xl, xr, z1, z2 = AutoSteeringEngine.getToolMarkerRange( vehicle, vehicle.aiveChain.tools[i] )
 				
-				local dx1 = vehicle.aiveChain.tools[i].xl-vehicle.aiveChain.tools[i].xr
-				local dz1 = vehicle.aiveChain.tools[i].z  + zDist
-				local zb1 = vehicle.aiveChain.tools[i].zb + zDist
+				local dx1 = xl - xr
+				local dz1 = z1 + zDist - vehicle.aiveChain.tools[i].zOffset
+				local zb1 = z2 + zDist - vehicle.aiveChain.tools[i].zOffset
 				if vehicle.aiveChain.tools[i].isSprayer and zb1 < dz1 then
 					zb1 = dz1 -1
 				end
@@ -2824,6 +2834,7 @@ function AutoSteeringEngine.getToolAngle( vehicle )
 					setRotation( tool.steeringAxleNode, rx2, ry2, rz2 -zAngle )
 				end
 			end
+			
 			toolAngle = AutoSteeringEngine.getRelativeYRotation( vehicle.aiveChain.refNode, tool.steeringAxleNode )	
 			
 			if tool.offsetZRotation ~= nil then
@@ -4319,11 +4330,41 @@ function AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 	
 	local tpx    = tp.x
 	
-	if     vehicle.aiveChain.nodes[i].status < AIVEStatus.position
-		--or i == 1
-      or vehicle.aiveChain.nodes[i].tool[tp.i]   == nil 
-			or vehicle.aiveChain.nodes[i].tool[tp.i].x == nil 
-			or vehicle.aiveChain.nodes[i].tool[tp.i].z == nil then
+	if      vehicle.aiveChain.nodes[i].status       >= AIVEStatus.position
+      and vehicle.aiveChain.nodes[i].tool[tp.i]   ~= nil 
+			and vehicle.aiveChain.nodes[i].tool[tp.i].x ~= nil 
+			and vehicle.aiveChain.nodes[i].tool[tp.i].z ~= nil then
+	elseif false and i == 1 and vehicle.aiveChain.tools[tp.i].aiForceTurnNoBackward then
+	
+		vehicle.aiveChain.nodes[i].tool[tp.i] = {}
+		vehicle.aiveChain.nodes[i].tool[tp.i].a = tp.angle 
+		
+		local x,y,z
+		x,y,z = getTranslation( vehicle.aiveChain.nodes[i].index3 )
+		if math.max( math.abs( x ) , math.abs( y ), math.abs( tp.b1 - z ) ) > 1e-4 then
+			setTranslation( vehicle.aiveChain.nodes[i].index3, 0, 0, tp.b1 )
+		end
+		x,y,z = getTranslation( vehicle.aiveChain.nodes[i].index4 )
+		if math.max( math.abs( x ) , math.abs( y ), math.abs( tp.z - tp.b1 - z ) ) > 1e-4 then
+			setTranslation( vehicle.aiveChain.nodes[i].index4, 0, 0, tp.z - tp.b1 )
+		end
+		
+		x,y,z = getRotation( vehicle.aiveChain.nodes[i].index3 )
+		if math.max( math.abs( x ) , math.abs( y + vehicle.aiveChain.nodes[i].tool[tp.i].a ), math.abs( z ) ) > 1e-5 then		
+			setRotation( vehicle.aiveChain.nodes[i].index3, 0, -vehicle.aiveChain.nodes[i].tool[tp.i].a, 0 )
+		end		
+		
+		if vehicle.aiveChain.leftActive	then
+			ofs = -tp.offset 
+			idx = tp.nodeLeft 
+		else
+			ofs = tp.offset 
+			idx = tp.nodeRight
+		end
+		vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].y, vehicle.aiveChain.nodes[i].tool[tp.i].z = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 0 )			
+		vehicle.aiveChain.nodes[i].status = AIVEStatus.position
+		
+	else
 
 	--if math.abs( vehicle.aiveChain.nodes[i].rotation ) > 1E-3 then
 	--	local test1 = math.sin( 0.5 * vehicle.aiveChain.nodes[i].rotation ) * 2 / vehicle.aiveChain.nodes[i].length
@@ -4388,27 +4429,11 @@ function AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 		local idx = vehicle.aiveChain.nodes[i].index4
 		local ofs = tpx
 		
-	--if i == 1 and vehicle.aiveChain.tools[tp.i].aiForceTurnNoBackward then
-	--	if vehicle.aiveChain.leftActive	then
-	--		ofs = -tp.offset 
-	--		idx = tp.nodeLeft 
-	--	else
-	--		ofs = tp.offset 
-	--		idx = tp.nodeRight
-	--	end
-	--	vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].y, vehicle.aiveChain.nodes[i].tool[tp.i].z = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 0 )
-	--else
-			vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].y, vehicle.aiveChain.nodes[i].tool[tp.i].z = localToWorld( idx, ofs, 0, 0 )
-	--end
-		
-	--vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].z = AutoSteeringEngine.normalizePosition( vehicle, vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].z )
-		
+		vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].y, vehicle.aiveChain.nodes[i].tool[tp.i].z = localToWorld( idx, ofs, 0, 0 )
 		vehicle.aiveChain.nodes[i].status = AIVEStatus.position
 	end
 
-	
 	return vehicle.aiveChain.nodes[i].tool[tp.i].x, vehicle.aiveChain.nodes[i].tool[tp.i].y, vehicle.aiveChain.nodes[i].tool[tp.i].z
-	
 end
 
 ------------------------------------------------------------------------
@@ -4576,9 +4601,6 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 						end
 						
 						local offsetInside = toolParam.offsetStd
-						if     vehicle.articulatedAxis ~= nil then
-							offsetInside = offsetInside + math.min( 0.25 * toolParam.width, 1 )
-						end
 						
 						if     AIVEGlobals.widthDec < 0 then
 						elseif i == 1 or vehicle.aiveChain.nodes[i].distance + vehicle.aiveChain.minZ <= 0 then
@@ -4592,9 +4614,6 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 								w = w * vehicle.aiveChain.widthDecFactor
 								if offsetInsideFactor ~= nil then
 									w = w * offsetInsideFactor
-								end
-								if vehicle.articulatedAxis ~= nil then
-									w = w * 3
 								end
 								offsetInside = offsetInside + w * AIVEGlobals.widthDec * ( vehicle.aiveChain.nodes[i].distance + vehicle.aiveChain.minZ )
 								if AIVEGlobals.fruitBuffer > 0 then
@@ -5714,7 +5733,7 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, isOutside, detecte
 		end
 		
 	--local ox,_,oz = localToWorld( idx, ofs, 0, 2 )
-		local ox,_,oz = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 0, 2 )
+		local ox,_,oz = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 2 )
 		
 	--if      not ( tp.skipOther and tp.skip ) 
 		if      not ( tp.skipOther ) 
@@ -6855,29 +6874,57 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		reference = implement.object.attacherJoint.node
 	end
 	
-	--if AtResetCounter == nil or AtResetCounter < 1 then
-	--	if object.name ~= nil then print("Adding... "..object.name) else print("Adding something") end
-	--end
-	
 	tool.steeringAxleNode   = object.steeringAxleNode
 	if tool.steeringAxleNode == nil then
 		tool.steeringAxleNode = object.components[1].node
 	end
 	
-	tool.checkZRotation  = false
+	tool.aiForceTurnNoBackward   = object.aiForceTurnNoBackward
+	tool.checkZRotation          = false
+	tool.isCombine               = SpecializationUtil.hasSpecialization(Combine, object.specializations)
+	tool.hasWorkAreas            = SpecializationUtil.hasSpecialization(WorkArea, object.specializations) 
+	tool.isTurnOnVehicle         = SpecializationUtil.hasSpecialization(TurnOnVehicle, object.specializations)
+	tool.isPlough                = SpecializationUtil.hasSpecialization(Plough, object.specializations)
+	tool.isCultivator            = SpecializationUtil.hasSpecialization(Cultivator, object.specializations)
+	tool.isSowingMachine         = SpecializationUtil.hasSpecialization(SowingMachine, object.specializations)
+	tool.isSprayer               = SpecializationUtil.hasSpecialization(Sprayer, object.specializations)
+	tool.isMower                 = SpecializationUtil.hasSpecialization(Mower, object.specializations)
+	tool.isFoldable              = SpecializationUtil.hasSpecialization(Foldable, object.specializations)
+	tool.configFileName          = string.lower( Utils.removeModDirectory(object.configFileName) )
 	
-	if 			getName( object.components[1].node ) == "poettingerServo650" 
-			and table.getn(object.components)        >= 2 then
-		tool.steeringAxleNode = object.components[2].node
-		tool.checkZRotation   = true
+	if     tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhntf1500.xml" then
+		tool.ignoreAI              = true
+	elseif false and tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhndc401.xml" then
+		tool.isPlough              = true
+		tool.isCultivator          = false
+		tool.ploughTransport       = false
+		tool.aiForceTurnNoBackward = false
+	elseif tool.configFileName == "data/vehicles/trailers/grimme/grimmerootster604.xml" then
+		tool.aiForceTurnNoBackward = true
+	elseif tool.configFileName == "data/vehicles/tools/greatplains/gp3p1006nt.xml" then
+		tool.aiForceTurnNoBackward = false 
 	end
 	
-	if tool.checkZRotation then
-		local c = getChild( tool.steeringAxleNode, "AIVESteeringAxle" )
-		if c ~= nil and c > 0 then
-			tool.steeringAxleNode = c
+	if tool.isPlough and tool.aiForceTurnNoBackward then
+    if object.aiPlough ~= nil and object.aiPlough.rotateEarly == true then
+			if object.rotationPart ~= nil and object.rotationPart.turnAnimation ~= nil and object.rotationMax ~= nil then
+				tool.ploughTransport = true
+			end
+		end
+		local wheelIndex 
+		if object.aiTurningRadiusLimitation.wheelIndices ~= nil then
+			wheelIndex = object.aiTurningRadiusLimitation.wheelIndices[1]+1
+			print("Given wheel index: "..tostring(wheelIndex).." of "..tostring(table.getn(object.aiTurningRadiusLimitation.wheelIndices))..", "..tostring(table.getn(object.wheels)))
 		else
-			local parent = tool.steeringAxleNode
+			wheelIndex = 1
+			print("Use first wheel")
+		end
+		local wheel = object.wheels[wheelIndex]
+		if wheel == nil then
+			print("Wheel no valid")
+		else
+			tool.checkZRotation = true
+			local parent = getParent(wheel.repr)
 			tool.steeringAxleNode = createTransformGroup( "AIVESteeringAxle" )
 			extraNodes[#extraNodes+1] = tool.steeringAxleNode
 			link( parent, tool.steeringAxleNode )
@@ -6900,54 +6947,6 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	tool.doubleJoint                   = false
 	tool.noRevStraight                 = false
 	tool.ignoreAI                      = ignore 
-	
-	if tool.checkZRotation then
-		tool.aiForceTurnNoBackward = true
-	elseif  object.aiForceTurnNoBackward then
-		tool.aiForceTurnNoBackward = true
-
-		elseif  object.attacherJoint              ~= nil
-			and object.attacherJoint.jointType    ~= nil
-			and ( object.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILERLOW
-			   or object.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILER ) then
-		tool.aiForceTurnNoBackward = true
-	else --if object.aiForceTurnNoBackward == nil then
-		tool.aiForceTurnNoBackward = false
-	end
-	
-	
-	local useAI = true
-	tool.isCombine       = SpecializationUtil.hasSpecialization(Combine, object.specializations)
-	tool.hasWorkAreas    = SpecializationUtil.hasSpecialization(WorkArea, object.specializations) 
-	tool.isTurnOnVehicle = SpecializationUtil.hasSpecialization(TurnOnVehicle, object.specializations)
-	tool.isPlough        = SpecializationUtil.hasSpecialization(Plough, object.specializations)
-	tool.isCultivator    = SpecializationUtil.hasSpecialization(Cultivator, object.specializations)
-	tool.isSowingMachine = SpecializationUtil.hasSpecialization(SowingMachine, object.specializations)
-	tool.isSprayer       = SpecializationUtil.hasSpecialization(Sprayer, object.specializations)
-	tool.isMower         = SpecializationUtil.hasSpecialization(Mower, object.specializations)
-	tool.isFoldable      = SpecializationUtil.hasSpecialization(Foldable, object.specializations)
-	
-	tool.configFileName  = string.lower( Utils.removeModDirectory(object.configFileName) )
-	
-	if tool.isPlough then
-		tool.ploughTransport = true
-	end
-		
-	if     tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhntf1500.xml" then
-		tool.ignoreAI = true
-	elseif false and tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhndc401.xml" then
-		tool.isPlough        = true
-		tool.isCultivator    = false
-		tool.ploughTransport = false
-	elseif tool.configFileName == "data/vehicles/trailers/grimme/grimmerootster604.xml" then
-		tool.aiForceTurnNoBackward = true
-	elseif tool.configFileName == "data/vehicles/tools/greatplains/gp3p1006nt.xml" then
-		tool.aiForceTurnNoBackward = false 
-	end
-	
-	if tool.isPlough and tool.aiForceTurnNoBackward then
-		tool.checkZRotation = true
-	end
 	
 	local b1, trailer = AutoSteeringEngine.findComponentJointDistance( vehicle, object )
 
@@ -7088,16 +7087,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	--	tool.invert = not tool.invert
 	--end		
 	
-	local xl, xr, zz, zb
-	
-	for i=1,#marker do
-		local x,_,z = AutoSteeringEngine.getRelativeTranslation(tool.steeringAxleNode,marker[i])
-		if tool.invert then x = -x end
-		if xl == nil or xl < x then xl = x end
-		if xr == nil or xr > x then xr = x end
-		if zz == nil or zz < z then zz = z end
-		if zb == nil or zb > z then zb = z end
-	end
+	local xl, xr, zz, zb = AutoSteeringEngine.getToolMarkerRange( vehicle, tool )
 	
 	tool.xl = xl - tool.xOffset
 	tool.xr = xr - tool.xOffset
@@ -7217,8 +7207,13 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 					table.insert( wheelIndices, wheelIndex-1 )
 				end
 			end
-		else
+		elseif object.aiTurningRadiusLimitation.wheelIndices ~= nil then
 			wheelIndices = object.aiTurningRadiusLimitation.wheelIndices
+		else 
+			wheelIndices = {}
+			for wheelIndex, wheel in pairs(object.wheels) do
+				table.insert( wheelIndices, wheelIndex-1 )
+			end
 		end
 
 		-- get max rotation
@@ -7630,16 +7625,11 @@ function AutoSteeringEngine.getMinToolRadius( vehicle, radius )
 	
 	for _,tool in pairs( vehicle.aiveChain.tools ) do
 		if tool.aiForceTurnNoBackward then
-			local _,_,b1  = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.refNode, tool.refNode )
-			b1            = math.max( 0, -b1 )
-			local b2
-			if tool.b2 == nil then
-				b2          = math.max( 0, -tool.zb )
-			else
-				b2          = math.max( 0, -tool.b2 )
-			end
+			local _,b1,b2 = AutoSteeringEngine.getToolRadius( vehicle, tool.refNode, tool.obj )
+			b1 = math.max( 0, -b1 )
+			b2 = math.max( 0, -b2 )
 			local b3 = 0
-			if tool.doubleJoint then
+			if tool.doubleJoint and tool.b3 ~= nil then
 				b3 = tool.b3
 			end
 			if b1 < 0 and b2 < -1 then
@@ -7652,6 +7642,22 @@ function AutoSteeringEngine.getMinToolRadius( vehicle, radius )
 	end
 	
 	return radiusT 
+end
+
+------------------------------------------------------------------------
+-- getToolMarkerRange
+------------------------------------------------------------------------
+function AutoSteeringEngine.getToolMarkerRange( vehicle, tool )
+	local xl, xr, zz, zb
+	for i,m in pairs( tool.marker ) do
+		local x,_,z = AutoSteeringEngine.getRelativeTranslation(tool.steeringAxleNode,m)
+		if tool.invert then x = -x end
+		if xl == nil or xl < x then xl = x end
+		if xr == nil or xr > x then xr = x end
+		if zz == nil or zz < z then zz = z end
+		if zb == nil or zb > z then zb = z end
+	end
+	return xl, xr, zz, zb
 end
 
 ------------------------------------------------------------------------
@@ -7786,6 +7792,31 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 				and turn75.radius  > turn75.radiusT then				
 			rT     = turn75.radius
 			shiftT = turn75.radius - turn75.radiusT
+			
+			local delta = vehicle.aiveChain.otherX + vehicle.aiveChain.activeX
+			if vehicle.aiveChain.leftActive then
+				delta = -delta 
+			end
+			if delta >= shiftT then
+				shiftT = 0
+			elseif delta >= 0 then
+				shiftT = shiftT - delta 
+			end
+		--print(tostring(shiftT).." "..
+		--			tostring(delta).." "..
+		--			tostring(turn75.radius).." "..
+		--			tostring(turn75.radiusT).." "..
+		--			tostring(vehicle.aiveChain.otherX).." "..
+		--			tostring(vehicle.aiveChain.activeX).." "..
+		--			tostring(vehicle.aiveChain.leftActive))
+		--			
+		--local tool = vehicle.aiveChain.tools[1]
+		--local tr,b1,b2 = AutoSteeringEngine.getToolRadius( vehicle, tool.refNode, tool.obj )
+		--local mr = AutoSteeringEngine.getMinToolRadius( vehicle, turn75.radius )
+		--print(tostring(tr).." "..
+		--			tostring(b1).." "..
+		--			tostring(b2).." "..
+		--			tostring(mr))
 		end
 		
 		vehicle.aiveChain.trace.targetTraceMinZ = math.min( 0, vehicle.aiveChain.maxZ ) - 20
@@ -8466,36 +8497,12 @@ function AutoSteeringEngine.setPloughTransport( vehicle, isTransport, excludePac
 		return
 	end
 	for i=1,vehicle.aiveChain.toolCount do
-	--if      vehicle.aiveChain.tools[i].ploughTransport
-	--		and vehicle.aiveChain.tools[i].obj:getIsPloughRotationAllowed() then
-	--	local self = vehicle.aiveChain.tools[i].obj
-	--	local curAnimTime = self:getAnimationTime(self.rotationPart.turnAnimation)
-	--	local tgtAnimTime = curAnimTime 
-	--	if     isTransport then
-	--		tgtAnimTime = 0.5
-	--	elseif self.rotationMax then
-	--		tgtAnimTime = 1
-	--	else
-	--		tgtAnimTime = -1
-	--	end
-	--	
-	--	self:stopAnimation( self.rotationPart.turnAnimation )
-	--	if curAnimTime ~= tgtAnimTime then
-	--		if tgtAnimTime > curAnimTime then
-	--			self:playAnimation( self.rotationPart.turnAnimation, 1, curAnimTime, true)
-	--		else
-	--			self:playAnimation( self.rotationPart.turnAnimation, -1, curAnimTime, true)
-	--		end
-	--		if 0 < tgtAnimTime and tgtAnimTime < 1 then
-	--			self:setAnimationStopTime( self.rotationPart.turnAnimation, tgtAnimTime )
-	--		end
-	--	end
-	--end
 		if vehicle.aiveChain.tools[i].ploughTransport then
 			if     isTransport then
+				AutoSteeringEngine.ensureToolIsLowered( vehicle, false )
 				vehicle.aiveChain.tools[i].obj:aiRotateCenter(true)
 			elseif vehicle.aiveChain.leftActive then
-				vehicle.aiveChain.tools[i].obj:onAiRotateLeft(true)
+				vehicle.aiveChain.tools[i].obj:aiRotateLeft(true)
 			else
 				vehicle.aiveChain.tools[i].obj:aiRotateRight(true)
 			end
