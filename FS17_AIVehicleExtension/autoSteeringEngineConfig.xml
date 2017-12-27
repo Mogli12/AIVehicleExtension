@@ -2,8 +2,8 @@
 <AIVEGlobals>
     <aiSteering type="float" value="1.000000" />
     <aiSteeringD type="float" value="-1.000000" />
-    <artSteering type="float" value="1.000000" />
-    <artSteeringD type="float" value="-0.50000" />
+    <artSteering type="float" value="0.250000" />
+    <artSteeringD type="float" value="1.000000" />
     <!--angleSafety type="float" value="0.800000" /-->
     <angleSafety type="float" value="0.8" />
     <artAxisRot type="float" value="1.000000" />
@@ -93,6 +93,7 @@
 		<maxToolAngle type="degree" value="60" />
 		<maxToolAngle2 type="degree" value="9" />
 		<maxToolAngleF type="float" value="0.2" />
+		<maxToolAngleA type="degree" value="75" />
 		<enableAUTurn type="bool" value="true" />
 		<enableYUTurn type="bool" value="false" />
 		<enableKUTurn type="bool" value="false" />

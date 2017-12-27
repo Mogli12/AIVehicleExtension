@@ -528,8 +528,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 --==============================================================				
 -- turn 90°
 	elseif turnData.stage == 22 then
-		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh )		
-		angle  = turn75.alpha
+		angle = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 		
 		local toolAngle = AutoSteeringEngine.getToolAngle( veh );	
 		if not veh.acParameters.leftAreaActive then
@@ -538,7 +537,6 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		toolAngle = math.deg( toolAngle )
 				
 		if -turnAngle > 90 + AIVEGlobals.maxToolAngleF * veh.acDimensions.maxSteeringAngle or turnAngle + 90 + 0.2 * toolAngle < angleOffset then
-		--if turnAngle < angleOffset - 90 - math.deg(turn75.gammaE) then
 			AutoSteeringEngine.setPloughTransport( veh, true, true )
 			
 			turnData.stage   = turnData.stage + 1;					
@@ -625,7 +623,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 	--x = x - 2 - veh.acDimensions.radius - math.max( 0.2 * veh.acDimensions.radius, 1 )
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh )
-		x = x - math.max( turn75.radius + 2, turn75.radius * 1.15 )
+		x = x - math.max( turn75.radius + 2, turn75.radius * 1.15 ) + math.max( 0, turn75.radius - turn75.radiusT )
 
 		if allowedToDrive and ( x > -stoppingDist or z < 0 ) then
 			if noReverseIndex > 0 then
@@ -1356,7 +1354,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		if veh.acParameters.leftAreaActive then x = -x end
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 				
-		angle = turn75.alpha --AIVehicleExtension.getMaxAngleWithTool( veh, false )
+		angle = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 		
 		if turnAngle < angleOffset-90 then
 			if veh.acParameters.leftAreaActive then
@@ -1399,7 +1397,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			else
 				local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 				turnData.stage     = 76					
-				angle              = turn75.alpha --AIVehicleExtension.getMaxAngleWithTool( veh, false )
+				angle              = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 			end
 		elseif onTrack then 
 			angle = nil
@@ -1418,9 +1416,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	
 		if x < turn75.radiusT - 0.5 then
 			veh.acTargetValue   = nil
-			turnData.stage     = turnData.stage + 1;					
-		--veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
-			angle                = turn75.alpha
+			turnData.stage      = turnData.stage + 1;					
+			angle               = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 		elseif x < turn75.radiusT then
 			angle = 2 * ( turn75.radiusT - x ) * turn75.alpha
 		end
@@ -1445,8 +1442,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				angle                = 0
 			else
 				turnData.stage     = turnData.stage + 1;					
-			--veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
-				angle                = turn75.alpha --AIVehicleExtension.getMaxAngleWithTool( veh, false )
+				angle              = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 			end
 		end
 				

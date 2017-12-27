@@ -153,6 +153,9 @@ function AIDriveStrategyMogli:update(dt)
 end
 
 function AIDriveStrategyMogli:draw()
+	if self.vehicle ~= nil and self.vehicle.aiveIsStarted then
+		self.vehicle.aiveToolAngleInfo = AutoSteeringEngine.radToString(AutoSteeringEngine.getToolAngle(self.vehicle))
+	end
 end
 
 function AIDriveStrategyMogli:addDebugText( s )
@@ -511,7 +514,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		tX         = nil
 		tZ         = nil
 		dist       = math.huge
-		speedLevel = 4
+		speedLevel = 1
 		
 		veh.turnTimer = veh.turnTimer + dt;
 		veh.waitForTurnTime = veh.waitForTurnTime + dt;
@@ -584,7 +587,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		end
 			
 	else
-		veh.acMinDistanceToStop = 1 + AIVEGlobals.fruitsInFront
+		veh.acMinDistanceToStop = math.max( 1, veh.acDimensions.toolDistance - veh.acDimensions.zBack ) + AIVEGlobals.fruitsInFront
 		if self.search ~= nil then
 			distanceToStop = math.huge 
 		else
@@ -592,7 +595,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		end
 	end		
 		
-	if not detected then
+	if not ( detected or isAtEnd ) then
 		speedLevel = 4
 	end
 	

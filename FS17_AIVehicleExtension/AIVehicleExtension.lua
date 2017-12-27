@@ -1634,6 +1634,14 @@ function AIVehicleExtension.calculateHeadland( turnMode, realWidth, zBack, toolD
 		frontToBack = math.max( toolDist - zBack, 1 )
 	end
 	
+--print("calculateHeadland: width: "..tostring(width)..
+--										   ", zBack: "..tostring(zBack)..
+--										", toolDist: "..tostring(toolDist)..
+--										", turnMode: "..tostring(turnMode)..
+--											", radius: "..tostring(radius)..
+--									 ", wheelBase: "..tostring(wheelBase)..
+--								 ", frontToBack: "..tostring(frontToBack))
+	
 	local ret = 0
 	if		 turnMode == "A"
 			or turnMode == "L" then
@@ -1967,28 +1975,32 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:getMaxAngleWithTool( outside )
 	
+	if AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then
+		if outside then
+			return -self.acDimensions.maxSteeringAngle
+		end
+		return self.acDimensions.maxSteeringAngle
+	end
+	
 	local angle
 	local toolAngle = AutoSteeringEngine.getToolAngle( self )	
 	if not self.acParameters.leftAreaActive then
 		toolAngle = -toolAngle
 	end
 	
+	local maxToolAngle = AutoSteeringEngine.getMaxToolAngle( self )
+	
 	if outside then
-		angle = -self.acDimensions.maxSteeringAngle + math.min( 2 * math.max( -toolAngle - AIVEGlobals.maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
+		angle = -self.acDimensions.maxSteeringAngle + math.min( 2 * math.max( -toolAngle - maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
 	else
-		angle =  self.acDimensions.maxSteeringAngle - math.min( 2 * math.max(  toolAngle - AIVEGlobals.maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
+		angle =  self.acDimensions.maxSteeringAngle - math.min( 2 * math.max(  toolAngle - maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
 	end
 	
-	if AIVEGlobals.devFeatures > 0 and math.abs( toolAngle ) >= AIVEGlobals.maxToolAngle - 0.01745 then
+	if AIVEGlobals.devFeatures > 0 and math.abs( toolAngle ) >= maxToolAngle - 0.01745 then
 		self:acDebugPrint( string.format("Tool angle: a: %0.1f° ms: %0.1f° to: %0.1f°", math.deg(angle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
 	end
 	
 	return angle
-	
---if outside then
---	return -self.acDimensions.maxSteeringAngle
---end
---return self.acDimensions.maxSteeringAngle
 end
 
 ------------------------------------------------------------------------
