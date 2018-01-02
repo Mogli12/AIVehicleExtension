@@ -315,11 +315,13 @@ function AutoSteeringEngine.processChainSetAngle( vehicle, a, indexStart, indexM
 					if j >= indexStraight then
 						j1 = j
 					else
-						print("*************************************************************************************************")
-						print("ERROR in AutoSteeringEngine:")
-						print("Wrong angle in buffer: "..tostring(j).."; "..tostring(indexMax).."; "..tostring(indexStart).."; "..tostring(a)
-									.."; "..tostring(vehicle.aiveChain.nodes[j].angle)
-									.."; "..tostring(vehicle.aiveChain.angleBuffer[id][j].a))
+						if AIVEGlobals.devFeatures > 0 then 
+							print("*************************************************************************************************")
+							print("ERROR in AutoSteeringEngine:")
+							print("Wrong angle in buffer: "..tostring(j).."; "..tostring(indexMax).."; "..tostring(indexStart).."; "..tostring(a)
+										.."; "..tostring(vehicle.aiveChain.nodes[j].angle)
+										.."; "..tostring(vehicle.aiveChain.angleBuffer[id][j].a))
+						end
 						j0 = j
 					end
 				end
@@ -4931,7 +4933,7 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 	
 		if b1 < 0 then
 			local tr   = 0
-			tr, b1, b2 = AutoSteeringEngine.getToolRadius( vehicle, vehicle.aiveChain.refNode, tool.obj, true )
+			tr, b1, b2 = AutoSteeringEngine.getToolRadius( vehicle, tool.refNode, tool.obj, true )
 			
 			if tool.b3 ~= nil then
 				b3 = tool.b3
@@ -6229,7 +6231,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 				vehicle.aiveChain.trace.itv2 = { AutoSteeringEngine.getParallelogram( xw1, zw1, xw2, zw2, offsetOutside ) }
 			end
 			
-			f = offsetOutside * math.max( 0.1 * vehicle.aiveChain.width, vehicle.aiveChain.offsetStd )
+			f = offsetOutside * vehicle.aiveChain.offsetStd
 			xw0 = xw0 + f * dxx
 			zw0 = zw0 + f * dzx
 			
@@ -7175,26 +7177,37 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		end
 	end
 	
+	local refNode = dirNode
 	if implement ~= nil and object.aiTurningRadiusLimitation ~= nil and object.aiTurningRadiusLimitation.rotationJoint ~= nil then
+		refNode = object.aiTurningRadiusLimitation.rotationJoint
+	end
+	
+	do
+		local rx,_,rz = localToLocal(refNode, vehicle.aiveChain.refNode, 0,0,0)
 
-		local refNode = object.aiTurningRadiusLimitation.rotationJoint
-		local rx,_,rz = localToLocal(refNode, dirNode, 0,0,0)
+	--b1  = Utils.vector2Length( rx, rz )
+		b1 = math.abs( rz )
 		
-	--b1 = rz
-		b1 = Utils.vector2Length( rx, rz )
+		if      vehicle.articulatedAxis        ~= nil
+				and vehicle.articulatedAxis.rotMax ~= nil 
+				and vehicle.articulatedAxis.rotMax > 0
+				and b1 > 0 then
+			b1 = b1 * math.cos( 0.5 * vehicle.articulatedAxis.rotMax )
+		end
 		
 		local b2x, b2z, b2i = 0, 0, 0
 		
 		local wheelIndices		
-		if groundContact then
+		
+		if object.aiTurningRadiusLimitation ~= nil and object.aiTurningRadiusLimitation.wheelIndices ~= nil then
+			wheelIndices = object.aiTurningRadiusLimitation.wheelIndices
+		elseif groundContact then
 			wheelIndices = {}
 			for wheelIndex, wheel in pairs(object.wheels) do
 				if wheel.hasGroundContact then
 					table.insert( wheelIndices, wheelIndex-1 )
 				end
 			end
-		elseif object.aiTurningRadiusLimitation.wheelIndices ~= nil then
-			wheelIndices = object.aiTurningRadiusLimitation.wheelIndices
 		else 
 			wheelIndices = {}
 			for wheelIndex, wheel in pairs(object.wheels) do
@@ -7202,8 +7215,28 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 			end
 		end
 
+		for _,wheelIndex in pairs(wheelIndices) do
+			local wheel = object.wheels[wheelIndex+1]
+			local x,_,z = localToLocal(wheel.repr, refNode, 0,0,0)
+			
+			b2x = b2x + x
+			b2z = b2z + z
+			b2i = b2i + 1
+		end
+		
+		if b2i > 1 then
+			b2x = b2x / b2i
+			b2z = b2z / b2i
+		end
+		
+		if math.abs( b2x ) < 0.1 then
+			b2 = b2z
+		elseif b2i > 0 then
+			b2 = Utils.vector2Length( b2x, b2z )
+		end
+		
 		-- get max rotation
-		local rotMax
+		local rotMax = nil
 		if refNode == object.attacherJoint.node then
 			local jointDesc = object.attacherVehicle.attacherJoints[implement.jointDescIndex]
 			rotMax = math.max(jointDesc.upperRotLimit[2], jointDesc.lowerRotLimit[2]) * object.attacherJoint.lowerRotLimitScale[2]
@@ -7211,59 +7244,18 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 			for _,compJoint in pairs(object.componentJoints) do
 				if refNode == compJoint.jointNode then
 					rotMax = compJoint.rotLimit[2]
-					if object.aiVehicleDirectionNode ~= nil then
-						cx,_,cz = localToLocal(object.aiVehicleDirectionNode, refNode, 0,0,0)
-					end
 					break
 				end
 			end
 		end
 		
-		if rotMax > vehicle.aiveChain.maxToolAngle then
+		if rotMax == nil or rotMax > vehicle.aiveChain.maxToolAngle then
 			rotMax = vehicle.aiveChain.maxToolAngle
 		end
-
-		for _,wheelIndex in pairs(wheelIndices) do
-			local wheel = object.wheels[wheelIndex+1]
-			local x,_,z = localToLocal(wheel.repr, refNode, 0,0,0)
-			local nx, nz = x+rx,z+rz
-			
-			b2x = b2x + nx
-			b2z = b2z + nz
-			b2i = b2i + 1
-			
-		--local cx,cz = 0,0
-    --
-		---- calc turning radius
-		--local x1 = x*math.cos(rotMax) - z*math.sin(rotMax)
-		--local z1 = x*math.sin(rotMax) + z*math.cos(rotMax)
-    --
-		--local dx = -z1
-		--local dz = x1
-		--if wheel.steeringAxleScale ~= 0 and wheel.steeringAxleRotMax ~= 0 then
-		--	local tmpx, tmpz = dx, dz
-		--	dx = tmpx*math.cos(wheel.steeringAxleRotMax) - tmpz*math.sin(wheel.steeringAxleRotMax)
-		--	dz = tmpx*math.sin(wheel.steeringAxleRotMax) + tmpz*math.cos(wheel.steeringAxleRotMax)
-		--end
-    --
-		--local hit,f1,f2 = Utils.getLineLineIntersection2D(cx,cz, 1,0, x1,z1, dx,dz)
-		--
-		--if hit and math.abs(f1) < 20 then
-		--	radius = math.max(radius, math.abs(f1))
-		--end
-		end
 		
-		if b2i == 1 then
-			b2 = Utils.vector2Length( b2x, b2z )
-		elseif b2i > 0 then
-			b2 = Utils.vector2Length( b2x / b2i, b2z / b2i )
-		end
-		
-		if b2 > b1 then
-			b2 = b2 - b1
-		elseif b2 > 0 then
-			b2 = 0
-		end
+	--if b2 > 1e-3 then
+	--	rotMax = math.min( rotMax, 0.5*math.pi-math.atan( 1.5 / b2 ) )
+	--end
 
 		if rotMax > 0 then
 			radius = math.max( radius, ( b1 * math.cos( rotMax ) + b2 ) / math.sin( rotMax ) )
@@ -7275,12 +7267,13 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		radius = math.max( radius, math.sqrt( b2*b2 - b1*b1 ) )
 	end
 	
-	if object.aiTurningRadiusLimitation ~= nil then
-		if object.aiTurningRadiusLimitation.radius ~= nil then
-			radius = object.aiTurningRadiusLimitation.radius
-		end
+	if      vehicle.articulatedAxis        ~= nil
+			and vehicle.articulatedAxis.rotMax ~= nil 
+			and vehicle.articulatedAxis.rotMax > 0
+			and b1 > 0 then
+		radius = radius + b1 * math.tan( 0.5 * vehicle.articulatedAxis.rotMax )
 	end
-
+	
 	return radius, -b1, -b2
 
 end
@@ -7398,8 +7391,9 @@ end
 ------------------------------------------------------------------------
 -- checkToolIsReadyForWork
 ------------------------------------------------------------------------
-function AutoSteeringEngine.checkToolIsReadyForWork( self )
-	if SpecializationUtil.hasSpecialization(Attachable, self.specializations) then
+function AutoSteeringEngine.checkToolIsReadyForWork( self, noLower )
+	local checkIsLowered = not ( noLower )
+	if checkIsLowered and SpecializationUtil.hasSpecialization(Attachable, self.specializations) then
 		if self.lowerAnimation ~= nil then
 			local t = self:getAnimationTime(self.lowerAnimation);
 			if self.lowerAnimationSpeed > 0 then
@@ -7408,7 +7402,6 @@ function AutoSteeringEngine.checkToolIsReadyForWork( self )
 			if     t == 1 then
 				return false
 			elseif t >  1e-3 then
-				print(self.configFileName.." / A1 / "..tostring(t))
 				return nil
 			end
 		end
@@ -7421,7 +7414,6 @@ function AutoSteeringEngine.checkToolIsReadyForWork( self )
 			elseif jointDesc.moveAlpha == jointDesc.upperAlpha then
 				return false
 			elseif math.abs( jointDesc.moveAlpha - jointDesc.lowerAlpha ) > 1e-3 then
-				print(self.configFileName.." / A2 / "..tostring(jointDesc.moveAlpha).." / "..tostring(jointDesc.lowerAlpha))
 				return nil
 			end
 		end
@@ -7431,6 +7423,8 @@ function AutoSteeringEngine.checkToolIsReadyForWork( self )
 		if table.getn(self.foldingParts) > 0 then
 			if self.foldAnimTime > self.turnOnFoldMaxLimit or self.foldAnimTime < self.turnOnFoldMinLimit then
 				return nil
+			elseif noLower then
+			-- ok
 			elseif self.turnOnFoldDirection == -1 then
 				if self.foldAnimTime > 1e-3 then
 					return false
@@ -7459,7 +7453,6 @@ function AutoSteeringEngine.checkToolIsReadyForWork( self )
 				elseif jointDesc.moveAlpha == jointDesc.upperAlpha then
 					return false
 				elseif jointDesc.moveAlpha ~= jointDesc.lowerAlpha then
-					print(self.configFileName.." / MB / "..tostring(jointDesc.moveAlpha).." / "..tostring(jointDesc.lowerAlpha))
 					return nil
 				end
 			end
@@ -7470,7 +7463,6 @@ function AutoSteeringEngine.checkToolIsReadyForWork( self )
 		if self.rotationPart.turnAnimation ~= nil then
 			local animTime = self:getAnimationTime(self.rotationPart.turnAnimation);
 			if 1e-3 < animTime and animTime < 0.999 then
-				print(self.configFileName.." / P / "..tostring(animTime))
 				return nil
 			end
 		end
@@ -7491,7 +7483,7 @@ function AutoSteeringEngine.checkIsAnimPlaying( vehicle, moveDown )
 		return false, false
 	end
 	
-	if moveDown and vehicle.aiveHas.combineVehicle and not ( AutoSteeringEngine.checkToolIsReadyForWork( vehicle ) ) then
+	if moveDown and vehicle.aiveHas.combineVehicle and not ( AutoSteeringEngine.checkToolIsReadyForWork( vehicle, true ) ) then
 		vehicle:getIsAIReadyForWork()
 		vehicle:aiTurnOn()
 	end
@@ -7524,7 +7516,7 @@ function AutoSteeringEngine.checkIsAnimPlaying( vehicle, moveDown )
  		end
 		
 		if moveDown and tool.targetLowerState then
-			if not ( AutoSteeringEngine.checkToolIsReadyForWork( tool.obj ) ) then
+			if not ( AutoSteeringEngine.checkToolIsReadyForWork( tool.obj, true ) ) then
 				tool.obj:getIsAIReadyForWork()
 				tool.obj:aiTurnOn()
 			end
@@ -7731,13 +7723,13 @@ function AutoSteeringEngine.getMaxSteeringAngle75( vehicle, invert )
 			local r       = vehicle.aiveChain.radius
 			for _,tool in pairs(vehicle.aiveChain.tools) do
 				if tool.aiForceTurnNoBackward then
-					local tr, b1, b2 = AutoSteeringEngine.getToolRadius( vehicle, vehicle.aiveChain.refNode, tool.obj, true )
+					local tr, b1, b2 = AutoSteeringEngine.getToolRadius( vehicle, tool.refNode, tool.obj, true )
 					local b3 = 0
 					if tool.b3 ~= nil then
 						b3 = tool.b3
 					end
 					radius  = math.max( radius, tr )
-					radiusT = math.min( radiusT, math.sqrt( math.max( tr*tr + b1*b1 - b2*b2 - b3*b3, 0 ) ) )
+					radiusT = math.min( radiusT, math.sqrt( math.max( radius*radius + b1*b1 - b2*b2 - b3*b3, 0 ) ) )
 				end
 			end 
 			
@@ -7891,17 +7883,21 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 				else
 					zz = tvz
 				end
-				
-				if     tvx >  1 then
+						
+				if shiftT <= 0 or math.abs( tvx ) < 0.5 then
+					shiftT = 0
+				elseif tvx > 0 then
 					if not vehicle.aiveChain.leftActive then
-						shiftT = math.max( 0, math.min( shiftT * 0.8, shiftT - 0.5 ) )
-					end
-				elseif tvx < -1 then
-					if vehicle.aiveChain.leftActive then
-						shiftT = math.max( 0, math.min( shiftT * 0.8, shiftT - 0.5 ) )
+						shiftT = math.max( 0, shiftT * 0.8, shiftT - 0.5 )
+					else
+						shiftT = math.max( 0, math.min( shiftT * 0.75, shiftT - 1 ) )
 					end
 				else
-					shiftT = 0
+					if vehicle.aiveChain.leftActive then
+						shiftT = math.max( 0, shiftT * 0.8, shiftT - 0.5 )
+					else
+						shiftT = math.max( 0, math.min( shiftT * 0.75, shiftT - 1 ) )
+					end
 				end
 			end
 			
@@ -8506,7 +8502,7 @@ function AutoSteeringEngine.setToolsAreLowered( vehicle, isLowered, immediate, o
 		vehicle.aiveChain.tools[i].targetLowerState = isLowered		
 	end	
 	
-	if isLowered and vehicle.aiveHas.combineVehicle and not ( AutoSteeringEngine.checkToolIsReadyForWork( vehicle ) ) then
+	if isLowered and vehicle.aiveHas.combineVehicle and not ( AutoSteeringEngine.checkToolIsReadyForWork( vehicle, true ) ) then
 		vehicle:getIsAIReadyForWork()
 		vehicle:aiTurnOn()
 	end
@@ -8571,11 +8567,16 @@ function AutoSteeringEngine.ensureToolIsLowered( vehicle, isLowered, indexFilter
 		local tool = vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i]
 		
 		if indexFilter == nil or indexFilter <= 0 or i == indexFilter then
-			if tool.targetLowerState == nil or tool.currentLowerState == nil then
+			if tool.targetLowerState == nil then
+				if AIVEGlobals.devFeatures > 0 then print(tool.obj.configFileName..", "..tostring(isLowered)..": no target lowered state") end
+				doit = true
+			elseif tool.targetLowerState == isLowered and tool.currentLowerState == nil then
+				if AIVEGlobals.devFeatures > 0 then print(tool.obj.configFileName..", "..tostring(isLowered)..": no current lowered state") end
 				doit = true
 			elseif tool.targetLowerState == isLowered then
 				if     ( tool.targetLowerState and not ( tool.currentLowerState ) ) 
 						or ( not ( tool.targetLowerState ) and tool.currentLowerState ) then
+					if AIVEGlobals.devFeatures > 0 then print(tool.obj.configFileName..", "..tostring(tool.currentLowerState).." -> "..tostring(tool.targetLowerState)) end
 					doit = true
 				end
 			end

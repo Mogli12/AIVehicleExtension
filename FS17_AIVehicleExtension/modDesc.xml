@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="37">
 	<author>Mogli</author>
-	<version>1.0.1.7</version>
+	<version>1.0.1.8</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v1.1 b17</en>
-			<de>AI Vehicle Extension v1.1 b17</de>
-			<fr>AI Vehicle Extension v1.1 b17</fr>
-			<it>AI Vehicle Extension v1.1 b17</it>
-			<ru>AI Vehicle Extension v1.1 b17</ru>
-			<cz>AI Vehicle Extension v1.1 b17</cz>
-			<pl>AI Vehicle Extension v1.1 b17</pl>
-										<cs>车辆助手 v1.1 b17</cs>
+			<en>AI Vehicle Extension v1.1 b18</en>
+			<de>AI Vehicle Extension v1.1 b18</de>
+			<fr>AI Vehicle Extension v1.1 b18</fr>
+			<it>AI Vehicle Extension v1.1 b18</it>
+			<ru>AI Vehicle Extension v1.1 b18</ru>
+			<cz>AI Vehicle Extension v1.1 b18</cz>
+			<pl>AI Vehicle Extension v1.1 b18</pl>
+										<cs>车辆助手 v1.1 b18</cs>
 		</text>
 	</l10n>
 	<title>
@@ -149,13 +149,14 @@ AIVehicleExtension - Polskie tłumaczenie Dzi4d3k]]></pl>
 	</extraSourceFiles>
 
 	<inputBindings>
-		<input name="AIVE_HELPPANEL" 	     category="VEHICLE" key1="KEY_lctrl KEY_h" 	key2="" button="" device="0" mouse="" />
-		<input name="AIVE_STEER"           category="VEHICLE" key1="KEY_lalt KEY_h"   key2="" button="" device="0" mouse="" />
-		<input name="AIVE_SWAP_SIDE"       category="VEHICLE" key1="KEY_lalt KEY_6" 	key2="" button="" device="0" mouse="" />
-		<input name="AIVE_ENABLE"          category="VEHICLE" key1=""  								key2="" button="" device="0" mouse="" />
-		<input name="AIVE_UTURN_ON_OFF"    category="VEHICLE" key1="KEY_lalt KEY_5"   key2="" button="" device="0" mouse="" />
-		<input name="AIVE_STEERING"        category="VEHICLE" key1=""   							key2="" button="" device="0" mouse="" />
-		<input name="AIVE_RAISE"           category="VEHICLE" key1="KEY_lalt KEY_v"   key2="" button="" device="0" mouse="" />
-		<input name="AIVE_START_AIVE"      category="VEHICLE" key1="KEY_lshift KEY_h" key2="" button="" device="0" mouse="" />
+		<input name="AIVE_HELPPANEL" 	     category="VEHICLE" key1="KEY_lctrl KEY_h" 		key2="" button="" device="0" mouse="" />
+		<input name="AIVE_STEER"           category="VEHICLE" key1="KEY_lalt KEY_h"  		key2="" button="" device="0" mouse="" />
+		<input name="AIVE_SWAP_SIDE"       category="VEHICLE" key1="KEY_lalt KEY_6"  		key2="" button="" device="0" mouse="" />
+		<input name="AIVE_ENABLE"          category="VEHICLE" key1=""  							 		key2="" button="" device="0" mouse="" />
+		<input name="AIVE_UTURN_ON_OFF"    category="VEHICLE" key1="KEY_lalt KEY_5"  		key2="" button="" device="0" mouse="" />
+		<input name="AIVE_STEERING"        category="VEHICLE" key1=""   						 		key2="" button="" device="0" mouse="" />
+		<input name="AIVE_RAISE"           category="VEHICLE" key1="KEY_lalt KEY_v"  		key2="" button="" device="0" mouse="" />
+		<input name="AIVE_START_AIVE"      category="VEHICLE" key1="KEY_lshift KEY_h"		key2="" button="" device="0" mouse="" />
+		<input name="AIVE_NEXT_WORKER"     category="VEHICLE" key1="KEY_lctrl KEY_tab"	key2="" button="" device="0" mouse="" />
 	</inputBindings>
 </modDesc>

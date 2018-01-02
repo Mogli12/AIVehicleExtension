@@ -1339,6 +1339,8 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 
 		angle = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 		
+		veh:acDebugPrint("T71: "..AutoSteeringEngine.radToString(angle))
+		
 		if turnAngle < angleOffset then
 			turnData.stage     = turnData.stage + 1;					
 			veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
@@ -1350,13 +1352,12 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 -- now turn 90°
 	elseif turnData.stage == 72 then	
 
-		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
-		if veh.acParameters.leftAreaActive then x = -x end
-		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
-				
 		angle = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 		
+		veh:acDebugPrint("T72: "..AutoSteeringEngine.radToString(angle))
+		
 		if turnAngle < angleOffset-90 then
+			local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 			if veh.acParameters.leftAreaActive then
 				AIVehicle.aiRotateLeft(veh);
 			else
@@ -1365,16 +1366,19 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			
 			angle2, onTrack, tX, tZ  = AutoSteeringEngine.navigateToSavePoint( veh, 1 )		
 			
+			local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
+			if veh.acParameters.leftAreaActive then x = -x end
+					
 			if onTrack then
-				turnData.stage     = turnData.stage + 1;					
-				angle = nil
+				turnData.stage = turnData.stage + 1;					
+				angle          = nil
 			elseif x < turn75.radiusT + 0.5 then
 				turnData.stage = turnData.stage + 2;	
-				angle2 = nil
+				angle2         = nil
 			else
-				turnData.stage     = turnData.stage + 1;					
-				angle                = 0
-				angle2 = nil
+				turnData.stage = turnData.stage + 1;					
+				angle          = 0
+				angle2         = nil
 			end
 		end
 
@@ -1395,7 +1399,6 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				turnData.stage     = 79				
 				angle              = 0
 			else
-				local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 				turnData.stage     = 76					
 				angle              = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 			end
@@ -2340,6 +2343,13 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			angle2 =  angle
 		else
 			angle2 = -angle
+		end
+		
+		if      self.lastDirection    ~= nil
+				and self.lastDirection[3] ~= nil
+				and self.lastDirection[4] ~= nil
+				and self.lastDirection[4] == moveForwards then
+			angle2 = self.lastDirection[3] + 0.1 * ( angle2 - self.lastDirection[3] )
 		end
 	else
 		angle2 = 0

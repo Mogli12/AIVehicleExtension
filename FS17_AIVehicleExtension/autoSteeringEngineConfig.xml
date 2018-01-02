@@ -2,7 +2,7 @@
 <AIVEGlobals>
     <aiSteering type="float" value="1.000000" />
     <aiSteeringD type="float" value="-1.000000" />
-    <artSteering type="float" value="0.250000" />
+    <artSteering type="float" value="1.000000" />
     <artSteeringD type="float" value="1.000000" />
     <!--angleSafety type="float" value="0.800000" /-->
     <angleSafety type="float" value="0.8" />
@@ -90,7 +90,7 @@
 		<maxDtDistF type="float" value="0.077284" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
 				
 		<maxTurnCheck type="float" value="15"/>		
-		<maxToolAngle type="degree" value="60" />
+		<maxToolAngle type="degree" value="75" />
 		<maxToolAngle2 type="degree" value="9" />
 		<maxToolAngleF type="float" value="0.2" />
 		<maxToolAngleA type="degree" value="75" />

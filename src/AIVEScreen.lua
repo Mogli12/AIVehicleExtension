@@ -102,11 +102,25 @@ function AIVEScreen:onOpen()
 							i = 3
 						end
 						
+						local st, bt = " (-)", " (+)"
+						local sbtt   = false
+						if self.vehicle.aiveIsStarted or ( self.vehicle.acTurnStage ~= nil and self.vehicle.acTurnStage >= 198 ) then
+							sbtt = true
+						elseif self.vehicle.isServer then
+							sbtt = true
+							AIVehicleExtension.checkState( self.vehicle )
+						end
+						
+						if sbtt then
+							local s, b = AIVehicleExtension.getHeadlandSmallBig( self.vehicle )
+							st = string.format(" (%5.2fm)",s)
+							bt = string.format(" (%5.2fm)",b)
+						end
 						local s, b = AIVehicleExtension.getHeadlandSmallBig( self.vehicle )
 						
 						element:setTexts({ AIVEHud.getText("AIVE_HEADLAND_ON"),
-															 AIVEHud.getText("AIVE_HEADLAND")..string.format(" (%5.2fm)",s),
-															 AIVEHud.getText("AIVE_HEADLAND")..string.format(" (%5.2fm)",b) })
+															 AIVEHud.getText("AIVE_HEADLAND")..st,
+															 AIVEHud.getText("AIVE_HEADLAND")..bt })
 					elseif s.parameter == "turnModeIndex"  then					
 						i = struct[self.turnIndexComp]												
 					elseif s.parameter == "rightLeft" then
