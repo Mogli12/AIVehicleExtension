@@ -7,6 +7,7 @@ source(Utils.getFilename("AIVEScreen.lua", g_currentModDirectory));
 
 if SpecializationUtil.specializations["AIVehicleExtension"] == nil then
 	SpecializationUtil.registerSpecialization("AIVehicleExtension", "AIVehicleExtension", g_currentModDirectory.."AIVehicleExtension.lua")
+	SpecializationUtil.registerSpecialization("AIVEImplement", "AIVEImplement", g_currentModDirectory.."AIVEImplement.lua")
 	AIVehicleExtensionRegister.isLoaded = false;
 end;
 
@@ -64,6 +65,7 @@ function AIVehicleExtensionRegister:add()
 		local modName         = string.match(k, "([^.]+)");
 		local doNotAdd        = true;
 		local correctLocation = false;
+		local isImplement     = false;
 		local specMask        = 0
 		
 		for _, search in pairs(searchTable) do
@@ -90,6 +92,9 @@ function AIVehicleExtensionRegister:add()
 				specMask = specMask + 1
 				break;
 			elseif  vs ~= nil 
+					and vs == SpecializationUtil.getSpecialization("attachable") then
+				isImplement = true
+			elseif  vs ~= nil 
 					and vs == SpecializationUtil.getSpecialization("hirable") then
 				specMask = specMask + 2
 			elseif  vs ~= nil 
@@ -109,6 +114,8 @@ function AIVehicleExtensionRegister:add()
 		--print("  AIVehicleExtension was inserted on " .. k);
 		elseif correctLocation and not doNotAdd then
 		--print("  Failed to inserting AIVehicleExtension on " .. k);
+		elseif isImplement then
+			table.insert(v.specializations, SpecializationUtil.getSpecialization("AIVEImplement"));
 		end;
 	end;
 	

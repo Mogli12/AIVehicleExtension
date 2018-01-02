@@ -107,6 +107,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.offTracking   = 0
 	AIVEGlobals.prohibitAI    = 0
 	AIVEGlobals.lastBestFactor= 0
+	AIVEGlobals.tm7StopEarly  = 0
 	
 	local file
 	file = AIVECurrentModDir.."autoSteeringEngineConfig.xml"
@@ -2526,9 +2527,18 @@ function AutoSteeringEngine.hasFruits( vehicle, checkLowerAdvance )
 			local gotFruits = false
 			local gotField  = false
 			local back      = math.min( toolParam.zBack - toolParam.zReal, 0 )
+			
+			if      AIVEGlobals.tm7StopEarly    > 0
+					and vehicle.aiveChain.turnMode == "7" 
+					and toolParam.width             > 2 
+					and toolParam.zBack             < 0
+					and vehicle.aiveChain.inField
+					and vehicle.aiveChain.isAtEnd then
+				back = back + toolParam.width - 1
+			end
+			
 			local front     = math.max( back, 0 )
-			
-			
+
 			if      tool.currentLowerState == nil then
 				front = front + AIVEGlobals.fruitsAdvance
 			elseif  tool.currentLowerState 
@@ -6874,13 +6884,17 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	tool.isFoldable              = SpecializationUtil.hasSpecialization(Foldable, object.specializations)
 	tool.configFileName          = string.lower( Utils.removeModDirectory(object.configFileName) )
 	
+	if tool.isSprayer and not ( object.allowsSpraying ) and object.aiLeftMarker == nil and object.aiRightMarker == nil then
+		return 0
+	end
+	
 	if     tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhntf1500.xml" then
 		tool.ignoreAI              = true
-	elseif false and tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhndc401.xml" then
-		tool.isPlough              = true
-		tool.isCultivator          = false
-		tool.ploughTransport       = false
-		tool.aiForceTurnNoBackward = false
+--elseif tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhndc401.xml" then
+--	tool.isPlough              = true
+--	tool.isCultivator          = false
+--	tool.ploughTransport       = false
+--	tool.aiForceTurnNoBackward = false
 	elseif tool.configFileName == "data/vehicles/trailers/grimme/grimmerootster604.xml" then
 		tool.aiForceTurnNoBackward = true
 	elseif tool.configFileName == "data/vehicles/tools/greatplains/gp3p1006nt.xml" then
@@ -6943,7 +6957,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 			marker[#marker+1] = object.aiLeftMarker
 			marker[#marker+1] = object.aiRightMarker
 		elseif ( object.wheels ~= nil and trailer )
-				or tool.isTurnOnVehicle
+				or tool.isTurnOnVehicle 
 				or tool.hasWorkAreas then
 			marker[1] = reference
 			marker[2] = reference
@@ -7209,66 +7223,34 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 			rotMax = vehicle.aiveChain.maxToolAngle
 		end
 
-		if vehicle.articulatedAxis == nil then
-			for _,wheelIndex in pairs(wheelIndices) do
-
-				-- use first component as cosy?!
-				local wheel = object.wheels[wheelIndex+1]
-			--local nx,_,nz = localToLocal(wheel.repr, dirNode, 0,0,0)
-			--
-			--local x,z = nx-rx, nz-rz
-				local x,_,z = localToLocal(wheel.repr, refNode, 0,0,0)
-				local nx, nz = x+rx,z+rz
-				
-				b2x = b2x + nx
-				b2z = b2z + nz
-				b2i = b2i + 1
-				
-				local cx,cz = 0,0
-
-				-- calc turning radius
-				local x1 = x*math.cos(rotMax) - z*math.sin(rotMax)
-				local z1 = x*math.sin(rotMax) + z*math.cos(rotMax)
-
-				local dx = -z1
-				local dz = x1
-				if wheel.steeringAxleScale ~= 0 and wheel.steeringAxleRotMax ~= 0 then
-					local tmpx, tmpz = dx, dz
-					dx = tmpx*math.cos(wheel.steeringAxleRotMax) - tmpz*math.sin(wheel.steeringAxleRotMax)
-					dz = tmpx*math.sin(wheel.steeringAxleRotMax) + tmpz*math.cos(wheel.steeringAxleRotMax)
-				end
-
-				local hit,f1,f2 = Utils.getLineLineIntersection2D(cx,cz, 1,0, x1,z1, dx,dz)
-				if hit then
-					radius = math.max(radius, math.abs(f1))
-				end
-			end
-		else
-			local x,_,z = localToLocal(vehicle.aiveChain.refNode, refNode, 0,0,0)
+		for _,wheelIndex in pairs(wheelIndices) do
+			local wheel = object.wheels[wheelIndex+1]
+			local x,_,z = localToLocal(wheel.repr, refNode, 0,0,0)
 			local nx, nz = x+rx,z+rz
 			
 			b2x = b2x + nx
 			b2z = b2z + nz
 			b2i = b2i + 1
 			
-			local cx,cz = 0,0
-
-			-- calc turning radius
-			local x1 = x*math.cos(rotMax) - z*math.sin(rotMax)
-			local z1 = x*math.sin(rotMax) + z*math.cos(rotMax)
-
-			local dx = -z1
-			local dz = x1
-			if vehicle.articulatedAxis.rotMax ~= nil then
-				local tmpx, tmpz = dx, dz
-				dx = tmpx*math.cos(vehicle.articulatedAxis.rotMax) - tmpz*math.sin(vehicle.articulatedAxis.rotMax)
-				dz = tmpx*math.sin(vehicle.articulatedAxis.rotMax) + tmpz*math.cos(vehicle.articulatedAxis.rotMax)
-			end
-
-			local hit,f1,f2 = Utils.getLineLineIntersection2D(cx,cz, 1,0, x1,z1, dx,dz)
-			if hit then
-				radius = math.max(radius, math.abs(f1))
-			end
+		--local cx,cz = 0,0
+    --
+		---- calc turning radius
+		--local x1 = x*math.cos(rotMax) - z*math.sin(rotMax)
+		--local z1 = x*math.sin(rotMax) + z*math.cos(rotMax)
+    --
+		--local dx = -z1
+		--local dz = x1
+		--if wheel.steeringAxleScale ~= 0 and wheel.steeringAxleRotMax ~= 0 then
+		--	local tmpx, tmpz = dx, dz
+		--	dx = tmpx*math.cos(wheel.steeringAxleRotMax) - tmpz*math.sin(wheel.steeringAxleRotMax)
+		--	dz = tmpx*math.sin(wheel.steeringAxleRotMax) + tmpz*math.cos(wheel.steeringAxleRotMax)
+		--end
+    --
+		--local hit,f1,f2 = Utils.getLineLineIntersection2D(cx,cz, 1,0, x1,z1, dx,dz)
+		--
+		--if hit and math.abs(f1) < 20 then
+		--	radius = math.max(radius, math.abs(f1))
+		--end
 		end
 		
 		if b2i == 1 then
@@ -7283,12 +7265,16 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 			b2 = 0
 		end
 
-	end
-	
-	if radius > 20 then
-		radius = 20.1
+		if rotMax > 0 then
+			radius = math.max( radius, ( b1 * math.cos( rotMax ) + b2 ) / math.sin( rotMax ) )
+		end
 	end
 
+	local dummy = radius 
+	if b2 > b1 then
+		radius = math.max( radius, math.sqrt( b2*b2 - b1*b1 ) )
+	end
+	
 	if object.aiTurningRadiusLimitation ~= nil then
 		if object.aiTurningRadiusLimitation.radius ~= nil then
 			radius = object.aiTurningRadiusLimitation.radius
@@ -7410,6 +7396,90 @@ function AutoSteeringEngine.checkAllowedToDrive( vehicle, checkFillLevel, checkF
 end
 
 ------------------------------------------------------------------------
+-- checkToolIsReadyForWork
+------------------------------------------------------------------------
+function AutoSteeringEngine.checkToolIsReadyForWork( self )
+	if SpecializationUtil.hasSpecialization(Attachable, self.specializations) then
+		if self.lowerAnimation ~= nil then
+			local t = self:getAnimationTime(self.lowerAnimation);
+			if self.lowerAnimationSpeed > 0 then
+				t = 1 - t
+			end
+			if     t == 1 then
+				return false
+			elseif t >  1e-3 then
+				print(self.configFileName.." / A1 / "..tostring(t))
+				return nil
+			end
+		end
+
+		local implement = self.attacherVehicle:getImplementByObject(self);
+		local jointDesc = self.attacherVehicle.attacherJoints[implement.jointDescIndex];
+		if jointDesc.allowsLowering and self.aiNeedsLowering then
+			if not jointDesc.moveDown then
+				return false
+			elseif jointDesc.moveAlpha == jointDesc.upperAlpha then
+				return false
+			elseif math.abs( jointDesc.moveAlpha - jointDesc.lowerAlpha ) > 1e-3 then
+				print(self.configFileName.." / A2 / "..tostring(jointDesc.moveAlpha).." / "..tostring(jointDesc.lowerAlpha))
+				return nil
+			end
+		end
+	end
+	
+	if SpecializationUtil.hasSpecialization(Foldable, self.specializations) then
+		if table.getn(self.foldingParts) > 0 then
+			if self.foldAnimTime > self.turnOnFoldMaxLimit or self.foldAnimTime < self.turnOnFoldMinLimit then
+				return nil
+			elseif self.turnOnFoldDirection == -1 then
+				if self.foldAnimTime > 1e-3 then
+					return false
+				end
+			else
+				if self.foldAnimTime < 0.999 then
+					return false
+				end
+			end
+		end
+	end
+	
+	if SpecializationUtil.hasSpecialization(TurnOnVehicle, self.specializations) then
+		if self:getCanBeTurnedOn() and not self:getIsTurnedOn() then
+			return false
+		end
+	end
+	
+	if SpecializationUtil.hasSpecialization(ManureBarrel, self.specializations) then
+		if self.attachedTool ~= nil then
+			local implement = self:getImplementByObject(self.attachedTool);
+			local jointDesc = self.attacherJoints[implement.jointDescIndex];
+			if jointDesc.allowsLowering and self.attachedTool.aiNeedsLowering then
+				if not jointDesc.moveDown then
+					return false
+				elseif jointDesc.moveAlpha == jointDesc.upperAlpha then
+					return false
+				elseif jointDesc.moveAlpha ~= jointDesc.lowerAlpha then
+					print(self.configFileName.." / MB / "..tostring(jointDesc.moveAlpha).." / "..tostring(jointDesc.lowerAlpha))
+					return nil
+				end
+			end
+		end
+	end
+	
+	if SpecializationUtil.hasSpecialization(Plough, self.specializations) then
+		if self.rotationPart.turnAnimation ~= nil then
+			local animTime = self:getAnimationTime(self.rotationPart.turnAnimation);
+			if 1e-3 < animTime and animTime < 0.999 then
+				print(self.configFileName.." / P / "..tostring(animTime))
+				return nil
+			end
+		end
+	end
+	
+	return true
+end
+
+------------------------------------------------------------------------
 -- checkIsAnimPlaying
 ------------------------------------------------------------------------
 function AutoSteeringEngine.checkIsAnimPlaying( vehicle, moveDown )
@@ -7421,11 +7491,8 @@ function AutoSteeringEngine.checkIsAnimPlaying( vehicle, moveDown )
 		return false, false
 	end
 	
-	if      moveDown 
-			and vehicle.aiveHas.combineVehicle
-			and vehicle:getCanBeTurnedOn( )
-			and not vehicle:getIsTurnedOn( ) then
-		vehicle:setIsTurnedOn( true )
+	if moveDown and vehicle.aiveHas.combineVehicle and not ( AutoSteeringEngine.checkToolIsReadyForWork( vehicle ) ) then
+		vehicle:getIsAIReadyForWork()
 		vehicle:aiTurnOn()
 	end
 	
@@ -7457,10 +7524,8 @@ function AutoSteeringEngine.checkIsAnimPlaying( vehicle, moveDown )
  		end
 		
 		if moveDown and tool.targetLowerState then
-			if      tool.isTurnOnVehicle
-					and tool.obj:getCanBeTurnedOn( )
-					and not tool.obj:getIsTurnedOn( ) then
-				tool.obj:setIsTurnedOn( true )
+			if not ( AutoSteeringEngine.checkToolIsReadyForWork( tool.obj ) ) then
+				tool.obj:getIsAIReadyForWork()
 				tool.obj:aiTurnOn()
 			end
 			
@@ -7506,9 +7571,7 @@ function AutoSteeringEngine.checkToolIsReady( tool )
 	local result   = nil
 	local noSneak  = false
 	
-	if      tool.isTurnOnVehicle
-			and tool.obj:getCanBeTurnedOn( )
-			and not tool.obj:getIsTurnedOn( ) then
+	if not ( AutoSteeringEngine.checkToolIsReadyForWork( tool.obj ) ) then
 		return false, true
 	end
 	
@@ -8315,7 +8378,7 @@ end
 -- setToolsAreTurnedOn
 ------------------------------------------------------------------------
 function AutoSteeringEngine.setToolsAreTurnedOn( vehicle, isTurnedOn, immediate, objectFilter )
-	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
+	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
 		return
 	end
 	
@@ -8357,38 +8420,20 @@ function AutoSteeringEngine.areToolsLowered( vehicle )
 	if     vehicle.aiveChain           == nil 
 			or vehicle.aiveChain.toolCount == nil 
 			or vehicle.aiveChain.toolCount <  0 then
-		return true 
+		return nil 
 	end
-	
 	for _,tool in pairs( vehicle.aiveChain.tools ) do
-		local self = tool.obj
-		
-		if tool.isTurnOnVehicle then
-			if not self:getCanBeTurnedOn() then
-				return false 
-			end
-			if not self:getIsTurnedOn() then
-				return false 
-			end
-		end
-		
-		if self.attacherVehicle ~= nil and ( self.needsLowering or self.aiNeedsLowering ) then
-		--for _,implement in pairs(self.attacherVehicle.attachedImplements) do
-		--	if implement.object == self then
-		--		local jointDesc = self.attacherVehicle.attacherJoints[implement.jointDescIndex]
-		--		if not jointDesc.moveDown then
-		--			return false 
-		--		end
-		--	end
-		--end
-			if not ( self:isLowered( true ) ) then
+		if not tool.ignoreAI then
+			local atl = AutoSteeringEngine.checkToolIsReadyForWork( tool.obj ) 
+			if atl == nil then
+				return nil
+			elseif not atl then
 				return false
 			end
 		end
 	end
-	
 	return true
-end	
+end
 
 ------------------------------------------------------------------------
 -- setToolIsLowered
@@ -8415,20 +8460,22 @@ function AutoSteeringEngine.setToolIsLowered( vehicle, tool, isLowered )
 		end
 	end
 	
-	if isLowered and vehicle.aiveHas.combineVehicle and vehicle:getCanBeTurnedOn() and not vehicle:getIsTurnedOn() then
-		vehicle:setIsTurnedOn( true )
+	if isLowered and vehicle.aiveHas.combineVehicle and not ( AutoSteeringEngine.checkToolIsReadyForWork( vehicle ) ) then
+		vehicle:getIsAIReadyForWork()
 		vehicle:aiTurnOn()
 	end
 		
-	local self = tool.obj
 	if isLowered then
-		if tool.isTurnOnVehicle and self:getCanBeTurnedOn() and not self:getIsTurnedOn() then
-			self:setIsTurnedOn( true )
-			self:aiTurnOn()
+		if tool.turnOnVehicle and tool.obj:getIsTurnedOnAllowed(true) then
+			tool.obj:setIsTurnedOn(true)
 		end
-		self:aiLower()
+		if not ( AutoSteeringEngine.checkToolIsReadyForWork( tool.obj ) ) then
+			tool.obj:getIsAIReadyForWork()
+			tool.obj:aiTurnOn()
+		end
+		tool.obj:aiLower()
 	else
-		self:aiRaise()
+		tool.obj:aiRaise()
 	end
 end
 
@@ -8436,26 +8483,35 @@ end
 -- setToolsAreLowered
 ------------------------------------------------------------------------
 function AutoSteeringEngine.setToolsAreLowered( vehicle, isLowered, immediate, objectFilter )
-	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolParams ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
+	if not ( vehicle.aiveChain            ~= nil
+			 and vehicle.aiveChain.toolCount  ~= nil
+			 and vehicle.aiveChain.toolParams ~= nil
+			 and vehicle.aiveChain.toolCount  >= 1 ) then
 		return
 	end
 	
 --local doItNow = vehicle.aiveHas.combine
 	local doItNow = false
+	if immediate then 
+		doItNow = true
+	end
 		
 	for i=1,vehicle.aiveChain.toolCount do		
-		if vehicle.aiveChain.tools[i].currentLowerState == nil then
+		if immediate then
+			vehicle.aiveChain.tools[i].currentLowerState = nil
+		elseif vehicle.aiveChain.tools[i].currentLowerState == nil then
 			doItNow = true			
 		end
 
 		vehicle.aiveChain.tools[i].targetLowerState = isLowered		
 	end	
 	
-	if isLowered and vehicle.aiveHas.combineVehicle and not vehicle:getIsTurnedOn() then
-		vehicle:setIsTurnedOn( true )
+	if isLowered and vehicle.aiveHas.combineVehicle and not ( AutoSteeringEngine.checkToolIsReadyForWork( vehicle ) ) then
+		vehicle:getIsAIReadyForWork()
+		vehicle:aiTurnOn()
 	end
 	
-	if doItNow or immediate or objectFilter ~= nil then
+	if doItNow or objectFilter ~= nil then
 		for i=1,table.getn( vehicle.aiveChain.toolParams ) do
 			if immediate or vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i].obj == objectFilter then
 				AutoSteeringEngine.ensureToolIsLowered( vehicle, isLowered, i )
@@ -8468,7 +8524,7 @@ end
 -- raiseToolNoFruits
 ------------------------------------------------------------------------
 function AutoSteeringEngine.raiseToolNoFruits( vehicle, objectFilter )
-	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
+	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
 		return
 	end
 	
@@ -8506,15 +8562,16 @@ end
 -- ensureToolsLowered
 ------------------------------------------------------------------------
 function AutoSteeringEngine.ensureToolIsLowered( vehicle, isLowered, indexFilter )
-	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
+	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
 		return
 	end
 	
 	for i=1,table.getn( vehicle.aiveChain.toolParams ) do
 		local doit = false
 		local tool = vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i]
+		
 		if indexFilter == nil or indexFilter <= 0 or i == indexFilter then
-			if tool.targetLowerState == nil then
+			if tool.targetLowerState == nil or tool.currentLowerState == nil then
 				doit = true
 			elseif tool.targetLowerState == isLowered then
 				if     ( tool.targetLowerState and not ( tool.currentLowerState ) ) 
@@ -8568,7 +8625,7 @@ end
 -- greenDirectCut
 ------------------------------------------------------------------------
 function AutoSteeringEngine.greenDirectCut( vehicle, resetShift )
-	if     not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 )
+	if     not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 )
 			or ZZZ_greenDirectCut                                    == nil 
 			or ZZZ_greenDirectCut.greenDirectCut                     == nil
 			or ZZZ_greenDirectCut.greenDirectCut.shiftMinGrowthState == nil

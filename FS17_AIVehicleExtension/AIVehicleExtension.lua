@@ -149,6 +149,7 @@ function AIVehicleExtension:load(saveGame)
 	self.acTurnStageSent			= 0
 	self.acWaitTimer					= 0
 	self.acTurnOutsideTimer   = 0
+	self.acImplMoveDownTimer  = 0
 	self.acSteeringSpeed      = self.aiSteeringSpeed
 	self.aiveCanStartArtAxis  = false
 	
@@ -330,8 +331,7 @@ function AIVehicleExtension:onRaiseNext()
 			AIVehicleExtension.setNextTurnStage(self)
 		end
 	else
-		local moveDown = not self.acImplementsMoveDown
-		self.acImplementsMoveDown = nil
+		local moveDown = not ( AIVehicleExtension.getIsLowered( self ) )
 		AIVehicleExtension.setAIImplementsMoveDown(self, moveDown,true)
 		if self.acParameters ~= nil and not moveDown and self.acParameters.upNDown then
 			self.acParameters.leftAreaActive	= not self.acParameters.leftAreaActive 
@@ -354,7 +354,9 @@ function AIVehicleExtension:getRaiseNextText()
 			return AIVEHud.getText( "AIVE_NEXTTURNSTAGE" )
 		end
 	else
-		if self.acImplementsMoveDown then
+		if AIVehicleExtension.getIsLowered( self ) == nil then
+			return ""
+		elseif AIVehicleExtension.getIsLowered( self ) then
 			return AIVEHud.getText( "AIVE_STEER_RAISE" )
 		else
 			return AIVEHud.getText( "AIVE_STEER_LOWER" )
@@ -375,7 +377,9 @@ function AIVehicleExtension:getRaiseNextImage()
 			return "dds/next.dds"
 		end
 	else
-		if self.acImplementsMoveDown then
+		if AIVehicleExtension.getIsLowered( self ) == nil then
+			return "empty.dds"
+		elseif AIVehicleExtension.getIsLowered( self ) then
 			return "dds/raise_impl.dds"
 		else
 			return "dds/lower_impl.dds"
@@ -389,8 +393,7 @@ function AIVehicleExtension:onRaisePause()
 			self.acPause = not self.acPause
 		end
 	else
-		local moveDown = not self.acImplementsMoveDown
-		self.acImplementsMoveDown = nil
+		local moveDown = not ( AIVehicleExtension.getIsLowered( self ) )
 		AIVehicleExtension.setAIImplementsMoveDown(self, moveDown,true)
 		if self.acParameters ~= nil and not moveDown and self.acParameters.upNDown then
 			self.acParameters.leftAreaActive	= not self.acParameters.leftAreaActive 
@@ -410,7 +413,9 @@ function AIVehicleExtension:getRaisePauseText()
 			return AIVEHud.getText( "AIVE_PAUSE_ON" )
 		end
 	else
-		if self.acImplementsMoveDown then
+		if AIVehicleExtension.getIsLowered( self ) == nil then
+			return ""
+		elseif AIVehicleExtension.getIsLowered( self ) then
 			return AIVEHud.getText( "AIVE_STEER_RAISE" )
 		else
 			return AIVEHud.getText( "AIVE_STEER_LOWER" )
@@ -428,7 +433,9 @@ function AIVehicleExtension:getRaisePauseImage()
 			return "dds/no_pause.dds"
 		end
 	else
-		if self.acImplementsMoveDown then
+		if AIVehicleExtension.getIsLowered( self ) == nil then
+			return "empty.dds"
+		elseif AIVehicleExtension.getIsLowered( self ) then
 			return "dds/raise_impl.dds"
 		else
 			return "dds/lower_impl.dds"
@@ -699,7 +706,7 @@ function AIVehicleExtension:onRaiseImpl(enabled)
 end
 
 function AIVehicleExtension:evalRaiseImpl()
-	if AutoSteeringEngine.areToolsLowered( self ) then
+	if AIVehicleExtension.getIsLowered( self ) then
 		return false
 	end
 	return true
@@ -709,7 +716,9 @@ function AIVehicleExtension:getRaiseImplImage()
 	if		 self.aiIsStarted 
 			or self.acParameters == nil then
 		return "empty.dds"
-	elseif self.acImplementsMoveDown then
+	elseif AIVehicleExtension.getIsLowered( self ) == nil then
+		return "empty.dds"
+	elseif AIVehicleExtension.getIsLowered( self ) then
 		return "dds/raise_impl.dds"
 	end
 	return "dds/lower_impl.dds"
@@ -906,19 +915,14 @@ function AIVehicleExtension:update(dt)
 			AIVehicleExtension.sendParameters(self)
 		elseif AIVehicleExtension.mbHasInputEvent( "IMPLEMENT_EXTRA" ) then
 			self.acCheckPloughSide = true
-		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_RAISE" ) then
-			AIVehicleExtension.onRaiseImpl( self, AIVehicleExtension.evalRaiseImpl( self ) )
+		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_RAISE" ) and not self.aiveIsStarted then
+			AIVehicleExtension.setAIImplementsMoveDown(self, not ( AIVehicleExtension.getIsLowered( self ) ), true)
 		end
 		
 		if self.isHired and InputBinding.hasEvent(InputBinding.SWITCH_IMPLEMENT) then
 			self:selectNextSelectableImplement();
 		end
 				
-		if  not ( self.aiveIsStarted ) 
-				and ( AIVehicleExtension.mbHasInputEvent( "LOWER_IMPLEMENT" ) or AIVehicleExtension.mbHasInputEvent( "LOWER_ALL_IMPLEMENTS" ) ) then
-			self.acImplementsMoveDown = nil
-		end
-		
 		if      self.isEntered 
 				and self.isClient 
 				and self:getIsActive() 
@@ -995,12 +999,6 @@ function AIVehicleExtension:update(dt)
 			end
 		end
 	end	
-	
-	if  not self.aiveIsStarted 
-			and self.acImplementsMoveDown == nil
-			and ( self.attacherJointCombos == nil or not self.attacherJointCombos.isRunning ) then
-		self.acImplementsMoveDown = AutoSteeringEngine.areToolsLowered( self )
-	end
 	
 	if      self.isServer 
 			and self.articulatedAxis ~= nil 
@@ -1130,12 +1128,14 @@ function AIVehicleExtension:setAIImplementsMoveDown( moveDown, immediate, noEven
 	end
 	
 	if self.acImplementsMoveDown == nil or self.acImplementsMoveDown ~= moveDown then
-		self.acImplementsMoveDown = moveDown
 		AutoSteeringEngine.setToolsAreLowered( self, moveDown, immediate )
 	end
 	if immediate then
-		AutoSteeringEngine.ensureToolIsLowered( self, self.acImplementsMoveDown )
+		AutoSteeringEngine.ensureToolIsLowered( self, moveDown )
 	end
+	self.acImplementsMoveDown  = moveDown
+	self.acImplementsMoveDown2 = moveDown
+	self.acImplMoveDownTimer   = 0 
 end
 
 ------------------------------------------------------------------------
@@ -1320,6 +1320,7 @@ function AIVehicleExtension:autoSteer(dt)
 
 	if not self.isServer then
 		self.acTurnStage = 0
+		AIVehicleExtension.setStatus( self, 0 )
 		return
 	end
 	
@@ -1327,6 +1328,7 @@ function AIVehicleExtension:autoSteer(dt)
 
 	if not AutoSteeringEngine.hasTools( self ) then
 		self.acTurnStage = 0
+		AIVehicleExtension.setStatus( self, 0 )
 		return
 	end
 
@@ -1336,13 +1338,14 @@ function AIVehicleExtension:autoSteer(dt)
 		fruitsAdvance = true
 	end
 	
+	local isMovedDown = AIVehicleExtension.getIsLowered( self )
+	
 	local doSteer = true
 	if self.movingDirection < -1E-2 then	
 		self.acTurnStage          = 198
-		AIVehicleExtension.setStatus( self, 2 )
+		AIVehicleExtension.setStatus( self, 0 )
 		return
-	elseif not AutoSteeringEngine.areToolsLowered( self ) then
-		self.acTurnStage          = 198
+	elseif self.acTurnStage ~= 198 and not ( isMovedDown ) then
 		AIVehicleExtension.setStatus( self, 2 )
 	end
 	
@@ -1400,27 +1403,32 @@ function AIVehicleExtension:autoSteer(dt)
 	elseif self.acTurnStage == 199 and self.turnTimer >= 0 then
 		if border <= 0 then
 			if AutoSteeringEngine.getIsAtEnd( self ) then
-				angle = 0
-			else
-				angle = -self.acDimensions.maxSteeringAngle
-			end
-			if not self.acParameters.leftAreaActive then
-				angle = -angle		
+				if self.acParameters.leftAreaActive then
+					angle = math.max( angle, 0 )
+				else
+					angle = math.min( angle, 0 )
+				end
 			end
 			if fruitsDetected then
 				self.turnTimer = self.acDeltaTimeoutRun
 			end			
+			AIVehicleExtension.setStatus( self, 2 )
+		else
+			AIVehicleExtension.setStatus( self, 3 )
 		end
-		AIVehicleExtension.setStatus( self, 2 )
 	else
 		if self.acTurnStage == 199 and border <= 0 then
-		--AIVehicleExtension.onRaiseImpl( self, false )
 			self:setCruiseControlState( Drivable.CRUISECONTROL_STATE_OFF )
 		end
+
+		if border <= 0 then
+			AIVehicleExtension.setStatus( self, 0 )
+		else
+			AIVehicleExtension.setStatus( self, 3 )
+		end
 		
-		self.acTurnStage = 198
-		AIVehicleExtension.setStatus( self, 2 )
 		angle = 0
+		self.acTurnStage = 198
 	end
 	
 	if self.acAxisSideFactor == nil then
@@ -2186,6 +2194,35 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 end
 	
 ------------------------------------------------------------------------
+-- AIVehicleExtension:getIsLowered
+------------------------------------------------------------------------
+function AIVehicleExtension:getIsLowered()
+	if self.acImplementsMoveDown == nil then
+		if self.acImplMoveDownTimer < g_currentMission.time then
+			if self.isServer then
+				AIVehicleExtension.checkState( self )
+			end
+			self.acImplMoveDownTimer   = g_currentMission.time + 250
+			self.acImplementsMoveDown2 = AutoSteeringEngine.areToolsLowered( self )
+		end
+		return self.acImplementsMoveDown2
+	end
+	return self.acImplementsMoveDown
+end
+	
+------------------------------------------------------------------------
+-- AIVehicleExtension:onChangeLowered
+------------------------------------------------------------------------
+function AIVehicleExtension:onChangeLowered( isLowered )
+	if  not self.aiveIsStarted 
+			and self.acImplementsMoveDown ~= nil
+			and self.acImplementsMoveDown ~= isLowered then
+		self.acImplementsMoveDown = nil
+		self.acImplMoveDownTimer  = 0
+	end
+end
+	
+------------------------------------------------------------------------
 -- AIVehicleExtension:getToolAngle
 ------------------------------------------------------------------------
 function AIVehicleExtension:getStraighForwardsAngle( iTarget )
@@ -2234,6 +2271,33 @@ function AIVehicleExtension:getLimitedToolAngle( iLimit )
 	end
 	
 	return toolAngle
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension:onStopAiVehicle
+------------------------------------------------------------------------
+function AIVehicleExtension:onStopAiVehicle()
+	self.acImplementsMoveDown = nil
+	self.acImplMoveDownTimer  = 0
+	self.acTurnStage          = 0
+	self.aiveIsStarted        = false
+	AIVehicleExtension.setStatus( self, 0 )
+end
+
+function AIVehicleExtension:onSetLowered(lowered)
+	AIVehicleExtension.onChangeLowered( self, lowered )
+end
+function AIVehicleExtension:onLowerAll(doLowering)
+	AIVehicleExtension.onChangeLowered( self, doLowering )
+end
+function AIVehicleExtension:onTurnedOn()
+	AIVehicleExtension.onChangeLowered( self, true )
+end
+function AIVehicleExtension:onTurnedOff()
+	AIVehicleExtension.onChangeLowered( self, false )
+end
+function AIVehicleExtension:setFoldState(direction, moveToMiddle)
+	AIVehicleExtension.onChangeLowered( self, not ( moveToMiddle ) )
 end
 
 ------------------------------------------------------------------------

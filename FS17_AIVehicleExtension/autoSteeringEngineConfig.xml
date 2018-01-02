@@ -118,4 +118,5 @@
 		<offTracking type="float" value="1.0" />
 		
 		<otherAIColli type="bool" value="true"/>
+		<tm7StopEarly type="bool" value="false"/>
 </AIVEGlobals>

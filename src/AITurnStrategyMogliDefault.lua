@@ -1690,7 +1690,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		angle  = nil;		
 		angle2 = math.min( math.max( -toolAngle, -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle );
 		
-		if math.abs(math.deg(toolAngle)) < 5 then
+		if math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 then
 			turnData.stage   = turnData.stage + 1;					
 			veh.turnTimer     = veh.acDeltaTimeoutRun;
 		end
@@ -1727,7 +1727,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				angle = -veh.acDimensions.maxSteeringAngle * veh.acDimensions.radius / radius
 			end
 		else	
-			local dist   = math.max( turn75.radius + 2, 1.15 * turn75.radius )
+			local dist   = math.max( turn75.radius + 2, 1.15 * turn75.radius ) - math.max( 0, turn75.radius - turn75.radiusT )
 			if -z > dist then				
 	--if z < -veh.acDimensions.radius then				
 				turnData.stage   = turnData.stage + 1;					
