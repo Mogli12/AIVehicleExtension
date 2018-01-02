@@ -7255,10 +7255,18 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		
 	--if b2 > 1e-3 then
 	--	rotMax = math.min( rotMax, 0.5*math.pi-math.atan( 1.5 / b2 ) )
-	--end
+	--end		
 
 		if rotMax > 0 then
 			radius = math.max( radius, ( b1 * math.cos( rotMax ) + b2 ) / math.sin( rotMax ) )
+		end
+		
+		if object.aiTurningRadiusLimitation ~= nil and object.aiTurningRadiusLimitation.radius ~= nil then
+			rt = math.sqrt( math.max( radius*radius + b1*b1 - b2*b2, 0 ) )	
+			if rt < object.aiTurningRadiusLimitation.radius then
+				rt = object.aiTurningRadiusLimitation.radius
+				radius = math.max( radius, math.sqrt( math.max( rt*rt - b1*b1 + b2*b2 ) ) )
+			end
 		end
 	end
 
@@ -7838,6 +7846,7 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 				and Turn75.radiusT ~= nil then 
 			turn75 = Turn75
 		else
+			vehicle.aiveChain.trace.turn75 = nil
 			turn75 = AutoSteeringEngine.getMaxSteeringAngle75( vehicle )
 		end
 	
