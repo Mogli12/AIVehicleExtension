@@ -7720,7 +7720,9 @@ function AutoSteeringEngine.getMaxSteeringAngle75( vehicle, invert )
 		end
 		
 		if index > 0 then
-			local r       = vehicle.aiveChain.radius
+			local r = vehicle.aiveChain.radius
+			radiusT = nil
+			
 			for _,tool in pairs(vehicle.aiveChain.tools) do
 				if tool.aiForceTurnNoBackward then
 					local tr, b1, b2 = AutoSteeringEngine.getToolRadius( vehicle, tool.refNode, tool.obj, true )
@@ -7728,10 +7730,26 @@ function AutoSteeringEngine.getMaxSteeringAngle75( vehicle, invert )
 					if tool.b3 ~= nil then
 						b3 = tool.b3
 					end
+					
 					radius  = math.max( radius, tr )
-					radiusT = math.min( radiusT, math.sqrt( math.max( radius*radius + b1*b1 - b2*b2 - b3*b3, 0 ) ) )
+					local t = math.sqrt( math.max( radius*radius + b1*b1 - b2*b2 - b3*b3, 0 ) )				
+					if t+t < vehicle.aiveChain.width then
+						t  = 0.5 * vehicle.aiveChain.width
+						tr = math.sqrt( math.max( t*t - b1*b1 + b2*b2 + b3*b3 ) )
+					--print("tool radius less than width => "..tostring(tr).." ("..tostring(radius)..")")
+						radius = math.max( radius, tr )
+					end
+					if radiusT == nil then
+						radiusT = t
+					else
+						radiusT = math.min( radiusT, t )
+					end
 				end
 			end 
+			
+			if radiusT == nil then
+				radiusT = vehicle.aiveChain.radius
+			end
 			
 			alpha    = math.min( vehicle.aiveChain.maxSteering, math.atan( vehicle.aiveChain.wheelBase / radius ) )
 			radiusE  = r
@@ -7886,18 +7904,11 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 						
 				if shiftT <= 0 or math.abs( tvx ) < 0.5 then
 					shiftT = 0
-				elseif tvx > 0 then
-					if not vehicle.aiveChain.leftActive then
-						shiftT = math.max( 0, shiftT * 0.8, shiftT - 0.5 )
-					else
-						shiftT = math.max( 0, math.min( shiftT * 0.75, shiftT - 1 ) )
-					end
+				elseif ( tvx > 0 and not vehicle.aiveChain.leftActive )
+						or ( tvx < 0 and     vehicle.aiveChain.leftActive ) then
+					shiftT = math.max( 0, shiftT - 0.5 )
 				else
-					if vehicle.aiveChain.leftActive then
-						shiftT = math.max( 0, shiftT * 0.8, shiftT - 0.5 )
-					else
-						shiftT = math.max( 0, math.min( shiftT * 0.75, shiftT - 1 ) )
-					end
+					shiftT = math.max( 0, shiftT - 1 )
 				end
 			end
 			
