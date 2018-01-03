@@ -82,5 +82,6 @@
 		<text name="input_AIVE_STEERING"           text="AIVE: Ручное руление"/>
 		<text name="input_AIVE_RAISE"              text="AIVE: Поднять/опустить все оборудование"/>
 		<text name="input_AIVE_START_AIVE"         text="AIVE: Настройки рабочего"/>
+		<text name="input_AIVE_NEXT_WORKER"        text="AIVE: Перейти к следующему рабочему"/>
 	</texts>
 </l10n>
