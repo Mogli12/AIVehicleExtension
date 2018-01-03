@@ -50,7 +50,73 @@ function AIVehicleExtensionRegister:update(dt)
 			self.isSavegameLoaded = true
 		end
 	end
+	
+	if      g_currentMission:getIsClient() 
+			and not g_gui:getIsGuiVisible() 
+			and InputBinding.hasEvent(InputBinding.AIVE_NEXT_WORKER)
+			and not g_currentMission.isPlayerFrozen then
+		AIVehicleExtensionRegister.toggleVehicle( 1 );
+	end
 end;
+
+------------------------------------------------------------------------
+-- AIVehicleExtensionRegister.toggleVehicle
+------------------------------------------------------------------------
+function AIVehicleExtensionRegister.toggleVehicle( delta )
+
+	local self = g_currentMission
+
+	if not self.isToggleVehicleAllowed then
+		return;
+	end;
+
+	local numVehicles = table.getn(self.steerables);
+	if numVehicles > 0 then
+
+		local index = 1;
+		local oldIndex = 1;
+
+		if not self.controlPlayer and self.controlledVehicle ~= nil then
+
+			for i=1, numVehicles do
+				if self.controlledVehicle == self.steerables[i] then
+					oldIndex = i;
+					index = i+delta;
+					if index > numVehicles then
+						index = 1;
+					end;
+					if index < 1 then
+						index = numVehicles;
+					end;
+					break;
+				end;
+			end;
+		else
+			if delta < 0 then
+				index = numVehicles
+			end
+		end;
+		
+		local found = false;
+		repeat
+			if not self.steerables[index].isBroken and not self.steerables[index].isControlled and not self.steerables[index].nonTabbable and self.steerables[index].isHired then
+				found = true;
+			else
+				index = index +delta;
+				if index > numVehicles then
+					index = 1;
+				end;
+				if index < 1 then
+					index = numVehicles;
+				end;
+			end;
+		until found or index == oldIndex;
+		
+		if found then
+			self:requestToEnterVehicle(self.steerables[index])
+		end;
+	end;
+end
 
 function AIVehicleExtensionRegister:draw()
 end;

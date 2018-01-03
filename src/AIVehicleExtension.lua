@@ -919,9 +919,7 @@ function AIVehicleExtension:update(dt)
 		AIVehicleExtension.acDump2(self)
 	end
 
-	if not g_gui:getIsGuiVisible() and not g_currentMission.isPlayerFrozen and self.isClient and AIVehicleExtension.mbHasInputEvent( "AIVE_NEXT_WORKER" ) then
-		AIVehicleExtension.toggleVehicle( self )
-	elseif not g_gui:getIsGuiVisible() and not g_currentMission.isPlayerFrozen and self.isEntered and self.isClient then
+	if not g_gui:getIsGuiVisible() and not g_currentMission.isPlayerFrozen and self.isEntered and self.isClient then
 		local guiActive = false
 		if self.atHud ~= nil and self.atHud.GuiActive ~= nil then
 			guiActive = self.atHud.GuiActive
@@ -2035,6 +2033,7 @@ function AIVehicleExtension:getMaxAngleWithTool( outside )
 		return self.acDimensions.maxSteeringAngle
 	end
 	
+	local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( self )
 	local angle
 	local toolAngle = AutoSteeringEngine.getToolAngle( self )	
 	if not self.acParameters.leftAreaActive then
@@ -2043,14 +2042,19 @@ function AIVehicleExtension:getMaxAngleWithTool( outside )
 	
 	local maxToolAngle = AutoSteeringEngine.getMaxToolAngle( self )
 	
+	local f = 1
+	if self.articulatedAxis ~= nil then
+		f = 0.5
+	end
+	
 	if outside then
-		angle = -self.acDimensions.maxSteeringAngle + math.min( 2 * math.max( -toolAngle - maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
-	else
-		angle =  self.acDimensions.maxSteeringAngle - math.min( 2 * math.max(  toolAngle - maxToolAngle, 0 ), 0.9 * self.acDimensions.maxSteeringAngle )	-- 75° => 1,3089969389957471826927680763665
+		angle = Utils.clamp( -turn75.alpha + f * ( -toolAngle - maxToolAngle ), -self.acDimensions.maxSteeringAngle, 0 )
+	else                                                                                                   
+		angle = Utils.clamp(  turn75.alpha - f * (  toolAngle - maxToolAngle ), 0, self.acDimensions.maxSteeringAngle )
 	end
 	
 	if AIVEGlobals.devFeatures > 0 and math.abs( toolAngle ) >= maxToolAngle - 0.01745 then
-		self:acDebugPrint( string.format("Tool angle: a: %0.1f° ms: %0.1f° to: %0.1f°", math.deg(angle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
+		self:acDebugPrint( string.format("Tool angle: ts: %d a: %0.1f° mt: %0.1f° ms: %0.1f° to: %0.1f°", self.acTurnStage, math.deg(angle), math.deg(maxToolAngle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
 	end
 	
 	return angle
@@ -2316,67 +2320,6 @@ function AIVehicleExtension:getLimitedToolAngle( iLimit )
 	end
 	
 	return toolAngle
-end
-
-------------------------------------------------------------------------
--- AIVehicleExtension.toggleVehicle
-------------------------------------------------------------------------
-function AIVehicleExtension.toggleVehicle( currentVehicle )
-
-	local self  = g_currentMission
-	local delta = 1
-
-	if not self.isToggleVehicleAllowed then
-		return;
-	end;
-
-	local numVehicles = table.getn(self.steerables);
-	if numVehicles > 0 then
-
-		local index = 1;
-		local oldIndex = 1;
-
-		if not self.controlPlayer and self.controlledVehicle ~= nil then
-
-			for i=1, numVehicles do
-				if self.controlledVehicle == self.steerables[i] then
-					oldIndex = i;
-					index = i+delta;
-					if index > numVehicles then
-						index = 1;
-					end;
-					if index < 1 then
-						index = numVehicles;
-					end;
-					break;
-				end;
-			end;
-		else
-			if delta < 0 then
-				index = numVehicles
-			end
-		end;
-
-		local found = false;
-		repeat
-			if not self.steerables[index].isBroken and not self.steerables[index].isControlled and not self.steerables[index].nonTabbable and self.steerables[index].isHired then
-				found = true;
-			else
-				index = index +delta;
-				if index > numVehicles then
-					index = 1;
-				end;
-				if index < 1 then
-					index = numVehicles;
-				end;
-			end;
-		until found or index == oldIndex;
-
-		if found then
-			g_currentMission:requestToEnterVehicle(self.steerables[index])
-		end;
-	end;
-
 end
 
 ------------------------------------------------------------------------

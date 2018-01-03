@@ -7271,9 +7271,7 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 	end
 
 	local dummy = radius 
-	if b2 > b1 then
-		radius = math.max( radius, math.sqrt( b2*b2 - b1*b1 ) )
-	end
+	radius = math.max( radius, b2 )
 	
 	if      vehicle.articulatedAxis        ~= nil
 			and vehicle.articulatedAxis.rotMax ~= nil 
@@ -7720,6 +7718,7 @@ function AutoSteeringEngine.getMaxSteeringAngle75( vehicle, invert )
 		local radiusT = vehicle.aiveChain.radius
 		local alpha   = vehicle.aiveChain.maxSteering
 		local radiusE = vehicle.aiveChain.radius
+		local maxB2   = 0
 		local diffE   = 0
 		local gammaE  = 0
 		local deltaW  = 1.25
@@ -7738,6 +7737,7 @@ function AutoSteeringEngine.getMaxSteeringAngle75( vehicle, invert )
 					if tool.b3 ~= nil then
 						b3 = tool.b3
 					end
+					maxB2 = math.max( maxB2, -b2 )
 					
 					radius  = math.max( radius, tr )
 					local t = math.sqrt( math.max( radius*radius + b1*b1 - b2*b2 - b3*b3, 0 ) )				
@@ -7783,6 +7783,7 @@ function AutoSteeringEngine.getMaxSteeringAngle75( vehicle, invert )
 		vehicle.aiveChain.trace.turn75.diffE   = diffE  
 		vehicle.aiveChain.trace.turn75.gammaE  = gammaE
 		vehicle.aiveChain.trace.turn75.diffT   = diffT
+		vehicle.aiveChain.trace.turn75.b2      = maxB2
 	end
 	
 	return vehicle.aiveChain.trace.turn75
@@ -7854,6 +7855,10 @@ function AutoSteeringEngine.navigateToSavePoint( vehicle, turnMode, fallback, Tu
 				and turn75.radius  > turn75.radiusT then				
 			rT     = turn75.radius
 			shiftT = turn75.radius - turn75.radiusT
+			
+			if turnMode == 3 and shiftT < turn75.b2 then
+				shiftT = turn75.b2
+			end				
 			
 			local delta = vehicle.aiveChain.otherX + vehicle.aiveChain.activeX
 			if vehicle.aiveChain.leftActive then
