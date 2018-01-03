@@ -82,5 +82,6 @@
 		<text name="input_AIVE_STEERING"           text="Alternatywny pomocnik: Sterowanie ręczne"/>
 		<text name="input_AIVE_RAISE"              text="Alternatywny pomocnik: Podnieś/opuść wszystkie maszyny"/>
 		<text name="input_AIVE_START_AIVE"         text="Alternatywny pomocnik: Ustawienia"/>
+		<text name="input_AIVE_NEXT_WORKER"        text="Alternatywny pomocnik: Przejdź do następnego pracownika"/>
 	</texts>
 </l10n>
