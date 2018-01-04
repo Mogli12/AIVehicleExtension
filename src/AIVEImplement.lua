@@ -32,7 +32,6 @@ function AIVEImplement:draw()
 end
 
 function AIVEImplement:onSetLowered(lowered)
---AIVehicleExtension.printCallstack()
 	local root = self:getRootAttacherVehicle()
 	if root ~= nil then
 		AIVehicleExtension.onChangeLowered( root, lowered )

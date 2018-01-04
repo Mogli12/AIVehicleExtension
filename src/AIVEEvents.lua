@@ -131,19 +131,24 @@ function AIVehicleExtension:setInt32Value( name, value, noEventSend )
 	elseif name == "aiveCanStartArtAxis" then
 		self.aiveCanStartArtAxis = ( value > 0 )
 	elseif name == "moveDown" then
-		local moveDown, immediate
-		if value >= 2 then
-			moveDown = true
-		else
-			moveDown = false
-		end
-		if value == 1 or value == 3 then
-			immediate = true
-		else
-			immediate = false
+		if self.isServer then
+			local moveDown, immediate
+			if value >= 2 then
+				moveDown = true
+			else
+				moveDown = false
+			end
+			if value == 1 or value == 3 then
+				immediate = true
+			else
+				immediate = false
+			end
+			AIVehicleExtension.setAIImplementsMoveDown( self, moveDown, immediate )
 		end
 	elseif name == "axisSide" then
 		self.acAxisSide = 1e-6 * ( value - 1e6 )
+	elseif name == "lowered" then
+		self.acIsLowered = value
 	end
 end
 

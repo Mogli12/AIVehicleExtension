@@ -1862,7 +1862,6 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 		--end 
 	end	
 	
-	AutoSteeringEngine.initSteering( vehicle )
 	vehicle.aiveChain.cbr    = nil
 end
 
@@ -2554,10 +2553,6 @@ function AutoSteeringEngine.hasFruits( vehicle, checkLowerAdvance )
 			else
 				front = front + AIVEGlobals.upperAdvance
 			end
-			
-		--if tool.isCultivator then
-		--	front = front + 2
-		--end
 			
 			tool.hasFruits = false
 			
@@ -7443,13 +7438,13 @@ function AutoSteeringEngine.checkToolIsReadyForWork( self, noLower )
 		end
 	end
 	
-	if SpecializationUtil.hasSpecialization(TurnOnVehicle, self.specializations) then
+	if checkIsLowered and SpecializationUtil.hasSpecialization(TurnOnVehicle, self.specializations) then
 		if self:getCanBeTurnedOn() and not self:getIsTurnedOn() then
 			return false
 		end
 	end
 	
-	if SpecializationUtil.hasSpecialization(ManureBarrel, self.specializations) then
+	if checkIsLowered and SpecializationUtil.hasSpecialization(ManureBarrel, self.specializations) then
 		if self.attachedTool ~= nil then
 			local implement = self:getImplementByObject(self.attachedTool);
 			local jointDesc = self.attacherJoints[implement.jointDescIndex];
@@ -7569,7 +7564,7 @@ function AutoSteeringEngine.checkToolIsReady( tool )
 	local result   = nil
 	local noSneak  = false
 	
-	if not ( AutoSteeringEngine.checkToolIsReadyForWork( tool.obj ) ) then
+	if not ( AutoSteeringEngine.checkToolIsReadyForWork( tool.obj, true ) ) then
 		return false, true
 	end
 	
@@ -7626,7 +7621,7 @@ function AutoSteeringEngine.checkToolIsReady( tool )
 			end
 		end
 		if result == nil then
-			result = false
+			result = false, true
 		end
 	end
 

@@ -99,8 +99,8 @@
 		<enableKUTurn type="bool" value="false" />
 		<aiRescueDistSq type="float" value="2500" />
 		<raiseNoFruits type="bool" value="false" />
-		<fruitsAdvance type="float" value="1.5" />
-		<lowerAdvance type="float" value="3.5" />
+		<fruitsAdvance type="float" value="1.25" />
+		<lowerAdvance type="float" value="4.0" />
 		<upperAdvance type="float" value="0.5" />
 		<fruitsInFront type="float" value="10" />
 		
