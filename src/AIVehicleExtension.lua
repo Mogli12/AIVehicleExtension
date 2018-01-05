@@ -133,7 +133,8 @@ function AIVehicleExtension:load(saveGame)
 	self.acPause							= false	
 	self.acParameters				  = AIVehicleExtension.getParameterDefaults( )
 	self.acAxisSide					  = 0
-	self.acIsLowered       = 0
+	self.acIsLowered          = 0
+	self.acTurnMode           = ""
 	self.acDebugPrint			  	= AIVehicleExtension.debugPrint
 	self.aiveAddDebugText     = AIVehicleExtension.aiveAddDebugText
 	self.acShowTrace					= true
@@ -693,7 +694,9 @@ end
 function AIVehicleExtension:getTurnModeImage()
 	local img = "empty.dds"
 	
-	if     self.acTurnMode == "8" then
+	if     self.acTurnMode == nil then
+		img = "empty.dds"
+	elseif self.acTurnMode == "8" then
 		img = "dds/bigUTurn8.dds"
 	elseif self.acTurnMode == "O" then
 		img = "dds/noRevUTurn.dds"
@@ -724,7 +727,9 @@ function AIVehicleExtension:getTurnModeImage()
 end
 
 function AIVehicleExtension:getTurnModeText(old)
-	return AIVEHud.getText("AIVE_TURN_MODE_"..self.acTurnMode)
+	if self.acTurnMode ~= nil then
+		return AIVEHud.getText("AIVE_TURN_MODE_"..self.acTurnMode)
+	end
 end
 
 function AIVehicleExtension:setTurnMode()
@@ -740,7 +745,9 @@ end
 function AIVehicleExtension:getTurnModeImage()
 	local img = "empty.dds"
 	
-	if     self.acTurnMode == "8" then
+	if     self.acTurnMode == nil then
+		img = "empty.dds"
+	elseif self.acTurnMode == "8" then
 		img = "dds/bigUTurn8.dds"
 	elseif self.acTurnMode == "O" then
 		img = "dds/noRevUTurn.dds"
@@ -1395,7 +1402,6 @@ function AIVehicleExtension:autoSteer(dt)
 		return
 	end
 	
-	local doSteer = true
 	if self.movingDirection < -1E-2 then	
 		self.acTurnStage = 198
 		AIVehicleExtension.setStatus( self, 0 )
@@ -1501,7 +1507,7 @@ function AIVehicleExtension:autoSteer(dt)
 	
 	if self.acAxisSideFactor == nil then
 		self.acAxisSideFactor = 0
-	elseif math.abs( self.acAxisSide ) >= 0.1 then
+	elseif self.isEntered and math.abs( self.acAxisSide ) >= 0.1 then
 		self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
 	elseif self.acAxisSideFactor < 1000  then
 		self.acAxisSideFactor = math.min( self.acAxisSideFactor + dt, 1000 )
@@ -1509,14 +1515,13 @@ function AIVehicleExtension:autoSteer(dt)
 	
 	local f = 0.001 * self.acAxisSideFactor
 	
-	if self.isEntered and doSteer then -- and detected and doSteer then
-		if f <= 0 then
-			angle = -self.acAxisSide * self.acDimensions.maxSteeringAngle
-		elseif f < 1 then
-			angle = f * angle - (1-f) * self.acAxisSide * self.acDimensions.maxSteeringAngle
-		end
-		AutoSteeringEngine.steer( self, dt, angle, self.acSteeringSpeed, (f >= 0.999 ) and (self.acTurnStage == 199) )
+	if f <= 0 then
+		angle = -self.acAxisSide * self.acDimensions.maxSteeringAngle
+	elseif f < 1 then
+		angle = f * angle - (1-f) * self.acAxisSide * self.acDimensions.maxSteeringAngle
 	end
+	AutoSteeringEngine.steer( self, dt, angle, self.acSteeringSpeed, (f >= 0.999 ) and (self.acTurnStage == 199) )
+
 end
 
 ------------------------------------------------------------------------
