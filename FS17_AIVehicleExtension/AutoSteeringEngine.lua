@@ -6880,6 +6880,18 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	tool.isMower                 = SpecializationUtil.hasSpecialization(Mower, object.specializations)
 	tool.isFoldable              = SpecializationUtil.hasSpecialization(Foldable, object.specializations)
 	tool.configFileName          = string.lower( Utils.removeModDirectory(object.configFileName) )
+	tool.obj                     = object
+	tool.isAITool                = false
+	tool.specialType             = ""
+	tool.b1                      = 0
+	tool.b2                      = 0
+	tool.b3                      = 0
+	tool.invert                  = false
+	tool.outTerrainDetailChannel = -1	
+	tool.useAIMarker             = false
+	tool.doubleJoint             = false
+	tool.noRevStraight           = false
+	tool.ignoreAI                = ignore 
 	
 	if tool.isSprayer and not ( object.allowsSpraying ) and object.aiLeftMarker == nil and object.aiRightMarker == nil then
 		return 0
@@ -6888,8 +6900,8 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	if     tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhntf1500.xml" then
 		tool.ignoreAI              = true
 --elseif tool.configFileName == "kuhnpack/vehicles/tools/kuhn/kuhndc401.xml" then
---	tool.isPlough              = true
---	tool.isCultivator          = false
+--	tool.isPlough              = false
+--	tool.isCultivator          = true
 --	tool.ploughTransport       = false
 --	tool.aiForceTurnNoBackward = false
 	elseif tool.configFileName == "data/vehicles/trailers/grimme/grimmerootster604.xml" then
@@ -6922,20 +6934,8 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	
 	local xo,yo,zo = AutoSteeringEngine.getRelativeTranslation( tool.steeringAxleNode, reference )
 	
-	tool.obj                           = object
-	tool.xOffset                       = xo
-	tool.zOffset                       = zo
-	tool.isAITool                      = false
-	tool.specialType                   = ""
-	tool.b1                            = 0
-	tool.b2                            = 0
-	tool.b3                            = 0
-	tool.invert                        = false
-	tool.outTerrainDetailChannel       = -1	
-	tool.useAIMarker                   = false
-	tool.doubleJoint                   = false
-	tool.noRevStraight                 = false
-	tool.ignoreAI                      = ignore 
+	tool.xOffset = xo
+	tool.zOffset = zo
 	
 	local b1, trailer = AutoSteeringEngine.findComponentJointDistance( vehicle, object )
 
