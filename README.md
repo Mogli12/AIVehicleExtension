@@ -1,10 +1,10 @@
 # AIVehicleExtension for Farming Simulator 2017
 
 ## Testing
-**I think I will send this mod to ModHub in the next days. Please check Version 1.0 RC1. It would be greate if everybody would retest the issues she/he created and close issues that are resolved. Thanks!**
+**I think I will send this mod to ModHub in the next days. Please check Version 1.1 RC1. It would be great if everybody would retest the issues she/he created and close issues that are resolved. Thanks!**
 
 ## Status
-Minimum patch level is Farming Simulator 2017 patch 1.3.1, but patch 1.4 is supported as well. I only test it with patch 1.4.4.
+AIVehicleExtension is only tested with the latest patch (1.5.3.1).
 
 #### New User Interface
 The idea behind the new user interface is to move as many settings as possible into new settings dialog. This dialog uses standard elements. Only those options needed for visualization or intermediate action are still available in the head up display (HUD).
