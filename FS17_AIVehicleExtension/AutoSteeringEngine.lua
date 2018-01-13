@@ -3009,6 +3009,7 @@ function AutoSteeringEngine.steerDirect( vehicle, dt, angle, aiSteeringSpeed, di
 		else
 			aiDirectSteering = AIVEGlobals.artSteering
 		end
+		aiDirectSteering   = aiDirectSteering * math.max( math.min( vehicle.lastSpeed * 250, 1 ), 0.1 )			
 	end
 	
 	local diff = dt * aiSteeringSpeed
@@ -8435,8 +8436,9 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.areToolsLowered( vehicle )
 	if     vehicle.aiveChain           == nil 
+			or vehicle.aiveChain.tools     == nil
 			or vehicle.aiveChain.toolCount == nil 
-			or vehicle.aiveChain.toolCount <  0 then
+			or vehicle.aiveChain.toolCount <= 0 then
 		return nil 
 	end
 	for _,tool in pairs( vehicle.aiveChain.tools ) do
