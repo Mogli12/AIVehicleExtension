@@ -6665,7 +6665,8 @@ function AutoSteeringEngine.initChain( vehicle, iRefNode, wheelBase, maxSteering
 	vehicle.aiveChain.maxSteering  = maxSteering
 	vehicle.aiveChain.refNode      = iRefNode
 	
-	if AutoSteeringEngine.skipIfNotServer( vehicle ) then return end
+--if AutoSteeringEngine.skipIfNotServer( vehicle ) then return end
+	if not vehicle.isServer then return end
 	
 	vehicle.aiveChain.headlandNode = createTransformGroup( "acHeadland" )
 	link( vehicle.aiveChain.refNode, vehicle.aiveChain.headlandNode )

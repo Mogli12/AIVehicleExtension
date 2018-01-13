@@ -123,9 +123,6 @@ function AIVehicleExtension:setInt32Value( name, value, noEventSend )
 		if self.atMogliInitDone then
 			AIVEHud.setStatus( self, value )		
 		end
-	elseif name == "turnStage" then
-		self.acTurnStage     = value
-		self.acTurnStageSent = value
 	elseif name == "speed2Level" then
 		self.speed2Level = value
 	elseif name == "aiveCanStartArtAxis" then
@@ -149,6 +146,29 @@ function AIVehicleExtension:setInt32Value( name, value, noEventSend )
 		self.acAxisSide = 1e-6 * ( value - 1e6 )
 	elseif name == "lowered" then
 		self.acIsLowered = value
+	elseif name == "autoSteer" then 
+		if value > 1 then
+			self.aiveAutoSteer = false
+			self.aiveIsStarted = true 
+		else
+			if self.isServer then
+				AutoSteeringEngine.invalidateField( self, self.acParameters.useAIFieldFct )
+				AutoSteeringEngine.initFruitBuffer( self )
+				self.acLastSteeringAngle = nil
+			end
+			if value > 0 then 
+				AIVehicleExtension.initMogliHud(self)
+				self.stopMotorOnLeave  = false 
+				self.deactivateOnLeave = false
+				self.acTurnStage       = 198
+				self.aiveAutoSteer     = true
+			else 
+				self.stopMotorOnLeave  = true
+				self.deactivateOnLeave = true
+				self.acTurnStage       = 0
+				self.aiveAutoSteer     = false
+			end
+		end
 	end
 end
 

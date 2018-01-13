@@ -148,7 +148,6 @@ function AIVehicleExtension:load(saveGame)
 	self.acDeltaTimeoutStart	= math.max(Utils.getNoNil( self.turnTimeoutLong	 , 6000 ), 4000 )
 	self.acDeltaTimeoutNoTurn = 2 * self.acDeltaTimeoutWait --math.max(Utils.getNoNil( self.waitForTurnTimeout , 2000 ), 1000 )
 	self.acRecalculateDt			= 0
-	self.acTurnStageSent			= 0
 	self.acWaitTimer					= 0
 	self.acTurnOutsideTimer   = 0
 	self.acImplMoveDownTimer  = 0
@@ -230,7 +229,7 @@ function AIVehicleExtension:draw()
 
 	if self.atMogliInitDone then
 		local alwaysDrawTitle = false
-		if self.aiveIsStarted or self.acTurnStage >= 198 then
+		if self.aiveIsStarted or self.aiveAutoSteer then
 			alwaysDrawTitle = true
 		end
 		AIVEHud.draw(self,true,alwaysDrawTitle)
@@ -240,7 +239,7 @@ function AIVehicleExtension:draw()
 		if self.isServer then
 			if AIVehicleExtension.evalAutoSteer(self) then
 				g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_STEER_ON"), InputBinding.AIVE_STEER)
-			elseif self.acTurnStage >= 198 then
+			elseif self.aiveAutoSteer then
 				g_currentMission:addHelpButtonText(AIVEHud.getText("AIVE_STEER_OFF"),InputBinding.AIVE_STEER)
 			end	
 		end	
@@ -394,18 +393,7 @@ function AIVehicleExtension:onSteerPause()
 			self.acPause = not self.acPause
 		end
 	else
-		if self.acTurnStage >= 198 then
-			AIVehicleExtension.setStatus( self, 0 )
-			self.acTurnStage = 0
-			self.stopMotorOnLeave = true
-			self.deactivateOnLeave = true
-		else
-			AIVehicleExtension.initMogliHud(self)
-			AutoSteeringEngine.invalidateField( self, self.acParameters.useAIFieldFct )
-			AutoSteeringEngine.initFruitBuffer( self )
-			self.acLastSteeringAngle = nil
-			self.acTurnStage	 = 198
-		end
+		AIVehicleExtension.onAutoSteer( self, not ( self.aiveAutoSteer ) )
 	end
 end
 
@@ -419,7 +407,7 @@ function AIVehicleExtension:getSteerPauseText()
 			return AIVEHud.getText( "AIVE_PAUSE_ON" )
 		end
 	else
-		if self.acTurnStage >= 198 then
+		if self.aiveAutoSteer then
 			return AIVEHud.getText( "AIVE_STEER_OFF" )
 		else
 			return AIVEHud.getText( "AIVE_STEER_ON" )
@@ -438,7 +426,7 @@ function AIVehicleExtension:getSteerPauseImage()
 			return "dds/no_pause.dds"
 		end
 	else
-		if self.acTurnStage >= 198 then
+		if self.aiveAutoSteer then
 			return "dds/auto_steer_on.dds"
 		else
 			return "dds/auto_steer_off.dds"
@@ -622,24 +610,18 @@ function AIVehicleExtension:getPauseImage()
 end
 
 function AIVehicleExtension:evalAutoSteer()
-	return self.aiIsStarted or self.acTurnStage < 198
+	return self.aiIsStarted or not ( self.aiveAutoSteer )
 end
 
 function AIVehicleExtension:onAutoSteer(enabled)
 	if self.aiIsStarted then
-		if self.acTurnStage >= 198 then
-			self.acTurnStage	 = 0
+		if self.aiveAutoSteer then
+			AIVehicleExtension.setInt32Value( self, "autoSteer", 2 )
 		end
 	elseif enabled then
-		AIVehicleExtension.initMogliHud(self)
-		AutoSteeringEngine.invalidateField( self, self.acParameters.useAIFieldFct )
-		AutoSteeringEngine.initFruitBuffer( self )
-		self.acLastSteeringAngle = nil
-		self.acTurnStage	 = 198
+		AIVehicleExtension.setInt32Value( self, "autoSteer", 1 )
 	else
-		self.acTurnStage	 = 0
-		self.stopMotorOnLeave = true
-		self.deactivateOnLeave = true
+		AIVehicleExtension.setInt32Value( self, "autoSteer", 0 )
 	end
 end
 
@@ -808,7 +790,7 @@ end
 function AIVehicleExtension:getHeadlandText(old)
 	if self.acParameters ~= nil and self.acParameters.upNDown then
 		local st, bt = " (-)", " (+)"
-		if self.isServer and ( self.acCheckStateTimer ~= nil or self.aiveIsStarted or ( self.acTurnStage ~= nil and self.acTurnStage >= 198 ) ) then
+		if self.isServer and ( self.acCheckStateTimer ~= nil or self.aiveIsStarted or self.aiveAutoSteer ) then
 			local s, b = AIVehicleExtension.getHeadlandSmallBig( self )
 			st = string.format(" (%5.2fm)",s)
 			bt = string.format(" (%5.2fm)",b)
@@ -883,7 +865,7 @@ function AIVehicleExtension:update(dt)
 		end
 	end
 	
-	if self.aiveIsStarted or self.acTurnStage >= 198 then
+	if self.aiveIsStarted or self.aiveAutoSteer then
 		if			self.articulatedAxis                          ~= nil 
 				and self.articulatedAxis.componentJoint           ~= nil
 				and self.articulatedAxis.componentJoint.jointNode ~= nil 
@@ -934,7 +916,7 @@ function AIVehicleExtension:update(dt)
 		end
 		
 		if      guiActive and self:canStartAIVehicle() and self.acParameters.enabled 
-				and ( ( self.acTurnStage < 198 and not self.aiveIsStarted ) or not self.isServer ) then
+				and ( not ( self.aiveIsStarted or self.aiveAutoSteer ) or not self.isServer ) then
 			AIVehicleExtension.checkState( self, false, true )
 		end
 	
@@ -956,11 +938,7 @@ function AIVehicleExtension:update(dt)
 				end			
 			end
 		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_STEER" ) then
-			if self.acTurnStage < 198 then
-				AIVehicleExtension.onAutoSteer(self, true)
-			else
-				AIVehicleExtension.onAutoSteer(self, false)
-			end
+			AIVehicleExtension.onAutoSteer(self, not ( self.aiveAutoSteer ))
 		elseif AIVehicleExtension.mbHasInputEvent( "AIVE_UTURN_ON_OFF" ) then
 			self.acParameters.upNDown = not self.acParameters.upNDown
 			AIVehicleExtension.sendParameters(self)
@@ -984,7 +962,7 @@ function AIVehicleExtension:update(dt)
 				
 		if      self:getIsActive() 
 				and not self.acParameters.noSteering
-				and ( self.aiveIsStarted or self.acTurnStage >= 198 ) then
+				and ( self.aiveIsStarted or self.aiveAutoSteer ) then
 			local axisSide = InputBinding.getDigitalInputAxis(InputBinding.AXIS_MOVE_SIDE_VEHICLE)
 			if InputBinding.isAxisZero(axisSide) then
 				axisSide = InputBinding.getAnalogInputAxis(InputBinding.AXIS_MOVE_SIDE_VEHICLE)
@@ -1005,35 +983,37 @@ function AIVehicleExtension:update(dt)
 		end
 	end
 	
-	if     self.aiveIsStarted      then
-		if AIVEGlobals.devFeatures <= 0 or self.atHud.InfoText == nil or self.atHud.InfoText == "" then
-			AIVEHud.setInfoText( self )
-			if self.acDimensions ~= nil and self.acDimensions.distance ~= nil then
-				AIVEHud.setInfoText( self, AIVEHud.getText( "AIVE_WORKWIDTH" ) .. string.format(" %0.2fm", self.acDimensions.distance+self.acDimensions.distance) )
+	if self.isServer then
+		if     self.aiveIsStarted      then
+			if AIVEGlobals.devFeatures <= 0 or self.atHud.InfoText == nil or self.atHud.InfoText == "" then
+				AIVEHud.setInfoText( self )
+				if self.acDimensions ~= nil and self.acDimensions.distance ~= nil then
+					AIVEHud.setInfoText( self, AIVEHud.getText( "AIVE_WORKWIDTH" ) .. string.format(" %0.2fm", self.acDimensions.distance+self.acDimensions.distance) )
+				end
+				if self.acTurnStage ~= nil and self.acTurnStage ~= 0 and self.acTurnStage < 198 then
+					AIVEHud.setInfoText( self, AIVEHud.getInfoText(self) .. string.format(" (%i)", self.acTurnStage) )
+				end
 			end
-			if self.acTurnStage ~= nil and self.acTurnStage ~= 0 and self.acTurnStage < 198 then
-				AIVEHud.setInfoText( self, AIVEHud.getInfoText(self) .. string.format(" (%i)", self.acTurnStage) )
+			
+			if      self.courseplayers              ~= nil 
+					and table.getn( self.courseplayers ) > 0
+					and self.specializations            ~= nil
+					and self.overloading                ~= nil					
+					and SpecializationUtil.hasSpecialization(Combine, self.specializations)
+					and self:getUnitCapacity(self.overloading.fillUnitIndex) <= 0 then
+				self.acChopperWithCourseplay = true
+			else
+				self.acChopperWithCourseplay = false 
 			end
-		end
-		
-		if      self.courseplayers              ~= nil 
-				and table.getn( self.courseplayers ) > 0
-				and self.specializations            ~= nil
-				and self.overloading                ~= nil					
-				and SpecializationUtil.hasSpecialization(Combine, self.specializations)
-				and self:getUnitCapacity(self.overloading.fillUnitIndex) <= 0 then
-			self.acChopperWithCourseplay = true
+			
+		elseif self.aiveAutoSteer then
+			self.stopMotorOnLeave = false
+			self.deactivateOnLeave = false
+			
+			AIVehicleExtension.autoSteer(self,dt)
 		else
-			self.acChopperWithCourseplay = false 
+			self.acTurnStage = 0
 		end
-		
-	elseif self.isServer and self.acTurnStage >= 198 then
-		self.stopMotorOnLeave = false
-		self.deactivateOnLeave = false
-		
-		AIVehicleExtension.autoSteer(self,dt)
-	else
-		self.acTurnStage = 0
 	end
 	
 	if			self.isEntered 
@@ -1043,10 +1023,10 @@ function AIVehicleExtension:update(dt)
 			and self.atMogliInitDone 
 			and self.atHud.GuiActive then	
 
-		if self.acParameters ~= nil and self.acShowTrace and ( self.aiveIsStarted or self.acTurnStage >= 198 ) then			
+		if self.acParameters ~= nil and self.acShowTrace and ( self.aiveIsStarted or self.aiveAutoSteer ) then			
 			if			AIVEGlobals.showTrace > 0 
 					and self.acDimensions ~= nil
-					and ( self.aiIsStarted or self.acTurnStage >= 198 ) then	
+					and ( self.aiIsStarted or self.aiveAutoSteer ) then	
 				AutoSteeringEngine.drawLines( self )
 			else
 				AutoSteeringEngine.drawMarker( self )
@@ -1397,9 +1377,11 @@ end
 function AIVehicleExtension:autoSteer(dt)
 
 	if not self.isServer then
-		self.acTurnStage = 0
-		AIVehicleExtension.setStatus( self, 0 )
 		return
+	end
+	
+	if self.acTurnStage ~= 199 then
+		self.acTurnStage = 198
 	end
 	
 	if self.movingDirection < -1E-2 then	
@@ -1939,7 +1921,7 @@ end
 
 function AIVehicleExtension:writeUpdateStream(streamId, connection, dirtyMask)
   if not connection:getIsServer() then
-		if self.aiveIsStarted or self.acTurnStage >= 198 then
+		if self.aiveIsStarted or self.aiveAutoSteer then
 			streamWriteBool(streamId, true )
 			streamWriteUInt8(streamId, Utils.clamp( 10 + self.acTurnStage, 0, 255 ) )
 			streamWriteInt8(streamId, math.floor( Utils.clamp( 0.5 + 100 * self.acAxisSide, -100, 100 ) ) )
@@ -2479,6 +2461,7 @@ function AIVehicleExtension:afterSetDriveStrategies()
 		AutoSteeringEngine.initFruitBuffer( self )
 		self.aiRescueTimer = self.acDeltaTimeoutStop
 		self.hasStopped    = true
+		AIVehicleExtension.setInt32Value( self, "autoSteer", 2 )
 	else
 		self.aiveIsStarted = false
 	end
