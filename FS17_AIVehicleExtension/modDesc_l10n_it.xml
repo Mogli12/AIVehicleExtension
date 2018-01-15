@@ -5,7 +5,7 @@
 
 	<texts>
 		<!-- AI Vehicle helpPanel text -->
-		<text name="AIVE_SETTINGS"                 text="Impostazioni aiutanti" />
+		<text name="AIVE_SETTINGS"                 text="Impostazioni operaio" />
 		<text name="AIVE_ENABLED"                  text="Aiutante alternativo" />
 		<text name="AIVE_START"                    text="Aiutante alternativo attiva" />
 		<text name="AIVE_STOP"                     text="Aiutante alternativo disattiva" />
@@ -14,11 +14,11 @@
 		<text name="AIVE_ACTIVESIDELEFT"           text="Sinistro" />
 		<text name="AIVE_ACTIVESIDERIGHT"          text="Destro" />
 
-		<text name="AIVE_UTURN_ON_OFF"             text="Modificare la modalità Aiutante alternativo" />
+		<text name="AIVE_UTURN_ON_OFF"             text="Modifica la modalità Aiutante alternativo" />
 		<text name="AIVE_STEERING"                 text="Intervento sterzo manuale" />
 		<text name="AIVE_STEERING_ON"              text="Intervento sterzo manuale [attivo]" />
 		<text name="AIVE_STEERING_OFF"             text="Intervento sterzo manuale [disattivo]" />
-		<text name="AIVE_CONTINUE"                 text="continuare" />
+		<text name="AIVE_CONTINUE"                 text="continua" />
 		<text name="AIVE_RAISE"                    text="Solleva/abbassa tutti gli attrezzi" />
 
 		<text name="AIVE_WAIT_FOR_PIPE"            text="Modalità scarico" />
@@ -47,10 +47,10 @@
 		<text name="AIVE_CP_OFF"                   text="Modalità Courseplay [attiva]" />
 		<text name="AIVE_STEER_ON"                 text="Sterzo automatico [disattivo]" />
 		<text name="AIVE_STEER_OFF"                text="Sterzo automatico [attivo]" />
-		<text name="AIVE_HEADLAND_ON"              text="Testata del campo [disattiva]" />
-		<text name="AIVE_HEADLAND_OFF"             text="Testata del campo [attiva]" />
-		<text name="AIVE_FRONT_PACKER_ON"          text="Compattatore frontale [attivo]" />
-		<text name="AIVE_FRONT_PACKER_OFF"         text="Compattatore frontale [disattivo]" />
+		<text name="AIVE_HEADLAND_ON"              text="Testata campo [disattiva]" />
+		<text name="AIVE_HEADLAND_OFF"             text="Testata campo [attiva]" />
+		<text name="AIVE_FRONT_PACKER_ON"          text="Compat. frontale [attivo]" />
+		<text name="AIVE_FRONT_PACKER_OFF"         text="Compat. frontale [disattivo]" />
 		<text name="AIVE_COLLISION_ON"             text="Rileva collisioni [attivo]" />
 		<text name="AIVE_COLLISION_OFF"            text="Rileva collisioni [disattivo]" />
 		<text name="AIVE_HIRE_ON"                  text="Uso dei semi [disattivo]" />
@@ -66,7 +66,7 @@
 		<text name="AIVE_TURN_MODE_7"              text="Inversione piccola" />
 		<text name="AIVE_TURN_MODE_K"              text="Grande svolta a 90°" />
 		<text name="AIVE_TURN_MODE_8"              text="Svolta in forma di 8" />
-		<text name="AIVE_PAUSE_ON"                 text="Continuare" />
+		<text name="AIVE_PAUSE_ON"                 text="Continua" />
 		<text name="AIVE_PAUSE_OFF"                text="Pausa" />
 		<text name="AIVE_STEER_RAISE"              text="Solleva tutti gli attrezzi" />
 		<text name="AIVE_STEER_LOWER"              text="Abbassa tutti gli attrezzi" />
@@ -82,5 +82,6 @@
 		<text name="input_AIVE_STEERING"           text="Aiutante alternativo: Sterzo manuale" />
 		<text name="input_AIVE_RAISE"              text="Aiutante alternativo: Solleva/abbassa tutti gli attrezzi" />
 		<text name="input_AIVE_START_AIVE"         text="Aiutante alternativo: Impostazioni" />
+		<text name="input_AIVE_NEXT_WORKER"        text="Aiutante alternativo: Passa al prossimo operaio"/>
 	</texts>
 </l10n>
