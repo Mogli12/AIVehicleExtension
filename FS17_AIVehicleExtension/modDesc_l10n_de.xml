@@ -7,8 +7,8 @@
 		<!--AI Vehicle helpPanel text-->
 		<text name="AIVE_SETTINGS"                 text="Helfereinstellungen" />
 		<text name="AIVE_ENABLED"                  text="Alternativer Helfer" />
-		<text name="AIVE_START"                    text="Alternativen Helfer einstellen" />
-		<text name="AIVE_STOP"                     text="Alternativen Helfer entlassen" />
+		<text name="AIVE_START"                    text="Alternativer Helfer [an]" />
+		<text name="AIVE_STOP"                     text="Alternativer Helfer [aus]" />
 		<text name="AIVE_WORKWIDTH"                text="Arbeitsbreite:" />
 		<text name="AIVE_ACTIVESIDE"          		 text="Aktive Seite" />
 		<text name="AIVE_ACTIVESIDELEFT"           text="Links" />

@@ -7,8 +7,8 @@
 		<!--AI Vehicle helpPanel text-->
 		<text name="AIVE_SETTINGS"                  text="Настройки рабочего" />
 		<text name="AIVE_ENABLED"                   text="Альтернативный рабочий" />
-		<text name="AIVE_START"                     text="Включить AIVehicle" />
-		<text name="AIVE_STOP"                      text="Выключить AIVehicle" />
+		<text name="AIVE_START"                     text="Альтернативный рабочий [ВКЛ]"/>
+		<text name="AIVE_STOP"                      text="Альтернативный рабочий [ВЫКЛ]"/>
 		<text name="AIVE_WORKWIDTH"                 text="Рабочая ширина:" />
 		<text name="AIVE_ACTIVESIDE"                text="Активная сторона:" />
 		<text name="AIVE_ACTIVESIDELEFT"            text="Левая" />

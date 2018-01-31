@@ -7,8 +7,8 @@
 		<!--AI Vehicle helpPanel text-->
 		<text name="AIVE_SETTINGS"                 text="Ustawienia pomocnika" />
 		<text name="AIVE_ENABLED"                  text="Alternatywny pomocnik" />
-		<text name="AIVE_START"                    text="Uruchom alternatywnego pomocnika" />
-		<text name="AIVE_STOP"                     text="Zatrzymaj alternatywnego pomocnika" />
+		<text name="AIVE_START"                    text="Alternatywny pomocnik [wł.]"/>
+		<text name="AIVE_STOP"                     text="Alternatywny pomocnik [wył.]"/>
 		<text name="AIVE_WORKWIDTH"                text="Szerokość robocza:" />
 		<text name="AIVE_ACTIVESIDE"          	   text="Aktywna strona" />
 		<text name="AIVE_ACTIVESIDELEFT"           text="lewa" />
