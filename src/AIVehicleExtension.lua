@@ -620,6 +620,7 @@ function AIVehicleExtension:onAutoSteer(enabled)
 		end
 	elseif enabled then
 		AIVehicleExtension.setInt32Value( self, "autoSteer", 1 )
+		AIVehicleExtension.setImplMoveDownClient(self,true,true)
 	else
 		AIVehicleExtension.setInt32Value( self, "autoSteer", 0 )
 	end

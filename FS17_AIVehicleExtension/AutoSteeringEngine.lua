@@ -8539,6 +8539,41 @@ function AutoSteeringEngine.setToolsAreLowered( vehicle, isLowered, immediate, o
 	end
 end
 
+function AutoSteeringEngine.turnOnOff( vehicle, setIsOn )
+	if not ( vehicle.aiveChain            ~= nil
+			 and vehicle.aiveChain.toolCount  ~= nil
+			 and vehicle.aiveChain.toolParams ~= nil
+			 and vehicle.aiveChain.toolCount  >= 1 ) then
+		return
+	end
+	
+	do 
+		local tool = vehicle 
+		if type( tool.aiTurnOn ) == "function" and type( tool.aiTurnOff ) == "function" then 
+			if setIsOn then 
+				tool.aiTurnOn( tool )
+			else 
+				tool.aiTurnOff( tool )
+			end 
+		else 
+			print( "cannot turn on/off vehicle ("..tostring(setIsOn)..")")
+		end 
+	end 
+	
+	for i=1,vehicle.aiveChain.toolCount do		
+		local tool = vehicle.aiveChain.tools[i].obj 
+		if tool ~= vehicle and type( tool.aiTurnOn ) == "function" and type( tool.aiTurnOff ) == "function" then 
+			if setIsOn then 
+				tool.aiTurnOn( tool )
+			else 
+				tool.aiTurnOff( tool )
+			end 
+		else 
+			print( "cannot turn on/off tool ("..tostring(i)..", "..tostring(setIsOn)..")")
+		end 
+	end 
+end
+
 ------------------------------------------------------------------------
 -- raiseToolNoFruits
 ------------------------------------------------------------------------

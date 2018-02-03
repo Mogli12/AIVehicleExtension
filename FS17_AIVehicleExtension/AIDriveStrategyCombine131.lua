@@ -156,11 +156,23 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 			end
 		end
 	end
-
-	--if (not allowedToDrive and not isTurning) or (isTurning and waitForStraw) then
-	if not allowedToDrive or (isTurning and waitForStraw) then
+	
+	if not allowedToDrive or (isTurning and waitForStraw) then 
+		if self.aiveTurnOffTimer == nil then 
+			self.aiveTurnOffTimer = g_currentMission.time + 10000 
+		elseif g_currentMission.time > self.aiveTurnOffTimer then 
+			if not ( self.aiveTurnedOff ) then 
+				self.aiveTurnedOff = true 
+				AutoSteeringEngine.turnOnOff( self.vehicle, false ) 
+			end 
+		end 
 		return 0, 1, true, 0, math.huge
 	else
+		if self.aiveTurnedOff then 
+			AutoSteeringEngine.turnOnOff( self.vehicle, true )
+			self.aiveTurnedOff = false 
+		end 
+		self.aiveTurnOffTimer = nil 
 		return nil, nil, nil, nil, nil
 	end
 
