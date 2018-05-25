@@ -928,7 +928,7 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 						
 					local delta2 = 1 / AIVEGlobals.chainDivideP3
 					local delta1 = delta2 
-					if delta3 < 2.999999 or ( bi0 <= 0 and bi0 > 0 ) then
+					if delta3 < 2.999999 or ( bi0 <= 0 and bo0 > 0 ) then
 						delta1 = 1 / ( AIVEGlobals.chainDivideP1 * AIVEGlobals.chainDivideP2 )
 					end
 				
@@ -1016,9 +1016,9 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 
 			if      vehicle.aiveChain.fixAttacher
 					and turnAngle              > 0				
-					and best.border            > AIVEGlobals.ignoreBorder
-					and vehicle.aiveChain.minZ < 0
-					and best.distance          < -vehicle.aiveChain.minZ-vehicle.aiveChain.minZ then
+				--and best.border            > AIVEGlobals.ignoreBorder
+				--and best.distance          < -vehicle.aiveChain.minZ-vehicle.aiveChain.minZ
+					and vehicle.aiveChain.minZ < 0 then
 				for step=1,AIVEGlobals.chainDivideP3 do
 					local a = -step / AIVEGlobals.chainDivideP3
 					local d, bi, bo, to = AutoSteeringEngine.processChainStep( vehicle, best, a, j0, indexMax )
