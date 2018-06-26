@@ -9,7 +9,7 @@
     <artAxisRot type="float" value="1.000000" />
     <artAxisShift type="float" value="1.000000" />
 		
-		<zeroAngle  type="bool" value="true" />
+		<zeroAngle  type="bool" value="false" />
 		
     <angleStep    type="degree" value="0" />
     <angleStepInc type="degree" value="45" /> <!-- 27° / 45° -->

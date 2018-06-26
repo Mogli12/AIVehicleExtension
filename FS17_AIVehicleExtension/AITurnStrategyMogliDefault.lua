@@ -1249,9 +1249,13 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 		if not veh.acParameters.leftAreaActive then x = -x end
 		
+		if turnAngle < 0 then
+			angle = -math.min( veh.acDimensions.maxSteeringAngle, 2 * math.rad( turnAngle + 180 ) )
+		else
+			angle = -math.min( veh.acDimensions.maxSteeringAngle, 2 * math.rad( turnAngle - 180 ) )
+		end 
+		
 		if fruitsDetected then
-			detected = false
-			angle    = 0
 			angle2   = nil
 		else
 			detected, angle2, border = AutoSteeringEngine.processChain( veh )
@@ -1266,7 +1270,6 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				if border <= 0 then
 					detected = true
 				end
-				angle  = 0
 				angle2 = nil
 			end
 		end

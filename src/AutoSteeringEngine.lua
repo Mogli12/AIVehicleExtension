@@ -502,7 +502,12 @@ end
 -- getChainIndexMax
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getChainIndexMax( vehicle )
-	local indexMax   = math.min( vehicle.aiveChain.chainMax, vehicle.aiveChain.chainStep2 )
+	local indexMax
+	if vehicle.aiveChain.inField then 
+		indexMax   = math.min( vehicle.aiveChain.chainMax, vehicle.aiveChain.chainStep2 )
+	else 
+		indexMax   = math.min( vehicle.aiveChain.chainMax, vehicle.aiveChain.chainStep1 )
+	end
 
 	while   indexMax < vehicle.aiveChain.chainMax
 			and vehicle.aiveChain.nodes[indexMax].distance < 2 + math.max( vehicle.aiveChain.width, vehicle.aiveChain.radius ) do
@@ -6198,7 +6203,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 			local dist = Utils.clamp( AutoSteeringEngine.getTraceLength( vehicle ), AIVEGlobals.ignoreDist + 3, AIVEGlobals.maxTurnCheck )
 			local f = offsetOutside * 0.025 * math.abs( vehicle.aiveChain.width )
 
-			for i = 0,40 do
+			for i = -40,40 do
 				xw0 = vehicle.aiveChain.trace.ox + f * i * dxx
 				zw0 = vehicle.aiveChain.trace.oz + f * i * dzx
 				

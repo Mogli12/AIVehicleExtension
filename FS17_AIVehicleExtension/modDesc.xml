@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="37">
 	<author>Mogli</author>
-	<version>1.1.0.2</version>
+	<version>1.1.0.3</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v1.2 build 2</en>
-			<de>AI Vehicle Extension v1.2 build 2</de>
-			<fr>AI Vehicle Extension v1.2 build 2</fr>
-			<it>AI Vehicle Extension v1.2 build 2</it>
-			<ru>AI Vehicle Extension v1.2 build 2</ru>
-			<cz>AI Vehicle Extension v1.2 build 2</cz>
-			<pl>AI Vehicle Extension v1.2 build 2</pl>
-										<cs>车辆助手 v1.2 build 2</cs>
+			<en>AI Vehicle Extension v1.2 build 3</en>
+			<de>AI Vehicle Extension v1.2 build 3</de>
+			<fr>AI Vehicle Extension v1.2 build 3</fr>
+			<it>AI Vehicle Extension v1.2 build 3</it>
+			<ru>AI Vehicle Extension v1.2 build 3</ru>
+			<cz>AI Vehicle Extension v1.2 build 3</cz>
+			<pl>AI Vehicle Extension v1.2 build 3</pl>
+										<cs>车辆助手 v1.2 build 3</cs>
 		</text>
 	</l10n>
 	<title>
@@ -49,6 +49,9 @@ Changelog 1.1:
 * Auto steer
 * Change of headland mode in HUD
 * Support of vehicles with articulated axis in combination with trailer or trailer low attacher
+
+Changelog v1.2:
+* Better edge detection for tools at 3-point hitch in the back
 ]]></en>
 		<de><![CDATA[
 AIVehicleExtension beinhaltet einen alternativen Helfer, der auch Felder mit unregelmäßigen Kanten bearbeiten kann. Darüber hinaus bietet er weitere Möglichkeiten wie Kreisfahrt oder Vorgewendet.
@@ -74,6 +77,9 @@ Changelog 1.1:
 * Nur automatisch Lenken
 * Button für Vorgewende im HUD
 * Unterstützung von Knickerlenker in Kombination mit Gerät an "trailer" oder "traler_low"
+
+Changelog v1.2:
+* Besser Erkennung der Kante für Geräte an der hinteren 3-Punkt Aufhängung
 ]]></de>
 		<it><![CDATA[
 AIVehicleExtension contiene un aiutante alternativo che può lavorare su campi con bordi irregolari. Ha alcune caratteristiche aggiuntive come una modalità circolare e testate di campo.
