@@ -70,9 +70,11 @@
 		<text name="AIVE_PAUSE_OFF"                 text="Пауза" />
 		<text name="AIVE_STEER_RAISE"               text="Оборудование поднять и выключить" />
 		<text name="AIVE_STEER_LOWER"               text="Оборудование опустить и включить" />
-		<text name="AIVE_TRACE"                     text="Трасирование движения" />
+		<text name="AIVE_TRACE"                     text="Трассирование движения" />
 		<text name="AIVE_MAGIC"                     text="Обновить поле" /> 
-		<text name="AIVE_USE_AI_FIELD"              text="Только объединённые поля" />
+		<text name="AIVE_USE_AI_FIELD"              text="Определять только объединённые поля" />
+		<text name="AIVE_FIELD_W"                   text="Запущено определение поля" />
+		<text name="AIVE_FIELD_E"                   text="Не удалось определить поле" />
 				
 		<text name="input_AIVE_HELPPANEL"          text="AIVE: HUD показать/скрыть"/>
 		<text name="input_AIVE_STEER"              text="AIVE: Автоматическое руление"/>
