@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="37">
 	<author>Mogli</author>
-	<version>1.1.0.4</version>
+	<version>1.1.0.5</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v1.2 build 4</en>
-			<de>AI Vehicle Extension v1.2 build 4</de>
-			<fr>AI Vehicle Extension v1.2 build 4</fr>
-			<it>AI Vehicle Extension v1.2 build 4</it>
-			<ru>AI Vehicle Extension v1.2 build 4</ru>
-			<cz>AI Vehicle Extension v1.2 build 4</cz>
-			<pl>AI Vehicle Extension v1.2 build 4</pl>
-										<cs>车辆助手 v1.2 build 4</cs>
+			<en>AI Vehicle Extension v1.2 build 5</en>
+			<de>AI Vehicle Extension v1.2 build 5</de>
+			<fr>AI Vehicle Extension v1.2 build 5</fr>
+			<it>AI Vehicle Extension v1.2 build 5</it>
+			<ru>AI Vehicle Extension v1.2 build 5</ru>
+			<cz>AI Vehicle Extension v1.2 build 5</cz>
+			<pl>AI Vehicle Extension v1.2 build 5</pl>
+										<cs>车辆助手 v1.2 build 5</cs>
 		</text>
 	</l10n>
 	<title>
@@ -52,6 +52,7 @@ Changelog 1.1:
 
 Changelog v1.2:
 * Better edge detection for tools at 3-point hitch in the back
+* fixed problem with corn headers
 ]]></en>
 		<de><![CDATA[
 AIVehicleExtension beinhaltet einen alternativen Helfer, der auch Felder mit unregelmäßigen Kanten bearbeiten kann. Darüber hinaus bietet er weitere Möglichkeiten wie Kreisfahrt oder Vorgewendet.
@@ -73,13 +74,14 @@ Hier ist die Tastaturbelegung:
 * Left control + Tab: Springe zum nächsten Helfer
 
 Changelog 1.1:
-* Besser Erkennung der Kante
-* Nur automatisch Lenken
+* Bessere Erkennung der Kante
+* Selber Fahren und automatisch Lenken lassen
 * Button für Vorgewende im HUD
 * Unterstützung von Knickerlenker in Kombination mit Gerät an "trailer" oder "traler_low"
 
 Changelog v1.2:
 * Besser Erkennung der Kante für Geräte an der hinteren 3-Punkt Aufhängung
+* Problem mit Maispflückern gelöst
 ]]></de>
 		<it><![CDATA[
 AIVehicleExtension contiene un aiutante alternativo che può lavorare su campi con bordi irregolari. Ha alcune caratteristiche aggiuntive come una modalità circolare e testate di campo.

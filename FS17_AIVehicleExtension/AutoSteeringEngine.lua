@@ -4118,7 +4118,7 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 	if vehicle.aiveCurrentField == nil then
 		vehicle.aiveFieldIsInvalid = false
 		
-		local status, hektar = false, 0
+		local status, message, hektar = false, "", 0
 		
 		if vehicle.aiveCurrentFieldCo == nil then
 			vehicle.aiveCurrentFieldCt = 0
@@ -4166,7 +4166,7 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 					if status then
 						vehicle.aiveCurrentFieldCS = coroutine.status( vehicle.aiveCurrentFieldCo )
 					else
-						print("Field detection failed: "..tostring(vehicle.aiveCurrentField))
+						message = tostring(vehicle.aiveCurrentField)
 						vehicle.aiveCurrentField   = nil
 						vehicle.aiveCurrentFieldCo = nil
 						vehicle.aiveCurrentFieldCS = 'dead'
@@ -4180,13 +4180,20 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 			if status then
 				vehicle.aiveCurrentFieldCS = coroutine.status( vehicle.aiveCurrentFieldCo )
 			else
-				print("Field detection failed: "..tostring(vehicle.aiveCurrentField))
+				message = tostring(vehicle.aiveCurrentField)
 				vehicle.aiveCurrentField   = nil
 				vehicle.aiveCurrentFieldCo = nil
 				vehicle.aiveCurrentFieldCS = 'dead'
 			end
-			AIVehicleExtension.showWarning( vehicle, string.format("Field detection is running (%0.3f ha)", hektar), 500 )
 		end
+		
+		if     status then
+		-- still running 
+			AIVehicleExtension.showWarning( vehicle, AIVehicleExtension.getText( "AIVE_FIELD_W", "Field detection is running" )..string.format(" (%0.3f ha)", hektar), 500 )
+		elseif vehicle.aiveCurrentField == nil then
+		-- failed 
+			AIVehicleExtension.showWarning( vehicle, AIVehicleExtension.getText( "AIVE_FIELD_E", "Field detection failed" ).." ("..message..")", 500 )
+		end 
 		
 		if vehicle.aiveCurrentFieldCo ~= nil then
 			if vehicle.aiveCurrentFieldCS == 'dead' then
