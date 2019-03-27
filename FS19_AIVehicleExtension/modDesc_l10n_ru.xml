@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[AI Vehicle]]></description>
+
+	<texts>
+		<!--AI Vehicle helpPanel text-->
+		<text name="AIVE_SETTINGS"                  text="Настройки рабочего" />
+		<text name="AIVE_ENABLED"                   text="Альтернативный рабочий" />
+		<text name="AIVE_START"                     text="Альтернативный рабочий [ВКЛ]"/>
+		<text name="AIVE_STOP"                      text="Альтернативный рабочий [ВЫКЛ]"/>
+		<text name="AIVE_WORKWIDTH"                 text="Рабочая ширина:" />
+		<text name="AIVE_ACTIVESIDE"                text="Активная сторона:" />
+		<text name="AIVE_ACTIVESIDELEFT"            text="Левая" />
+		<text name="AIVE_ACTIVESIDERIGHT"           text="Правая" />
+		
+		<text name="AIVE_UTURN_ON_OFF"              text="Изменить режим AIVehicle"/>
+		<text name="AIVE_STEERING"                  text="Ручное управление"/>
+		<text name="AIVE_STEERING_ON"               text="Ручное управление [ВКЛ]"/>
+		<text name="AIVE_STEERING_OFF"              text="Ручное управление [ВЫКЛ]"/>
+		<text name="AIVE_CONTINUE"                  text="Продолжить"/>
+		<text name="AIVE_RAISE"                     text="Поднять/Опустить все оборудование"/>
+
+		<text name="AIVE_WAIT_FOR_PIPE"             text="Останавливаться для разгрузки" />
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON"   text="Удерживать дистанцию" />
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF"  text="Не удерживать дистанцию" />
+		<!--AI Vehicle help text-->
+		<text name="AIVE_TEXTHELPPANELOFF"          text="Скрыть AIVehicle" />
+		<text name="AIVE_TEXTHELPPANELON"           text="Показать AIVehicle" />
+		<!--AI Vehicle inputbinding text-->
+		<text name="AIVE_COLLISION_OTHER"           text="Столкновение спереди" />
+		<text name="AIVE_COLLISION_BACK"            text="Столкновение сзади" />
+		<text name="AIVE_UTURN_ON"                  text="Режим AIVehicle [челночный]" />
+		<text name="AIVE_UTURN_OFF"                 text="Режим AIVehicle [по периметру]" />
+		<text name="AIVE_REVERSE_ON"                text="Режим разворота [реверс]" />
+		<text name="AIVE_REVERSE_OFF"               text="Режим разворота [вперёд]" />
+		<text name="AIVE_INVERTED"                  text="Режим AIVehicle [челночный]" />
+		<text name="AIVE_INVERTED_ON"               text="Режим работы [реверс]" />
+		<text name="AIVE_INVERTED_OFF"              text="Режим работы [обычный]" />
+		<text name="AIVE_WIDTH_OFFSET"              text="Ширина смещения" />
+		<text name="AIVE_TURN_OFFSET"               text="-Отступ/+Заступ для разворота" />
+		<text name="AIVE_ANGLE_OFFSET"              text="Угол разворота" />
+		<text name="AIVE_SAFETY_FACTOR"             text="Безопасное расстояние" />
+		<text name="AIVE_ERROR"                     text="ошибка" />
+		<text name="AIVE_NEXTTURNSTAGE"             text="К следующему этапу" />
+		<text name="AIVE_CP_ON"                     text="Режим courseplay [ВЫКЛ]" />
+		<text name="AIVE_CP_OFF"                    text="Режим courseplay [ВКЛ]" />
+		<text name="AIVE_STEER_ON"                  text="Авторуление [ВЫКЛ]" />
+		<text name="AIVE_STEER_OFF"                 text="Авторуление [ВКЛ]" />
+		<text name="AIVE_HEADLAND_ON"               text="Разворот. полоса [ВЫКЛ]" />
+		<text name="AIVE_HEADLAND_OFF"              text="Разворот. полоса [ВКЛ]" /> <!-- Not used ?-->
+		<text name="AIVE_FRONT_PACKER_ON"           text="Передний культиватор [ВКЛ]" />
+		<text name="AIVE_FRONT_PACKER_OFF"          text="Передний культиватор [ВЫКЛ]" />
+		<text name="AIVE_COLLISION_ON"              text="Проверка коллизий" />
+		<text name="AIVE_COLLISION_OFF"             text="Проверка коллизий" /> <!-- Not used ?-->
+		<text name="AIVE_HIRE_ON"                   text="Не расходовать семена" /> <!-- Not used ?-->
+		<text name="AIVE_HIRE_OFF"                  text="Расходовать семена" /> <!-- Not used ?-->
+		<text name="AIVE_HEADLAND"                  text="Разворотн.полоса" />
+		<text name="AIVE_TURN_MODE"                 text="Тип маневра разворота" />
+		<text name="AIVE_TURN_MODE_O"               text="Разворот в виде O" />
+		<text name="AIVE_TURN_MODE_A"               text="Разворот с кривой" />
+		<text name="AIVE_TURN_MODE_Y"               text="Реверс с кривой (молотилки)" />
+		<text name="AIVE_TURN_MODE_T"               text="Только назад" />
+		<text name="AIVE_TURN_MODE_C"               text="Разворот в виде O" />
+		<text name="AIVE_TURN_MODE_L"               text="Разворот с кривой" />
+		<text name="AIVE_TURN_MODE_7"               text="Только назад" />
+		<text name="AIVE_TURN_MODE_K"               text="Большой поворот на 90°" />
+		<text name="AIVE_TURN_MODE_8"               text="Разворот восьмёркой" />
+		<text name="AIVE_PAUSE_ON"                  text="Продолжить" />
+		<text name="AIVE_PAUSE_OFF"                 text="Пауза" />
+		<text name="AIVE_STEER_RAISE"               text="Оборудование поднять и выключить" />
+		<text name="AIVE_STEER_LOWER"               text="Оборудование опустить и включить" />
+		<text name="AIVE_TRACE"                     text="Трассирование движения" />
+		<text name="AIVE_MAGIC"                     text="Обновить поле" /> 
+		<text name="AIVE_USE_AI_FIELD"              text="Определять только объединённые поля" />
+		<text name="AIVE_FIELD_W"                   text="Запущено определение поля" />
+		<text name="AIVE_FIELD_E"                   text="Не удалось определить поле" />
+				
+		<text name="input_AIVE_HELPPANEL"          text="AIVE: HUD показать/скрыть"/>
+		<text name="input_AIVE_STEER"              text="AIVE: Автоматическое руление"/>
+		<text name="input_AIVE_SWAP_SIDE"          text="AIVE: Переключатель активной страницы"/>
+		<text name="input_AIVE_ENABLE"             text="AIVE: Изменить тип рабочего"/>
+		<text name="input_AIVE_UTURN_ON_OFF"       text="AIVE: Режим по кругу вкл/выкл"/>
+		<text name="input_AIVE_STEERING"           text="AIVE: Ручное руление"/>
+		<text name="input_AIVE_RAISE"              text="AIVE: Поднять/опустить все оборудование"/>
+		<text name="input_AIVE_START_AIVE"         text="AIVE: Настройки рабочего"/>
+		<text name="input_AIVE_NEXT_WORKER"        text="AIVE: Перейти к следующему рабочему"/>
+	</texts>
+</l10n>

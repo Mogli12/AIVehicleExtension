@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="41">
+	<author>Mogli</author>
+	<version>0.0.0.1</version>
+	<l10n filenamePrefix="modDesc_l10n">
+		<text name="AIVE_VERSION">
+			<en>AI Vehicle Extension v0.0.0.1</en>
+			<de>AI Vehicle Extension v0.0.0.1</de>
+			<fr>AI Vehicle Extension v0.0.0.1</fr>
+			<it>AI Vehicle Extension v0.0.0.1</it>
+			<ru>AI Vehicle Extension v0.0.0.1</ru>
+			<cz>AI Vehicle Extension v0.0.0.1</cz>
+			<pl>AI Vehicle Extension v0.0.0.1</pl>
+										<cs>车辆助手 v0.0.0.1</cs>
+		</text>
+	</l10n>
+	<title>
+		<en>AI Vehicle Extension</en>
+		<de>AI Vehicle Extension</de>
+		<fr>AI Vehicle Extension</fr>
+		<it>AI Vehicle Extension</it>
+		<ru>AI Vehicle Extension</ru>
+		<cz>AI Vehicle Extension</cz>
+		<pl>AI Vehicle Extension</pl>
+		<cs>车辆助手</cs>
+	</title>
+	<description>
+		<en><![CDATA[
+AIVehicleExtension contains an alternative hired worker that can work on fields with irregular edges. It has some additional features like a circular mode and headland support.
+
+This mod automatically inserts itself into all vehicles if they already support the normal hired worker. Only exception are vehicles with articulated axis.
+
+When starting this alternative helper it briefly scans the field at the current vehicle position. But apart from this, the alternative hired worker has only a little idea of where it is on the field. Instead, this mod looks, starting from the current position, for the border between untouched and already worked area is. 
+
+On beautiful rectangular fields with lots of free space around you can better use the normal hired worker. If you want to follow a certain path on the field then I recommend using CoursePlay. The mod FollowMe is great for simple following tasks. I have the two mods together with AIVehicleExtension in my mods folder.
+
+Here are the most important input bindings:
+* H: Start or stop the hired worker
+* Left shift + H: Open the settings dialog
+* Left control + H: Open the head up display
+* Left alt. + H: Toggle automatic steering
+* Left alt. + V: Raise or lower all tools
+* Left alt. + 5: Toggle circular mode 
+* Left alt. + 6: Swap side
+* Left control + Tab: Jump to next hired worker
+
+Changelog 1.1:
+* Improved edge detection
+* Auto steer
+* Change of headland mode in HUD
+* Support of vehicles with articulated axis in combination with trailer or trailer low attacher
+
+Changelog v1.2:
+* Better edge detection for tools at 3-point hitch in the back
+* fixed problem with corn headers
+]]></en>
+		<de><![CDATA[
+AIVehicleExtension beinhaltet einen alternativen Helfer, der auch Felder mit unregelmäßigen Kanten bearbeiten kann. Darüber hinaus bietet er weitere Möglichkeiten wie Kreisfahrt oder Vorgewendet.
+		
+Dieser Mod baut sich automatisch in alle Fahrzeuge ein, wenn diese bereits den normalen Helfer unterstützen. Einzige Ausnahme sind derzeit Fahrzeuge mit Knicklenkung.
+
+Beim Start dieses alternativen Helfers überprüft er kurz das Feld an der aktuellen Fahrzeugposition. Abgesehen davon hat der alternative Helfer aber wenig Ahnung, wo er sich gerade auf dem Feld bedindet. Stattdessen schaut dieser Mod ausgehend von der aktuellen Position, wo noch unbearbeitetes Feld und wo bereits bearbeites Feld ist. 
+
+Auf schönen rechteckigen Feldern mit viel Platz drumherum kann man besser den normalen Helfer benutzen. Wenn man einen bestimmten Weg auf dem Feld abfahren will, dann empfehle ich CoursePlay. Für einfaches Hinterherfahren ist auch FollowMe ganz toll. Ich habe meistens alle 3 Mods installiert.
+
+Hier ist die Tastaturbelegung:
+* H: Helfer einstellen oder entlassen
+* Left shift + H: Einstellungsdialog öffnen
+* Left control + H: AI Vehicle-Info öffnen
+* Left alt. + H: Automatische Lenkung
+* Left alt. + V: Alle Geräte heben oder senken
+* Left alt. + 5: AI Vehicle-Modus wechseln
+* Left alt. + 6: Aktive seite wechseln
+* Left control + Tab: Springe zum nächsten Helfer
+
+Changelog 1.1:
+* Bessere Erkennung der Kante
+* Selber Fahren und automatisch Lenken lassen
+* Button für Vorgewende im HUD
+* Unterstützung von Knickerlenker in Kombination mit Gerät an "trailer" oder "traler_low"
+
+Changelog v1.2:
+* Besser Erkennung der Kante für Geräte an der hinteren 3-Punkt Aufhängung
+* Problem mit Maispflückern gelöst
+]]></de>
+		<it><![CDATA[
+AIVehicleExtension contiene un aiutante alternativo che può lavorare su campi con bordi irregolari. Ha alcune caratteristiche aggiuntive come una modalità circolare e testate di campo.
+
+Questa mod si inserisce automaticamente in tutti i veicoli se già supportano l'aiutante normale. Unica eccezione sono i veicoli con asse articolato.
+
+All'avvio questo aiutante alternativo scansiona brevemente il campo nella posizione corrente del veicolo. Oltre a questo, l'aiutante alternativo ha poca idea di dove si è sul campo. Invece, questo mod osserva a partire dalla posizione corrente, per il confine tra l'area incontaminata e dove è già lavorato.
+
+Su campi rettangolari con un sacco di spazio libero attorno si può utilizzare l'aiutante normale. Se si vuole seguire un certo percorso sul campo poi mi consiglia di utilizzare courseplay. Il FollowMe mod è l'ideale per semplici compiti. Ho i due mods insieme AIVehicleExtension nella mia cartella mods.
+
+Qui ci sono le più importanti associazioni di tasti:
+* H: avviare o arrestare l'aiutante
+* SHIFT SINISTRO + H: Aprire la finestra delle impostazioni
+* CONTROL SINISTRO + H: Aprire il display
+* Alt. + H: Sterzo automatico
+* Alt. + V: Sollevare o abbassare tutti gli attrezzi
+* Alt. + 5: Cambia modalità di lavoro
+* Alt. + 6: Lato attivo
+]]></it>
+		<fr><![CDATA[
+AIVehicleExtension fournit un ouvrier alternatif capable de travailler les champs aux formes irrégulières. Il rajoute aussi d'autres fonctionnalités comme un mode circulaire et la gestion des fourrières.
+
+Ce mod se rajoute automatiquement à tous les véhicules supportant l'ouvrier classique. La seule exception pour l'instant concerne les véhicules articulés.
+
+Lors du démarrage de cet ouvrier alternatif, il vérifie rapidement le champ à la position actuelle du véhicule. Toutefois, cet ouvrier alternatif n'a pas vraiment conscience d'où il se situe dans une parcelle. Tout ce qu'il fait c'est vérifier à partir de sa position actuelle où se trouve la limite entre la surface déjà travaillée et celle encore à travailler.
+
+Pour les parcelles bien rectangulaires et dégagées, il vaut mieux avoir recours à l'ouvrier standard. Si vous voulez suivre un certain chemin sur un champ, alors je vous conseille d'utiliser Courseplay. Quand il s'agit simplement de devoir suivre un autre véhicule, FollowMe sera parfait. J'ai constamment ces deux mods avec AIVehiculeExtension dans mon répertoire de mods.
+
+Voici les principaux raccourcis clavier :
+* H: Engager ou renvoyer un ouvrier
+* shift gauche + H: Ouvrir la fenêtre des paramètres
+* ctrl gauche + H: Afficher le panneau d'information
+* alt gauche + H: Direction automatique
+* alt gauche + V: Lever ou baisser tous les outils
+* alt gauche + 5: Changer de mode (circulaire/Aller-retour)
+* alt gauche + 6: Changer de sens
+]]></fr>
+		<ru>
+			<![CDATA[
+AIVehicleExtension это альтернативный наемный работник, который может работать с полями любой формы. Он имеет некоторые дополнительные функции, такие как круговой режим работы и поддержка разных типов разворота.
+
+Этот мод автоматически устанавливается во все транспортные средства, если они уже поддерживают обычного наемного работника. Исключением является техника из сочленённой рамой.
+
+При запуске этого альтернативного помощника он кратковременно сканирует поле на котором находится техника. Но альтернативный наемный работник имеет лишь небольшое представление о том, где он находится на поле. Для этого мод 'смотрит', начиная с текущей позиции, на границы между нетронутой и уже обработанной областью.
+
+На красивых прямоугольных полях с большим количеством свободного места вокруг вы можете использовать обычного наемного работника. Если вы хотите следовать определенному пути на поле, я рекомендую использовать CoursePlay. Мод FollowMe также отлично подходит для простых задач. У меня есть эти два мода вместе с AIVehicleExtension в моей папке модов.
+
+Основные клавиши управления:
+* H: Начать или остановить работу наемного работника
+* Left Shift + H: Открыть диалог настроек
+* Left Ctrl + H: Открыть панель управления
+* Left Alt + H: Вкл/Выкл автоматическое руление
+* Left Alt + V: Поднять или опустить всё оборудование
+* Left Alt + 5: Переключить в круговой режим работы
+* Left Alt + 6: Изменить рабочую сторону
+Перевод Gonimy_Vetrom]]></ru>
+		<cz>
+			<![CDATA[AI Vehicle - český překlad by Albi]]></cz>
+		<pl>
+			<![CDATA[
+AIVehicleExtension udostępnia alternatywnego pracownika, który potrafi pracować na polach o nieregularnym kształcie. Posiada dodatkowe funkcjonalności, takie jak praca na około pola i zachowywanie odstępu.
+
+Ten mod automatycznie instaluje się we wszystkich pojazdach, które posiadają zwykłego pracownika. Jedynym wyjątkiem są pojazdy przegubowe.
+
+Podczas startu alternatywnego pracownika skanuje on wstępnie pole w okolicy swojej pozycji. Oprócz tego, alternatywny pracownik posiada jedynie niewielką wiedzę, w którym miejscu pola się znajduje, uwzględniając pozycję startową poszukuje on krawędzi pomiędzy obszarem do pracy, a już obrobionym. 
+
+Na perfekcyjnie prostokątnych polach z dużą ilością wolnego miejsca wokół, zalecane jest używanie zwykłego pracownika. Jeżeli chciałbyś by pojazd podążał określoną ścieżką po polu, to zalecanym modem jest CoursePlay. Mod FollowMe idealnie nadaje się do prostych zadań podążania za pojazdami. Osobiście używam obu wraz z AIVehicleExtension.
+
+Poniżej znajduje się lista najbardziej użytecznych skrótów klawiszowych:
+* H: Uruchomienie lub zatrzymanie pracownika
+* Lewy Shift + H: Okno ustawień
+* Lewy Ctrl + H: Panel sterowania
+* Lewy Alt + H: Przełączenie na automatyczne sterownie
+* Lewy Alt + V: Podniesienie lub opuszczenie wszystkich maszyn
+* Lewy Alt + 5: Przełączenie w tryb na około 
+* Lewy Alt + 6: Zamiana stron
+
+AIVehicleExtension - Polskie tłumaczenie Dzi4d3k]]></pl>
+		<cs>
+			<![CDATA[自动驾驶]]></cs>
+	</description>
+	<iconFilename>dds/store.dds</iconFilename>
+	<multiplayer supported="false"/>
+
+	<extraSourceFiles>
+		<sourceFile filename="register.lua"/>
+	</extraSourceFiles>
+
+	<actions>
+		<action name="AIVE_HELPPANEL" 	 category="VEHICLE"/>
+		<action name="AIVE_STEER"        category="VEHICLE"/>
+		<action name="AIVE_SWAP_SIDE"    category="VEHICLE"/>
+		<action name="AIVE_ENABLE"       category="VEHICLE"/>
+		<action name="AIVE_UTURN_ON_OFF" category="VEHICLE"/>
+		<action name="AIVE_STEERING"     category="VEHICLE"/>
+		<action name="AIVE_RAISE"        category="VEHICLE"/>
+		<action name="AIVE_START_AIVE"   category="VEHICLE"/>
+		<!--action name="AIVE_NEXT_WORKER"  category="VEHICLE"/-->
+	</actions>
+	<inputBinding>
+		<actionBinding action="AIVE_HELPPANEL" 	 ><binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_h" 		axisComponent="+" inputComponent="+" index="1"/></actionBinding>
+		<actionBinding action="AIVE_STEER"       ><binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_h"  		axisComponent="+" inputComponent="+" index="1"/></actionBinding>
+		<actionBinding action="AIVE_SWAP_SIDE"   ><binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_6"  		axisComponent="+" inputComponent="+" index="1"/></actionBinding>
+		<actionBinding action="AIVE_ENABLE"      ><binding device="KB_MOUSE_DEFAULT" input=""  							 		axisComponent="+" inputComponent="+" index="1"/></actionBinding>
+		<actionBinding action="AIVE_UTURN_ON_OFF"><binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_5"  		axisComponent="+" inputComponent="+" index="1"/></actionBinding>
+		<actionBinding action="AIVE_STEERING"    ><binding device="KB_MOUSE_DEFAULT" input=""   						 		axisComponent="+" inputComponent="+" index="1"/></actionBinding>
+		<actionBinding action="AIVE_RAISE"       ><binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_v"  		axisComponent="+" inputComponent="+" index="1"/></actionBinding>
+		<actionBinding action="AIVE_START_AIVE"  ><binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_h"		axisComponent="+" inputComponent="+" index="1"/></actionBinding>
+		<!--actionBinding action="AIVE_NEXT_WORKER" ><binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_tab"	axisComponent="+" inputComponent="+" index="1"/></actionBinding-->
+	</inputBinding>
+	
+	
+</modDesc>

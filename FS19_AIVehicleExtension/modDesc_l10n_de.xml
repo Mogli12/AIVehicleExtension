@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Traktor]]></description>
+
+	<texts>
+		<!--AI Vehicle helpPanel text-->
+		<text name="AIVE_SETTINGS"                 text="Helfereinstellungen" />
+		<text name="AIVE_ENABLED"                  text="Alternativer Helfer" />
+		<text name="AIVE_START"                    text="Alternativer Helfer [an]" />
+		<text name="AIVE_STOP"                     text="Alternativer Helfer [aus]" />
+		<text name="AIVE_WORKWIDTH"                text="Arbeitsbreite:" />
+		<text name="AIVE_ACTIVESIDE"          		 text="Aktive Seite" />
+		<text name="AIVE_ACTIVESIDELEFT"           text="Links" />
+		<text name="AIVE_ACTIVESIDERIGHT"          text="Rechts" />		
+		
+		<text name="AIVE_UTURN_ON_OFF"             text="AI Vehicle-Modus wechseln"/>
+		<text name="AIVE_STEERING"                 text="Manueller Lenkeingriff"/>
+		<text name="AIVE_NOSTEERING"               text="Unterdrückung der Lenkung"/>
+		<text name="AIVE_STEERING_ON"              text="Manueller Lenkeingriff [an]"/>
+		<text name="AIVE_STEERING_OFF"             text="Manueller Lenkeingriff [aus]"/>
+		<text name="AIVE_CONTINUE"                 text="Weiter fahren"/>
+		<text name="AIVE_RAISE"                    text="Alle Geräte heben/senken"/>
+
+		<text name="AIVE_WAIT_FOR_PIPE"            text="Zum Abtanken anhalten" />
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="Abstandshalter ist AN " />	
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="Abstandshalter ist AUS" />
+		<!--AI Vehicle help text-->
+		<text name="AIVE_TEXTHELPPANELOFF"         text="AI Vehicle-Info ausschalten" />	
+		<text name="AIVE_TEXTHELPPANELON"          text="AI Vehicle-Info einschalten" />		
+		<!--AI Vehicle inputbinding text-->
+		<text name="AIVE_COLLISION_OTHER"          text="Kollision vorne" />
+		<text name="AIVE_COLLISION_BACK"           text="Kollision hinten" />
+		<text name="AIVE_UTURN_ON"                 text="auf/ab" />	
+		<text name="AIVE_UTURN_OFF"                text="Kreisfahrt" />
+		<text name="AIVE_REVERSE_ON"               text="Wendemodus [rückwärts]		" />	
+		<text name="AIVE_REVERSE_OFF"              text="Wendemodus [vorwärts]" />
+		<text name="AIVE_INVERTED"             		 text="Rückfahreinrichtung" />	
+		<text name="AIVE_INVERTED_ON"              text="Arbeitsmodus [rückwärts]" />	
+		<text name="AIVE_INVERTED_OFF"             text="Arbeitsmodus [vorwärts]" />
+		<text name="AIVE_WIDTH_OFFSET"             text="Offset (Breite)" />	
+		<text name="AIVE_TURN_OFFSET"              text="Offset (Wendemanöver)" />
+		<text name="AIVE_ANGLE_OFFSET"             text="Lenkwinkel" />
+		<text name="AIVE_SAFETY_FACTOR"            text="Sicherheitsabstand" />
+		<text name="AIVE_ERROR"                    text="Fehler" />
+		<text name="AIVE_NEXTTURNSTAGE"            text="Springe zum nächsten Schritt" />
+		<text name="AIVE_CP_ON"                    text="Courseplay-Modus [aus]" />
+		<text name="AIVE_CP_OFF"                   text="Courseplay-Modus [an]" />
+		<text name="AIVE_STEER_ON"                 text="Autom. Lenkung [aus]" />
+		<text name="AIVE_STEER_OFF"                text="Autom. Lenkung [an]" />
+		<text name="AIVE_HEADLAND_ON"              text="Vorgewende [aus]" />
+		<text name="AIVE_HEADLAND_OFF"             text="Vorgewende [an]" />
+		<text name="AIVE_FRONT_PACKER_ON"          text="Front Packer [an]" />
+		<text name="AIVE_FRONT_PACKER_OFF"         text="Front Packer [aus]" />		
+		<text name="AIVE_COLLISION_ON"             text="Kollisionsprüfung [an]" />
+		<text name="AIVE_COLLISION_OFF"            text="Kollisionsprüfung [aus]" />
+		<text name="AIVE_HIRE_ON"                  text="Saatgutverbrauch [aus]" />
+		<text name="AIVE_HIRE_OFF"                 text="Saatgutverbrauch [an]" />
+		<text name="AIVE_HEADLAND"                 text="Vorgewende" />
+		<text name="AIVE_TURN_MODE"                text="Form des Wendemanövers" />
+		<text name="AIVE_TURN_MODE_O"              text="Wende in Form eines O" />
+		<text name="AIVE_TURN_MODE_A"              text="Rückwärts mit Kurve" />
+		<text name="AIVE_TURN_MODE_Y"              text="Rückwärts mit Kurve (Drescher)" />
+		<text name="AIVE_TURN_MODE_T"              text="Rückwärts nur gerade" />
+		<text name="AIVE_TURN_MODE_C"              text="Wende in Form eines O" />
+		<text name="AIVE_TURN_MODE_L"              text="Rückwärts mit Kurve" />
+		<text name="AIVE_TURN_MODE_7"              text="Rückwärts nur gerade" />
+		<text name="AIVE_TURN_MODE_K"              text="Große 90° Wende" />
+		<text name="AIVE_TURN_MODE_8"              text="Wende in Form einer Acht" />
+		<text name="AIVE_PAUSE_ON"                 text="Weiterfahren" />
+		<text name="AIVE_PAUSE_OFF"                text="Pause" />
+		<text name="AIVE_STEER_RAISE"              text="Geräte hoch/aus" />
+		<text name="AIVE_STEER_LOWER"              text="Geräte runter/an" />
+		<text name="AIVE_TRACE"                    text="Spur anzeigen" />
+		<text name="AIVE_MAGIC"                    text="Feld neu erkennen" />
+		<text name="AIVE_USE_AI_FIELD"             text="Nur zusammenhängdes Feld erkennen" />
+		<text name="AIVE_FIELD_W"                  text="Feld Erkennung läuft" />
+		<text name="AIVE_FIELD_E"                  text="Feld Erkennung ist abgebrochen" />
+		
+		<text name="input_AIVE_HELPPANEL" 	       text="Alternativer Helfer: HUD ein-/ausblenden"/>
+		<text name="input_AIVE_STEER"              text="Alternativer Helfer: Automatisch Lenken"/>
+		<text name="input_AIVE_SWAP_SIDE"          text="Alternativer Helfer: Aktvie Seite wechseln"/>
+		<text name="input_AIVE_ENABLE"             text="Alternativer Helfer: Helfer wechseln"/>
+		<text name="input_AIVE_UTURN_ON_OFF"       text="Alternativer Helfer: Kreisfahrt ein/aus"/>
+		<text name="input_AIVE_STEERING"           text="Alternativer Helfer: Manueller Lenkeingriff"/>
+		<text name="input_AIVE_RAISE"       		   text="Alternativer Helfer: Alle Geräte heben/senken"/>
+		<text name="input_AIVE_START_AIVE"  		   text="Alternativer Helfer: Helfereinstellungen"/>
+		<text name="input_AIVE_NEXT_WORKER"  		   text="Alternativer Helfer: Zum nächsten Helfer springen"/>
+	</texts>
+</l10n>
