@@ -284,7 +284,7 @@ function AIVEDrawDebugPoint( x, y, z, r, g, b, s, c )
 end 
 function AIVEDrawDebugLine( vehicle, x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
 	local l = AIVEUtils.vector3Length(x1-x2,y1-y2,z1-z2)
-	local s = math.floor( l * 25 )
+	local s = math.floor( l * 10 )
 	local t = 1
 	if s > 1 then 
 		t = 1 / s 

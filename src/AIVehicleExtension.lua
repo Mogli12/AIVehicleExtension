@@ -79,7 +79,8 @@ AIVehicleExtension.saveAttributesMapping = {
 		angleFactor		  = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
 		noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
 		useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
-		waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true } }																															
+		waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true },
+		showTrace 			= { xml = "acShowTrace",   tp = "B", default = false } }																															
 AIVehicleExtension.turnStageNoNext = { -4, -3, -2, -1, 0, 21, 22, 23, 198, 199 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { 
 	--{ 4, -1 },
@@ -154,7 +155,6 @@ function AIVehicleExtension:onLoad(saveGame)
 	self.acTurnMode           = ""
 	self.acDebugPrint			  	= AIVehicleExtension.debugPrint
 	self.aiveAddDebugText     = AIVehicleExtension.aiveAddDebugText
-	self.acShowTrace					= true
 	self.waitForTurnTime      = 0
 	self.turnTimer            = 0
 	self.aiRescueTimer        = 0
@@ -933,7 +933,9 @@ function AIVehicleExtension:getHeadlandText(old)
 end
 
 function AIVehicleExtension:onToggleTrace()
-	self.acShowTrace = not ( self.acShowTrace )
+	if self.acParameters ~= nil then 
+		self.acParameters.showTrace = not ( self.acParameters.showTrace )
+	end 
 end
 
 ------------------------------------------------------------------------
@@ -941,7 +943,7 @@ end
 ------------------------------------------------------------------------
 
 function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle)
-	if self.isClient then
+	if isOnActiveVehicle or self.isClient then
 		if self.aiveActionEvents == nil then 
 			self.aiveActionEvents = {}
 		else	
@@ -1149,7 +1151,7 @@ function AIVehicleExtension:onUpdate(dt)
 			and self.isClient 
 			and self.isServer 
 			and self.acParameters ~= nil 
-			and self.acShowTrace 
+			and self.acParameters.showTrace 
 			and ( self.aiveIsStarted or self.aiveAutoSteer ) then			
 		if			AIVEGlobals.showTrace > 0 
 				and self.acDimensions ~= nil

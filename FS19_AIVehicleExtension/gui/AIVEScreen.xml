@@ -122,7 +122,7 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="acShowTrace" toolTip="$mogli_AIVE_TRACE" onCreate="onCreateSubElement"
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="showTrace" toolTip="$mogli_AIVE_TRACE" onCreate="onCreateSubElement"
 										focusId="32" focusChangeTop="22" focusChangeBottom="13">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
