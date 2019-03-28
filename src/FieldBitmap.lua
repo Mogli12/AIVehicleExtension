@@ -515,15 +515,23 @@ end
 -- prepareIsField
 ------------------------------------------------------------------------
 function FieldBitmap.prepareIsField( )
-	setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0, 0, 0, 0);
+	if FieldBitmap.fieldMod == nil then 
+		FieldBitmap.fieldMod = {}
+		FieldBitmap.fieldMod.modifier = DensityMapModifier:new(g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels)
+		FieldBitmap.fieldMod.filter   = DensityMapFilter:new(FieldBitmap.fieldMod.modifier)
+		FieldBitmap.fieldMod.filter:setValueCompareParams("greater", 0)
+	end 
 end
 
 ------------------------------------------------------------------------
 -- getAreaTotal
 ------------------------------------------------------------------------
 function FieldBitmap.getAreaTotal( startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ )
-  local x,z, widthX,widthZ, heightX,heightZ = Utils.getXZWidthAndHeight(g_currentMission.terrainDetailId, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
-  local _,area,totalArea = getDensityParallelogram(g_currentMission.terrainDetailId, x, z, widthX, widthZ, heightX, heightZ, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels );
+	FieldBitmap.prepareIsField( )
+	FieldBitmap.fieldMod.modifier:setParallelogramWorldCoords(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, "ppp")
+	FieldBitmap.fieldMod.filter:setValueCompareParams("greater", 0)
+
+	local _, area, totalArea = FieldBitmap.fieldMod.modifier:executeGet(FieldBitmap.fieldMod.filter)		
 	return area, totalArea
 end
 
@@ -539,12 +547,8 @@ end
 -- isField
 ------------------------------------------------------------------------
 function FieldBitmap.isField( startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ )
-	for channel=0,3 do
-		if Utils.getDensity(g_currentMission.terrainDetailId, channel, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ ) > 0 then
-			return true
-		end
-	end
-	return false
+  local area,totalArea = FieldBitmap.getAreaTotal( startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ )
+	return area > 0
 end
 
 ------------------------------------------------------------------------
@@ -558,7 +562,6 @@ end
 -- cleanupAfterIsField
 ------------------------------------------------------------------------
 function FieldBitmap.cleanupAfterIsField( )
-  setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
 end
 
 ------------------------------------------------------------------------

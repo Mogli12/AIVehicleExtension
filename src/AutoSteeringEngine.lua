@@ -118,7 +118,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 		print("ERROR: NO GLOBALS IN "..file)
 	end
 	
-	file = AIVEModsDirectory.."autoSteeringEngineConfig.xml"
+	file = getUserProfileAppPath().. "modsSettings/FS19_AIVehicleExtension/autoSteeringEngineConfig.xml"
 	if fileExists(file) then	
 		print('AutoSteeringEngine: loading settings from "'..tostring(file)..'"')
 		AutoSteeringEngine.globalsLoad( file, true )	
@@ -275,29 +275,31 @@ function AIVEUtils.quot2Rad( q )
 	end 
 end 
 
-function AIVEdrawDebugPoint( x, y, z, r, g, b, s )
+function AIVEDrawDebugPoint( x, y, z, r, g, b, s, c )
 	local sx,sy,sz = project(x,y,z)
 	setTextColor(r,g,b,s) 
-	renderText(sx, sy, getCorrectTextSize(0.04) * sz, ".")
+	if 1 > sz and sz > 0 then 
+		renderText(sx, sy, getCorrectTextSize(0.02) * sz, Utils.getNoNil( c, "O") )
+	end 
 end 
-function AIVEDrawDebugLine( x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
---local l = AIVEUtils.vector3Length(x1-x2,y1-y2,z1-z2)
---local s = math.floor( l * 10 )
---local t = 1
---if s > 1 then 
---	t = 1 / s 
---end 
---	
---for i=0,s do 
---	local x = x1 + i * t * ( x2 - x1 )
---	local y = y1 + i * t * ( y2 - y1 )
---	local z = z1 + i * t * ( z2 - z1 )
---	local r = r1 + i * t * ( r2 - r1 )
---	local g = g1 + i * t * ( g2 - g1 )
---	local b = b1 + i * t * ( b2 - b1 )
---	AIVEdrawDebugPoint( x, y, z, r, g, b, 1 )
---end 
-	self:addAIDebugLine({x1,y1,z1}, {x2,y2,z2}, {r1,g1,b1})
+function AIVEDrawDebugLine( vehicle, x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
+	local l = AIVEUtils.vector3Length(x1-x2,y1-y2,z1-z2)
+	local s = math.floor( l * 25 )
+	local t = 1
+	if s > 1 then 
+		t = 1 / s 
+	end 
+		
+	for i=0,s do 
+		local x = x1 + i * t * ( x2 - x1 )
+		local y = y1 + i * t * ( y2 - y1 )
+		local z = z1 + i * t * ( z2 - z1 )
+		local r = r1 + i * t * ( r2 - r1 )
+		local g = g1 + i * t * ( g2 - g1 )
+		local b = b1 + i * t * ( b2 - b1 )
+		AIVEDrawDebugPoint( x, y, z, r, g, b, 1, "." )
+	end 
+--vehicle:addAIDebugLine({x1,y1,z1}, {x2,y2,z2}, {r1,g1,b1})
 end 
 
 function AutoSteeringEngine.globalsLoad( file, debugPrint )	
@@ -3385,12 +3387,12 @@ function AutoSteeringEngine.drawMarker( vehicle )
 		local x2,y2,z2 = localToWorld( vehicle.aiveChain.headlandNode,  2 * w, 1, vehicle.aiveChain.headland )
 		y1 = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x1, 1, z1) + 1
 		y2 = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x2, 1, z2) + 1
-		AIVEDrawDebugLine( x1,y1,z1, 1,1,0, x2,y2,z2, 1,1,0 )
+		AIVEDrawDebugLine( vehicle, x1,y1,z1, 1,1,0, x2,y2,z2, 1,1,0 )
 	end
 	--if vehicle.aiveChain.collisionDistPoints ~= nil and table.getn( vehicle.aiveChain.collisionDistPoints ) > 0 then
 	--	for _,p in pairs(vehicle.aiveChain.collisionDistPoints) do
 	--		local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, p.x, 1, p.z)
-	--		AIVEDrawDebugLine(  p.x,y,p.z, 1,0,0, p.x,y+2,p.z, 1,0,0 )
+	--		AIVEDrawDebugLine( vehicle,  p.x,y,p.z, 1,0,0, p.x,y+2,p.z, 1,0,0 )
 	--		AIVEDrawDebugPoint( p.x,y+2,p.z, 1, 1, 1, 1 )
 	--	end
 	--end
@@ -3420,7 +3422,7 @@ function AutoSteeringEngine.drawMarker( vehicle )
 				local x1,y1,z1 = AutoSteeringEngine.getChainPoint( vehicle, 1, tp )
 				y1 = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x1, y1, z1 )
 
-				AIVEDrawDebugLine( x1,y1,z1, c[1],c[2],c[3], x1,y1+1.2,z1, c[1],c[2],c[3] )
+				AIVEDrawDebugLine( vehicle, x1,y1,z1, c[1],c[2],c[3], x1,y1+1.2,z1, c[1],c[2],c[3] )
 				AIVEDrawDebugPoint( x1,y1+1.2,z1	, 1, 1, 1, 1 )
 				
 				for i=2,vehicle.aiveChain.chainMax+1 do
@@ -3429,9 +3431,9 @@ function AutoSteeringEngine.drawMarker( vehicle )
 					end
 					local x2,y2,z2 = AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 					y2 = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x2, y2, z2 )
-					AIVEDrawDebugLine(  x1,y1+0.1,z1, c[1],c[2],c[3], x2,y2+0.1,z2, c[1],c[2],c[3] )
-					AIVEDrawDebugLine(  x1,y1+0.2,z1, c[1],c[2],c[3], x2,y2+0.2,z2, c[1],c[2],c[3] )
-					AIVEDrawDebugLine(  x1,y1+0.3,z1, c[1],c[2],c[3], x2,y2+0.3,z2, c[1],c[2],c[3] )
+					AIVEDrawDebugLine( vehicle,  x1,y1+0.1,z1, c[1],c[2],c[3], x2,y2+0.1,z2, c[1],c[2],c[3] )
+					AIVEDrawDebugLine( vehicle,  x1,y1+0.2,z1, c[1],c[2],c[3], x2,y2+0.2,z2, c[1],c[2],c[3] )
+					AIVEDrawDebugLine( vehicle,  x1,y1+0.3,z1, c[1],c[2],c[3], x2,y2+0.3,z2, c[1],c[2],c[3] )
 					x1 = x2
 					y1 = y2
 					z1 = z2
@@ -3446,7 +3448,7 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.drawLines( vehicle )
 
-	if not vehicle.isServer then return end
+ 	if not vehicle.isServer then return end
 	
 	if vehicle.debugRendering then
 		AutoSteeringEngine.displayDebugInfo( vehicle )
@@ -3454,12 +3456,12 @@ function AutoSteeringEngine.drawLines( vehicle )
 
 	local x,_,z = AutoSteeringEngine.getAiWorldPosition( vehicle )
 	local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-	AIVEDrawDebugLine(  x, y, z,0,1,0, x, y+4, z,0,1,0)
+	AIVEDrawDebugLine( vehicle,  x, y, z,0,1,0, x, y+4, z,0,1,0)
 	AIVEDrawDebugPoint( x, y+4, z	, 1, 1, 1, 1 )
 	
 	if vehicle.aiveChain.lastWorldTarget ~= nil then
 		local x1,y1,z1 = unpack( vehicle.aiveChain.lastWorldTarget )
-		AIVEDrawDebugLine(  x1, y1+4, z1,0,1,0, x, y+4, z,0,1,0)
+		AIVEDrawDebugLine( vehicle,  x1, y1+4, z1,0,1,0, x, y+4, z,0,1,0)
 	end
 	
 	if vehicle.aiveChain.rootNode ~= nil then
@@ -3467,38 +3469,38 @@ function AutoSteeringEngine.drawLines( vehicle )
 		x1 = x+x1
 		y1 = y+y1
 		z1 = z+z1
-		AIVEDrawDebugLine(  x1, y1+4.5, z1,1,1,1, x, y+4.5, z,1,1,1)
+		AIVEDrawDebugLine( vehicle,  x1, y1+4.5, z1,1,1,1, x, y+4.5, z,1,1,1)
 	end
 	
 	if vehicle.aiveChain.respectStartNode then
 		x,_,z = getWorldTranslation( vehicle.aiveChain.startNode )
 		y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-		AIVEDrawDebugLine(  x, y, z,0,1,0, x, y+4, z,0,1,0)
+		AIVEDrawDebugLine( vehicle,  x, y, z,0,1,0, x, y+4, z,0,1,0)
 		AIVEDrawDebugPoint( x, y+4, z	, 1, 1, 1, 1 )
 		x1,_,z1 = localToWorld( vehicle.aiveChain.startNode ,0,0,2 )
-		AIVEDrawDebugLine(  x1, y+3, z1,0,1,0, x, y+3, z,0,1,0)
+		AIVEDrawDebugLine( vehicle,  x1, y+3, z1,0,1,0, x, y+3, z,0,1,0)
 	end
 	
 	if  vehicle.aiveChain.trace   ~= nil then
 			
 		if vehicle.aiveChain.trace.itv1 ~= nil then
 			local lx1,lz1,lx2,lz2,lx3,lz3 = unpack( vehicle.aiveChain.trace.itv1 )
-			AIVEDrawDebugLine(lx1,y+0.5,lz1,0,1,0,lx3,y+0.5,lz3,0,1,0)
-			AIVEDrawDebugLine(lx1,y+0.5,lz1,0,1,0,lx2,y+0.5,lz2,0,1,0)
+			AIVEDrawDebugLine( vehicle,lx1,y+0.5,lz1,0,1,0,lx3,y+0.5,lz3,0,1,0)
+			AIVEDrawDebugLine( vehicle,lx1,y+0.5,lz1,0,1,0,lx2,y+0.5,lz2,0,1,0)
 		--local lx4 = lx3 + lx2 - lx1
 		--local lz4 = lz3 + lz2 - lz1
-		--AIVEDrawDebugLine(lx4,y+0.5,lz4,0,1,1,lx2,y+0.5,lz2,0,1,1)
-		--AIVEDrawDebugLine(lx4,y+0.5,lz4,0,1,1,lx3,y+0.5,lz3,0,1,1)
+		--AIVEDrawDebugLine( vehicle,lx4,y+0.5,lz4,0,1,1,lx2,y+0.5,lz2,0,1,1)
+		--AIVEDrawDebugLine( vehicle,lx4,y+0.5,lz4,0,1,1,lx3,y+0.5,lz3,0,1,1)
 		end
 		
 		if vehicle.aiveChain.trace.itv2 ~= nil then
 			local lx1,lz1,lx2,lz2,lx3,lz3 = unpack( vehicle.aiveChain.trace.itv2 )
-			AIVEDrawDebugLine(lx1,y+0.5,lz1,0,0,1,lx3,y+0.5,lz3,0,0,1)
-			AIVEDrawDebugLine(lx1,y+0.5,lz1,0,0,1,lx2,y+0.5,lz2,0,0,1)
+			AIVEDrawDebugLine( vehicle,lx1,y+0.5,lz1,0,0,1,lx3,y+0.5,lz3,0,0,1)
+			AIVEDrawDebugLine( vehicle,lx1,y+0.5,lz1,0,0,1,lx2,y+0.5,lz2,0,0,1)
 		--local lx4 = lx3 + lx2 - lx1
 		--local lz4 = lz3 + lz2 - lz1
-		--AIVEDrawDebugLine(lx4,y+0.5,lz4,0,1,1,lx2,y+0.5,lz2,0,1,1)
-		--AIVEDrawDebugLine(lx4,y+0.5,lz4,0,1,1,lx3,y+0.5,lz3,0,1,1)
+		--AIVEDrawDebugLine( vehicle,lx4,y+0.5,lz4,0,1,1,lx2,y+0.5,lz2,0,1,1)
+		--AIVEDrawDebugLine( vehicle,lx4,y+0.5,lz4,0,1,1,lx3,y+0.5,lz3,0,1,1)
 		end	
 	end
 	
@@ -3508,17 +3510,17 @@ function AutoSteeringEngine.drawLines( vehicle )
 	
 		xw1 = vehicle.aiveChain.trace.cx
 		zw1 = vehicle.aiveChain.trace.cz
-		AIVEDrawDebugLine(  xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
+		AIVEDrawDebugLine( vehicle,  xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
 		AIVEDrawDebugPoint( xw1, y+2, zw1 , 0, 1, 0, 1 )		
 		
 		xw1 = vehicle.aiveChain.trace.ux
 		zw1 = vehicle.aiveChain.trace.uz
-		AIVEDrawDebugLine(  xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
+		AIVEDrawDebugLine( vehicle,  xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
 		AIVEDrawDebugPoint( xw1, y+2, zw1 , 0, 0, 1, 1 )		
 		
 		xw1 = vehicle.aiveChain.trace.ox
 		zw1 = vehicle.aiveChain.trace.oz
-		AIVEDrawDebugLine(  xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
+		AIVEDrawDebugLine( vehicle,  xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
 		AIVEDrawDebugPoint( xw1, y+2, zw1 , 0, 0, 1, 1 )		
 	end		
 	
@@ -3530,7 +3532,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 			x = p.wx
 			z = p.wz
 			y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-			AIVEDrawDebugLine(  x, y,   z, 1,1,1, x, y+2, z ,1,1,1)
+			AIVEDrawDebugLine( vehicle,  x, y,   z, 1,1,1, x, y+2, z ,1,1,1)
 			AIVEDrawDebugPoint( x, y+2, z, 1,1,1, 1 )		
 			
 			if p.tool ~= nil then
@@ -3538,7 +3540,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 					x = t.wx
 					z = t.wz
 					y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-					AIVEDrawDebugLine(  x, y,   z, 0,1,0, x, y+2, z ,0,1,0)
+					AIVEDrawDebugLine( vehicle,  x, y,   z, 0,1,0, x, y+2, z ,0,1,0)
 					AIVEDrawDebugPoint( x, y+2, z, 0,1,0, 1 )		
 				end
 			end
@@ -3599,15 +3601,15 @@ function AutoSteeringEngine.drawLines( vehicle )
 					if AIVEUtils.vector2LengthSq( xl-tp.x, zl-tp.z ) > 0.01 then
 						local x,_,z = getWorldTranslation( m )
 						local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-						AIVEDrawDebugLine(  x,y,z, 0,0,1, x,y+2,z, 0,0,1 )
+						AIVEDrawDebugLine( vehicle,  x,y,z, 0,0,1, x,y+2,z, 0,0,1 )
 						AIVEDrawDebugPoint( x,y+2,z, 1, 1, 1, 1 )
 					end
 				end
 			
-				if vehicle.aiveChain.tools[tp.i].spec_aiImplement.backMarker  ~= nil then
-					local x,_,z = getWorldTranslation( vehicle.aiveChain.tools[tp.i].spec_aiImplement.backMarker )
+				if vehicle.aiveChain.tools[tp.i].obj.spec_aiImplement.backMarker  ~= nil then
+					local x,_,z = getWorldTranslation( vehicle.aiveChain.tools[tp.i].obj.spec_aiImplement.backMarker )
 					local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-					AIVEDrawDebugLine(  x,y,z, 0,1,0, x,y+2,z, 0,1,0 )
+					AIVEDrawDebugLine( vehicle,  x,y,z, 0,1,0, x,y+2,z, 0,1,0 )
 					AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
 				end
 				
@@ -3615,7 +3617,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 					local x,y,z
 					x,_,z = localToWorld( vehicle.aiveChain.refNode, 0, 0, tp.b1 )
 					y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-					AIVEDrawDebugLine(  x,y,z, 0.8,0,0, x,y+2,z, 0.8,0,0 )
+					AIVEDrawDebugLine( vehicle,  x,y,z, 0.8,0,0, x,y+2,z, 0.8,0,0 )
 					AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
 
 					local a = -AutoSteeringEngine.getToolAngle( vehicle )					
@@ -3624,7 +3626,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 					
 					x,_,z = localToWorld( vehicle.aiveChain.refNode, math.sin(a) * l, 0, math.cos(a) * l )
 					y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-					AIVEDrawDebugLine(  x,y,z, 1,0.2,0.2, x,y+2,z, 1,0.2,0.2 )
+					AIVEDrawDebugLine( vehicle,  x,y,z, 1,0.2,0.2, x,y+2,z, 1,0.2,0.2 )
 					AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
 					
 					if tp.b3 ~= nil and math.abs( tp.b3 ) > 0.1 then
@@ -3632,14 +3634,14 @@ function AutoSteeringEngine.drawLines( vehicle )
 						x = x + x3
 						z = z + z3
 						y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-						AIVEDrawDebugLine(  x,y,z, 1,1,0, x,y+2,z, 1,1,0 )
+						AIVEDrawDebugLine( vehicle,  x,y,z, 1,1,0, x,y+2,z, 1,1,0 )
 						AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 0, 1 )
 					end
 				end
 				
 				x,_,z = localToWorld( vehicle.aiveChain.refNode, tp.x, 0, tp.z )
 				y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-				AIVEDrawDebugLine(  x,y,z, 1,0,0, x,y+2,z, 1,0,0 )
+				AIVEDrawDebugLine( vehicle,  x,y,z, 1,0,0, x,y+2,z, 1,0,0 )
 				AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
 				
 				if vehicle.acIamDetecting or ( vehicle.articulatedAxis == nil and AIVEGlobals.staticRoot > 0 ) then
@@ -3651,7 +3653,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 								and vehicle.aiveChain.nodes[i-1].tool[tp.i]   ~= nil 
 								and vehicle.aiveChain.nodes[i-1].tool[tp.i].t ~= nil then
 								
-							AIVEDrawDebugLine(px,py+0.5,pz,1,1,1,wx,wy+0.5,wz,1,1,1)
+							AIVEDrawDebugLine( vehicle,px,py+0.5,pz,1,1,1,wx,wy+0.5,wz,1,1,1)
 							local wx1,xy1,wz1,wx2,wy2,wz2 = AutoSteeringEngine.getChainSegment( vehicle, i-1, tp )
 
 							local lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( wx1, wz1, wx2, wz2, off )
@@ -3679,12 +3681,12 @@ function AutoSteeringEngine.drawLines( vehicle )
 								c2 = 1
 							end
 							
-							AIVEDrawDebugLine(lx1,ly1,lz1,c1,c2,c3,lx3,ly3,lz3,c1,c2,c3)
+							AIVEDrawDebugLine( vehicle,lx1,ly1,lz1,c1,c2,c3,lx3,ly3,lz3,c1,c2,c3)
 
 							if vehicle.aiveChain.nodes[i-1].tool[tp.i].t < 0 then
-								AIVEDrawDebugLine(lx1,ly1,lz1,0.3,0.3,0.3,lx2,ly2,lz2,0.3,0.3,0.3)
+								AIVEDrawDebugLine( vehicle,lx1,ly1,lz1,0.3,0.3,0.3,lx2,ly2,lz2,0.3,0.3,0.3)
 							else
-								AIVEDrawDebugLine(lx1,ly1,lz1,0,0,1,lx2,ly2,lz2,0,0,1)
+								AIVEDrawDebugLine( vehicle,lx1,ly1,lz1,0,0,1,lx2,ly2,lz2,0,0,1)
 							end
 						end
 						
@@ -3714,10 +3716,10 @@ function AutoSteeringEngine.drawLines( vehicle )
 					local y3 = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, lx3, 1, lz3) + 0.25
 					local y4 = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, lx4, 1, lz4) + 0.25
 					
-					AIVEDrawDebugLine(lx1,y1,lz1,c[1],c[2],c[3],lx3,y3,lz3,c[1],c[2],c[3])
-					AIVEDrawDebugLine(lx1,y1,lz1,c[1],c[2],c[3],lx2,y2,lz2,c[1],c[2],c[3])
-					AIVEDrawDebugLine(lx4,y4,lz4,c[1],c[2],c[3],lx2,y2,lz2,c[1],c[2],c[3])
-					AIVEDrawDebugLine(lx4,y4,lz4,c[1],c[2],c[3],lx3,y3,lz3,c[1],c[2],c[3])
+					AIVEDrawDebugLine( vehicle,lx1,y1,lz1,c[1],c[2],c[3],lx3,y3,lz3,c[1],c[2],c[3])
+					AIVEDrawDebugLine( vehicle,lx1,y1,lz1,c[1],c[2],c[3],lx2,y2,lz2,c[1],c[2],c[3])
+					AIVEDrawDebugLine( vehicle,lx4,y4,lz4,c[1],c[2],c[3],lx2,y2,lz2,c[1],c[2],c[3])
+					AIVEDrawDebugLine( vehicle,lx4,y4,lz4,c[1],c[2],c[3],lx3,y3,lz3,c[1],c[2],c[3])
 				end
 			end
 		end
@@ -3730,7 +3732,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 		wy = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, wx,wy,wz)+0.25
 		if i > 1 then
 			
-			AIVEDrawDebugLine(px,py,pz,c1,c2,c3,wx,wy,wz,c1,c2,c3)
+			AIVEDrawDebugLine( vehicle,px,py,pz,c1,c2,c3,wx,wy,wz,c1,c2,c3)
 		end
 		
 		px = wx 
@@ -3739,14 +3741,14 @@ function AutoSteeringEngine.drawLines( vehicle )
 		
 		local cx,cy,cz = getWorldTranslation( vehicle.aiveChain.nodes[i].index3 )
 		cy = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, cx,cy,cz)+0.25
-		AIVEDrawDebugLine(wx,wy,wz,1,1,1,cx,cy,cz,1,1,1)
+		AIVEDrawDebugLine( vehicle,wx,wy,wz,1,1,1,cx,cy,cz,1,1,1)
 		local tx,ty,tz = getWorldTranslation( vehicle.aiveChain.nodes[i].index4 )
 		ty = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, tx,ty,tz)+0.25
-		AIVEDrawDebugLine(cx,cy,cz,0.5,0.5,0.5,tx,ty,tz,0.5,0.5,0.5)
+		AIVEDrawDebugLine( vehicle,cx,cy,cz,0.5,0.5,0.5,tx,ty,tz,0.5,0.5,0.5)
 		
 		cx,cy,cz = localToWorld( vehicle.aiveChain.nodes[i].index4, vehicle.aiveChain.activeX, 0, 0 )
 		tx,ty,tz = localToWorld( vehicle.aiveChain.nodes[i].index4, vehicle.aiveChain.otherX, 0, 0 )
-		AIVEDrawDebugLine(cx,cy,cz,1,1,1,tx,ty,tz,1,1,1)		
+		AIVEDrawDebugLine( vehicle,cx,cy,cz,1,1,1,tx,ty,tz,1,1,1)		
 	end		
 
 
@@ -3786,10 +3788,10 @@ function AutoSteeringEngine.drawLines( vehicle )
 			end
 			
 			if d then
-				AIVEDrawDebugLine(lx1,ly1,lz1,c[1],c[2],c[3],lx3,ly3,lz3,c[1],c[2],c[3])
-				AIVEDrawDebugLine(lx1,ly1,lz1,c[1],c[2],c[3],lx2,ly2,lz2,c[1],c[2],c[3])
-				AIVEDrawDebugLine(lx4,ly4,lz4,c[1],c[2],c[3],lx3,ly3,lz3,c[1],c[2],c[3])
-				AIVEDrawDebugLine(lx4,ly4,lz4,c[1],c[2],c[3],lx2,ly2,lz2,c[1],c[2],c[3])
+				AIVEDrawDebugLine( vehicle,lx1,ly1,lz1,c[1],c[2],c[3],lx3,ly3,lz3,c[1],c[2],c[3])
+				AIVEDrawDebugLine( vehicle,lx1,ly1,lz1,c[1],c[2],c[3],lx2,ly2,lz2,c[1],c[2],c[3])
+				AIVEDrawDebugLine( vehicle,lx4,ly4,lz4,c[1],c[2],c[3],lx3,ly3,lz3,c[1],c[2],c[3])
+				AIVEDrawDebugLine( vehicle,lx4,ly4,lz4,c[1],c[2],c[3],lx2,ly2,lz2,c[1],c[2],c[3])
 			end
 		end
 	end
@@ -3821,9 +3823,9 @@ function AutoSteeringEngine.drawLines( vehicle )
 			local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, p.x, 1, p.z)
 			
 		
-			AIVEDrawDebugLine(  p.x, y, p.z,cr,1,0, p.x, y+4, p.z,cr,1,0)
+			AIVEDrawDebugLine( vehicle,  p.x, y, p.z,cr,1,0, p.x, y+4, p.z,cr,1,0)
 			AIVEDrawDebugPoint( p.x, y+4, p.z	, 1, 1, 1, 1 )
-			AIVEDrawDebugLine(  p.x, y+2, p.z,cr,1,0, p.x+p.dx, y+2, p.z+p.dz,cr,0,1)
+			AIVEDrawDebugLine( vehicle,  p.x, y+2, p.z,cr,1,0, p.x+p.dx, y+2, p.z+p.dz,cr,0,1)
 		end
 	end
 	
@@ -4205,14 +4207,10 @@ end
 -- checkFieldNoBuffer
 ------------------------------------------------------------------------
  function AutoSteeringEngine.checkFieldNoBuffer( x, z, checkFunction ) 
-
+ 
 	if x == nil or z == nil or checkFunction == nil then
 		--AIVehicleExtension.printCallstack()
 		return false
-	end 
-	
-	if checkFunction == FieldBitmap.isFieldFast then
-		return (getDensityAtWorldPos(g_currentMission.terrainDetailId, x, getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 0, z), z) % 16) > 0 
 	end 
 	
 	FieldBitmap.prepareIsField( )
@@ -4319,10 +4317,11 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 		
 			local found = AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction )
 			
-			if     not AutoSteeringEngine.checkFieldNoBuffer( x1-1, z1, checkFunction )
-					or not AutoSteeringEngine.checkFieldNoBuffer( x1+1, z1, checkFunction )
-					or not AutoSteeringEngine.checkFieldNoBuffer( x1, z1-1, checkFunction )
-					or not AutoSteeringEngine.checkFieldNoBuffer( x1, z1+1, checkFunction ) then
+			if      found 
+					and ( not AutoSteeringEngine.checkFieldNoBuffer( x1-1, z1, checkFunction )
+						 or not AutoSteeringEngine.checkFieldNoBuffer( x1+1, z1, checkFunction )
+						 or not AutoSteeringEngine.checkFieldNoBuffer( x1, z1-1, checkFunction )
+						 or not AutoSteeringEngine.checkFieldNoBuffer( x1, z1+1, checkFunction ) ) then
 				found = false
 			end
 			
@@ -7059,12 +7058,17 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		reference = implement.object.spec_attachable.attacherJoint.node
 	end
 	
+	local spec = object.spec_aiImplement
+	if spec == nil then 
+		return 
+	end 
+	
 	tool.steeringAxleNode   = object.steeringAxleNode
 	if tool.steeringAxleNode == nil then
 		tool.steeringAxleNode = object.components[1].node
 	end
 	
-	tool.aiForceTurnNoBackward   = object.aiForceTurnNoBackward
+	tool.aiForceTurnNoBackward   = spec.blockTurnBackward
 	tool.checkZRotation          = false
 	tool.isCombine               = SpecializationUtil.hasSpecialization(Combine, object.specializations)
 	tool.hasWorkAreas            = SpecializationUtil.hasSpecialization(WorkArea, object.specializations) 

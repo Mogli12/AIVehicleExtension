@@ -47,7 +47,10 @@ end
 -- debugPrint
 ------------------------------------------------------------------------
 function AIVehicleExtension:debugPrint( ... )
-	if AIVEGlobals.devFeatures > 0 and ( self == nil or self.isEntered ) then
+	if      AIVEGlobals.devFeatures > 0
+			and ( type( self ) ~= "table" 
+				 or type( self.getIsEntered ) ~= "function" 
+				 or self:getIsEntered() ) then
 		print( ... )
 	end
 	if self ~= nil and AIVEGlobals.showInfo > 0 and self.atMogliInitDone then
@@ -1032,18 +1035,6 @@ end
 
 function AIVehicleExtension:onUpdate(dt)
 
-	if self.isEntered and self.isClient then
-		if sym == Input.KEY_lshift then
-			self.acLShiftPressed = isDown
-		end
-		if sym == Input.KEY_lctrl then
-			self.acLCtrlPressed = isDown
-		end
-		if sym == Input.KEY_lalt then
-			self.acLAltPressed = isDown
-		end
-	end
-
 	if self.aiveIsStarted and not self.spec_aiVehicle.isActive then
 		self.aiveIsStarted   = false
 	end
@@ -1052,7 +1043,7 @@ function AIVehicleExtension:onUpdate(dt)
 		self.spec_aiVehicle.aiSteeringSpeed = self.acSteeringSpeed
 	end
 
-	if type( self.setIsReverseDriving ) == "function" and self.isReverseDriving then
+	if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then 
 		self.acParameters.inverted = true
 	else
 		self.acParameters.inverted = false
@@ -1100,14 +1091,14 @@ function AIVehicleExtension:onUpdate(dt)
 			local _,angle,_ = getRotation( self.articulatedAxis.componentJoint.jointNode )
 			angle = 0.5 * angle
 			angle = AIVEGlobals.artAxisRot *  angle
-			if self.isReverseDriving then
+			if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
 				angle = angle + math.pi
 			end
 			setRotation( self.acRefNode, 0, angle, 0 )				
 			setTranslation( self.acRefNode, AIVEGlobals.artAxisShift * dx, 0, AIVEGlobals.artAxisShift * dz + self.acDimensions.acRefNodeZ )			
 		else
 			local angle = 0
-			if self.isReverseDriving then
+			if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
 				angle = angle + math.pi
 			end
 			local _,y,_ = getRotation( self.acRefNode )
@@ -1154,7 +1145,7 @@ function AIVehicleExtension:onUpdate(dt)
 		end
 	end
 	
-	if			self.isEntered 
+	if			self:getIsEntered() 
 			and self.isClient 
 			and self.isServer 
 			and self.acParameters ~= nil 
@@ -1624,7 +1615,7 @@ function AIVehicleExtension:autoSteer(dt)
 	
 	if self.acAxisSideFactor == nil then
 		self.acAxisSideFactor = 0
-	elseif self.isEntered and math.abs( self.acAxisSide ) >= 0.1 then
+	elseif self:getIsEntered() and math.abs( self.acAxisSide ) >= 0.1 then
 		self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
 	elseif self.acAxisSideFactor < 1000  then
 		self.acAxisSideFactor = math.min( self.acAxisSideFactor + dt, 1000 )
@@ -1861,8 +1852,12 @@ function AIVehicleExtension.calculateDistances( self )
 	
 	local wb = self.acDimensions.wheelBase
 	local ms = self.acDimensions.maxSteeringAngle
+	local rd = false 
+	if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
+		rd = true 
+	end 
 	
-	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, self.isReverseDriving, self.acParameters.frontPacker, self.acParameters.useAIFieldFct )
+	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, rd, self.acParameters.frontPacker, self.acParameters.useAIFieldFct )
 
 	self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack = AutoSteeringEngine.checkTools( self )
 	
@@ -2256,7 +2251,11 @@ function AIVehicleExtension:stopWaiting( angle )
 		a = -angle 
 	end
 	
-	if math.abs( a - AutoSteeringEngine.currentSteeringAngle( self, self.isReverseDriving ) ) < 0.05236 then -- 3° 
+	local rd = false 
+	if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
+		rd = true 
+	end 
+	if math.abs( a - AutoSteeringEngine.currentSteeringAngle( self, rd ) ) < 0.05236 then -- 3° 
 		return true 
 	end
 	return false
