@@ -72,9 +72,10 @@ else
 		end;
 
 		function _newClass_.getXmlBool(xmlFile, key, default)
-			local l = getXMLInt(xmlFile, key);
+			local l = getXMLBool(xmlFile, key);
+		--print(tostring(key)..": "..tostring(l).." ("..tostring(default)..")")
 			if l~= nil then
-				return (l == 1);
+				return l;
 			end;
 			return default;
 		end;

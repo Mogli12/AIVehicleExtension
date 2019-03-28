@@ -1582,8 +1582,8 @@ end
 -- addToolsRec
 ------------------------------------------------------------------------
 function AutoSteeringEngine.addToolsRec( vehicle, obj )
-	if obj ~= nil and obj.attachedImplements ~= nil then
-		for _, implement in pairs(obj.attachedImplements) do
+	if obj ~= nil and obj.spec_attacherJoints ~= nil and obj.spec_attacherJoints.attachedImplements ~= nil then
+		for _, implement in pairs(obj.spec_attacherJoints.attachedImplements) do
 			if      implement.object                    ~= nil 
 					and implement.object.spec_attachable.attacherJoint      ~= nil 
 					and implement.object.spec_attachable.attacherJoint.node ~= nil then				
@@ -2303,10 +2303,10 @@ function AutoSteeringEngine.isAttachedImplement( vehicle, object )
 	if vehicle == object then
 		return true
 	end
-	if vehicle.attachedImplements == nil then
+	if vehicle.spec_attacherJoints == nil or vehicle.spec_attacherJoints.attachedImplements == nil then
 		return false
 	end	
-	for _, implement in pairs(vehicle.attachedImplements) do
+	for _, implement in pairs(vehicle.spec_attacherJoints.attachedImplements) do
 		if AutoSteeringEngine.isAttachedImplement( implement.object, object ) then
 			return true
 		end
@@ -7068,7 +7068,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		tool.steeringAxleNode = object.components[1].node
 	end
 	
-	tool.aiForceTurnNoBackward   = spec.blockTurnBackward
+	tool.aiForceTurnNoBackward   = spec.blockTurnBackward or not ( spec.allowTurnBackward ) 
 	tool.checkZRotation          = false
 	tool.isCombine               = SpecializationUtil.hasSpecialization(Combine, object.specializations)
 	tool.hasWorkAreas            = SpecializationUtil.hasSpecialization(WorkArea, object.specializations) 
@@ -7090,7 +7090,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	tool.outTerrainDetailChannel = -1	
 	tool.useAIMarker             = false
 	tool.doubleJoint             = false
-	tool.noRevStraight           = false
+	tool.noRevStraight           = spec.blockTurnBackward
 	tool.ignoreAI                = ignore 
 	
 	if tool.isSprayer and not ( object.allowsSpraying ) and object.spec_aiImplement.leftMarker == nil and object.spec_aiImplement.rightMarker == nil then
@@ -7364,8 +7364,9 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 	end
 	
 	local implement 
-	if object:getAttacherVehicle() ~= nil and object:getAttacherVehicle().attachedImplements ~= nil then
-		for _,impl in pairs( object:getAttacherVehicle().attachedImplements ) do
+	local oav object:getAttacherVehicle()
+	if oav ~= nil and oav.spec_attacherJoints ~= nil and oav.spec_attacherJoints.attachedImplements ~= nil then
+		for _,impl in pairs( oav.spec_attacherJoints.attachedImplements ) do
 			if impl.object == object then
 				implement = impl
 			end
@@ -7432,7 +7433,7 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		
 		-- get max rotation
 		local rotMax = nil
-		if refNode == object.spec_attachable.attacherJoint.node then
+		if refNode == object.spec_attachable.attacherJoint.node and implement ~= nil then
 			local jointDesc = object:getAttacherVehicle().spec_attacherJoints.attachedImplements[implement.jointDescIndex]
 			rotMax = math.max(jointDesc.upperRotLimit[2], jointDesc.lowerRotLimit[2]) * object.spec_attachable.attacherJoint.lowerRotLimitScale[2]
 		else
@@ -8524,7 +8525,7 @@ function AutoSteeringEngine.ensureToolIsLowered( vehicle, isLowered, indexFilter
 	end
 	
 --if indexFilter == nil or indexFilter <= 0 then
---	for _,implement in pairs(vehicle.attachedImplements) do
+--	for _,implement in pairs(vehicle.spec_attacherJoints.attachedImplements) do
 --		if implement.object ~= nil then
 --			local found = false
 --			for i=1,table.getn( vehicle.aiveChain.toolParams ) do
@@ -8625,18 +8626,17 @@ end
 --***************************************************************
 function AutoSteeringEngine.getTaJoints1( vehicle, refNode, zOffset )
 	
-	if     AutoSteeringEngine.tableGetN( vehicle.spec_attacherJoints.attachedImplements )     < 1
-			or AutoSteeringEngine.tableGetN( vehicle.attachedImplements ) < 1 then
+	if vehicle.spec_attacherJoints == nil or AutoSteeringEngine.tableGetN( vehicle.spec_attacherJoints.attachedImplements ) < 1 then
 		return
 	end
 	
 	local taJoints
 	
-	for _,implement in pairs( vehicle.attachedImplements ) do
+	for _,implement in pairs( vehicle.spec_attacherJoints.attachedImplements ) do
 		if      implement.object ~= nil 
 				and implement.object.steeringAxleNode ~= nil 
 				and ( AutoSteeringEngine.tableGetN( implement.object.spec_wheels.wheels ) > 0
-					 or AutoSteeringEngine.tableGetN( implement.object.attachedImplements ) > 0 ) 
+					 or AutoSteeringEngine.tableGetN( implement.object.spec_attacherJoints.attachedImplements ) > 0 ) 
 				and AutoSteeringEngine.getRelativeZTranslation( refNode, implement.object.steeringAxleNode ) < zOffset then
 
 			local taJoints2 = AutoSteeringEngine.getTaJoints2( vehicle, implement, refNode, zOffset )
@@ -8685,19 +8685,19 @@ end
 --***************************************************************
 function AutoSteeringEngine.getTaJoints2( vehicle, implement, refNode, zOffset )
 
-	if     type( implement )       ~= "table"
-			or type( implement.object) ~= "table"
-			or refNode                 == nil
-			or AutoSteeringEngine.tableGetN( vehicle.spec_attacherJoints.attachedImplements ) < 1
-			or implement.object.steeringAxleNode == nil then
+	if     type( implement )                 ~= "table"
+			or type( implement.object)           ~= "table"
+			or refNode                           == nil
+			or implement.object.steeringAxleNode == nil
+			or  vehicle.spec_attacherJoints      == nil
+			or AutoSteeringEngine.tableGetN( vehicle.spec_attacherJoints.attachedImplements ) < 1 then
 		return 
 	end
 		
 	local taJoints
 	local trailer  = implement.object
 
-	if      AutoSteeringEngine.tableGetN( trailer.spec_attacherJoints.attachedImplements )     > 0
-			and AutoSteeringEngine.tableGetN( trailer.attachedImplements ) > 0 then
+	if trailer.spec_attacherJoints ~= nil and AutoSteeringEngine.tableGetN( trailer.spec_attacherJoints.attachedImplements ) > 0 then
 		taJoints = AutoSteeringEngine.getTaJoints1( trailer, trailer.steeringAxleNode, 0 )
 	end
 	
@@ -8797,8 +8797,8 @@ function AutoSteeringEngine.resetFrontPacker( vehicle )
 	if vehicle == nil then
 		AIVEFrontPackerT = {}
 		AIVEFrontPackerC = 0
-	elseif AIVEFrontPackerC > 0 and vehicle.attachedImplements ~= nil then
-		for _, implement in pairs(vehicle.attachedImplements) do
+	elseif AIVEFrontPackerC > 0 and vehicle.spec_attacherJoints ~= nil and vehicle.spec_attacherJoints.attachedImplements ~= nil then
+		for _, implement in pairs(vehicle.spec_attacherJoints.attachedImplements) do
 			if implement.object ~= nil and AIVEFrontPackerT[implement.object] then
 				AutoSteeringEngine.unregisterFrontPacker( implement.object )
 				AutoSteeringEngine.resetFrontPacker( implement.object )
@@ -8814,10 +8814,10 @@ function AutoSteeringEngine.hasFrontPacker( vehicle )
 	if AIVEFrontPackerT[vehicle] then
 		return true
 	end
-	if vehicle.attachedImplements == nil then
+	if vehicle.spec_attacherJoints == nil or vehicle.spec_attacherJoints.attachedImplements == nil then
 		return false 
 	end
-	for _, implement in pairs(vehicle.attachedImplements) do
+	for _, implement in pairs(vehicle.spec_attacherJoints.attachedImplements) do
 		if AutoSteeringEngine.hasFrontPacker( implement.object ) then
 			return true
 		end

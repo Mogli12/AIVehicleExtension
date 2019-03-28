@@ -2,11 +2,12 @@
 AIVehicleExtensionRegister = {};
 AIVehicleExtensionRegister.isLoaded = true;
 AIVehicleExtensionRegister.g_currentModDirectory = g_currentModDirectory;
+AIVehicleExtensionRegister.specName = "AIVehicleExtension"
 
 source(Utils.getFilename("AIVehicleExtension.lua", g_currentModDirectory))
 source(Utils.getFilename("AIVEScreen.lua", g_currentModDirectory));
 
-if g_specializationManager:getSpecializationByName("kAIVehicleExtension") == nil then
+if g_specializationManager:getSpecializationByName(AIVehicleExtensionRegister.specName) == nil then
 	if AIVehicleExtension == nil then 
 		print("Failed to add specialization AIVehicleExtension")
 	else 
@@ -20,8 +21,8 @@ if g_specializationManager:getSpecializationByName("kAIVehicleExtension") == nil
 				end 
 				if isAIVehicle then 
 					print("  adding AIVehicleExtension to vehicleType '"..tostring(k).."'")
-					typeDef.specializationsByName["AIVehicleExtension"] = AIVehicleExtension
-					table.insert(typeDef.specializationNames, "AIVehicleExtension")
+					typeDef.specializationsByName[AIVehicleExtensionRegister.specName] = AIVehicleExtension
+					table.insert(typeDef.specializationNames, AIVehicleExtensionRegister.specName)
 					table.insert(typeDef.specializations, AIVehicleExtension)	
 				end 
 			end 

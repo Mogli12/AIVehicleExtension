@@ -63,9 +63,9 @@ function AIVehicleExtension:aiveAddDebugText( s )
 end
 
 AIVehicleExtension.saveAttributesMapping = { 
-		enabled         = { xml = "acDefaultOn",	 tp = "B", default = true,  always = true },
-		upNDown				  = { xml = "acUTurn",			 tp = "B", default = false, always = true },
-		rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false, always = true },
+		enabled         = { xml = "acDefaultOn",	 tp = "B", default = true  }, --always = true },
+		upNDown				  = { xml = "acUTurn",			 tp = "B", default = false }, --always = true },
+		rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false }, --always = true },
 		headland				= { xml = "acHeadland",		 tp = "B", default = false },
 		collision			  = { xml = "acCollision",	 tp = "B", default = false },
 		inverted				= { xml = "acInverted",		 tp = "B", default = false },
@@ -1642,7 +1642,7 @@ function AIVehicleExtension:saveToXMLFile(xmlFile, key)
 	for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
 		if self.acParameters[n] ~= p.default or p.always then			
 			if		 p.tp == "B" then
-				setXMLBool(xmlFile, key.."#"..p.xml, AIVEHud.bool2int(self.acParameters[n]))
+				setXMLBool(xmlFile, key.."#"..p.xml, self.acParameters[n])
 			elseif p.tp == "I" then
 				setXMLInt(xmlFile, key.."#"..p.xml, self.acParameters[n])
 			else--if p.tp == "F" then
@@ -1658,7 +1658,7 @@ end
 function AIVehicleExtension:onPostLoad(savegame)
 	if savegame ~= nil then
 		local xmlFile = savegame.xmlFile
-		local key     = savegame.key ..".AIVehicleExtension"	
+		local key     = savegame.key.."."..AIVehicleExtensionRegister.specName
 
 		for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
 			if		 p.tp == "B" then
