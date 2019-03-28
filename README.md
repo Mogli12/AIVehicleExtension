@@ -1,10 +1,7 @@
-# AIVehicleExtension for Farming Simulator 2017
-
-## Testing
-**I think I will send this mod to ModHub in the next days. Please check Version 1.1 RC1. It would be great if everybody would retest the issues she/he created and close issues that are resolved. Thanks!**
+# AIVehicleExtension for Farming Simulator 2019
 
 ## Status
-AIVehicleExtension is only tested with the latest patch (1.5.3.1).
+This is the very first version of AIVE for FS19.
 
 #### New User Interface
 The idea behind the new user interface is to move as many settings as possible into new settings dialog. This dialog uses standard elements. Only those options needed for visualization or intermediate action are still available in the head up display (HUD).
