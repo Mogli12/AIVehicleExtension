@@ -79,6 +79,9 @@ function AIVehicleExtensionRegister:deleteMap()
 end;
 
 function AIVehicleExtensionRegister:mouseEvent(posX, posY, isDown, isUp, button)
+	if 			type( g_currentMission.controlledVehicle ) == "table" then 
+		AIVEHud.mouseEvent(g_currentMission.controlledVehicle, posX, posY, isDown, isUp, button)
+	end 
 end;
 
 function AIVehicleExtensionRegister:keyEvent(unicode, sym, modifier, isDown)

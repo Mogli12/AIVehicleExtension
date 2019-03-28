@@ -117,13 +117,13 @@ else
 			self[_level0_].TextPosY     = self[_level0_].TextPosY + 0.25 * self[_level0_].TextSize
 			if     type( hudBackground ) == "string" then
 				self[_level0_].Path       = Utils.getFilename(hudBackground, self[_level0_].Directory)
-				self[_level0_].Overlay    = Overlay:new(hudName, self[_level0_].Path, self[_level0_].PosX, self[_level0_].PosY, self[_level0_].Width, self[_level0_].Height);
+				self[_level0_].Overlay    = Overlay:new(self[_level0_].Path, self[_level0_].PosX, self[_level0_].PosY, self[_level0_].Width, self[_level0_].Height);
 			else
 				local bg = 0.4
 				if type( hudBackground ) == "number" then
 					bg = hudBackground
 				end
-				self[_level0_].Overlay    = Overlay:new(hudName, "dataS2/menu/blank.png", self[_level0_].PosX, self[_level0_].PosY, self[_level0_].Width, self[_level0_].Height);
+				self[_level0_].Overlay    = Overlay:new("dataS2/menu/blank.png", self[_level0_].PosX, self[_level0_].PosY, self[_level0_].Width, self[_level0_].Height);
 				self[_level0_].Overlay:setColor(0,0,0,bg)
 			end
 			self[_level0_].GuiActive    = false;
@@ -164,7 +164,7 @@ else
 				print("ERROR: "..tostring(result).." (img1: "..tostring(img1)..")")
 				return
 			end
-			local overlay = Overlay:new(nil, result, x,y,self[_level0_].BtnWidth,self[_level0_].BtnHeight);
+			local overlay = Overlay:new(result, x,y,self[_level0_].BtnWidth,self[_level0_].BtnHeight);
 			local img2 = "empty.dds"
 			if imgDisabled ~= nil then
 				img2 = imgDisabled
@@ -176,7 +176,7 @@ else
 					print("ERROR: "..tostring(result).." (img2: "..tostring(img2)..")")
 					return 
 				end
-				overlay2 = Overlay:new(nil, result, x,y,self[_level0_].BtnWidth,self[_level0_].BtnHeight);
+				overlay2 = Overlay:new(result, x,y,self[_level0_].BtnWidth,self[_level0_].BtnHeight);
 			end
 			local button = {enabled=true, ovEnabled=overlay, ovDisabled=overlay2, onClick=cbOnClick, onVisible=cbVisible, twoState=(imgDisabled ~= nil), rect={x,y,x+self[_level0_].BtnWidth,y+self[_level0_].BtnHeight}, text1 = textEnabled, text2 = textDisabled, textcb = textCallback, onRender = imgCallback };
 			if      smallNx ~= nil 
@@ -205,7 +205,7 @@ else
 		function _newClass_:addCloseButton(nx, ny)
 			local x = self[_level0_].BtnPosX + (nx-1)*(self[_level0_].BtnWidth+self[_level0_].Border) + 0.5*self[_level0_].BtnWidth;
 			local y = self[_level0_].BtnPosY + self[_level0_].BtnHeight+self[_level0_].Border;
-			local overlay = Overlay:new(nil, Utils.getFilename("close.dds", self[_level0_].Directory), x,y,0.5*self[_level0_].BtnWidth,0.5*self[_level0_].BtnHeight);
+			local overlay = Overlay:new(Utils.getFilename("close.dds", self[_level0_].Directory), x,y,0.5*self[_level0_].BtnWidth,0.5*self[_level0_].BtnHeight);
 			local button = {enabled=true, ovEnabled=overlay, ovDisabled=nil, onClick=_newClass_.onClose, onVisible=nil, twoState=false, rect={x,y,x+0.5*self[_level0_].BtnWidth,y+0.5*self[_level0_].BtnHeight}, text1 = nil, text2 = nil, textcb = nil, onRender = nil };
 			button.overlays = {}
 			button.overlays["close.dds"] = overlay
@@ -227,7 +227,7 @@ else
 		function _newClass_:addResizeButton(nx, ny)
 			local x = self[_level0_].BtnPosX + (nx-1)*(self[_level0_].BtnWidth+self[_level0_].Border) -- + 0.5*self[_level0_].BtnWidth;
 			local y = self[_level0_].BtnPosY + self[_level0_].BtnHeight+self[_level0_].Border;
-			local overlay = Overlay:new(nil, Utils.getFilename("resize.dds", self[_level0_].Directory), x,y,0.5*self[_level0_].BtnWidth,0.5*self[_level0_].BtnHeight);
+			local overlay = Overlay:new(Utils.getFilename("resize.dds", self[_level0_].Directory), x,y,0.5*self[_level0_].BtnWidth,0.5*self[_level0_].BtnHeight);
 			local button = {enabled=true, ovEnabled=overlay, ovDisabled=nil, onClick=_newClass_.onResize, onVisible=nil, twoState=false, rect={x,y,x+0.5*self[_level0_].BtnWidth,y+0.5*self[_level0_].BtnHeight}, text1 = nil, text2 = nil, textcb = nil, onRender = nil };
 			button.overlays = {}
 			button.overlays["resize.dds"] = overlay
@@ -297,9 +297,7 @@ else
 		------------------------------------------------------------------------
 		-- mouseEvent
 		------------------------------------------------------------------------
-		function _newClass_:onUpdate(dt)
-			local posX, posY, posZ = g_inputBinding:captureMouseInput()
-		
+		function _newClass_:mouseEvent(posX, posY, isDown, isUp, button)
 			if self[_level0_] == nil then
 				return 
 			end
@@ -365,7 +363,7 @@ else
 					end
 					local ov
 					if button.overlays[img] == nil then
-						ov = Overlay:new(nil, Utils.getFilename(img, self[_level0_].Directory), button.rect[1],button.rect[2],self[_level0_].BtnWidth,self[_level0_].BtnHeight);
+						ov = Overlay:new(Utils.getFilename(img, self[_level0_].Directory), button.rect[1],button.rect[2],self[_level0_].BtnWidth,self[_level0_].BtnHeight);
 						button.overlays[img] = ov
 					else
 						ov = button.overlays[img]

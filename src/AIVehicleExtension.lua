@@ -938,7 +938,7 @@ end
 ------------------------------------------------------------------------
 
 function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle)
-	if isOnActiveVehicle then
+	if self.isClient then
 		if self.aiveActionEvents == nil then 
 			self.aiveActionEvents = {}
 		else	
@@ -952,8 +952,15 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
                                ,"AIVE_UTURN_ON_OFF"   
                                ,"AIVE_STEERING"         
                                ,"AIVE_RAISE"            
-                               ,"AIVE_START_AIVE" }) do
-			local _, eventName = self:addActionEvent(self.aiveActionEvents, InputAction[actionName], self, AIVehicleExtension.actionCallback, false, true, false, true, nil);
+                               ,"AIVE_START_AIVE"
+															 ,"AXIS_MOVE_SIDE_VEHICLE"
+															 ,"TOGGLE_CRUISE_CONTROL" }) do
+			local pBool1, pBool2, pBool3, pBool4 = false, true, false, true 
+			if     actionName == "AXIS_MOVE_SIDE_VEHICLE" then 
+				pBool1 = true 
+			end 
+			
+			local _, eventName = self:addActionEvent(self.aiveActionEvents, InputAction[actionName], self, AIVehicleExtension.actionCallback, pBool1, pBool2, pBool3, pBool4);
 		end
 	end
 end
@@ -976,6 +983,11 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 		AIVehicleExtension.showGui( self, not guiActive )
 	elseif actionName == "AIVE_START_AIVE" then
 		AIVehicleExtension.onAIVEScreen( self )
+	elseif actionName == "AIVE_ENABLE" then
+		if self.acParameters ~= nil then 
+			AIVehicleExtension.onEnable( self, not self.acParameters.enabled )
+			AIVehicleExtension.sendParameters(self)
+		end
 	elseif actionName == "AIVE_SWAP_SIDE"  then
 		self.acParameters.leftAreaActive	= self.acParameters.rightAreaActive
 		self.acParameters.rightAreaActive = not self.acParameters.leftAreaActive
@@ -1002,41 +1014,23 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 			AIVehicleExtension.sendParameters( self )
 		end
 		AIVehicleExtension.setImplMoveDownClient(self, not ( AIVehicleExtension.getIsLowered( self ) ), true)
+	elseif  actionName == "AXIS_MOVE_SIDE_VEHICLE"
+			and self:getIsActive() 
+			and not self.acParameters.noSteering
+			and ( self.aiveIsStarted or self.aiveAutoSteer ) then
+		AIVehicleExtension.setAxisSide( self, keyStatus )
+	elseif  actionName == "TOGGLE_CRUISE_CONTROL" 
+			and self.aiveIsStarted then 
+		if self.speed2Level == nil or self.speed2Level > 0 then
+			AIVehicleExtension.setPause( self, true )
+		else
+			AIVehicleExtension.setPause( self, false )
+		end
 	end
-	
---if self.isHired and InputBinding.hasEvent(InputBinding.SWITCH_IMPLEMENT) then
---	self:selectNextSelectableImplement();
---end
---		
---if      self:getIsActive() 
---		and not self.acParameters.noSteering
---		and ( self.aiveIsStarted or self.aiveAutoSteer ) then
---	local axisSide = InputBinding.getDigitalInputAxis(InputBinding.AXIS_MOVE_SIDE_VEHICLE)
---	if InputBinding.isAxisZero(axisSide) then
---		axisSide = InputBinding.getAnalogInputAxis(InputBinding.AXIS_MOVE_SIDE_VEHICLE)
---  end
---	AIVehicleExtension.setAxisSide( self, axisSide )
---elseif self.acAxisSide ~= 0 then
---	AIVehicleExtension.setAxisSide( self, 0 )
---end
---
---if self.spec_aiVehicle.isActive then		
---	if AIVehicleExtension.mbHasInputEvent( "TOGGLE_CRUISE_CONTROL" ) then
---		if self.speed2Level == nil or self.speed2Level > 0 then
---			AIVehicleExtension.setPause( self, true )
---		else
---			AIVehicleExtension.setPause( self, false )
---		end
---	end
---end
 end 
 
 
 function AIVehicleExtension:onUpdate(dt)
-
-	if self.isEntered and self.isClient and self.atMogliInitDone then
-		AIVEHud.onUpdate( self, dt )
-	end
 
 	if self.isEntered and self.isClient then
 		if sym == Input.KEY_lshift then
@@ -1163,18 +1157,15 @@ function AIVehicleExtension:onUpdate(dt)
 	if			self.isEntered 
 			and self.isClient 
 			and self.isServer 
-			and self:getIsActive() 
-			and self.atMogliInitDone 
-			and self.atHud.GuiActive then	
-
-		if self.acParameters ~= nil and self.acShowTrace and ( self.aiveIsStarted or self.aiveAutoSteer ) then			
-			if			AIVEGlobals.showTrace > 0 
-					and self.acDimensions ~= nil
-					and ( self.spec_aiVehicle.isActive or self.aiveAutoSteer ) then	
-				AutoSteeringEngine.drawLines( self )
-			else
-				AutoSteeringEngine.drawMarker( self )
-			end
+			and self.acParameters ~= nil 
+			and self.acShowTrace 
+			and ( self.aiveIsStarted or self.aiveAutoSteer ) then			
+		if			AIVEGlobals.showTrace > 0 
+				and self.acDimensions ~= nil
+				and ( self.spec_aiVehicle.isActive or self.aiveAutoSteer ) then	
+			AutoSteeringEngine.drawLines( self )
+		else
+			AutoSteeringEngine.drawMarker( self )
 		end
 	end	
 	

@@ -281,22 +281,23 @@ function AIVEdrawDebugPoint( x, y, z, r, g, b, s )
 	renderText(sx, sy, getCorrectTextSize(0.04) * sz, ".")
 end 
 function AIVEDrawDebugLine( x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
-	local l = AIVEUtils.vector3Length(x1-x2,y1-y2,z1-z2)
-	local s = math.floor( l * 10 )
-	local t = 1
-	if s > 1 then 
-		t = 1 / s 
-	end 
-		
-	for i=0,s do 
-		local x = x1 + i * t * ( x2 - x1 )
-		local y = y1 + i * t * ( y2 - y1 )
-		local z = z1 + i * t * ( z2 - z1 )
-		local r = r1 + i * t * ( r2 - r1 )
-		local g = g1 + i * t * ( g2 - g1 )
-		local b = b1 + i * t * ( b2 - b1 )
-		AIVEdrawDebugPoint( x, y, z, r, g, b, 1 )
-	end 
+--local l = AIVEUtils.vector3Length(x1-x2,y1-y2,z1-z2)
+--local s = math.floor( l * 10 )
+--local t = 1
+--if s > 1 then 
+--	t = 1 / s 
+--end 
+--	
+--for i=0,s do 
+--	local x = x1 + i * t * ( x2 - x1 )
+--	local y = y1 + i * t * ( y2 - y1 )
+--	local z = z1 + i * t * ( z2 - z1 )
+--	local r = r1 + i * t * ( r2 - r1 )
+--	local g = g1 + i * t * ( g2 - g1 )
+--	local b = b1 + i * t * ( b2 - b1 )
+--	AIVEdrawDebugPoint( x, y, z, r, g, b, 1 )
+--end 
+	self:addAIDebugLine({x1,y1,z1}, {x2,y2,z2}, {r1,g1,b1})
 end 
 
 function AutoSteeringEngine.globalsLoad( file, debugPrint )	
@@ -3935,54 +3936,63 @@ end
 -- getAIAreaOfVehicle
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tool, lx1,lz1,lx2,lz2,lx3,lz3 )
-	if tool.aiArea ~= nil then		
-		if table.getn( tool.aiArea.requiredValues ) <= 0 then
-			return 0, 0
-		end
-		
-		if AIVEGlobals.prohibitAI <= 0 then
-			return AIVehicleUtil.getAIArea( lx1,lz1,lx2,lz2,lx3,lz3,
-																		tool.aiArea.requiredValues,
-																		tool.aiArea.prohibitValues,
-																		tool.aiArea.requiredFruitType,
-																		tool.aiArea.requiredMinGrowthState,
-																		tool.aiArea.requiredMaxGrowthState,
-																		tool.aiArea.prohibitedFruitType,
-																		tool.aiArea.prohibitedMinGrowthState,
-																		tool.aiArea.prohibitedMaxGrowthState,
-																		tool.aiArea.useWindrowFruitType )
-		end
-		
-		local a, t = AIVehicleUtil.getAIArea( lx1,lz1,lx2,lz2,lx3,lz3,
-																		tool.aiArea.requiredValues,
-																		tool.aiArea.prohibitValues,
-																		tool.aiArea.requiredFruitType,
-																		tool.aiArea.requiredMinGrowthState,
-																		tool.aiArea.requiredMaxGrowthState,
-																		g_fruitTypeManager.nameToIndex.UNKNOWN, 0, 0,
-																		tool.aiArea.useWindrowFruitType )
-	
-		if a > 0 and tool.aiArea.prohibitedFruitType ~= g_fruitTypeManager.nameToIndex.UNKNOWN then
-			local detailId = g_currentMission.terrainDetailId;
-			local x,z, widthX,widthZ, heightX,heightZ = AIVEUtils.getXZWidthAndHeight(nil, lx1,lz1,lx2,lz2,lx3,lz3)
-			
-			local prohibitedFruitType      = tool.aiArea.prohibitedFruitType;
-			local prohibitedMinGrowthState = tool.aiArea.prohibitedMinGrowthState;
-			local prohibitedMaxGrowthState = tool.aiArea.prohibitedMaxGrowthState;
-			
-			local ids = g_currentMission.fruits[prohibitedFruitType]
-		
-			setDensityMaskParams(detailId, "between", prohibitedMinGrowthState+1, prohibitedMaxGrowthState+1); -- only fruit outside the given range is allowed
-			local _,prohibitedArea,_ = getDensityMaskedParallelogram(detailId, x, z, widthX, widthZ, heightX, heightZ, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, ids.id, 0, g_currentMission.numFruitStateChannels);
-			setDensityMaskParams(detailId, "greater", 0);
-			a = math.max( 0, a - prohibitedArea )
-		end
-		
-		return a, t
-	elseif tool.isMower then
-		return AIVEUtils.getFruitArea(g_fruitTypeManager.nameToIndex.GRASS, lx1,lz1,lx2,lz2,lx3,lz3,false)
+--if tool.aiArea ~= nil then		
+--	if table.getn( tool.aiArea.requiredValues ) <= 0 then
+--		return 0, 0
+--	end
+--	
+--	if AIVEGlobals.prohibitAI <= 0 then
+--		return AIVehicleUtil.getAIArea( lx1,lz1,lx2,lz2,lx3,lz3,
+--																	tool.aiArea.requiredValues,
+--																	tool.aiArea.prohibitValues,
+--																	tool.aiArea.requiredFruitType,
+--																	tool.aiArea.requiredMinGrowthState,
+--																	tool.aiArea.requiredMaxGrowthState,
+--																	tool.aiArea.prohibitedFruitType,
+--																	tool.aiArea.prohibitedMinGrowthState,
+--																	tool.aiArea.prohibitedMaxGrowthState,
+--																	tool.aiArea.useWindrowFruitType )
+--	end
+--	
+--	local a, t = AIVehicleUtil.getAIArea( lx1,lz1,lx2,lz2,lx3,lz3,
+--																	tool.aiArea.requiredValues,
+--																	tool.aiArea.prohibitValues,
+--																	tool.aiArea.requiredFruitType,
+--																	tool.aiArea.requiredMinGrowthState,
+--																	tool.aiArea.requiredMaxGrowthState,
+--																	g_fruitTypeManager.nameToIndex.UNKNOWN, 0, 0,
+--																	tool.aiArea.useWindrowFruitType )
+--
+--	if a > 0 and tool.aiArea.prohibitedFruitType ~= g_fruitTypeManager.nameToIndex.UNKNOWN then
+--		local detailId = g_currentMission.terrainDetailId;
+--		local x,z, widthX,widthZ, heightX,heightZ = AIVEUtils.getXZWidthAndHeight(nil, lx1,lz1,lx2,lz2,lx3,lz3)
+--		
+--		local prohibitedFruitType      = tool.aiArea.prohibitedFruitType;
+--		local prohibitedMinGrowthState = tool.aiArea.prohibitedMinGrowthState;
+--		local prohibitedMaxGrowthState = tool.aiArea.prohibitedMaxGrowthState;
+--		
+--		local ids = g_currentMission.fruits[prohibitedFruitType]
+--	
+--		setDensityMaskParams(detailId, "between", prohibitedMinGrowthState+1, prohibitedMaxGrowthState+1); -- only fruit outside the given range is allowed
+--		local _,prohibitedArea,_ = getDensityMaskedParallelogram(detailId, x, z, widthX, widthZ, heightX, heightZ, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, ids.id, 0, g_currentMission.numFruitStateChannels);
+--		setDensityMaskParams(detailId, "greater", 0);
+--		a = math.max( 0, a - prohibitedArea )
+--	end
+--	
+--	return a, t
+--elseif tool.isMower then
+--	return AIVEUtils.getFruitArea(g_fruitTypeManager.nameToIndex.GRASS, lx1,lz1,lx2,lz2,lx3,lz3,false)
+--end
+	local terrainDetailRequiredValueRanges  = tool.obj:getAITerrainDetailRequiredRange()
+	local terrainDetailProhibitValueRanges  = tool.obj:getAITerrainDetailProhibitedRange()
+	local fruitRequirements = tool.obj:getAIFruitRequirements()
+	local useDensityHeightMap, useWindrowFruitType = tool.obj:getAIFruitExtraRequirements()
+	local fruitProhibitions = tool.obj:getAIFruitProhibitions()
+	if not useDensityHeightMap then
+		return AIVehicleUtil.getAIFruitArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
+	else
+		return AIVehicleUtil.getAIDensityHeightArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
 	end
-	return AIVehicleUtil.getAIAreaOfVehicle( tool.obj, lx1,lz1,lx2,lz2,lx3,lz3, false )
 end
 
 ------------------------------------------------------------------------
@@ -7580,6 +7590,9 @@ end
 -- checkToolIsReadyForWork
 ------------------------------------------------------------------------
 function AutoSteeringEngine.checkToolIsReadyForWork( self, noLower )
+	if type( self.getCanAIImplementContinueWork ) == "function" then 
+		return self:getCanAIImplementContinueWork() 
+	end 
 	return true
 end
 
@@ -8392,16 +8405,7 @@ end
 ------------------------------------------------------------------------
 -- setToolIsLowered
 ------------------------------------------------------------------------
-function AutoSteeringEngine.setToolIsLowered( vehicle, tool, isLowered )
-
---if     tool.currentLowerState == nil
---		or tool.currentLowerState ~= isLowered then
---	print("=================================================")
---	print(tostring(isLowered)..", "..tostring(tool.currentLowerState)..", "..tostring(tool.targetLowerState))
---	AIVehicleExtension.printCallstack()
---	print("=================================================")
---end
-	
+function AutoSteeringEngine.setToolIsLowered( vehicle, tool, isLowered )	
 	tool.currentLowerState  = isLowered
 	tool.changeLowerTime    = g_currentMission.time
 	if tool.targetLowerState == nil then
@@ -8421,14 +8425,6 @@ end
 -- setToolsAreLowered
 ------------------------------------------------------------------------
 function AutoSteeringEngine.setToolsAreLowered( vehicle, isLowered, immediate, objectFilter )
-	if isLowered then 
-		vehicle:raiseAIEvent("onAIEndTurn", "onAIImplementEndTurn")
-	else 
-		vehicle:raiseAIEvent("onAIStartTurn", "onAIImplementStartTurn")
-	end 
-
-	
---local doItNow = vehicle.aiveHas.combine
 	local doItNow = false
 	if immediate then 
 		doItNow = true
