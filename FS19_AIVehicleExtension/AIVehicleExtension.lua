@@ -445,7 +445,6 @@ function AIVehicleExtension:aiveUIGetwidthOffset()
 		return 0
 	end 
 	local i = math.floor( self.acParameters.widthOffset * 8 + 17.5 )
-	print("Current width offset: "..tostring(self.acParameters.widthOffset).." ("..tostring(i)..")")
 	return i
 end 
 function AIVehicleExtension:aiveUISetwidthOffset( value )
@@ -453,7 +452,6 @@ function AIVehicleExtension:aiveUISetwidthOffset( value )
 		return
 	end 
 	self.acParameters.widthOffset = ( value - 17 ) / 8
-	print("New width offset: "..tostring(self.acParameters.widthOffset).." ("..tostring(value)..")")
 end 
 
 function AIVehicleExtension:aiveUIGetturnOffset()
@@ -468,7 +466,6 @@ function AIVehicleExtension:aiveUIGetturnOffset()
 			break 
 		end
 	end
-	print("Current turn offset: "..tostring(self.acParameters.turnOffset).." ("..tostring(i)..")")
 	return i
 end 
 function AIVehicleExtension:aiveUISetturnOffset( value )
@@ -476,7 +473,6 @@ function AIVehicleExtension:aiveUISetturnOffset( value )
 		return
 	end 
 	self.acParameters.turnOffset = AIVehicleExtension.Distance[value]
-	print("New turn offset: "..tostring(self.acParameters.turnOffset).." ("..tostring(value)..")")
 end 
 
 
@@ -957,9 +953,9 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
                                ,"AIVE_UTURN_ON_OFF"   
                                ,"AIVE_STEERING"         
                                ,"AIVE_RAISE"            
-                               ,"AIVE_START_AIVE"
-															 ,"AXIS_MOVE_SIDE_VEHICLE"
-															 ,"TOGGLE_CRUISE_CONTROL" }) do
+                               ,"AIVE_START_AIVE" }) do
+														-- ,"AXIS_MOVE_SIDE_VEHICLE"
+														-- ,"TOGGLE_CRUISE_CONTROL" }) do
 			local pBool1, pBool2, pBool3, pBool4 = false, true, false, true 
 			if     actionName == "AXIS_MOVE_SIDE_VEHICLE" then 
 				pBool1 = true 
@@ -971,8 +967,6 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
 end
 
 function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, arg6)
-
-	print(tostring(actionName)..": "..tostring(keyStatus))
 
 	local guiActive = false
 	if self.atHud ~= nil and self.atHud.GuiActive ~= nil then
@@ -1019,11 +1013,6 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 			AIVehicleExtension.sendParameters( self )
 		end
 		AIVehicleExtension.setImplMoveDownClient(self, not ( AIVehicleExtension.getIsLowered( self ) ), true)
-	elseif  actionName == "AXIS_MOVE_SIDE_VEHICLE"
-			and self:getIsActive() 
-			and not self.acParameters.noSteering
-			and ( self.aiveIsStarted or self.aiveAutoSteer ) then
-		AIVehicleExtension.setAxisSide( self, keyStatus )
 	elseif  actionName == "TOGGLE_CRUISE_CONTROL" 
 			and self.aiveIsStarted then 
 		if self.speed2Level == nil or self.speed2Level > 0 then
@@ -1071,9 +1060,8 @@ function AIVehicleExtension:onUpdate(dt)
 	end
 	
 	if self.aiveIsStarted or self.aiveAutoSteer then
-		if			self.articulatedAxis                          ~= nil 
-				and self.articulatedAxis.componentJoint           ~= nil
-				and self.articulatedAxis.componentJoint.jointNode ~= nil 
+		if			AutoSteeringEngine.hasArticulatedAxis( self )
+				and self.spec_articulatedAxis.componentJoint.jointNode ~= nil 
 				and self.acDimensions                             ~= nil 
 				and self.acDimensions.wheelBase                   ~= nil 
 				and self.acDimensions.acRefNodeZ                  ~= nil then	
@@ -1090,7 +1078,7 @@ function AIVehicleExtension:onUpdate(dt)
 			end
 			dx = dx / dn
 			dz = dz / dn
-			local _,angle,_ = getRotation( self.articulatedAxis.componentJoint.jointNode )
+			local _,angle,_ = getRotation( self.spec_articulatedAxis.componentJoint.jointNode )
 			angle = 0.5 * angle
 			angle = AIVEGlobals.artAxisRot *  angle
 			if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
@@ -1114,7 +1102,7 @@ function AIVehicleExtension:onUpdate(dt)
 		AIVehicleExtension.acDump2(self)
 	end
 	
-	if self.isServer then
+	if self.isServer then		
 		if     self.aiveIsStarted      then
 			if AIVEGlobals.devFeatures <= 0 or self.atHud.InfoText == nil or self.atHud.InfoText == "" then
 				AIVEHud.setInfoText( self )
@@ -1163,7 +1151,7 @@ function AIVehicleExtension:onUpdate(dt)
 	end	
 	
 	if      self.isServer 
-			and self.articulatedAxis ~= nil 
+			and AutoSteeringEngine.hasArticulatedAxis( self )
 			and ( self.aiveCanStartArtAxisTimer == nil or g_currentMission.time > self.aiveCanStartArtAxisTimer + 1000 ) then
 		self.aiveCanStartArtAxisTimer = g_currentMission.time
 		AIVehicleExtension.checkState( self, false, true )
@@ -1686,12 +1674,11 @@ end
 function AIVehicleExtension:getCorrectedMaxSteeringAngle()
 
 	local steeringAngle = self.acDimensions.maxSteeringAngle
-	if			self.articulatedAxis ~= nil 
-			and self.articulatedAxis.componentJoint ~= nil
-			and self.articulatedAxis.componentJoint.jointNode ~= nil 
-			and self.articulatedAxis.rotMax then
+	if			AutoSteeringEngine.hasArticulatedAxis( self )
+			and self.spec_articulatedAxis.componentJoint.jointNode ~= nil 
+			and self.spec_articulatedAxis.rotMax then
 		-- Ropa
-		steeringAngle = steeringAngle + 0.15 * self.articulatedAxis.rotMax
+		steeringAngle = steeringAngle + 0.15 * self.spec_articulatedAxis.rotMax
 	end
 
 	return steeringAngle
@@ -1723,20 +1710,19 @@ function AIVehicleExtension.calculateDimensions( self )
 		self.acDimensions.radius         = self.acDimensions.radius - 1.25
 	end
 	
-	if			self.articulatedAxis ~= nil 
-			and self.articulatedAxis.componentJoint ~= nil
-			and self.articulatedAxis.componentJoint.jointNode ~= nil 
-			and self.articulatedAxis.rotMax then
+	if			AutoSteeringEngine.hasArticulatedAxis( self )
+			and self.spec_articulatedAxis.componentJoint.jointNode ~= nil 
+			and self.spec_articulatedAxis.rotMax then
 			
 		self.acDimensions.wheelParents = {}
-	--_,_,self.acDimensions.acRefNodeZ = AutoSteeringEngine.getRelativeTranslation(refNodeParent,self.articulatedAxis.componentJoint.jointNode)
+	--_,_,self.acDimensions.acRefNodeZ = AutoSteeringEngine.getRelativeTranslation(refNodeParent,self.spec_articulatedAxis.componentJoint.jointNode)
 	--local n=0
 		for _,wheel in pairs(self.spec_wheels.wheels) do
 	--	local temp1 = { getRotation(wheel.driveNode) }
 	--	local temp2 = { getRotation(wheel.repr) }
 	--	setRotation(wheel.driveNode, 0, 0, 0)
 	--	setRotation(wheel.repr, 0, 0, 0)
-	--	local x,y,z = AutoSteeringEngine.getRelativeTranslation(self.articulatedAxis.componentJoint.jointNode,wheel.driveNode)
+	--	local x,y,z = AutoSteeringEngine.getRelativeTranslation(self.spec_articulatedAxis.componentJoint.jointNode,wheel.driveNode)
 	--	setRotation(wheel.repr, unpack(temp2))
 	--	setRotation(wheel.driveNode, unpack(temp1))
   --
@@ -1760,7 +1746,7 @@ function AIVehicleExtension.calculateDimensions( self )
 	--	self.acDimensions.wheelBase = self.acDimensions.wheelBase / n
 	--end
 	---- divide max. steering angle by 2 because it is for both sides
-	--self.acDimensions.maxSteeringAngle = 0.25 * (math.abs(self.articulatedAxis.rotMin)+math.abs(self.articulatedAxis.rotMax))
+	--self.acDimensions.maxSteeringAngle = 0.25 * (math.abs(self.spec_articulatedAxis.rotMin)+math.abs(self.spec_articulatedAxis.rotMax))
 	---- reduce wheel base according to max. steering angle
 	--self.acDimensions.wheelBase				= self.acDimensions.wheelBase * math.cos( self.acDimensions.maxSteeringAngle ) 
 	end
@@ -2192,7 +2178,7 @@ function AIVehicleExtension:getMaxAngleWithTool( outside )
 	local maxToolAngle = AutoSteeringEngine.getMaxToolAngle( self )
 	
 	local f = 1
-	if self.articulatedAxis ~= nil then
+	if AutoSteeringEngine.hasArticulatedAxis( self ) then
 		f = 0.5
 	end
 	
@@ -2552,7 +2538,6 @@ end
 --==============================================================				
 --==============================================================			
 function AIVehicleExtension:afterUpdateAIDriveStrategies()	
-	print("At the end of AIVehicle.updateAIDriveStrategies")
 
 	local spec = self.spec_aiVehicle
 	
@@ -2565,16 +2550,9 @@ function AIVehicleExtension:afterUpdateAIDriveStrategies()
 		for i,d in pairs( spec.driveStrategies ) do
 			local driveStrategyMogli = nil
 			if     d:isa(AIDriveStrategyStraight) then
-				print("driveStrategies["..tostring(i).."] is a AIDriveStrategyStraight")
 				driveStrategyMogli = AIDriveStrategyMogli:new()
-	--	elseif d:isa(AIDriveStrategyCombine)  then
-	--		print("driveStrategies["..tostring(i).."] is a AIDriveStrategyCombine")
-	--		driveStrategyMogli = AIDriveStrategyCombine131:new()
-			else 
-				print("driveStrategies["..tostring(i).."] is a something else ("..tostring(d)..")")
 			end
 			if driveStrategyMogli ~= nil then
-				print("replacing drive strategy")
 				driveStrategyMogli:setAIVehicle(self)
 				spec.driveStrategies[i] = driveStrategyMogli
 			end
@@ -2588,61 +2566,46 @@ function AIVehicleExtension:afterUpdateAIDriveStrategies()
 		
 		AutoSteeringEngine.invalidateField( self, self.acParameters.useAIFieldFct )
 		AutoSteeringEngine.initFruitBuffer( self )
-	--self.aiRescueTimer = self.acDeltaTimeoutStop
-	--self.hasStopped    = true
 		AIVehicleExtension.setInt32Value( self, "autoSteer", 2 )
 	else
 		self.aiveIsStarted = false
 	end
 	
-	if self.aiveIsStarted then 
-		for i,d in pairs( spec.driveStrategies ) do
-			if     d:isa(AIDriveStrategyMogli) then
-				print("driveStrategies["..tostring(i).."] is a AIDriveStrategyMogli")
-			elseif d:isa(AIDriveStrategyStraight) then
-				print("driveStrategies["..tostring(i).."] is a AIDriveStrategyStraight")
-			elseif d:isa(AIDriveStrategyCombine)  then
-				print("driveStrategies["..tostring(i).."] is a AIDriveStrategyCombine")
-			else 
-				print("driveStrategies["..tostring(i).."] is a something else ("..tostring(d)..")")
-			end 
-		end
-	end 
 end
 
 AIVehicle.updateAIDriveStrategies = Utils.appendedFunction( AIVehicle.updateAIDriveStrategies, AIVehicleExtension.afterUpdateAIDriveStrategies )
 
-----==============================================================		
----- AIVehicle.getCanStartAIVehicle		
-----==============================================================				
------Returns true if ai can start
----- @return boolean canStart can start ai
----- @includeCode
---function AIVehicleExtension:newgetCanStartAIVehicle( superFunc, ... )
---	-- check if reverse driving is available and used, we do not allow the AI to work when reverse driving is enabled
---
---	if      self.acParameters ~= nil
---			and self.acParameters.enabled
---			and self.articulatedAxis ~= nil
---			and not ( self.aiveCanStartArtAxis ) then
---		return false
---	end
---	
---	local backup = self.isReverseDriving
---	
---	if      self.acParameters ~= nil
---			and self.acParameters.enabled then
---		self.isReverseDriving = false
---	end
---
---	local res = { superFunc( self, ... ) }
---	
---	self.isReverseDriving = backup
---	
---	return unpack( res )
---end
---
---AIVehicle.getCanStartAIVehicle = Utils.overwrittenFunction( AIVehicle.getCanStartAIVehicle, AIVehicleExtension.newgetCanStartAIVehicle )
+--==============================================================		
+-- AIVehicle.getCanStartAIVehicle		
+--==============================================================				
+---Returns true if ai can start
+-- @return boolean canStart can start ai
+-- @includeCode
+function AIVehicleExtension:newgetCanStartAIVehicle( superFunc, ... )
+	-- check if reverse driving is available and used, we do not allow the AI to work when reverse driving is enabled
+
+	if      self.acParameters ~= nil
+			and self.acParameters.enabled
+			and AutoSteeringEngine.hasArticulatedAxis( self )
+			and not ( self.aiveCanStartArtAxis ) then
+		return false
+	end
+	
+	local backup = self.isReverseDriving
+	
+	if      self.acParameters ~= nil
+			and self.acParameters.enabled then
+		self.isReverseDriving = false
+	end
+
+	local res = { superFunc( self, ... ) }
+	
+	self.isReverseDriving = backup
+	
+	return unpack( res )
+end
+
+AIVehicle.getCanStartAIVehicle = Utils.overwrittenFunction( AIVehicle.getCanStartAIVehicle, AIVehicleExtension.newgetCanStartAIVehicle )
 
 ------------------------------------------------------------------------
 -- onOtherAICollisionTrigger

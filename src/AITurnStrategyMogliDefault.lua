@@ -685,7 +685,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				or ( math.abs( turnAngle ) >= 180 - angleOffset 
 				 and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 ) then
 			doIt = 2
-		elseif veh.articulatedAxis ~= nil then
+		elseif AutoSteeringEngine.hasArticulatedAxis( veh ) then
 			doIt = 0
 		elseif turnAngle > 0 or turnAngle < -165 then
 			doIt = 1
@@ -1460,7 +1460,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		end
 		
 --==============================================================		
--- rotate plough		
+-- rotate plow		
 	elseif turnData.stage == 82 then	
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
 	--angle = -turn75.alpha
@@ -1793,7 +1793,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 		local newTurnAngle = turnAngle - target 
 		local f = 1
-		if veh.articulatedAxis == nil then
+		if not AutoSteeringEngine.hasArticulatedAxis( veh ) then
 			f = 2
 		end
 

@@ -201,8 +201,8 @@ function AIDriveStrategy:adjustPosition( eX, eZ, moveForwards, distanceToStop, i
 	local refNode = vehicle.aiveChain.refNode
 	
 	if      not ( moveForwards ) 
-			and vehicle.articulatedAxis ~= nil 
-      and vehicle.articulatedAxis.aiRevereserNode ~= nil then
+			and AutoSteeringEngine.hasArticulatedAxis( vehicle )
+      and vehicle.spec_articulatedAxis.aiRevereserNode ~= nil then
 		refNode = vehicle.aiVehicleDirectionNode
 	elseif  vehicle.aiVehicleDirectionNode ~= nil then
 		refNode = vehicle.aiVehicleDirectionNode
@@ -640,7 +640,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			local f = 1
 			if veh.acDimensions.zBack < 0 then
 			-- keep calm and don't move!!! Going to outside would just make it worse
-				if veh.articulatedAxis ~= nil then
+				if AutoSteeringEngine.hasArticulatedAxis( vehicle ) then
 					f = 0
 				elseif noReverseIndex <= 0 then
 					f = 0.1

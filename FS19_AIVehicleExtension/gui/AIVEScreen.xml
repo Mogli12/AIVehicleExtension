@@ -35,14 +35,14 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="noSteering" toolTip="$mogli_AIVE_NOSTEERING"  onCreate="onCreateSubElement" 
+				<!--GuiElement type="checkedOption" profile="multiTextOptionSettings" id="noSteering" toolTip="$mogli_AIVE_NOSTEERING"  onCreate="onCreateSubElement" 
 										focusId="14" focusChangeTop="33" focusChangeBottom="24">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
 					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_NOSTEERING"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
-				</GuiElement>
+				</GuiElement-->
 
 				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="waitForPipe" toolTip="$mogli_AIVE_WAIT_FOR_PIPE" onCreate="onCreateSubElement"
 										focusId="15" focusChangeTop="34" focusChangeBottom="25">										
