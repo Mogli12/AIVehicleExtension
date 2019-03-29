@@ -159,10 +159,10 @@ function AIVehicleExtension:onLoad(saveGame)
 	self.turnTimer            = 0
 	self.aiRescueTimer        = 0
 	
-	self.acDeltaTimeoutWait	  = math.max(AIVEUtils.getNoNil( self.waitForTurnTimeout, 1600 ), 1000 ) 
-	self.acDeltaTimeoutRun		= math.max(AIVEUtils.getNoNil( self.turnTimeout, 800 ), 500 )
-	self.acDeltaTimeoutStop	  = math.max(AIVEUtils.getNoNil( self.turnStage1Timeout , 20000), 10000)
-	self.acDeltaTimeoutStart	= math.max(AIVEUtils.getNoNil( self.turnTimeoutLong	 , 6000 ), 4000 )
+	self.acDeltaTimeoutWait	  = 1600
+	self.acDeltaTimeoutRun		= 80
+	self.acDeltaTimeoutStop	  = 20000
+	self.acDeltaTimeoutStart	= 6000
 	self.acDeltaTimeoutNoTurn = 2 * self.acDeltaTimeoutWait --math.max(AIVEUtils.getNoNil( self.waitForTurnTimeout , 2000 ), 1000 )
 	self.acRecalculateDt			= 0
 	self.acWaitTimer					= 0
@@ -939,7 +939,7 @@ end
 ------------------------------------------------------------------------
 
 function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle)
-	if isOnActiveVehicle or self.isClient then
+	if self.isClient and self:getIsActiveForInput(true, true) then
 		if self.aiveActionEvents == nil then 
 			self.aiveActionEvents = {}
 		else	
@@ -1061,10 +1061,10 @@ function AIVehicleExtension:onUpdate(dt)
 	
 	if self.aiveIsStarted or self.aiveAutoSteer then
 		if			AutoSteeringEngine.hasArticulatedAxis( self )
-				and self.spec_articulatedAxis.componentJoint.jointNode ~= nil 
-				and self.acDimensions                             ~= nil 
-				and self.acDimensions.wheelBase                   ~= nil 
-				and self.acDimensions.acRefNodeZ                  ~= nil then	
+				and self.spec_articulatedAxis.rotationNode ~= nil 
+				and self.acDimensions                      ~= nil 
+				and self.acDimensions.wheelBase            ~= nil 
+				and self.acDimensions.acRefNodeZ           ~= nil then	
 			
 			local node = getParent( self.acRefNode )
 			local dx = 0
@@ -1078,7 +1078,8 @@ function AIVehicleExtension:onUpdate(dt)
 			end
 			dx = dx / dn
 			dz = dz / dn
-			local _,angle,_ = getRotation( self.spec_articulatedAxis.componentJoint.jointNode )
+			local _,angle,_ = getRotation( self.spec_articulatedAxis.rotationNode )
+			self.acDimensions.artAxisR = angle 
 			angle = 0.5 * angle
 			angle = AIVEGlobals.artAxisRot *  angle
 			if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
@@ -1086,6 +1087,8 @@ function AIVehicleExtension:onUpdate(dt)
 			end
 			setRotation( self.acRefNode, 0, angle, 0 )				
 			setTranslation( self.acRefNode, AIVEGlobals.artAxisShift * dx, 0, AIVEGlobals.artAxisShift * dz + self.acDimensions.acRefNodeZ )			
+			self.acDimensions.artAxisX = dx 
+			self.acDimensions.artAxisZ = dz 
 		else
 			local angle = 0
 			if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
@@ -1095,6 +1098,13 @@ function AIVehicleExtension:onUpdate(dt)
 			if math.abs( y - angle ) > 0.01 then
 				setRotation( self.acRefNode, 0, AIVEGlobals.artAxisRot * angle, 0 )				
 			end
+			
+			self.acDimensions.artAxisR = 0
+			if math.max( math.abs( self.acDimensions.artAxisX ), math.abs( self.acDimensions.artAxisZ ) ) > 0.001 then
+				setTranslation( self.acRefNode, 0, 0, self.acDimensions.acRefNodeZ )			
+				self.acDimensions.artAxisX = dx 
+				self.acDimensions.artAxisZ = dz 
+			end 
 		end
 	end
 
@@ -1675,7 +1685,7 @@ function AIVehicleExtension:getCorrectedMaxSteeringAngle()
 
 	local steeringAngle = self.acDimensions.maxSteeringAngle
 	if			AutoSteeringEngine.hasArticulatedAxis( self )
-			and self.spec_articulatedAxis.componentJoint.jointNode ~= nil 
+			and self.spec_articulatedAxis.rotationNode ~= nil 
 			and self.spec_articulatedAxis.rotMax then
 		-- Ropa
 		steeringAngle = steeringAngle + 0.15 * self.spec_articulatedAxis.rotMax
@@ -1701,6 +1711,9 @@ function AIVehicleExtension.calculateDimensions( self )
 	self.acDimensions.maxSteeringAngle = AIVEUtils.getNoNil( self.maxRotation, math.rad( 25 ))
 	self.acDimensions.radius           = AIVEUtils.getNoNil( self.maxTurningRadius, 6.25 )
 	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
+	self.acDimensions.artAxisR         = 0
+	self.acDimensions.artAxisX         = 0
+	self.acDimensions.artAxisZ         = 0
 	
 	local wheel = self.spec_wheels.wheels[self.maxTurningRadiusWheel] 
 	if wheel ~= nil then
@@ -1711,30 +1724,12 @@ function AIVehicleExtension.calculateDimensions( self )
 	end
 	
 	if			AutoSteeringEngine.hasArticulatedAxis( self )
-			and self.spec_articulatedAxis.componentJoint.jointNode ~= nil 
+			and self.spec_articulatedAxis.rotationNode ~= nil 
 			and self.spec_articulatedAxis.rotMax then
 			
 		self.acDimensions.wheelParents = {}
-	--_,_,self.acDimensions.acRefNodeZ = AutoSteeringEngine.getRelativeTranslation(refNodeParent,self.spec_articulatedAxis.componentJoint.jointNode)
-	--local n=0
+
 		for _,wheel in pairs(self.spec_wheels.wheels) do
-	--	local temp1 = { getRotation(wheel.driveNode) }
-	--	local temp2 = { getRotation(wheel.repr) }
-	--	setRotation(wheel.driveNode, 0, 0, 0)
-	--	setRotation(wheel.repr, 0, 0, 0)
-	--	local x,y,z = AutoSteeringEngine.getRelativeTranslation(self.spec_articulatedAxis.componentJoint.jointNode,wheel.driveNode)
-	--	setRotation(wheel.repr, unpack(temp2))
-	--	setRotation(wheel.driveNode, unpack(temp1))
-  --
-	--	if n==0 then
-	--		self.acDimensions.wheelBase = math.abs(z)
-	--		n = 1
-	--	else
-	--		self.acDimensions.wheelBase = self.acDimensions.wheelBase + math.abs(z)
-	--		n	= n	+ 1
-	--	--self.acDimensions.wheelBase = math.max( math.abs(z) )
-	--	end
-			
 			local node = getParent( wheel.driveNode )
 			if self.acDimensions.wheelParents[node] == nil then
 				self.acDimensions.wheelParents[node] = 1
@@ -1742,13 +1737,6 @@ function AIVehicleExtension.calculateDimensions( self )
 				self.acDimensions.wheelParents[node] = self.acDimensions.wheelParents[node] + 1
 			end
 		end
-	--if n > 1 then
-	--	self.acDimensions.wheelBase = self.acDimensions.wheelBase / n
-	--end
-	---- divide max. steering angle by 2 because it is for both sides
-	--self.acDimensions.maxSteeringAngle = 0.25 * (math.abs(self.spec_articulatedAxis.rotMin)+math.abs(self.spec_articulatedAxis.rotMax))
-	---- reduce wheel base according to max. steering angle
-	--self.acDimensions.wheelBase				= self.acDimensions.wheelBase * math.cos( self.acDimensions.maxSteeringAngle ) 
 	end
 	
 	setTranslation( self.acRefNode, 0, 0, self.acDimensions.acRefNodeZ )

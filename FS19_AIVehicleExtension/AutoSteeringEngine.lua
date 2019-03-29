@@ -3054,7 +3054,7 @@ function AutoSteeringEngine.currentSteeringAngle( vehicle, isInverted )
 	local steeringAngle = 0		
 
 	if      AutoSteeringEngine.hasArticulatedAxis( vehicle )
-			and vehicle.spec_articulatedAxis.componentJoint.jointNode ~= nil then
+			and vehicle.spec_articulatedAxis.rotationNode ~= nil then
 		steeringAngle = 0.5 * math.min( math.max( -vehicle.rotatedTime * vehicle.spec_articulatedAxis.rotSpeed, vehicle.spec_articulatedAxis.rotMin ), vehicle.spec_articulatedAxis.rotMax )
 	else
 		for _,wheel in pairs(vehicle.spec_wheels.wheels) do
@@ -4001,6 +4001,12 @@ function AutoSteeringEngine.applyRotation( vehicle, toIndex )
 	end 
 
 	AutoSteeringEngine.applySteering( vehicle, toIndex )
+	
+	if      AutoSteeringEngine.hasArticulatedAxis( vehicle )
+			and vehicle.aiveChain.noReverseIndex <= 0 then 
+	else 
+		
+	end 
 
 	local j0   = vehicle.aiveChain.chainMax+2
 	local jMax = vehicle.aiveChain.chainMax+1

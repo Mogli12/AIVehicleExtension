@@ -44,14 +44,14 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement-->
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="waitForPipe" toolTip="$mogli_AIVE_WAIT_FOR_PIPE" onCreate="onCreateSubElement"
+				<!--GuiElement type="checkedOption" profile="multiTextOptionSettings" id="waitForPipe" toolTip="$mogli_AIVE_WAIT_FOR_PIPE" onCreate="onCreateSubElement"
 										focusId="15" focusChangeTop="34" focusChangeBottom="25">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
 					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_WAIT_FOR_PIPE"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
-				</GuiElement>
+				</GuiElement-->
 
 				<!--GuiElement type="checkedOption" profile="multiTextOptionSettings" id="inverted" toolTip="$mogli_AIVE_INVERTED"  onCreate="onCreateSubElement"
 										focusId="16" focusChangeTop="35" focusChangeBottom="101">										
