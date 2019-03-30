@@ -6,8 +6,6 @@
     <artSteeringD type="float" value="1.000000" />
     <!--angleSafety type="float" value="0.800000" /-->
     <angleSafety type="float" value="0.8" />
-    <artAxisRot type="float" value="1.000000" />
-    <artAxisShift type="float" value="1.000000" />
 		
 		<zeroAngle  type="bool" value="false" />
 		
@@ -64,7 +62,6 @@
 		<maxRotationT type="degree" value="75" /> 
 		<maxRotationL type="float" value="3" /> 
 		<minRadius type="float" value="5.5" />
-    <minLength type="float" value="0"/> <!--value="0.25" />-->
     <minMidDist type="float" value="1.0" />
     <reverseDir type="bool" value="false" />
 		
@@ -80,15 +77,10 @@
 		<limitInside type="bool" value="true" />
 
 		<maxDtSumT  value="50"/>  <!-- 10 fps => 100 ms -->
-		<maxDtSumD  value="0"/>   
 		<maxDtSumP0 value="30"/>   
 		<maxDtSumP1 value="800"/>   
 		<maxDtProd  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
-		<maxDtSumF  value="100"/>
-		<fruitBuffer value="0"/> <!-- 0 built in; 1 round x/z values; 2 buffer on -->
 		
-		<maxDtDistF type="float" value="0.077284" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
-				
 		<maxTurnCheck type="float" value="15"/>		
 		<maxToolAngle type="degree" value="65" />
 		<maxToolAngle2 type="degree" value="9" />
@@ -106,8 +98,6 @@
 		
 		<borderBuffer type="bool" value="true" />
 		
-		<detectLevel3 type="float" value="0" />2.9
-		
 		<ignoreBorder value="3"/>
 		<minOffset   type="float" value="0.25" />
 		<minOffsetArt type="float" value="0.5" />
@@ -119,4 +109,6 @@
 		
 		<otherAIColli type="bool" value="false"/>
 		<tm7StopEarly type="bool" value="false"/>
+		
+		<minSpeed value="5"/>
 </AIVEGlobals>

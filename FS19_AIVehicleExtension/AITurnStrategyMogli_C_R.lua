@@ -48,7 +48,7 @@ function AITurnStrategyMogli_C_R:getNextStage( dt, vX,vY,vZ, turnData, stageId )
 		self.needsLowering = true	
 		return self:getStageWithPostCheck( self:getStageFromPoints( self.stages[3], true, 3, false ), AITurnStrategyMogli_C_R.detect4 )
 	elseif stageId == 5 then
-		self:getStageFromFunction( AITurnStrategyMogli_C_R.detect5 )
+		return self:getStageFromFunction( AITurnStrategyMogli_C_R.detect5 )
 	end
 end
 
@@ -219,7 +219,7 @@ end
 function AITurnStrategyMogli_C_R:update(dt)
 	if      AIVEGlobals.showTrace > 0
 			and self.vehicle ~= nil
-			and self.vehicle.isEntered
+			and self.vehicle:getIsEntered()
 			and self.stages ~= nil
 			and self.vehicle.acParameters.showTrace then
 		local c  = table.getn( self.stages )		
@@ -234,9 +234,9 @@ function AITurnStrategyMogli_C_R:update(dt)
 			
 			for j,p in pairs( s ) do
 				local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, p.x, 1, p.z)					
-				drawDebugLine(  p.x, y, p.z,cr,1,cb, p.x, y+4, p.z,cr,1,cb)
-				drawDebugPoint( p.x, y+4, p.z	, 1, 1, 1, 1 )
-				drawDebugLine(  p.x, y+2, p.z,cr,1,cb, p.x+p.dx, y+2, p.z+p.dz,cr,1,cb)				
+				AIVEDrawDebugLine(  self.vehicle, p.x, y, p.z,cr,1,cb, p.x, y+4, p.z,cr,1,cb)
+				AIVEDrawDebugPoint( self.vehicle, p.x, y+4, p.z	, 1, 1, 1, 1 )
+				AIVEDrawDebugLine(  self.vehicle, p.x, y+2, p.z,cr,1,cb, p.x+p.dx, y+2, p.z+p.dz,cr,1,cb)				
 			end
 		end
 	end

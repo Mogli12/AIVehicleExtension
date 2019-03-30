@@ -292,6 +292,16 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	local resetState = false 
 	if self.currentTurnStrategy ~= nil then
 		local tX, tZ, moveForwards, maxSpeed, distanceToStop = self.currentTurnStrategy:getDriveData(dt, vX,vY,vZ, self.turnData)
+		
+	--if AIVEGlobals.devFeatures > 0 then
+	--	self:addDebugText("truning: "..tostring(tX)
+	--												..", "..tostring(tZ)
+	--												..", "..tostring(moveForwards)
+	--												..", "..tostring(maxSpeed)
+	--												..", "..tostring(distanceToStop)
+	--												..", "..tostring(self.turnData)) 
+	--end
+		
 		if tX == nil then
 			for _,turnStrategy in pairs(self.turnStrategies) do
 				turnStrategy:onEndTurn(self.turnLeft)
@@ -324,6 +334,11 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			return tX2, tZ2, mF2, maxSpeed, distanceToStop
 		end		
 	end
+
+--if AIVEGlobals.devFeatures > 0 then
+--	self:addDebugText("driving: "..tostring(self.search))
+--end
+
 	
 	if self.search == nil then
 		veh.acTurnStage = 0
@@ -418,16 +433,6 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	if veh.isHirableBlocked then
 		veh.isHirableBlocked = false
 	--AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)
-	end
-	
-	if self.lastDriveData ~= nil and g_currentMission.time < self.lastDriveDataTime then
-		self.lastDriveDataDt = self.lastDriveDataDt + dt
-		return unpack( self.lastDriveData )
-	end
-	
-	self.lastDriveData = nil
-	if self.lastDriveDataDt ~= nil and self.lastDriveDataDt > 0 then
-		dt = dt + self.lastDriveDataDt
 	end
 	
 	local offsetOutside = 0;
@@ -926,10 +931,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		
 		if     veh.acAxisSide <= -0.999 then
 			a =  veh.acDimensions.maxSteeringAngle
-  		smooth = 0.05
+  		smooth = 0.03
 		elseif veh.acAxisSide >=  0.999 then
 			a = -veh.acDimensions.maxSteeringAngle
-  		smooth = 0.05
+  		smooth = 0.03
 		else
 			local midAngle = veh.acLastAbsAngle
 			if not veh.acParameters.leftAreaActive then
@@ -944,6 +949,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			else
 				a = midAngle + g * ( veh.acDimensions.maxSteeringAngle - midAngle )
 			end
+			smooth = 0.05
 		end
 		
 		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, a )
@@ -1028,12 +1034,6 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	self.lastDirection = { tX, tZ }
 	
 	self:printReturnInfo( tX, vY, tZ, true, maxSpeed, distanceToStop )
-	
-	if border <= 0 and AIVEGlobals.maxDtSumD > 0 then
-		self.lastDriveData     = { tX, tZ, not veh.acParameters.inverted, maxSpeed, distanceToStop }
-		self.lastDriveDataTime = g_currentMission.time + AIVEGlobals.maxDtSumD
-		self.lastDriveDataDt   = 0
-	end
 	
 	return tX, tZ, not veh.acParameters.inverted, maxSpeed, distanceToStop
 end

@@ -101,50 +101,6 @@ function AITurnStrategyMogli:getPoint( wx, wz, dx, dz )
 end
 
 --============================================================================================================================
--- fillQuot2Rad
---============================================================================================================================
-function AITurnStrategyMogli.fillQuot2Rad()
-	AITurnStrategyMogli.quot2Rad = AIAnimCurve:new(AIAClinearInterpolator1)
-	
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-22.9037655484312, v=-3.05432619099008 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-7.59575411272514, v=-2.87979326579064 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-4.51070850366206, v=-2.70526034059121 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-3.17159480236321, v=-2.53072741539178 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-2.41421356237309, v=-2.35619449019234 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-1.92098212697117, v=-2.18166156499291 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-1.56968557711749, v=-2.00712863979348 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-1.30322537284121, v=-1.83259571459405 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-1.09130850106927, v=-1.65806278939461 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-0.916331174017423, v=-1.48352986419518 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-0.76732698797896, v=-1.30899693899575 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-0.637070260807493, v=-1.13446401379631 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-0.520567050551746, v=-0.959931088596881 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-0.414213562373095, v=-0.785398163397448 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-0.315298788878984, v=-0.610865238198015 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-0.22169466264294, v=-0.436332312998582 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-0.131652497587396, v=-0.261799387799149 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=-0.0436609429085119, v=-0.0872664625997165 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=0.0436609429085119, v=0.0872664625997165 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=0.131652497587396, v=0.261799387799149 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=0.22169466264294, v=0.436332312998582 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=0.315298788878984, v=0.610865238198015 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=0.414213562373095, v=0.785398163397448 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=0.520567050551746, v=0.959931088596881 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=0.637070260807493, v=1.13446401379631 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=0.76732698797896, v=1.30899693899575 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=0.916331174017423, v=1.48352986419518 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=1.09130850106927, v=1.65806278939461 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=1.30322537284121, v=1.83259571459405 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=1.56968557711749, v=2.00712863979348 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=1.92098212697117, v=2.18166156499291 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=2.41421356237309, v=2.35619449019234 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=3.17159480236321, v=2.53072741539178 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=4.51070850366206, v=2.70526034059121 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=7.59575411272514, v=2.87979326579064 })
-	AITurnStrategyMogli.quot2Rad:addKeyframe( { time=22.9037655484312, v=3.05432619099008 })
-end
-
---============================================================================================================================
 -- raiseOrLower
 --============================================================================================================================
 function AITurnStrategyMogli:raiseOrLower( moveForwards, noLower )
@@ -348,10 +304,6 @@ function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, 
 -- navigate using points 
 	local distanceToStop = 0
 
-	if AITurnStrategyMogli.quot2Rad == nil then
-		AITurnStrategyMogli.fillQuot2Rad()
-	end
-
 	n     = 0
 	angle = nil
 	bestD = nil
@@ -365,17 +317,12 @@ function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, 
 	end
 	
 	for i,p in pairs( points ) do
-	--local x,_,z   = worldToLocal( vehicle.aiveChain.refNode, p.x, wy, p.z )
 		local x,_,z   = worldDirectionToLocal( vehicle.aiveChain.refNode, p.x-vX, 0, p.z-vZ )
 		local dx,_,dz = worldDirectionToLocal( vehicle.aiveChain.refNode, p.dx, 0, p.dz )
 		
 		if not moveForwards then
 			x  = -x
 			z  = -z
-		end
-		
-		if AIVEGlobals.devFeatures > 0 then
-			self:addDebugText(string.format("%2d: (%4f, %4f) (%4f, %4f)",i,x,z,dx,dz))
 		end
 		
 		if i == 1 and z >= 0 then
@@ -393,7 +340,7 @@ function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, 
 			end
 				
 			if math.abs( x ) <= 22.9 * math.abs( z ) then
-				local alpha = AITurnStrategyMogli.quot2Rad:get( x/z )					
+				local alpha = AIVEUtils.quot2Rad( x/z )					
 				local beta  = math.atan2( dx, dz )
 									
 				if math.abs(x) < math.abs(z) then
@@ -466,6 +413,17 @@ function AITurnStrategyMogli:getDD_navigateAlongPoints( dt, vX,vY,vZ, turnData, 
 		bestB = bestB / n
 		bestX = bestX / n
 		bestZ = bestZ / n
+	end
+	
+	if AIVEGlobals.devFeatures > 0 then
+		self:addDebugText("Points: "..tostring(n)
+													..", "..tostring(distanceToStop)
+													..", "..tostring(moveForwards)
+													..", "..AutoSteeringEngine.radToString(angle)
+													..", "..tostring(bestD)
+													..", "..tostring(bestB)
+													..", "..tostring(bestX)
+													..", "..tostring(bestZ)) 
 	end
 	
 	if bestX == nil then		

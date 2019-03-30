@@ -1557,11 +1557,13 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	elseif turnData.stage == 90 then
 		inactive = true
 		noLower  = true
-		turnData.stage   = turnData.stage + 1;					
-		veh.turnTimer     = veh.acDeltaTimeoutRun;
-		angle              = AIVehicleExtension.getMaxAngleWithTool( veh, false )
-
-		--AIVehicleExtension.setAIImplementsMoveDown(veh,false);
+		if AutoSteeringEngine.getNoReverseIndex( veh ) <= 0 then 
+			turnData.stage = turnData.stage + 2; 
+		else 
+			turnData.stage = turnData.stage + 1;	
+		end 
+		veh.turnTimer    = veh.acDeltaTimeoutRun;
+		angle            = 0
 		
 --==============================================================				
 -- reduce tool angle 

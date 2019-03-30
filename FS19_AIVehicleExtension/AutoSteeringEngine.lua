@@ -3,9 +3,6 @@ AutoSteeringEngine = {}
 AIVECurrentModDir = g_currentModDirectory
 AIVEModsDirectory = g_modsDirectory.."/"
 
-local AIVEFrontPackerT = {}
-local AIVEFrontPackerC = 0
-
 function AutoSteeringEngine.globalsReset( createIfMissing )
 
 	AIVEGlobals = {}
@@ -44,9 +41,6 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
   AIVEGlobals.reverseDir   = 0
 	AIVEGlobals.minMidDist   = 0
 	AIVEGlobals.showTrace    = 0
-	AIVEGlobals.minLength    = 0
-	AIVEGlobals.artAxisRot   = 0
-	AIVEGlobals.artAxisShift = 0
 	AIVEGlobals.showChannels = 0
 	AIVEGlobals.stepLog2     = 0
 	AIVEGlobals.yieldCount   = 0
@@ -59,13 +53,10 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.limitOutside = 0
 	AIVEGlobals.limitInside  = 0
 	AIVEGlobals.maxDtSumT     = 0
-	AIVEGlobals.maxDtSumD     = 0
 	AIVEGlobals.maxDtSumP0    = 0
 	AIVEGlobals.maxDtSumP1    = 0
 	AIVEGlobals.maxDtProd     = 0
 	AIVEGlobals.maxDtSumF     = 0
-	AIVEGlobals.maxDtDistF    = 0
-	AIVEGlobals.fruitBuffer   = 0
 	AIVEGlobals.showStat      = 0
 	AIVEGlobals.maxTurnCheck  = 0
 	AIVEGlobals.maxToolAngle  = 0
@@ -96,7 +87,6 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.testOutside   = 0
 	AIVEGlobals.debug1        = 0
 	AIVEGlobals.debug2        = 0
-	AIVEGlobals.detectLevel3  = 0
 	AIVEGlobals.useFBB123     = 0
 	AIVEGlobals.angleBuffer   = 0
 	AIVEGlobals.otherAIColli  = 0
@@ -108,6 +98,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.prohibitAI    = 0
 	AIVEGlobals.lastBestFactor= 0
 	AIVEGlobals.tm7StopEarly  = 0
+	AIVEGlobals.minSpeed      = 0
 	
 	local file
 	file = AIVECurrentModDir.."autoSteeringEngineConfig.xml"
@@ -275,7 +266,7 @@ function AIVEUtils.quot2Rad( q )
 	end 
 end 
 
-function AIVEDrawDebugPoint( x, y, z, r, g, b, s, c )
+function AIVEDrawDebugPoint( vehicle, x, y, z, r, g, b, s, c )
 	local sx,sy,sz = project(x,y,z)
 	setTextColor(r,g,b,s) 
 	if 1 > sz and sz > 0 then 
@@ -297,7 +288,7 @@ function AIVEDrawDebugLine( vehicle, x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
 		local r = r1 + i * t * ( r2 - r1 )
 		local g = g1 + i * t * ( g2 - g1 )
 		local b = b1 + i * t * ( b2 - b1 )
-		AIVEDrawDebugPoint( x, y, z, r, g, b, 1, "." )
+		AIVEDrawDebugPoint( vehicle, x, y, z, r, g, b, 1, "." )
 	end 
 --vehicle:addAIDebugLine({x1,y1,z1}, {x2,y2,z2}, {r1,g1,b1})
 end 
@@ -1427,11 +1418,6 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.initFruitBuffer( vehicle, keepFruits )
 	if vehicle.aiveChain ~= nil then
-		if not ( keepFruits ) then
-			vehicle.aiveChain.fruitBuffer = nil
-		end
-	--print("initFruitBuffer")
-	--AIVehicleExtension.printCallstack()
 		vehicle.aiveChain.valid       = nil
 		vehicle.aiveChain.angleBuffer = nil
 		AutoSteeringEngine.setChainStatus( vehicle, 1, AIVEStatus.initial )
@@ -1442,28 +1428,7 @@ end
 -- setAiWorldPosition
 ------------------------------------------------------------------------
 function AutoSteeringEngine.setAiWorldPosition( vehicle, vX, vY, vZ )
-	if vehicle.acAiPos == nil then
-		vehicle.acAiPos                  = { vX, vY, vZ }
-		vehicle.aiveChain.fruitBuffer    = {}
-		vehicle.aiveChain.fruitBufferPos = { vX, vY, vZ, g_currentMission.time + AIVEGlobals.maxDtSumF }
-	else
-		if     AIVEGlobals.maxDtDistF            <= 0
-				or AIVEGlobals.maxDtSumF             <= 0
-				or vehicle.aiveChain.fruitBuffer    == nil
-				or vehicle.aiveChain.fruitBufferPos == nil
-				or g_currentMission.time             > vehicle.aiveChain.fruitBufferPos[4]
-				or AIVEUtils.vector2LengthSq( vehicle.aiveChain.fruitBufferPos[1] - vX, vehicle.aiveChain.fruitBufferPos[3] - vZ ) > AIVEGlobals.maxDtDistF then							
-			vehicle.aiveChain.fruitBuffer       = {}
-			vehicle.aiveChain.fruitBufferPos[1] = vX
-			vehicle.aiveChain.fruitBufferPos[2] = vY
-			vehicle.aiveChain.fruitBufferPos[3] = vZ
-			vehicle.aiveChain.fruitBufferPos[4] = g_currentMission.time + AIVEGlobals.maxDtSumF
-		end
-		
-		vehicle.acAiPos[1] = vX
-		vehicle.acAiPos[2] = vY
-		vehicle.acAiPos[3] = vZ
-	end
+	vehicle.acAiPos = { vX, vY, vZ }
 end
 
 ------------------------------------------------------------------------
@@ -1514,7 +1479,7 @@ end
 ------------------------------------------------------------------------
 -- checkChain
 ------------------------------------------------------------------------
-function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteering, widthOffset, turnOffset, isInverted, useFrontPacker, useAIFieldFct )
+function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteering, widthOffset, turnOffset, isInverted, useAIFieldFct )
 
 	local resetTools = false
 	
@@ -1547,21 +1512,11 @@ function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteerin
 
 	AutoSteeringEngine.currentSteeringAngle( vehicle, isInverted )
 
-	if getfenv(0)["modSoilMod2"] == nil then
-		if vehicle.aiveChain.useFrontPacker ~= nil and vehicle.aiveChain.useFrontPacker ~= useFrontPacker then
-			resetTools = true
-		end
-	else
-		vehicle.aiveChain.useFrontPacker = false
-	end
-
 	if maxSteering ~= nil and 1E-4 < maxSteering and maxSteering < 0.5 * math.pi then
 		vehicle.aiveChain.radius    = wheelBase / math.tan( maxSteering )
 	else
 		vehicle.aiveChain.radius    = 5
 	end
-	
-	vehicle.aiveChain.useFrontPacker = useFrontPacker 
 	
 	AutoSteeringEngine.checkTools1( vehicle, resetTools )
 	vehicle.aiveChain.wantedSpeed    = AutoSteeringEngine.getToolsSpeedLimit( vehicle )
@@ -1619,7 +1574,6 @@ function AutoSteeringEngine.checkTools1( vehicle, reset )
 
 	if      vehicle.aiveChain ~= nil 
 			and ( vehicle.aiveChain.tools == nil or reset ) then
-		AutoSteeringEngine.resetFrontPacker( vehicle )
 		AutoSteeringEngine.deleteTools( vehicle )
 		vehicle.aiveChain.collisionDists = nil
 		vehicle.aiveChain.lastBestAngle  = nil
@@ -1667,10 +1621,6 @@ function AutoSteeringEngine.checkTools( vehicle, reset )
 			if vehicle.aiveChain.tools[i].ignoreAI then
 				doNotIgnore = false
 			end
-		--if AIVEFrontPackerT[vehicle.aiveChain.tools[i].obj] then
-		--if vehicle.aiveHas.sowingMachine and vehicle.aiveChain.tools[i].isCultivator then
-		--	doNotIgnore = false
-		--end
 			if doNotIgnore then
 				local _,_,zDist      = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.refNode, vehicle.aiveChain.tools[i].refNode )
 				local xl, xr, z1, z2 = AutoSteeringEngine.getToolMarkerRange( vehicle, vehicle.aiveChain.tools[i] )
@@ -1737,8 +1687,8 @@ function AutoSteeringEngine.getWantedSpeed( vehicle, speedLevel )
 	else
 		vehicle.aiveChain.wantedSpeed = math.min( vehicle.aiveChain.wantedSpeed, AutoSteeringEngine.getToolsSpeedLimit( vehicle ) )
 	end
-	if vehicle.aiveChain.wantedSpeed < 5 then
-		vehicle.aiveChain.wantedSpeed = 5
+	if vehicle.aiveChain.wantedSpeed < AIVEGlobals.minSpeed then
+		vehicle.aiveChain.wantedSpeed = AIVEGlobals.minSpeed
 	end
 	
 	local wantedSpeed  = 12
@@ -3321,7 +3271,7 @@ function AutoSteeringEngine.drawMarker( vehicle )
 	--	for _,p in pairs(vehicle.aiveChain.collisionDistPoints) do
 	--		local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, p.x, 1, p.z)
 	--		AIVEDrawDebugLine( vehicle,  p.x,y,p.z, 1,0,0, p.x,y+2,p.z, 1,0,0 )
-	--		AIVEDrawDebugPoint( p.x,y+2,p.z, 1, 1, 1, 1 )
+	--		AIVEDrawDebugPoint( vehicle, p.x,y+2,p.z, 1, 1, 1, 1 )
 	--	end
 	--end
 	
@@ -3351,7 +3301,7 @@ function AutoSteeringEngine.drawMarker( vehicle )
 				y1 = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x1, y1, z1 )
 
 				AIVEDrawDebugLine( vehicle, x1,y1,z1, c[1],c[2],c[3], x1,y1+1.2,z1, c[1],c[2],c[3] )
-				AIVEDrawDebugPoint( x1,y1+1.2,z1	, 1, 1, 1, 1 )
+				AIVEDrawDebugPoint(vehicle, x1,y1+1.2,z1	, 1, 1, 1, 1 )
 				
 				for i=2,vehicle.aiveChain.chainMax+1 do
 					if vehicle.aiveChain.nodes[i].distance > 10 then
@@ -3385,7 +3335,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 	local x,_,z = AutoSteeringEngine.getAiWorldPosition( vehicle )
 	local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 	AIVEDrawDebugLine( vehicle,  x, y, z,0,1,0, x, y+4, z,0,1,0)
-	AIVEDrawDebugPoint( x, y+4, z	, 1, 1, 1, 1 )
+	AIVEDrawDebugPoint( vehicle, x, y+4, z	, 1, 1, 1, 1 )
 	
 	if vehicle.aiveChain.lastWorldTarget ~= nil then
 		local x1,y1,z1 = unpack( vehicle.aiveChain.lastWorldTarget )
@@ -3404,7 +3354,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 		x,_,z = getWorldTranslation( vehicle.aiveChain.startNode )
 		y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 		AIVEDrawDebugLine( vehicle,  x, y, z,0,1,0, x, y+4, z,0,1,0)
-		AIVEDrawDebugPoint( x, y+4, z	, 1, 1, 1, 1 )
+		AIVEDrawDebugPoint(vehicle, x, y+4, z	, 1, 1, 1, 1 )
 		x1,_,z1 = localToWorld( vehicle.aiveChain.startNode ,0,0,2 )
 		AIVEDrawDebugLine( vehicle,  x1, y+3, z1,0,1,0, x, y+3, z,0,1,0)
 	end
@@ -3438,18 +3388,18 @@ function AutoSteeringEngine.drawLines( vehicle )
 	
 		xw1 = vehicle.aiveChain.trace.cx
 		zw1 = vehicle.aiveChain.trace.cz
-		AIVEDrawDebugLine( vehicle,  xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
-		AIVEDrawDebugPoint( xw1, y+2, zw1 , 0, 1, 0, 1 )		
+		AIVEDrawDebugLine( vehicle, xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
+		AIVEDrawDebugPoint(vehicle, xw1, y+2, zw1 , 0, 1, 0, 1 )		
 		
 		xw1 = vehicle.aiveChain.trace.ux
 		zw1 = vehicle.aiveChain.trace.uz
-		AIVEDrawDebugLine( vehicle,  xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
-		AIVEDrawDebugPoint( xw1, y+2, zw1 , 0, 0, 1, 1 )		
+		AIVEDrawDebugLine( vehicle, xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
+		AIVEDrawDebugPoint(vehicle, xw1, y+2, zw1 , 0, 0, 1, 1 )		
 		
 		xw1 = vehicle.aiveChain.trace.ox
 		zw1 = vehicle.aiveChain.trace.oz
-		AIVEDrawDebugLine( vehicle,  xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
-		AIVEDrawDebugPoint( xw1, y+2, zw1 , 0, 0, 1, 1 )		
+		AIVEDrawDebugLine( vehicle, xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
+		AIVEDrawDebugPoint(vehicle, xw1, y+2, zw1 , 0, 0, 1, 1 )		
 	end		
 	
 	
@@ -3460,8 +3410,8 @@ function AutoSteeringEngine.drawLines( vehicle )
 			x = p.wx
 			z = p.wz
 			y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
-			AIVEDrawDebugLine( vehicle,  x, y,   z, 1,1,1, x, y+2, z ,1,1,1)
-			AIVEDrawDebugPoint( x, y+2, z, 1,1,1, 1 )		
+			AIVEDrawDebugLine( vehicle, x, y,   z, 1,1,1, x, y+2, z ,1,1,1)
+			AIVEDrawDebugPoint(vehicle, x, y+2, z, 1,1,1, 1 )		
 			
 			if p.tool ~= nil then
 				for _,t in pairs(p.tool) do
@@ -3469,7 +3419,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 					z = t.wz
 					y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 					AIVEDrawDebugLine( vehicle,  x, y,   z, 0,1,0, x, y+2, z ,0,1,0)
-					AIVEDrawDebugPoint( x, y+2, z, 0,1,0, 1 )		
+					AIVEDrawDebugPoint( vehicle, x, y+2, z, 0,1,0, 1 )		
 				end
 			end
 		end
@@ -3485,18 +3435,18 @@ function AutoSteeringEngine.drawLines( vehicle )
 			local x,_,z = localToWorld( vehicle.aiveChain.headlandNode, j * w, 1, d )
 			local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z) + 1
 			if AutoSteeringEngine.checkField( vehicle, x,z) then
-				AIVEDrawDebugPoint( x,y,z	, 0, 1, 0, 1 )
+				AIVEDrawDebugPoint( vehicle, x,y,z	, 0, 1, 0, 1 )
 			else
-				AIVEDrawDebugPoint( x,y,z	, 1, 0, 0, 1 )
+				AIVEDrawDebugPoint( vehicle, x,y,z	, 1, 0, 0, 1 )
 			end
 			if vehicle.aiveChain.respectStartNode then
 				d = - vehicle.aiveChain.headland - 1
 				x,_,z = localToWorld( vehicle.aiveChain.headlandNode, j * w, 1, d )
 				y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z) + 1
 				if AutoSteeringEngine.checkField( vehicle, x,z) then
-					AIVEDrawDebugPoint( x,y,z	, 0, 1, 0, 1 )
+					AIVEDrawDebugPoint( vehicle, x,y,z	, 0, 1, 0, 1 )
 				else
-					AIVEDrawDebugPoint( x,y,z	, 1, 0, 0, 1 )
+					AIVEDrawDebugPoint( vehicle, x,y,z	, 1, 0, 0, 1 )
 				end
 			end
 		end
@@ -3530,7 +3480,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 						local x,_,z = getWorldTranslation( m )
 						local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 						AIVEDrawDebugLine( vehicle,  x,y,z, 0,0,1, x,y+2,z, 0,0,1 )
-						AIVEDrawDebugPoint( x,y+2,z, 1, 1, 1, 1 )
+						AIVEDrawDebugPoint( vehicle, x,y+2,z, 1, 1, 1, 1 )
 					end
 				end
 			
@@ -3538,7 +3488,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 					local x,_,z = getWorldTranslation( vehicle.aiveChain.tools[tp.i].obj.spec_aiImplement.backMarker )
 					local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 					AIVEDrawDebugLine( vehicle,  x,y,z, 0,1,0, x,y+2,z, 0,1,0 )
-					AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
+					AIVEDrawDebugPoint( vehicle, x,y+2,z	, 1, 1, 1, 1 )
 				end
 				
 				if vehicle.aiveChain.tools[tp.i].aiForceTurnNoBackward then
@@ -3546,7 +3496,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 					x,_,z = localToWorld( vehicle.aiveChain.refNode, 0, 0, tp.b1 )
 					y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 					AIVEDrawDebugLine( vehicle,  x,y,z, 0.8,0,0, x,y+2,z, 0.8,0,0 )
-					AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
+					AIVEDrawDebugPoint( vehicle, x,y+2,z	, 1, 1, 1, 1 )
 
 					local a = -AutoSteeringEngine.getToolAngle( vehicle )					
 					local l = tp.b1 + tp.b2
@@ -3555,7 +3505,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 					x,_,z = localToWorld( vehicle.aiveChain.refNode, math.sin(a) * l, 0, math.cos(a) * l )
 					y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 					AIVEDrawDebugLine( vehicle,  x,y,z, 1,0.2,0.2, x,y+2,z, 1,0.2,0.2 )
-					AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
+					AIVEDrawDebugPoint( vehicle, x,y+2,z	, 1, 1, 1, 1 )
 					
 					if tp.b3 ~= nil and math.abs( tp.b3 ) > 0.1 then
 						local x3,_,z3 = localDirectionToWorld( vehicle.aiveChain.refNode, math.sin(a+a) * tp.b3, 0, math.cos(a+a) * tp.b3 )
@@ -3563,14 +3513,14 @@ function AutoSteeringEngine.drawLines( vehicle )
 						z = z + z3
 						y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 						AIVEDrawDebugLine( vehicle,  x,y,z, 1,1,0, x,y+2,z, 1,1,0 )
-						AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 0, 1 )
+						AIVEDrawDebugPoint( vehicle, x,y+2,z	, 1, 1, 0, 1 )
 					end
 				end
 				
 				x,_,z = localToWorld( vehicle.aiveChain.refNode, tp.x, 0, tp.z )
 				y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z)
 				AIVEDrawDebugLine( vehicle,  x,y,z, 1,0,0, x,y+2,z, 1,0,0 )
-				AIVEDrawDebugPoint( x,y+2,z	, 1, 1, 1, 1 )
+				AIVEDrawDebugPoint( vehicle, x,y+2,z	, 1, 1, 1, 1 )
 				
 				if vehicle.acIamDetecting or ( not AutoSteeringEngine.hasArticulatedAxis( vehicle ) and AIVEGlobals.staticRoot > 0 ) then
 					local px,py,pz
@@ -3736,7 +3686,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 			for _,p in pairs( vehicle.aiveTestMap ) do
 				x,z = unpack( p )
 				local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z) + 2.2
-				AIVEDrawDebugPoint( x, y, z, 1,1,1, 1 )
+				AIVEDrawDebugPoint( vehicle, x, y, z, 1,1,1, 1 )
 			end
 		end
 	end
@@ -3751,9 +3701,9 @@ function AutoSteeringEngine.drawLines( vehicle )
 			local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, p.x, 1, p.z)
 			
 		
-			AIVEDrawDebugLine( vehicle,  p.x, y, p.z,cr,1,0, p.x, y+4, p.z,cr,1,0)
-			AIVEDrawDebugPoint( p.x, y+4, p.z	, 1, 1, 1, 1 )
-			AIVEDrawDebugLine( vehicle,  p.x, y+2, p.z,cr,1,0, p.x+p.dx, y+2, p.z+p.dz,cr,0,1)
+			AIVEDrawDebugLine( vehicle, p.x, y, p.z,cr,1,0, p.x, y+4, p.z,cr,1,0)
+			AIVEDrawDebugPoint(vehicle, p.x, y+4, p.z	, 1, 1, 1, 1 )
+			AIVEDrawDebugLine( vehicle, p.x, y+2, p.z,cr,1,0, p.x+p.dx, y+2, p.z+p.dz,cr,0,1)
 		end
 	end
 	
@@ -3783,7 +3733,7 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getFruitArea( vehicle, x1,z1,x2,z2,d,toolIndex,bypassBuffer )
 	local lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( x1, z1, x2, z2, d, true )
-	return AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, toolIndex, lx1,lz1,lx2,lz2,lx3,lz3,bypassBuffer )
+	return AutoSteeringEngine.getAIAreaOfVehicle( vehicle, toolIndex, lx1,lz1,lx2,lz2,lx3,lz3,bypassBuffer )
 end
 
 ------------------------------------------------------------------------
@@ -3807,65 +3757,15 @@ function AutoSteeringEngine.floatToInteger( vehicle, f, m )
 	return math.ceil( f * vehicle.aiveChain.worldToDensity )
 end
 
-------------------------------------------------------------------------
--- getFruitAreaWorldPositions
-------------------------------------------------------------------------
-function AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, toolIndex, lx1,lz1,lx2,lz2,lx3,lz3,bypassBuffer )
-
-	if AIVEGlobals.fruitBuffer <= 0 then
-		return AutoSteeringEngine.getAIAreaOfVehicle( vehicle, vehicle.aiveChain.tools[toolIndex], lx1,lz1,lx2,lz2,lx3,lz3 )
-	end	
-
-	AutoSteeringEngine.initWorldToDensity( vehicle ) 
-	
-	local lxm = 0.5 * ( lx2 + lx3 )
-	local lzm = 0.5 * ( lz2 + lz3 )
-	local ni1 = AutoSteeringEngine.floatToInteger( vehicle, lx1, lxm )
-	local ni2 = AutoSteeringEngine.floatToInteger( vehicle, lx2, lxm )
-	local ni3 = AutoSteeringEngine.floatToInteger( vehicle, lx3, lxm )
-	local nj1 = AutoSteeringEngine.floatToInteger( vehicle, lz1, lzm )
-	local nj2 = AutoSteeringEngine.floatToInteger( vehicle, lz2, lzm )
-	local nj3 = AutoSteeringEngine.floatToInteger( vehicle, lz3, lzm )
-	
-	if bypassBuffer or AIVEGlobals.fruitBuffer <= 1 then
-		return AutoSteeringEngine.getAIAreaOfVehicle( vehicle, vehicle.aiveChain.tools[toolIndex],
-																										ni1 * vehicle.aiveChain.worldToDensityI,
-																										nj1 * vehicle.aiveChain.worldToDensityI,
-																										ni2 * vehicle.aiveChain.worldToDensityI, 
-																										nj2 * vehicle.aiveChain.worldToDensityI, 
-																										ni3 * vehicle.aiveChain.worldToDensityI,
-																										nj3 * vehicle.aiveChain.worldToDensityI )
-	end	
-	
-	if vehicle.aiveChain.fruitBuffer == nil then
-		vehicle.aiveChain.fruitBuffer = {}
-	end
-
-	local id = string.format("%d,%d,%d,%d,%d,%d,%d",toolIndex,ni1,ni2,ni3,nj1,nj2,nj3)
-	
-	if vehicle.aiveChain.fruitBuffer[id] ~= nil then
-		return unpack( vehicle.aiveChain.fruitBuffer[id] )
-	end
-	
-	local a, t = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, vehicle.aiveChain.tools[toolIndex],
-																									ni1 * vehicle.aiveChain.worldToDensityI,
-																									nj1 * vehicle.aiveChain.worldToDensityI,
-																									ni2 * vehicle.aiveChain.worldToDensityI, 
-																									nj2 * vehicle.aiveChain.worldToDensityI, 
-																									ni3 * vehicle.aiveChain.worldToDensityI,
-																									nj3 * vehicle.aiveChain.worldToDensityI )
-  
-	if a <= 0 then
-		vehicle.aiveChain.fruitBuffer[id] = { a, t }
-	end
-	
-	return a, t
-end
 
 ------------------------------------------------------------------------
 -- getAIAreaOfVehicle
 ------------------------------------------------------------------------
-function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tool, lx1,lz1,lx2,lz2,lx3,lz3 )
+function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, toolIndex, lx1,lz1,lx2,lz2,lx3,lz3 )
+	local tool = vehicle.aiveChain.tools[toolIndex]
+	if tool == nil then 
+		return 0, 0
+	end 
 	local terrainDetailRequiredValueRanges  = tool.terrainDetailRequiredValueRanges
 	local terrainDetailProhibitValueRanges  = tool.obj:getAITerrainDetailProhibitedRange()
 	local fruitRequirements = tool.obj:getAIFruitRequirements()
@@ -4121,7 +4021,7 @@ function AutoSteeringEngine.getCheckFunction( vehicle )
 			local a, t = 0, 0
 			for i,tp in pairs(vehicle.aiveChain.toolParams) do
 				if not tp.skip then
-					local ta, tt = AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, tp.i, lx1,lz1,lx2,lz2,lx3,lz3, true )
+					local ta, tt = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tp.i, lx1,lz1,lx2,lz2,lx3,lz3, true )
 					a = a + ta
 					t = t + tt
 				end
@@ -4687,9 +4587,9 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 									w = w * offsetInsideFactor
 								end
 								offsetInside = offsetInside + w * AIVEGlobals.widthDec * ( vehicle.aiveChain.nodes[i].distance + vehicle.aiveChain.minZ )
-								if AIVEGlobals.fruitBuffer > 0 then
+							--if AIVEGlobals.fruitBuffer > 0 then
 									offsetInside = math.max( vehicle.aiveChain.worldToDensityI, offsetInside )
-								end
+							--end
 							end
 						end
 						
@@ -4734,32 +4634,24 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 			elseif bj > AIVEGlobals.ignoreBorder then
 				bk = bj
 				tk = tj
-			elseif tk < 0 and ( fi or AIVEGlobals.detectLevel3 > 0 ) then
+			elseif tk < 0 and fi then
 				local xs, zs, xw, zw, xl, zw
 				local l = toolParam.width / AIVEUtils.vector2Length( xp-xc, zp-zc )
 				
-				local w
-				if AIVEGlobals.detectLevel3 > 0 then 
-					w = toolParam.width + toolParam.width
-				else
-					w = math.max( AIVEGlobals.testOutside, toolParam.width * 0.25 )
+				local w = math.max( AIVEGlobals.testOutside, toolParam.width * 0.25 )
+				
+				xs = xp + toolParam.offsetStd * dx
+				zs = zp + toolParam.offsetStd * dz
+				if l <= 1 then
+					xl = xc
+					zl = zc 
 				end
 				
-				if fi then
-					xs = xp + toolParam.offsetStd * dx
-					zs = zp + toolParam.offsetStd * dz
-					if AIVEGlobals.detectLevel3 <= 0 or l <= 1 then
-						xl = xc
-						zl = zc 
-					end
-					
-					local xm = xp + w * dx
-					local zm = zp + w * dz
-				--if AIVEGlobals.detectLevel3 <= 0 or AutoSteeringEngine.isChainPointOnField( vehicle, xm, zm ) then					
-					if AutoSteeringEngine.isChainPointOnField( vehicle, xm, zm ) then					
-						xw = xm
-						zw = zm
-					end
+				local xm = xp + w * dx
+				local zm = zp + w * dz
+				if AutoSteeringEngine.isChainPointOnField( vehicle, xm, zm ) then					
+					xw = xm
+					zw = zm
 				end
 				
 				if xw == nil then
@@ -4796,7 +4688,7 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 				end
 				
 				if xs ~= nil and xw ~= nil and xl ~= nil then
-					bk, tk = AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, toolParam.i, xs, zs ,xw, zw, xl, zl )
+					bk, tk = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, toolParam.i, xs, zs ,xw, zw, xl, zl )
 					if vehicle.aiveChain.collectCbr then
 						if vehicle.aiveChain.cbr == nil then vehicle.aiveChain.cbr = {} end
 						table.insert( vehicle.aiveChain.cbr, { xs, zs ,xw, zw, xl, zl, bk, tk, 3 } )
@@ -4827,11 +4719,7 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 					bw = bw + bk
 					tw = tw + tk
 				end
-				
-				if AIVEGlobals.detectLevel3 > 0 and bi > 0 or bj > 0 or bk > 0 then
-					lastDetectedDist = vehicle.aiveChain.nodes[i].distance 
-				end
-				
+								
 				vehicle.aiveChain.nodes[i].isField = true
 				if bi > 0 then
 					vehicle.aiveChain.nodes[i].hasBorder = true
@@ -4844,8 +4732,6 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 			
 			if b > AIVEGlobals.ignoreBorder or ( b > 0 and ll > 10 ) then
 				return b, t, bo, to, bw, tw, ll, lo
-			elseif AIVEGlobals.detectLevel3 > 0 and lastDetectedDist + AIVEGlobals.detectLevel3 < vehicle.aiveChain.nodes[i].distance then
-				return b, t, bo, to, bw, tw, lastDetectedDist, lo
 			end
 			
 			i = i + 1
@@ -5659,17 +5545,6 @@ function AutoSteeringEngine.getParallelogram( xs, zs, xh, zh, diff, noMinLength 
 		xw = xs
 		zw = zs
 	elseif noMinLength then
-	elseif l < AIVEGlobals.minLength then
-		local f = AIVEGlobals.minLength / l
-		local x2 = xh - xs
-		local z2 = zh - zs
-		--xs = xs - f * x2
-		--zs = zs - f * z2
-		xh = xh + f * x2
-		zh = zh + f * z2
-		xd = zh - zs
-		zd = xs - xh
-		l  = math.sqrt( xd*xd + zd*zd )
 	end
 	
 	if 0.999 < l and l < 1.001 then
@@ -5827,7 +5702,7 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, isOutside, detecte
 				ex,_,ez = localDirectionToWorld( refNode, dir, 0, 0 )
 				local dx = bx + ex
 				local dz = bz + ez
-				local a,t = AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, tp.i, bx,bz,dx,dz,ox,oz, true )
+				local a,t = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tp.i, bx,bz,dx,dz,ox,oz, true )
 				if a > 0 then
 					if vehicle.aiveChain.collectCbr then
 						if vehicle.aiveChain.cbr == nil then vehicle.aiveChain.cbr = {} end
@@ -6207,7 +6082,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 				t[d].t = 0
 				for _,tp in pairs( vehicle.aiveChain.toolParams ) do
 					if not tp.skip then
-						local ta, tt = AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, tp.i, xs, zs, xw, zw, xh, zh, true )
+						local ta, tt = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tp.i, xs, zs, xw, zw, xh, zh, true )
 						t[d].a = t[d].a + ta
 						t[d].t = t[d].t + tt
 
@@ -6391,7 +6266,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 								end
 							end
 							if not tp.skip then
-								local ta, tt = AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, tp.i, xs, zs, xw, zw, xh, zh, true )
+								local ta, tt = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tp.i, xs, zs, xw, zw, xh, zh, true )
 								area = area + ta
 								total = total + tt
 								
@@ -6490,7 +6365,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 					t[d].t = 0
 					for _,tp in pairs( vehicle.aiveChain.toolParams ) do
 						if not tp.skip then
-							local ta, tt = AutoSteeringEngine.getFruitAreaWorldPositions( vehicle, tp.i, xs, zs, xw, zw, xh, zh, true )
+							local ta, tt = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tp.i, xs, zs, xw, zw, xh, zh, true )
 							t[d].a = t[d].a + ta
 							t[d].t = t[d].t + tt
 							
@@ -7188,14 +7063,14 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		i = table.getn(vehicle.aiveChain.tools) + 1
 	end
 	
-	if SpecializationUtil.hasSpecialization(Combine, vehicle.specializations) then
+	if vehicle.spec_combine ~= nil then
 		vehicle.aiveHas.combine = true 
 		vehicle.aiveHas.combineVehicle = true
 	end
 	
 	if not ( tool.ignoreAI ) then
 		if tool.isCombine       then vehicle.aiveHas.combine       = true end
-		if tool.isPlow        then vehicle.aiveHas.plow          = true end
+		if tool.isPlow          then vehicle.aiveHas.plow          = true end
 		if tool.isCultivator    then vehicle.aiveHas.cultivator    = true end
 		if tool.isSowingMachine then vehicle.aiveHas.sowingMachine = true end
 		if tool.isSprayer       then vehicle.aiveHas.sprayer       = true end
@@ -8613,101 +8488,6 @@ function AutoSteeringEngine.getTaJoints2( vehicle, implement, refNode, zOffset )
 	return taJoints 
 end
 
-
-
-
-------------------------------------------------------------------------
--- Cultivator -> FrontPacker
-------------------------------------------------------------------------
-function AutoSteeringEngine.registerFrontPacker( cultivator )
-	if not ( AIVEFrontPackerT[cultivator] ) then
-		AIVEFrontPackerT[cultivator] = true
-		AIVEFrontPackerC = AIVEFrontPackerC + 1
-	end
-end
-
-function AutoSteeringEngine.unregisterFrontPacker( cultivator )
-	if AIVEFrontPackerT[cultivator] then
-		AIVEFrontPackerT[cultivator] = false
-		AIVEFrontPackerC = math.max( 0, AIVEFrontPackerC - 1 )
-	end
-end
-
-function AutoSteeringEngine.resetFrontPacker( vehicle )
-	if vehicle == nil then
-		AIVEFrontPackerT = {}
-		AIVEFrontPackerC = 0
-	elseif AIVEFrontPackerC > 0 and vehicle.spec_attacherJoints ~= nil and vehicle.spec_attacherJoints.attachedImplements ~= nil then
-		for _, implement in pairs(vehicle.spec_attacherJoints.attachedImplements) do
-			if implement.object ~= nil and AIVEFrontPackerT[implement.object] then
-				AutoSteeringEngine.unregisterFrontPacker( implement.object )
-				AutoSteeringEngine.resetFrontPacker( implement.object )
-			end
-		end
-	end
-end
-
-function AutoSteeringEngine.hasFrontPacker( vehicle )
-	if AIVEFrontPackerC <= 0 or vehicle == nil then 
-		return false 
-	end
-	if AIVEFrontPackerT[vehicle] then
-		return true
-	end
-	if vehicle.spec_attacherJoints == nil or vehicle.spec_attacherJoints.attachedImplements == nil then
-		return false 
-	end
-	for _, implement in pairs(vehicle.spec_attacherJoints.attachedImplements) do
-		if AutoSteeringEngine.hasFrontPacker( implement.object ) then
-			return true
-		end
-	end
-	return false
-end
-
-function AutoSteeringEngine:updateTickCultivator( superFunc, ... )
-	if AIVEFrontPackerC <= 0 then
-		return superFunc( self, ... )
-	end
-	
-	local backup = CultivatorAreaEvent
-	if AIVEFrontPackerT[self] then
-		if FrontPackerAreaEvent == nil then
-			print("Error in AutoSteeringEngine.updateTickCultivator : FrontPackerAreaEvent is nil!")
-		else
-			CultivatorAreaEvent = FrontPackerAreaEvent
-		end
-	end
-	local state,result = pcall( superFunc, self, ... )
-	CultivatorAreaEvent = backup
-	if state then
-		return result
-	else
-		print("Error in AutoSteeringEngine.updateTickCultivator : "..tostring(result))
-	end
-end
-
-function AutoSteeringEngine:updateTickSowingMachine( superFunc, ... )
-	if AIVEFrontPackerC <= 0 then
-		return superFunc( self, ... )
-	end
-	
-	local vehicle = self.getRootAttacherVehicle(self)
-	local backup  = self.useDirectPlanting
-	if AutoSteeringEngine.hasFrontPacker( vehicle ) then
-		self.useDirectPlanting = true
-	end
-	local state,result = pcall( superFunc, self, ... )
-	self.useDirectPlanting = backup 
-	if state then
-		return result
-	else
-		print("Error in AutoSteeringEngine.updateTickSowingMachine : "..tostring(result))
-	end
-end
-
---Cultivator.updateTick    = Utils.overwrittenFunction( Cultivator.updateTick, AutoSteeringEngine.updateTickCultivator )
---SowingMachine.updateTick = Utils.overwrittenFunction( SowingMachine.updateTick, AutoSteeringEngine.updateTickSowingMachine )
 
 
 function AutoSteeringEngine.degToString( d )

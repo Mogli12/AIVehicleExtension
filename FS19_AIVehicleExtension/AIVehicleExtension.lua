@@ -23,7 +23,6 @@ _G[g_currentModName..".mogliHud"].newClass( "AIVEHud", "atHud" )
 source(Utils.getFilename("AIVEEvents.lua", g_currentModDirectory))
 ------------------------------------------------------------------------
 source(Utils.getFilename("FieldBitmap.lua", g_currentModDirectory))
-source(Utils.getFilename("FrontPacker.lua", g_currentModDirectory))
 source(Utils.getFilename("AIAnimCurve.lua", g_currentModDirectory))
 source(Utils.getFilename("AutoSteeringEngine.lua", g_currentModDirectory))
 source(Utils.getFilename("AIDriveStrategyMogli.lua", g_currentModDirectory))
@@ -69,7 +68,6 @@ AIVehicleExtension.saveAttributesMapping = {
 		headland				= { xml = "acHeadland",		 tp = "B", default = false },
 		collision			  = { xml = "acCollision",	 tp = "B", default = false },
 		inverted				= { xml = "acInverted",		 tp = "B", default = false },
-		frontPacker		  = { xml = "acFrontPacker", tp = "B", default = false },
 		isHired				  = { xml = "acIsHired",		 tp = "B", default = false },
 		bigHeadland		  = { xml = "acBigHeadland", tp = "B", default = true },
 		turnModeIndex	  = { xml = "acTurnMode",		 tp = "I", default = 1 },
@@ -80,7 +78,7 @@ AIVehicleExtension.saveAttributesMapping = {
 		noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
 		useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
 		waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true },
-		showTrace 			= { xml = "acShowTrace",   tp = "B", default = false } }																															
+		showTrace 			= { xml = "acShowTrace",   tp = "B", default = true } }																															
 AIVehicleExtension.turnStageNoNext = { -4, -3, -2, -1, 0, 21, 22, 23, 198, 199 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { 
 	--{ 4, -1 },
@@ -170,6 +168,7 @@ function AIVehicleExtension:onLoad(saveGame)
 	self.acImplMoveDownTimer  = 0
 	self.acSteeringSpeed      = self.spec_aiVehicle.aiSteeringSpeed
 	self.aiveCanStartArtAxis  = false
+	self.aiveTickDt           = 0
 	
 	self.acAutoRotateBackSpeedBackup = self.autoRotateBackSpeed	
 	
@@ -953,9 +952,9 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
                                ,"AIVE_UTURN_ON_OFF"   
                                ,"AIVE_STEERING"         
                                ,"AIVE_RAISE"            
-                               ,"AIVE_START_AIVE" }) do
-														-- ,"AXIS_MOVE_SIDE_VEHICLE"
-														-- ,"TOGGLE_CRUISE_CONTROL" }) do
+                               ,"AIVE_START_AIVE"
+															 ,"AXIS_MOVE_SIDE_VEHICLE"
+															 ,"TOGGLE_CRUISE_CONTROL" }) do
 			local pBool1, pBool2, pBool3, pBool4 = false, true, false, true 
 			if     actionName == "AXIS_MOVE_SIDE_VEHICLE" then 
 				pBool1 = true 
@@ -1013,6 +1012,8 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 			AIVehicleExtension.sendParameters( self )
 		end
 		AIVehicleExtension.setImplMoveDownClient(self, not ( AIVehicleExtension.getIsLowered( self ) ), true)
+	elseif actionName == "AXIS_MOVE_SIDE_VEHICLE" then
+		AIVehicleExtension.setAxisSide( self, keyStatus )
 	elseif  actionName == "TOGGLE_CRUISE_CONTROL" 
 			and self.aiveIsStarted then 
 		if self.speed2Level == nil or self.speed2Level > 0 then
@@ -1025,6 +1026,8 @@ end
 
 
 function AIVehicleExtension:onUpdate(dt)
+
+	self.aiveTickDt = dt 
 
 	if self.aiveIsStarted and not self.spec_aiVehicle.isActive then
 		self.aiveIsStarted   = false
@@ -1081,12 +1084,11 @@ function AIVehicleExtension:onUpdate(dt)
 			local _,angle,_ = getRotation( self.spec_articulatedAxis.rotationNode )
 			self.acDimensions.artAxisR = angle 
 			angle = 0.5 * angle
-			angle = AIVEGlobals.artAxisRot *  angle
 			if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
 				angle = angle + math.pi
 			end
 			setRotation( self.acRefNode, 0, angle, 0 )				
-			setTranslation( self.acRefNode, AIVEGlobals.artAxisShift * dx, 0, AIVEGlobals.artAxisShift * dz + self.acDimensions.acRefNodeZ )			
+			setTranslation( self.acRefNode, dx, 0, dz + self.acDimensions.acRefNodeZ )			
 			self.acDimensions.artAxisX = dx 
 			self.acDimensions.artAxisZ = dz 
 		else
@@ -1096,7 +1098,7 @@ function AIVehicleExtension:onUpdate(dt)
 			end
 			local _,y,_ = getRotation( self.acRefNode )
 			if math.abs( y - angle ) > 0.01 then
-				setRotation( self.acRefNode, 0, AIVEGlobals.artAxisRot * angle, 0 )				
+				setRotation( self.acRefNode, 0, angle, 0 )				
 			end
 			
 			self.acDimensions.artAxisR = 0
@@ -1148,8 +1150,8 @@ function AIVehicleExtension:onUpdate(dt)
 	if			self:getIsEntered() 
 			and self.isClient 
 			and self.isServer 
-			and self.acParameters ~= nil 
-			and self.acParameters.showTrace 
+			and self.acParameters ~= nil and self.acParameters.showTrace 
+			and self.atHud ~= nil and self.atHud.GuiActive 
 			and ( self.aiveIsStarted or self.aiveAutoSteer ) then			
 		if			AIVEGlobals.showTrace > 0 
 				and self.acDimensions ~= nil
@@ -1208,20 +1210,11 @@ end
 -- AIVehicleExtension.setAxisSide
 ------------------------------------------------------------------------
 function AIVehicleExtension:setAxisSide( axisSide )
-	self.acAxisSide = AIVEUtils.clamp( axisSide, -1, 1 )
---local intValue = 1e6
---if math.abs( axisSide - self.acAxisSide ) > 1e-3 then
---	if     axisSide < -1 then
---		intValue = 0
---	elseif axisSide >  1 then
---		intValue = 2e6
---	elseif axisSide == 0 then
---		intValue = 1e6
---	else
---		intValue = math.min( math.max( math.ceil( 1e6 * ( axisSide + 1 ) + 0.5 ), 0 ), 2e6 )
---	end
---	AIVehicleExtension.setInt32Value( self, "axisSide", intValue )
---end
+	if math.abs( axisSide ) < 0.05 then 
+		self.acAxisSide = 0
+	else 
+		self.acAxisSide = axisSide 
+	end 
 end
 
 ------------------------------------------------------------------------
@@ -1833,7 +1826,7 @@ function AIVehicleExtension.calculateDistances( self )
 		rd = true 
 	end 
 	
-	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, rd, self.acParameters.frontPacker, self.acParameters.useAIFieldFct )
+	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, rd, self.acParameters.useAIFieldFct )
 
 	self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack = AutoSteeringEngine.checkTools( self )
 	
@@ -2539,6 +2532,8 @@ function AIVehicleExtension:afterUpdateAIDriveStrategies()
 			local driveStrategyMogli = nil
 			if     d:isa(AIDriveStrategyStraight) then
 				driveStrategyMogli = AIDriveStrategyMogli:new()
+			elseif d:isa(AIDriveStrategyCombine ) then 
+				driveStrategyMogli = AIDriveStrategyCombine131:new()
 			end
 			if driveStrategyMogli ~= nil then
 				driveStrategyMogli:setAIVehicle(self)
@@ -2626,3 +2621,85 @@ function AIVehicleExtension:onOtherAICollisionTrigger(triggerId, otherId, onEnte
 		end		
 	end
 end
+
+
+
+function AIVehicleExtension.newDriveToPoint( self, superFunc, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer, ... )
+	if not ( self.aiveIsStarted ) then 
+		return superFunc( self, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer, ... )
+	end 
+	
+	if not ( self.firstTimeRun ) then
+		return 
+	end 
+	
+	if not allowedToDrive then
+		self.aiveLastSpeedLimit = AIVEGlobals.minSpeed
+	else 		
+		local tX_2 = tX * 0.5
+		local tZ_2 = tZ * 0.5
+		local d1X, d1Z = tZ_2, -tX_2
+		if tX > 0 then
+			d1X, d1Z = -tZ_2, tX_2
+		end
+		local hit,_,f2 = MathUtil.getLineLineIntersection2D(tX_2,tZ_2, d1X,d1Z, 0,0, tX, 0)
+		if doNotSteer == nil or not doNotSteer then
+			local rotTime = 0
+			if hit and math.abs(f2) < 100000 then
+				local radius = tX * f2
+				rotTime = self.wheelSteeringDuration * ( math.atan(1/radius) / math.atan(1/self.maxTurningRadius) )
+			end
+			local targetRotTime
+			if rotTime >= 0 then
+				targetRotTime = math.min(rotTime, self.maxRotTime)
+			else
+				targetRotTime = math.max(rotTime, self.minRotTime)
+			end
+			if targetRotTime > self.rotatedTime then
+				self.rotatedTime = math.min(self.rotatedTime + dt*self:getAISteeringSpeed(), targetRotTime)
+			else
+				self.rotatedTime = math.max(self.rotatedTime - dt*self:getAISteeringSpeed(), targetRotTime)
+			end
+			-- adjust maxSpeed
+			local steerDiff = targetRotTime - self.rotatedTime
+			local fac = math.abs(steerDiff) / math.max(self.maxRotTime, -self.minRotTime)
+			local speedReduction = 1.0 - math.pow(fac, 0.25)
+			maxSpeed = maxSpeed * speedReduction
+			
+			if self.aiveLastSpeedLimit == nil then 
+				self.aiveLastSpeedLimit = maxSpeed
+			else 
+				self.aiveLastSpeedLimit = math.max( math.min( 7, self.aiveLastSpeedLimit - 0.001 * dt ), maxSpeed ) 
+			end 
+			maxSpeed = self.aiveLastSpeedLimit
+		end
+	end
+	
+	self:getMotor():setSpeedLimit(math.min(maxSpeed, self:getCruiseControlSpeed()))
+	if self:getCruiseControlState() ~= Drivable.CRUISECONTROL_STATE_ACTIVE then
+		self:setCruiseControlState(Drivable.CRUISECONTROL_STATE_ACTIVE)
+	end
+	if not allowedToDrive then
+		acceleration = 0
+	end
+	
+	if     self.aiveLastForwards == nil
+			or self.aiveLastForwards ~= moveForwards then 
+		self.aiveForwardsTimer = 1000 
+	end 
+	if     self.aiveForwardsTimer == nil then 
+	elseif self.aiveForwardsTimer > 0 then 
+		self.aiveForwardsTimer = self.aiveForwardsTimer - dt
+		acceleration = 0
+	else 
+		self.aiveForwardsTimer = nil
+	end 
+	self.aiveLastForwards = moveForwards 
+	
+	if not moveForwards then
+		acceleration = -acceleration
+	end
+	WheelsUtil.updateWheelsPhysics(self, dt, self.lastSpeedReal*self.movingDirection, acceleration, not allowedToDrive, true)
+end
+
+AIVehicleUtil.driveToPoint = Utils.overwrittenFunction( AIVehicleUtil.driveToPoint, AIVehicleExtension.newDriveToPoint )
