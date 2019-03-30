@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="41">
 	<author>Mogli</author>
-	<version>0.0.1.1</version>
+	<version>0.0.1.2</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v0.0.1.1</en>
-			<de>AI Vehicle Extension v0.0.1.1</de>
-										<cs>车辆助手 v0.0.1.1</cs>
+			<en>AI Vehicle Extension v0.0.1.2</en>
+			<de>AI Vehicle Extension v0.0.1.2</de>
+										<cs>车辆助手 v0.0.1.2</cs>
 		</text>
 	</l10n>
 	<title>

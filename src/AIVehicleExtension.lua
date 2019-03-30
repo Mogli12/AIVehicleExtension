@@ -134,7 +134,8 @@ function AIVehicleExtension.registerEventListeners(vehicleType)
 											"onReadUpdateStream",
 											"onWriteUpdateStream", 
 											"saveToXMLFile", 
-											"onRegisterActionEvents" } ) do
+											"onRegisterActionEvents",
+											"onStateChange" } ) do
 		SpecializationUtil.registerEventListener(vehicleType, n, AIVehicleExtension)
 	end 
 end 
@@ -1026,7 +1027,9 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 	end
 end 
 
-
+------------------------------------------------------------------------
+-- AIVehicleExtension.onUpdate
+------------------------------------------------------------------------
 function AIVehicleExtension:onUpdate(dt)
 
 	self.aiveTickDt = dt 
@@ -1038,21 +1041,15 @@ function AIVehicleExtension:onUpdate(dt)
 	if not ( self.aiveIsStarted ) and self.spec_aiVehicle.aiSteeringSpeed ~= self.acSteeringSpeed then
 		self.spec_aiVehicle.aiSteeringSpeed = self.acSteeringSpeed
 	end
-
---if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then 
---	self.acParameters.inverted = true
---else
---	self.acParameters.inverted = false
---end		
+	
+	if self.aiveToolsDirty then 
+		AIVehicleExtension.invalidateState( self )
+		self.aiveToolsDirty = nil
+	end 
 	
 	if math.abs( self.acAxisSide ) > 0.05 and ( self.acParameters == nil or self.acParameters.noSteering ) then
 		AIVehicleExtension.setAxisSide( 0 )
 	end 
-	
-	if self.aiToolsDirtyFlag or self.aiveToolsDirtyFlag then
-		self.aiveToolsDirtyFlag = self.aiToolsDirtyFlag
-		AIVehicleExtension.invalidateState( self )
-	end
 	
 	if AIVEGlobals.otherAIColli > 0 and self.isServer and self.acCollidingVehicles == nil then
 		self.acCollidingVehicles = {}
@@ -1209,6 +1206,15 @@ function AIVehicleExtension:onUpdate(dt)
 		if self.acIsLowered ~= lv then
 			AIVehicleExtension.setInt32Value( self, "lowered", lv )
 		end
+	end
+end
+
+------------------------------------------------------------------------
+-- AIVehicleExtension.onStateChange
+------------------------------------------------------------------------
+function AIVehicleExtension:onStateChange(state, data)
+	if state == Vehicle.STATE_CHANGE_ATTACH or state == Vehicle.STATE_CHANGE_DETACH then
+    self.aiveToolsDirty = true
 	end
 end
 
@@ -2484,20 +2490,6 @@ function AIVehicleExtension:onTurnedOff()
 end
 function AIVehicleExtension:setFoldState(direction, moveToMiddle)
 	AIVehicleExtension.onChangeLowered( self, not ( moveToMiddle ) )
-end
-
-------------------------------------------------------------------------
--- AIVehicleExtension:onAttachImplement
-------------------------------------------------------------------------
-function AIVehicleExtension:onAttachImplement(implement)
-	self.aiveToolsDirtyFlag = true
-end
-
-------------------------------------------------------------------------
--- AIVehicleExtension:onDetachImplement
-------------------------------------------------------------------------
-function AIVehicleExtension:onDetachImplement(implementIndex)
-	self.aiveToolsDirtyFlag = true
 end
 
 ------------------------------------------------------------------------

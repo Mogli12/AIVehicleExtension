@@ -7196,7 +7196,11 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		
 		-- get max rotation
 		local rotMax = nil
-		if refNode == object.spec_attachable.attacherJoint.node and implement ~= nil then
+		if      object.spec_attachable                     ~= nil
+				and object.spec_attachable.attacherJoint      ~= nil
+				and object.spec_attachable.attacherJoint.node ~= nil
+				and refNode == object.spec_attachable.attacherJoint.node 
+				and implement ~= nil then
 			local jointDesc = object:getAttacherVehicle().spec_attacherJoints.attachedImplements[implement.jointDescIndex]
 			rotMax = math.max(jointDesc.upperRotLimit[2], jointDesc.lowerRotLimit[2]) * object.spec_attachable.attacherJoint.lowerRotLimitScale[2]
 		else
@@ -8282,7 +8286,8 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.findComponentJointDistance( vehicle, object )
 	
-	if      object.spec_attachable.attacherJoint              ~= nil
+	if      object.spec_attachable                            ~= nil
+			and object.spec_attachable.attacherJoint              ~= nil
 			and object.spec_attachable.attacherJoint.jointType    ~= nil
 			and ( object.spec_attachable.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILERLOW
 			   or object.spec_attachable.attacherJoint.jointType  == Vehicle.JOINTTYPE_TRAILER ) then
