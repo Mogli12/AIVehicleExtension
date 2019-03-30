@@ -360,7 +360,7 @@ AIVEStatus.border   = 4
 
 
 function AutoSteeringEngine.hasArticulatedAxis( vehicle )
-	if     vehicle.spec_articulatedAxis == nil then 
+	if     vehicle == nil or vehicle.spec_articulatedAxis == nil then 
 		return false 
 	elseif vehicle.spec_articulatedAxis.componentJoint == nil then 
 		return false 
@@ -2596,13 +2596,15 @@ function AutoSteeringEngine.hasFruits( vehicle, checkLowerAdvance )
 			local gotField  = false
 			local back      = math.min( toolParam.zBack - toolParam.zReal, 0 )
 			
-			if      AIVEGlobals.tm7StopEarly    > 0
-					and vehicle.aiveChain.turnMode == "7" 
-					and toolParam.width             > 2 
-					and toolParam.zBack             < 0
+			if      AIVEGlobals.tm7StopEarly              > 0 
 					and vehicle.aiveChain.inField
-					and vehicle.aiveChain.isAtEnd then
-				back = back + toolParam.width - 1
+					and vehicle.aiveChain.isAtEnd
+					and ( vehicle.aiveChain.turnMode         == "7" 
+						 or ( vehicle.aiveChain.turnMode       == "L"  )
+							and toolParam.width + toolParam.zBack < vehicle.aiveChain.radius ) 
+					and toolParam.width                       > 1 
+					and toolParam.zBack                       < 0 then
+				back = back + toolParam.width
 			end
 			
 			local front     = math.max( back, 0 )
