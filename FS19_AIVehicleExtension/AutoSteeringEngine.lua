@@ -1804,7 +1804,16 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 	end
 	vehicle.aiveChain.toolParams  = {}
 	
+	
+	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then	
+		local fruitProhibitions = nil
+		for i=1,vehicle.aiveChain.toolCount do
+			if not vehicle.aiveChain.tools[i].ignoreAI and vehicle.aiveChain.tools[i].isSowingMachine then
+				fruitProhibitions = vehicle.aiveChain.tools[i].obj:getAIFruitProhibitions()
+			end 
+		end 
+		
 		local xa = {}
 		local xo = {}
 		for i=1,vehicle.aiveChain.toolCount do
@@ -1814,7 +1823,7 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 			if vehicle.aiveChain.tools[i].ignoreAI then
 				skip      = true
 				skipOther = true
-			else 				
+			elseif vehicle.aiveChain.toolCount > 1 then 	
 				if     vehicle.aiveChain.tools[i].isPlow
 						or vehicle.aiveChain.tools[i].isCultivator
 						or vehicle.aiveChain.tools[i].isSowingMachine then 
@@ -1824,23 +1833,26 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 				local terrainDetailRequiredValueRanges      = vehicle.aiveChain.tools[i].obj:getAITerrainDetailRequiredRange()
 				vehicle.aiveChain.tools[i].terrainDetailRequiredValueRanges = {}
 				for _,r in pairs(terrainDetailRequiredValueRanges) do 
-					if      r[1] == g_currentMission.plowValue
-							and vehicle.aiveHas.plow then 
+					if      vehicle.aiveHas.plow
+							and r[1] == g_currentMission.plowValue then 
 					-- ignore 
-					elseif  r[1] == g_currentMission.cultivatorValue
-							and vehicle.aiveHas.cultivator then 
-					-- ignore 
-					elseif  r[1] == g_currentMission.sowingValue
-							and vehicle.aiveHas.sowingMachine then 
-					-- ignore 
-					elseif  r[1] == g_currentMission.sowingWidthValue
-							and vehicle.aiveHas.sowingMachine then 
+					elseif  vehicle.aiveHas.cultivator 
+							and r[1] == g_currentMission.cultivatorValue then 
 					-- ignore 
 					else 
 						table.insert( vehicle.aiveChain.tools[i].terrainDetailRequiredValueRanges, r ) 
 						skip = false 
 					end 
 				end 
+				
+				if ( vehicle.aiveHas.plow or vehicle.aiveHas.cultivator ) and fruitProhibitions ~= nil then 
+					vehicle.aiveChain.tools[i].fruitProhibitions = fruitProhibitions
+				else 
+					vehicle.aiveChain.tools[i].fruitProhibitions = vehicle.aiveChain.tools[i].obj:getAIFruitProhibitions()
+				end 
+			else 
+				vehicle.aiveChain.tools[i].terrainDetailRequiredValueRanges = vehicle.aiveChain.tools[i].obj:getAITerrainDetailRequiredRange()
+				vehicle.aiveChain.tools[i].fruitProhibitions                = vehicle.aiveChain.tools[i].obj:getAIFruitProhibitions()
 			end 
 			
 			if not skip or not skipOther then
@@ -3769,10 +3781,11 @@ function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, toolIndex, lx1,lz1,lx2,
 		return 0, 0
 	end 
 	local terrainDetailRequiredValueRanges  = tool.terrainDetailRequiredValueRanges
+--local terrainDetailRequiredValueRanges  = tool.obj:getAITerrainDetailRequiredRange()
 	local terrainDetailProhibitValueRanges  = tool.obj:getAITerrainDetailProhibitedRange()
 	local fruitRequirements = tool.obj:getAIFruitRequirements()
 	local useDensityHeightMap, useWindrowFruitType = tool.obj:getAIFruitExtraRequirements()
-	local fruitProhibitions = tool.obj:getAIFruitProhibitions()
+	local fruitProhibitions = tool.fruitProhibitions
 	
 	if not useDensityHeightMap then
 		return AIVehicleUtil.getAIFruitArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
@@ -5757,7 +5770,7 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, isOutside, detecte
 					if     turnZc == nil then
 						turnZc = tzc
 						turnXc = vehicle.aiveChain.otherX + mx
-					elseif turnZc < tzc then
+					elseif turnZc > tzc then
 						turnZc = tzc
 						turnXc = vehicle.aiveChain.otherX + mx
 					end
@@ -5782,7 +5795,7 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, isOutside, detecte
 			if vehicle.aiveChain.leftActive then
 				turnZc = -turnZc 
 			end
-			turnZc = turnZc + vehicle.aiveChain.minZ -- + 0.5
+			turnZc = turnZc + vehicle.aiveChain.minZ
 		end
 		
 		if turnXu ~= nil then

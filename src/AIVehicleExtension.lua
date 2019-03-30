@@ -2691,7 +2691,7 @@ function AIVehicleExtension.newDriveToPoint( self, superFunc, dt, acceleration, 
 	-- wait before changing direction
 	if     self.aiveLastForwards == nil
 			or self.aiveLastForwards ~= moveForwards then 
-		self.aiveForwardsTimer = 500 
+		self.aiveForwardsTimer = 750 
 	end 
 	if     self.aiveForwardsTimer == nil then 
 	elseif self.aiveForwardsTimer > 0 then 
@@ -2710,11 +2710,9 @@ function AIVehicleExtension.newDriveToPoint( self, superFunc, dt, acceleration, 
 	if acceleration == 0 and self.lastSpeedReal > 0.0005 then 
 		if moveForwards and self.movingDirection < 0 then 
 			acceleration = 1 
-			self.aiveForwardsTimer = 500
 		end 
 		if not moveForwards and self.movingDirection > 0 then 
 			acceleration = -1 
-			self.aiveForwardsTimer = 500
 		end 
 	end 
 	
