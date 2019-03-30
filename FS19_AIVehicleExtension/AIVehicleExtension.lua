@@ -1012,7 +1012,9 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 			AIVehicleExtension.sendParameters( self )
 		end
 		AIVehicleExtension.setImplMoveDownClient(self, not ( AIVehicleExtension.getIsLowered( self ) ), true)
-	elseif actionName == "AXIS_MOVE_SIDE_VEHICLE" then
+	elseif  actionName == "AXIS_MOVE_SIDE_VEHICLE"
+			and self.acParameters ~= nil 
+			and not ( self.acParameters.noSteering ) then 
 		AIVehicleExtension.setAxisSide( self, keyStatus )
 	elseif  actionName == "TOGGLE_CRUISE_CONTROL" 
 			and self.aiveIsStarted then 
@@ -1037,11 +1039,15 @@ function AIVehicleExtension:onUpdate(dt)
 		self.spec_aiVehicle.aiSteeringSpeed = self.acSteeringSpeed
 	end
 
-	if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then 
-		self.acParameters.inverted = true
-	else
-		self.acParameters.inverted = false
-	end		
+--if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then 
+--	self.acParameters.inverted = true
+--else
+--	self.acParameters.inverted = false
+--end		
+	
+	if math.abs( self.acAxisSide ) > 0.05 and ( self.acParameters == nil or self.acParameters.noSteering ) then
+		AIVehicleExtension.setAxisSide( 0 )
+	end 
 	
 	if self.aiToolsDirtyFlag or self.aiveToolsDirtyFlag then
 		self.aiveToolsDirtyFlag = self.aiToolsDirtyFlag
@@ -1084,7 +1090,7 @@ function AIVehicleExtension:onUpdate(dt)
 			local _,angle,_ = getRotation( self.spec_articulatedAxis.rotationNode )
 			self.acDimensions.artAxisR = angle 
 			angle = 0.5 * angle
-			if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
+			if self.acParameters.inverted then
 				angle = angle + math.pi
 			end
 			setRotation( self.acRefNode, 0, angle, 0 )				
@@ -1093,7 +1099,7 @@ function AIVehicleExtension:onUpdate(dt)
 			self.acDimensions.artAxisZ = dz 
 		else
 			local angle = 0
-			if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
+			if self.acParameters.inverted then
 				angle = angle + math.pi
 			end
 			local _,y,_ = getRotation( self.acRefNode )
@@ -1667,7 +1673,6 @@ function AIVehicleExtension:onPostLoad(savegame)
 	--if type( self.setIsReverseDriving ) == "function" and self.acParameters.inverted then
 	--	self:setIsReverseDriving( self.acParameters.inverted, false )
 	--end
-	
 	end
 end
 
@@ -2683,9 +2688,10 @@ function AIVehicleExtension.newDriveToPoint( self, superFunc, dt, acceleration, 
 		acceleration = 0
 	end
 	
+	-- wait before changing direction
 	if     self.aiveLastForwards == nil
 			or self.aiveLastForwards ~= moveForwards then 
-		self.aiveForwardsTimer = 1000 
+		self.aiveForwardsTimer = 500 
 	end 
 	if     self.aiveForwardsTimer == nil then 
 	elseif self.aiveForwardsTimer > 0 then 
@@ -2699,6 +2705,19 @@ function AIVehicleExtension.newDriveToPoint( self, superFunc, dt, acceleration, 
 	if not moveForwards then
 		acceleration = -acceleration
 	end
+	
+	-- brake before changing direction
+	if acceleration == 0 and self.lastSpeedReal > 0.0005 then 
+		if moveForwards and self.movingDirection < 0 then 
+			acceleration = 1 
+			self.aiveForwardsTimer = 500
+		end 
+		if not moveForwards and self.movingDirection > 0 then 
+			acceleration = -1 
+			self.aiveForwardsTimer = 500
+		end 
+	end 
+	
 	WheelsUtil.updateWheelsPhysics(self, dt, self.lastSpeedReal*self.movingDirection, acceleration, not allowedToDrive, true)
 end
 

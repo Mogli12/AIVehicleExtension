@@ -372,7 +372,7 @@ end
 -- skipIfNotServer
 ------------------------------------------------------------------------
 function AutoSteeringEngine.skipIfNotServer( vehicle )
-	if not ( vehicle.isServer ) then
+	if vehicle == nil or not ( vehicle.isServer ) then
 		if vehicle.aiveShowError == nil then
 			vehicle.aiveShowError = 0
 		end
@@ -7344,6 +7344,9 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.checkToolIsReadyForWork( self, noLower )
 	if type( self.getCanAIImplementContinueWork ) == "function" then 
+		if self.spec_attachable ~= nil and self.spec_attachable.attacherVehicle == nil then 
+			return false 
+		end 
 		return self:getCanAIImplementContinueWork() 
 	end 
 	return true

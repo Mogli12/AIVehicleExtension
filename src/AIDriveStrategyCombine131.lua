@@ -123,6 +123,15 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 				else
 					self.notificationFullGrainTankShown = false
 				end
+				
+				if     fillLevel <= 0 then
+					self.wasEmpty = true
+				elseif fillLevel >= 0.1 * capacity then
+					self.wasEmpty = false
+				elseif self.wasEmpty == nil then
+					self.wasEmpty = false
+				end
+								
 				if trailerInTrigger then
 					pipeState = 2
 				end
@@ -152,17 +161,19 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 					combine:setPipeState(pipeState)
 				end
 				allowedToDrive = fillLevel < capacity
-				if pipeState == 2 and self.wasCompletelyFull then
-					allowedToDrive = false
-					self:addDebugText("COMBINE -> Waiting for trailer to unload")
-				end
-				if isTurning and trailerInTrigger then
-					if combine:getCanDischargeToObject(dischargeNode) then
-						allowedToDrive = fillLevel == 0
-						if not allowedToDrive then
-							self:addDebugText("COMBINE -> Unload to trailer on headland")
-						end
-					end
+			--if pipeState == 2 and self.wasCompletelyFull then
+			--	allowedToDrive = false
+			--	self:addDebugText("COMBINE -> Waiting for trailer to unload")
+			--end
+			
+				if trailerInTrigger and not self.wasEmpty then 
+					if self.vehicle.acParameters.waitForPipe then 
+						allowedToDrive = false
+						self:addDebugText("COMBINE -> Waiting for trailer to unload")
+					elseif isTurning and combine:getCanDischargeToObject(dischargeNode) then 
+						allowedToDrive = false 
+						self:addDebugText("COMBINE -> Unload to trailer on headland")
+					end 
 				end
 				local freeFillLevel = capacity - fillLevel
 				if freeFillLevel < self.slowDownFillLevel then

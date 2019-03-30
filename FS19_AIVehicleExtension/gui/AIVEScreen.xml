@@ -35,32 +35,33 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<!--GuiElement type="checkedOption" profile="multiTextOptionSettings" id="noSteering" toolTip="$mogli_AIVE_NOSTEERING"  onCreate="onCreateSubElement" 
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="noSteering" toolTip="$mogli_AIVE_NOSTEERING"  
+										onCreate="onCreateSubElement" onCreateArgs="inverted" 
 										focusId="14" focusChangeTop="33" focusChangeBottom="24">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
-					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_NOSTEERING"/>
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_STEERING"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
-				</GuiElement-->
+				</GuiElement>
 
-				<!--GuiElement type="checkedOption" profile="multiTextOptionSettings" id="waitForPipe" toolTip="$mogli_AIVE_WAIT_FOR_PIPE" onCreate="onCreateSubElement"
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="waitForPipe" toolTip="$mogli_AIVE_WAIT_FOR_PIPE" onCreate="onCreateSubElement"
 										focusId="15" focusChangeTop="34" focusChangeBottom="25">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
 					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_WAIT_FOR_PIPE"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
-				</GuiElement-->
+				</GuiElement>
 
-				<!--GuiElement type="checkedOption" profile="multiTextOptionSettings" id="inverted" toolTip="$mogli_AIVE_INVERTED"  onCreate="onCreateSubElement"
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="inverted" toolTip="$mogli_AIVE_INVERTED"  onCreate="onCreateSubElement"
 										focusId="16" focusChangeTop="35" focusChangeBottom="101">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
 					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_INVERTED"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
-				</GuiElement-->
+				</GuiElement>
 		</GuiElement>
 		
 		<GuiElement type="boxLayout" profile="settingsBox" size="390px 688px" position="430px 88px" positionOrigin="bottomLeft">	

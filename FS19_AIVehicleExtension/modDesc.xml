@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="41">
 	<author>Mogli</author>
-	<version>0.0.0.8</version>
+	<version>0.0.0.9</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v0.0.0.8</en>
-			<de>AI Vehicle Extension v0.0.0.8</de>
-										<cs>车辆助手 v0.0.0.8</cs>
+			<en>AI Vehicle Extension v0.0.0.9</en>
+			<de>AI Vehicle Extension v0.0.0.9</de>
+										<cs>车辆助手 v0.0.0.9</cs>
 		</text>
 	</l10n>
 	<title>
@@ -135,7 +135,7 @@ AIVehicleExtension - Polskie tłumaczenie Dzi4d3k
 ]]></cs>
 	</description>
 	<iconFilename>dds/icon_fs19.dds</iconFilename>
-	<multiplayer supported="false"/>
+	<multiplayer supported="true"/>
 
 	<extraSourceFiles>
 		<sourceFile filename="register.lua"/>
