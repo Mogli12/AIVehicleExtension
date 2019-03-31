@@ -34,20 +34,26 @@ end
 -- getNextStage
 --============================================================================================================================
 function AITurnStrategyMogli_C_R:getNextStage( dt, vX,vY,vZ, turnData, stageId )
+	local veh = self.vehicle 
 	self:addDebugText(tostring(stageId))
 	if     stageId == 1 then
+		veh:aiTurnProgress( 0.01, veh.acParameters.leftAreaActive )
 	--return self:getCombinedStage( self:getStageFromFunction( AITurnStrategyMogli.getDD_checkIsAnimPlaying, true ),
 	--															self:getStageFromFunction( AITurnStrategyMogli.getDD_reduceTurnAngle, { true, 6 } ) )
 		return self:getStageFromFunction( AITurnStrategyMogli.getDD_reduceTurnAngle, { true, 6 } )
 	elseif stageId == 2 then
+		veh:aiTurnProgress( 0.3, veh.acParameters.leftAreaActive )
 		self:fillStages( turnData )
 		return self:getStageFromPoints( self.stages[1], true, 0, true )
 	elseif stageId == 3 then
+		veh:aiTurnProgress( 0.6, veh.acParameters.leftAreaActive )
 		return self:getStageWithPostCheck( self:getStageFromPoints( self.stages[2], false, 0, false ), AITurnStrategyMogli_C_R.detect4 )
 	elseif stageId == 4 then
+		veh:aiTurnProgress( 0.8, veh.acParameters.leftAreaActive )
 		self.needsLowering = true	
 		return self:getStageWithPostCheck( self:getStageFromPoints( self.stages[3], true, 3, false ), AITurnStrategyMogli_C_R.detect4 )
 	elseif stageId == 5 then
+		veh:aiTurnProgress( 0.99, veh.acParameters.leftAreaActive )
 		return self:getStageFromFunction( AITurnStrategyMogli_C_R.detect5 )
 	end
 end

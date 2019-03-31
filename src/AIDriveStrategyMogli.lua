@@ -303,6 +303,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	--end
 		
 		if tX == nil then
+			veh:aiTurnProgress( 1, veh.acParameters.leftAreaActive )
 			for _,turnStrategy in pairs(self.turnStrategies) do
 				turnStrategy:onEndTurn(self.turnLeft)
 			end
@@ -874,6 +875,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			end
 			
 			veh:aiStartTurn( veh.acParameters.leftAreaActive )
+			veh:aiTurnProgress( 0, veh.acParameters.leftAreaActive )
 	
 			self.currentTurnStrategy:startTurn( self.turnData )
 			

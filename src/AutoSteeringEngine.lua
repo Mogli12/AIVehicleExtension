@@ -267,6 +267,13 @@ function AIVEUtils.quot2Rad( q )
 end 
 
 function AIVEDrawDebugPoint( vehicle, x, y, z, r, g, b, s, c )
+	if     vehicle == nil
+			or x == nil or y == nil or z == nil
+			or r == nil or g == nil or b == nil
+			or s == nil then 
+		AIVehicleExtension.printCallstack()
+		return 
+	end 
 	local sx,sy,sz = project(x,y,z)
 	setTextColor(r,g,b,s) 
 	if 1 > sz and sz > 0 then 
@@ -274,6 +281,14 @@ function AIVEDrawDebugPoint( vehicle, x, y, z, r, g, b, s, c )
 	end 
 end 
 function AIVEDrawDebugLine( vehicle, x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
+	if     vehicle == nil
+			or x1 == nil or y1 == nil or z1 == nil
+			or r1 == nil or g1 == nil or b1 == nil
+			or x2 == nil or y2 == nil or z2 == nil
+			or r2 == nil or g2 == nil or b2 == nil then 
+		AIVehicleExtension.printCallstack()
+		return 
+	end 
 	local l = AIVEUtils.vector3Length(x1-x2,y1-y2,z1-z2)
 	local s = math.floor( l * 10 )
 	local t = 1
@@ -3397,19 +3412,24 @@ function AutoSteeringEngine.drawLines( vehicle )
 	end
 	
 	if      vehicle.aiveChain.trace    ~= nil 
-			and vehicle.aiveChain.trace.ox ~= nil 
-			and vehicle.aiveChain.trace.oz ~= nil then
-	
+			and vehicle.aiveChain.trace.cx ~= nil 
+			and vehicle.aiveChain.trace.cz ~= nil then
 		xw1 = vehicle.aiveChain.trace.cx
 		zw1 = vehicle.aiveChain.trace.cz
 		AIVEDrawDebugLine( vehicle, xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
 		AIVEDrawDebugPoint(vehicle, xw1, y+2, zw1 , 0, 1, 0, 1 )		
-		
+	end
+	if      vehicle.aiveChain.trace    ~= nil 
+			and vehicle.aiveChain.trace.ux ~= nil 
+			and vehicle.aiveChain.trace.uz ~= nil then
 		xw1 = vehicle.aiveChain.trace.ux
 		zw1 = vehicle.aiveChain.trace.uz
 		AIVEDrawDebugLine( vehicle, xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
 		AIVEDrawDebugPoint(vehicle, xw1, y+2, zw1 , 0, 0, 1, 1 )		
-		
+	end 
+	if      vehicle.aiveChain.trace    ~= nil 
+			and vehicle.aiveChain.trace.ox ~= nil 
+			and vehicle.aiveChain.trace.oz ~= nil then	
 		xw1 = vehicle.aiveChain.trace.ox
 		zw1 = vehicle.aiveChain.trace.oz
 		AIVEDrawDebugLine( vehicle, xw1, y, zw1, 1,0,1, xw1, y+2, zw1 ,1,1,1)
@@ -5585,12 +5605,8 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.invertsMarkerOnTurn( vehicle, tool, turnLeft )
 	local res = false		
-	if tool ~= nil and tool.obj ~= nil then
-		for _, spec in pairs(tool.obj.specializations) do		
-			if spec.getAiInvertsMarkerOnTurn ~= nil then		
-				res = res or spec.getAiInvertsMarkerOnTurn(tool.obj, turnLeft)		
-			end		
-		end		
+	if tool ~= nil and tool.obj ~= nil and type( tool.obj.getAIInvertMarkersOnTurn ) == "function" then
+		res = res or tool.obj:getAIInvertMarkersOnTurn( not turnLeft )
 	end		
 	return res		
 end		
