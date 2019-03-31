@@ -1586,6 +1586,16 @@ end
 -- checkTools1
 ------------------------------------------------------------------------
 function AutoSteeringEngine.checkTools1( vehicle, reset )
+	local state, message = pcall( AutoSteeringEngine.checkTools2, vehicle, reset )
+	if not ( state ) then 
+		AutoSteeringEngine.deleteTools( vehicle )
+		vehicle.aiveChain.tools = {}
+		print("Error in FS19_AIVehicleExtension.AutoSteeringEngine.checkTools2")
+		print(tostring(message))
+	end 
+end
+
+function AutoSteeringEngine.checkTools2( vehicle, reset )
 
 	if      vehicle.aiveChain ~= nil 
 			and ( vehicle.aiveChain.tools == nil or reset ) then
@@ -1606,7 +1616,7 @@ function AutoSteeringEngine.checkTools1( vehicle, reset )
 		vehicle.aiveChain.offsetStd      = 0
 		
 		
-		if vehicle.aiToolsDirtyFlag then	
+		if vehicle.aiveToolsDirty then	
 			vehicle.aiveChain.tools = nil
 		else
 			vehicle.aiveChain.tools = {}
@@ -8470,7 +8480,7 @@ function AutoSteeringEngine.getTaJoints2( vehicle, implement, refNode, zOffset )
 			and implement.jointRotLimit[2] ~= nil
 			and implement.jointRotLimit[2] >  math.rad( 0.1 ) then
 		table.insert( taJoints, index,
-									{ nodeVehicle  = vehicle.spec_attacherJoints.attachedImplements[implement.jointDescIndex].rootNode, --refNode, 
+									{ nodeVehicle  = vehicle.spec_attacherJoints.attacherJoints[implement.jointDescIndex].rootNode, --refNode, 
 										nodeTrailer  = trailer.spec_attachable.attacherJoint.rootNode, 
 										targetFactor = 1 } )
 	end
