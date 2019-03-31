@@ -6898,13 +6898,13 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 				tool.ploughTransport = true
 			end
 		end
-		local wheelIndex 
-		if spec.turningRadiusLimitation.wheelIndices ~= nil then
-			wheelIndex = spec.turningRadiusLimitation.wheelIndices[1]
-		else
-			wheelIndex = 1
+		local wheel = nil
+		if spec.turningRadiusLimitation.wheels ~= nil then
+			wheel = spec.turningRadiusLimitation.wheels[1]
 		end
-		local wheel = object.spec_wheels.wheels[wheelIndex]
+		if wheel == nil and object.spec_wheels ~= nil then
+			wheel = object.spec_wheels.wheels[1]
+		end
 		if wheel ~= nil then
 			tool.checkZRotation = true
 			local parent = getParent(wheel.repr)
@@ -7176,31 +7176,31 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		
 		local b2x, b2z, b2i = 0, 0, 0
 		
-		local wheelIndices		
-		
-		if spec.turningRadiusLimitation ~= nil and spec.turningRadiusLimitation.wheelIndices ~= nil then
-			wheelIndices = spec.turningRadiusLimitation.wheelIndices
-		elseif groundContact then
-			wheelIndices = {}
-			for wheelIndex, wheel in pairs(object.spec_wheels.wheels) do
-				if wheel.hasGroundContact then
-					table.insert( wheelIndices, wheelIndex )
+		if type( object.getWheels ) == "function" then 
+			local wheels = nil		
+			
+			if spec.turningRadiusLimitation ~= nil and spec.turningRadiusLimitation.wheels ~= nil then
+				wheels = spec.turningRadiusLimitation.wheels
+			elseif groundContact then
+				wheels = {}
+				for _, wheel in pairs(object:getWheels()) do
+					if wheel.hasGroundContact then
+						table.insert( wheels, wheel )
+					end
+				end
+			else 
+				wheels = object:getWheels()
+			end
+
+			if wheels ~= nil then 
+				for _,wheel in pairs(wheels) do
+					local x,_,z = localToLocal(wheel.repr, refNode, 0,0,0)
+					
+					b2x = b2x + x
+					b2z = b2z + z
+					b2i = b2i + 1
 				end
 			end
-		else 
-			wheelIndices = {}
-			for wheelIndex, wheel in pairs(object.spec_wheels.wheels) do
-				table.insert( wheelIndices, wheelIndex )
-			end
-		end
-
-		for _,wheelIndex in pairs(wheelIndices) do
-			local wheel = object.spec_wheels.wheels[wheelIndex]
-			local x,_,z = localToLocal(wheel.repr, refNode, 0,0,0)
-			
-			b2x = b2x + x
-			b2z = b2z + z
-			b2i = b2i + 1
 		end
 		
 		if b2i > 1 then
