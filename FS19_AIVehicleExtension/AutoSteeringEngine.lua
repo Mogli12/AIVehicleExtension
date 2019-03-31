@@ -6872,7 +6872,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	tool.ignoreAI                = ignore 
 	
 	
-	if tool.isSprayer and not ( object.spec_sprayer.allowsSpraying ) and object.spec_aiImplement.leftMarker == nil and object.spec_aiImplement.rightMarker == nil then
+	if tool.isSprayer and not ( object.spec_sprayer.allowsSpraying ) and spec_aiImplement.leftMarker == nil and spec_aiImplement.rightMarker == nil then
 		return 0
 	end
 	
@@ -6883,8 +6883,8 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 			end
 		end
 		local wheelIndex 
-		if object.aiTurningRadiusLimitation.wheelIndices ~= nil then
-			wheelIndex = object.aiTurningRadiusLimitation.wheelIndices[1]+1
+		if spec.aiTurningRadiusLimitation.wheelIndices ~= nil then
+			wheelIndex = spec.aiTurningRadiusLimitation.wheelIndices[1]+1
 		else
 			wheelIndex = 1
 		end
@@ -6905,7 +6905,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	
 	local b1, trailer = AutoSteeringEngine.findComponentJointDistance( vehicle, object )
 
-	if     ( object.spec_aiImplement.leftMarker  == nil and object.spec_aiImplement.rightMarker == nil )
+	if     ( spec.leftMarker  == nil and spec.rightMarker == nil )
 			or object.spec_windrower   ~= nil
 			or object.spec_forageWagon ~= nil
 			or object.spec_tedder      ~= nil
@@ -6917,9 +6917,9 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	end
 	
 	if tool.ignoreAI then
-		if object.spec_aiImplement.leftMarker ~= nil and object.spec_aiImplement.rightMarker ~= nil then
-			marker[#marker+1] = object.spec_aiImplement.leftMarker
-			marker[#marker+1] = object.spec_aiImplement.rightMarker
+		if spec.leftMarker ~= nil and spec.rightMarker ~= nil then
+			marker[#marker+1] = spec.leftMarker
+			marker[#marker+1] = spec.rightMarker
 		elseif ( object.spec_wheels.wheels ~= nil and trailer )
 				or tool.isTurnOnVehicle 
 				or tool.hasWorkAreas then
@@ -6937,15 +6937,15 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 			--print("object has AI support")
 		end
 		
-		if object.spec_aiImplement.leftMarker ~= nil then
-			marker[#marker+1] = object.spec_aiImplement.leftMarker
+		if spec.leftMarker ~= nil then
+			marker[#marker+1] = spec.leftMarker
 		end
 		
-		if object.spec_aiImplement.rightMarker ~= nil then
-			marker[#marker+1] = object.spec_aiImplement.rightMarker
+		if spec.rightMarker ~= nil then
+			marker[#marker+1] = spec.rightMarker
 		end
 		
-		tool.backMarker = object.spec_aiImplement.backMarker		
+		tool.backMarker = spec.backMarker		
 
 		if     tool.isSowingMachine then
 			tool.outTerrainDetailChannel = g_currentMission.sowingValue
@@ -6963,7 +6963,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		return 0
 	end
 
-	if object.spec_aiImplement.backMarker == nil then
+	if spec.backMarker == nil then
 		tool.backMarker = marker[1]
 	end
 	
@@ -7119,11 +7119,15 @@ end
 function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundContact )
 
 	local radius, b1, b2 = vehicle.aiveChain.radius, 0, 0
+	local spec = object.spec_aiImplement
 
-	if object.aiTurningRadiusLimitation == nil then
-		AIVehicleExtension.debugPrint("object.aiTurningRadiusLimitation is nil")
-	elseif object.aiTurningRadiusLimitation.rotationJoint == nil then
-		AIVehicleExtension.debugPrint("object.aiTurningRadiusLimitation.rotationJoint is nil")
+	if spec == nil then
+		AIVehicleExtension.debugPrint("spec is nil")
+		spec = {}
+	elseif spec.aiTurningRadiusLimitation == nil then
+		AIVehicleExtension.debugPrint("spec.aiTurningRadiusLimitation is nil")
+	elseif spec.aiTurningRadiusLimitation.rotationJoint == nil then
+		AIVehicleExtension.debugPrint("spec.aiTurningRadiusLimitation.rotationJoint is nil")
 	end
 	
 	local implement 
@@ -7137,8 +7141,8 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 	end
 	
 	local refNode = dirNode
-	if implement ~= nil and object.aiTurningRadiusLimitation ~= nil and object.aiTurningRadiusLimitation.rotationJoint ~= nil then
-		refNode = object.aiTurningRadiusLimitation.rotationJoint
+	if implement ~= nil and spec.aiTurningRadiusLimitation ~= nil and spec.aiTurningRadiusLimitation.rotationJoint ~= nil then
+		refNode = spec.aiTurningRadiusLimitation.rotationJoint
 	end
 	
 	do
@@ -7158,8 +7162,8 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		
 		local wheelIndices		
 		
-		if object.aiTurningRadiusLimitation ~= nil and object.aiTurningRadiusLimitation.wheelIndices ~= nil then
-			wheelIndices = object.aiTurningRadiusLimitation.wheelIndices
+		if spec.aiTurningRadiusLimitation ~= nil and spec.aiTurningRadiusLimitation.wheelIndices ~= nil then
+			wheelIndices = spec.aiTurningRadiusLimitation.wheelIndices
 		elseif groundContact then
 			wheelIndices = {}
 			for wheelIndex, wheel in pairs(object.spec_wheels.wheels) do
@@ -7224,10 +7228,10 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 			radius = math.max( radius, ( b1 * math.cos( rotMax ) + b2 ) / math.sin( rotMax ) )
 		end
 		
-		if object.aiTurningRadiusLimitation ~= nil and object.aiTurningRadiusLimitation.radius ~= nil then
+		if spec.aiTurningRadiusLimitation ~= nil and spec.aiTurningRadiusLimitation.radius ~= nil then
 			rt = math.sqrt( math.max( radius*radius + b1*b1 - b2*b2, 0 ) )	
-			if rt < object.aiTurningRadiusLimitation.radius then
-				rt = object.aiTurningRadiusLimitation.radius
+			if rt < spec.aiTurningRadiusLimitation.radius then
+				rt = spec.aiTurningRadiusLimitation.radius
 				radius = math.max( radius, math.sqrt( math.max( rt*rt - b1*b1 + b2*b2 ) ) )
 			end
 		end
