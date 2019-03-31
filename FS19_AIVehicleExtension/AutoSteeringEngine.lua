@@ -6883,8 +6883,8 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 			end
 		end
 		local wheelIndex 
-		if spec.aiTurningRadiusLimitation.wheelIndices ~= nil then
-			wheelIndex = spec.aiTurningRadiusLimitation.wheelIndices[1]+1
+		if spec.turningRadiusLimitation.wheelIndices ~= nil then
+			wheelIndex = spec.turningRadiusLimitation.wheelIndices[1]
 		else
 			wheelIndex = 1
 		end
@@ -7124,10 +7124,10 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 	if spec == nil then
 		AIVehicleExtension.debugPrint("spec is nil")
 		spec = {}
-	elseif spec.aiTurningRadiusLimitation == nil then
-		AIVehicleExtension.debugPrint("spec.aiTurningRadiusLimitation is nil")
-	elseif spec.aiTurningRadiusLimitation.rotationJoint == nil then
-		AIVehicleExtension.debugPrint("spec.aiTurningRadiusLimitation.rotationJoint is nil")
+	elseif spec.turningRadiusLimitation == nil then
+		AIVehicleExtension.debugPrint("spec.turningRadiusLimitation is nil")
+	elseif spec.turningRadiusLimitation.rotationJoint == nil then
+		AIVehicleExtension.debugPrint("spec.turningRadiusLimitation.rotationJoint is nil")
 	end
 	
 	local implement 
@@ -7141,8 +7141,8 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 	end
 	
 	local refNode = dirNode
-	if implement ~= nil and spec.aiTurningRadiusLimitation ~= nil and spec.aiTurningRadiusLimitation.rotationJoint ~= nil then
-		refNode = spec.aiTurningRadiusLimitation.rotationJoint
+	if implement ~= nil and spec.turningRadiusLimitation ~= nil and spec.turningRadiusLimitation.rotationJoint ~= nil then
+		refNode = spec.turningRadiusLimitation.rotationJoint
 	end
 	
 	do
@@ -7162,24 +7162,24 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		
 		local wheelIndices		
 		
-		if spec.aiTurningRadiusLimitation ~= nil and spec.aiTurningRadiusLimitation.wheelIndices ~= nil then
-			wheelIndices = spec.aiTurningRadiusLimitation.wheelIndices
+		if spec.turningRadiusLimitation ~= nil and spec.turningRadiusLimitation.wheelIndices ~= nil then
+			wheelIndices = spec.turningRadiusLimitation.wheelIndices
 		elseif groundContact then
 			wheelIndices = {}
 			for wheelIndex, wheel in pairs(object.spec_wheels.wheels) do
 				if wheel.hasGroundContact then
-					table.insert( wheelIndices, wheelIndex-1 )
+					table.insert( wheelIndices, wheelIndex )
 				end
 			end
 		else 
 			wheelIndices = {}
 			for wheelIndex, wheel in pairs(object.spec_wheels.wheels) do
-				table.insert( wheelIndices, wheelIndex-1 )
+				table.insert( wheelIndices, wheelIndex )
 			end
 		end
 
 		for _,wheelIndex in pairs(wheelIndices) do
-			local wheel = object.spec_wheels.wheels[wheelIndex+1]
+			local wheel = object.spec_wheels.wheels[wheelIndex]
 			local x,_,z = localToLocal(wheel.repr, refNode, 0,0,0)
 			
 			b2x = b2x + x
@@ -7228,10 +7228,10 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 			radius = math.max( radius, ( b1 * math.cos( rotMax ) + b2 ) / math.sin( rotMax ) )
 		end
 		
-		if spec.aiTurningRadiusLimitation ~= nil and spec.aiTurningRadiusLimitation.radius ~= nil then
+		if spec.turningRadiusLimitation ~= nil and spec.turningRadiusLimitation.radius ~= nil then
 			rt = math.sqrt( math.max( radius*radius + b1*b1 - b2*b2, 0 ) )	
-			if rt < spec.aiTurningRadiusLimitation.radius then
-				rt = spec.aiTurningRadiusLimitation.radius
+			if rt < spec.turningRadiusLimitation.radius then
+				rt = spec.turningRadiusLimitation.radius
 				radius = math.max( radius, math.sqrt( math.max( rt*rt - b1*b1 + b2*b2 ) ) )
 			end
 		end
@@ -8217,19 +8217,19 @@ end
 -- setToolsAreLowered
 ------------------------------------------------------------------------
 function AutoSteeringEngine.setPloughTransport( vehicle, isTransport, excludePackomat )
-	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
-		return
-	end
-	for i=1,vehicle.aiveChain.toolCount do
-		if vehicle.aiveChain.tools[i].ploughTransport then
-			if     isTransport then
-				AutoSteeringEngine.ensureToolIsLowered( vehicle, false )
-				vehicle.aiveChain.tools[i].obj:aiRotateCenter(true)			
-			else
-				vehicle:aiTurnProgress( 0.5, vehicle.aiveChain.leftActive )
-			end
-		end
-	end	
+--if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
+--	return
+--end
+--for i=1,vehicle.aiveChain.toolCount do
+--	if vehicle.aiveChain.tools[i].ploughTransport then
+--		if     isTransport then
+--			AutoSteeringEngine.ensureToolIsLowered( vehicle, false )
+--			vehicle.aiveChain.tools[i].obj:aiRotateCenter(true)			
+--		else
+--			vehicle:aiTurnProgress( 0.5, not vehicle.aiveChain.leftActive )
+--		end
+--	end
+--end	
 end
 
 ------------------------------------------------------------------------

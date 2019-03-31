@@ -539,7 +539,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		toolAngle = math.deg( toolAngle )
 				
 		if -turnAngle > 90 + AIVEGlobals.maxToolAngleF * veh.acDimensions.maxSteeringAngle or turnAngle + 90 + 0.2 * toolAngle < angleOffset then
-			AutoSteeringEngine.setPloughTransport( veh, true, true )
+			veh:aiTurnProgress( 0.1, veh.acParameters.rightAreaActive )
 			
 			turnData.stage   = turnData.stage + 1;					
 			veh.turnTimer     = veh.acDeltaTimeoutRun;
@@ -571,15 +571,13 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			
 			if x > -stoppingDist or z < 0 then
       -- no need to drive backwards
-				veh:aiTurnProgress( 0.5, veh.acParameters.leftAreaActive )
-				AutoSteeringEngine.setPloughTransport( veh, false )
+				veh:aiTurnProgress( 1, veh.acParameters.rightAreaActive )
 				turnData.stage     = 26
 				veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
 				veh.turnTimer       = 0
 			else
 				if noReverseIndex <= 0 then
-					veh:aiTurnProgress( 0.5, veh.acParameters.leftAreaActive )
-					AutoSteeringEngine.setPloughTransport( veh, true, true )
+					veh:aiTurnProgress( 0.1, veh.acParameters.rightAreaActive )
 				end
 			
 				turnData.stage   = turnData.stage + 1;					
@@ -620,10 +618,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		x = x - math.max( turn75.radius + 2, turn75.radius * 1.15 ) + math.max( 0, turn75.radius - turn75.radiusT )
 
 		if allowedToDrive and ( x > -stoppingDist or z < 0 ) then
-			if noReverseIndex > 0 then
-				veh:aiTurnProgress( 0.5, veh.acParameters.leftAreaActive )
-			end
-			AutoSteeringEngine.setPloughTransport( veh, false )--, true )
+			veh:aiTurnProgress( 1, veh.acParameters.rightAreaActive )
 			turnData.stage   = turnData.stage + 1;					
 			veh.turnTimer     = veh.acDeltaTimeoutRun;
 		end
@@ -1128,7 +1123,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 		if turnAngle < -60+angleOffset then
 			AutoSteeringEngine.ensureToolIsLowered( veh, false )
-			veh:aiTurnProgress( 0.5, veh.acParameters.leftAreaActive )
+			veh:aiTurnProgress( 1, veh.acParameters.rightAreaActive )
 			turnData.stage     = turnData.stage + 1;					
 			veh.turnTimer       = veh.acDeltaTimeoutNoTurn;
 		end
@@ -1419,7 +1414,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		veh:acDebugPrint("T73: "..AutoSteeringEngine.radToString(angle))
 		
 		if turnAngle < angleOffset-90 then
-			veh:aiTurnProgress( 0.5, veh.acParameters.leftAreaActive )
+			veh:aiTurnProgress( 1, veh.acParameters.rightAreaActive )
 			
 			angle2, onTrack, tX, tZ  = AutoSteeringEngine.navigateToSavePoint( veh, 1 )					
 			turnData.stage = turnData.stage + 1;					
@@ -1469,7 +1464,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		if 		 turnAngle > -90 - angleOffset - angleOffset
 				or math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 then
 			turnData.stage     = turnData.stage + 1;					
-			veh:aiTurnProgress( 0.5, veh.acParameters.leftAreaActive )
+			veh:aiTurnProgress( 1, veh.acParameters.rightAreaActive )
 		end
 
 --==============================================================				
@@ -1490,7 +1485,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				turnData.stage = turnData.stage + 2
 				veh.turnTimer  = veh.acDeltaTimeoutRun;
 			end
-			AutoSteeringEngine.setPloughTransport( veh, false )
+			veh:aiTurnProgress( 1, veh.acParameters.rightAreaActive )
 		end
 
 --==============================================================				

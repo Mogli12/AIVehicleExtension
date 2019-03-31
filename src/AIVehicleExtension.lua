@@ -992,9 +992,8 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 		self.acParameters.rightAreaActive = not self.acParameters.leftAreaActive
 		AIVehicleExtension.sendParameters(self)
 		if self.isServer then AutoSteeringEngine.setChainStraight( self ) end
-		if			self.acParameters ~= nil
-				and not ( self.spec_aiVehicle.isActive ) then
-			self:aiTurnProgress( 0.5, self.acParameters.leftAreaActive )
+		if self.acParameters ~= nil and self.aiveIsStarted then
+			self:aiTurnProgress( 1, self.acParameters.rightAreaActive )
 		end
 	elseif actionName == "AIVE_STEER" then
 		AIVehicleExtension.onAutoSteer(self, not ( self.aiveAutoSteer ))
