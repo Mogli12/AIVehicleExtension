@@ -49,20 +49,20 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 	if triggerId ~= nil and self.vehicle.acCollidingVehicles[triggerId] ~= nil then
 		for otherAI,bool in pairs(self.vehicle.acCollidingVehicles[triggerId]) do
 			if bool and otherAI.spec_aiVehicle.isActive then
-				local blocked = true
+				local blocked   = true
 				
 				if      g_currentMission.time < self.collisionTime + 2000 then
 				
-					local tX,_,tZ = localToWorld(self.vehicle.aiVehicleDirectionNode, 0,0,1)
-					table.insert(self.vehicle.debugTexts, " AIDriveStrategyCollisionOtherAI :: STOP due to collision ")
+					local tX,_,tZ = localToWorld(self.vehicle.acRefNode, 0,0,1)
+				--table.insert(self.vehicle.debugTexts, " AIDriveStrategyCollisionOtherAI :: STOP due to collision ")
 					return tX, tZ, true, 0, math.huge
 					
-				elseif  otherAI.aiVehicleDirectionNode ~= nil 
+				elseif  otherAI.acRefNode ~= nil 
 						and otherAI.aiveIsStarted 
 						and otherAI.acLastWantedSpeed ~= nil
 						and otherAI.acTurnStage       <= 0 
 						and otherAI.acLastWantedSpeed  > 6 then
-					local angle   = AutoSteeringEngine.getRelativeYRotation( otherAI.aiVehicleDirectionNode, self.vehicle.aiVehicleDirectionNode )
+					local angle   = AutoSteeringEngine.getRelativeYRotation( otherAI.acRefNode, self.vehicle.acRefNode )
 					if math.abs( angle ) < 0.1667 * math.pi then
 						blocked = false 
 						local s = otherAI.motor.speedLimit * math.cos( angle )
@@ -70,8 +70,8 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 								or self.vehicle.aiveMaxCollisionSpeed  > s then
 							self.vehicle.aiveMaxCollisionSpeed = s
 						end
-						local wx1, _, wz1 = getWorldTranslation( otherAI.aiVehicleDirectionNode )
-						local wx2, _, wz2 = getWorldTranslation( self.vehicle.aiVehicleDirectionNode )
+						local wx1, _, wz1 = getWorldTranslation( otherAI.acRefNode )
+						local wx2, _, wz2 = getWorldTranslation( self.vehicle.acRefNode )
 						local d = AIVEUtils.vector2Length( wx1-wx2, wz1-wz2 )
 						if     self.vehicle.aiveCollisionDistance == nil
 								or self.vehicle.aiveCollisionDistance  > d then
@@ -81,8 +81,8 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 				end
 				
 				if blocked then
-					local tX,_,tZ = localToWorld(self.vehicle.aiVehicleDirectionNode, 0,0,1)
-					table.insert(self.vehicle.debugTexts, " AIDriveStrategyCollisionOtherAI :: STOP due to collision ")
+					local tX,_,tZ = localToWorld(self.vehicle.acRefNode, 0,0,1)
+				--table.insert(self.vehicle.debugTexts, " AIDriveStrategyCollisionOtherAI :: STOP due to collision ")
 					
 					self.collisionTime = g_currentMission.time 
 
@@ -103,7 +103,7 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 		self.vehicle:setBeaconLightsVisibility(false, false)
 	end
 
-	table.insert(self.vehicle.debugTexts, " AIDriveStrategyCollisionOtherAI :: no collision ")
+--table.insert(self.vehicle.debugTexts, " AIDriveStrategyCollisionOtherAI :: no collision ")
 	return nil, nil, nil, nil, nil
 end
 

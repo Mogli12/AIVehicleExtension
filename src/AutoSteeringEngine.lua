@@ -7002,36 +7002,37 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	extraNodes[#extraNodes+1] = tool.refNodeRot 
 	
   --------------------------------------------------------
-	if      implement              ~= nil
-			and object:getAttacherVehicle() ~= nil 
-			and object:getAttacherVehicle() == vehicle 
-			and AutoSteeringEngine.tableGetN( AutoSteeringEngine.getTaJoints2( vehicle, implement, vehicle.aiveChain.refNode, 0 ) ) > 1 then
-		tool.doubleJoint = true
-	end
-	
-  --------------------------------------------------------
-	-- tool attached to tool
-	if vehicle ~= object:getAttacherVehicle() then
-		if vehicle.aiveChain.tools == nil then
-			return 0
-		else
-			for i,t in pairs( vehicle.aiveChain.tools ) do
-				if t.obj == object:getAttacherVehicle() then
-					if t.aiForceTurnNoBackward then
-						if tool.aiForceTurnNoBackward then
-							tool.doubleJoint = true						
-						else
-							tool.aiForceTurnNoBackward = true
+	if      implement                         ~= nil
+			and type( object.getAttacherVehicle ) == "function" then 
+		local oav = object:getAttacherVehicle()
+		if oav ~= nil and oav == vehicle and AutoSteeringEngine.tableGetN( AutoSteeringEngine.getTaJoints2( vehicle, implement, vehicle.aiveChain.refNode, 0 ) ) > 1 then
+			tool.doubleJoint = true
+		end
+		
+		--------------------------------------------------------
+		-- tool attached to tool
+		if vehicle ~= oav then
+			if vehicle.aiveChain.tools == nil then
+				return 0
+			else
+				for i,t in pairs( vehicle.aiveChain.tools ) do
+					if t.obj == oav then
+						if t.aiForceTurnNoBackward then
+							if tool.aiForceTurnNoBackward then
+								tool.doubleJoint = true						
+							else
+								tool.aiForceTurnNoBackward = true
+							end
 						end
+						if t.doubleJoint then
+							tool.doubleJoint = true
+						end				
+						if ( t.isCultivator or t.isSowingMachine ) and tool.isSprayer then
+							tool.ignoreAI = true
+						end
+						
+						break
 					end
-					if t.doubleJoint then
-						tool.doubleJoint = true
-					end				
-					if ( t.isCultivator or t.isSowingMachine ) and tool.isSprayer then
-						tool.ignoreAI = true
-					end
-					
-					break
 				end
 			end
 		end

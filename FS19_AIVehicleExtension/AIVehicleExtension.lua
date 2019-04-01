@@ -127,6 +127,7 @@ end
 function AIVehicleExtension.registerEventListeners(vehicleType)
 	for _,n in pairs( { "onLoad", 
 											"onPostLoad", 
+											"onPreUpdate", 
 											"onUpdate", 
 											"onDraw",
 											"onReadStream", 
@@ -135,7 +136,8 @@ function AIVehicleExtension.registerEventListeners(vehicleType)
 											"onWriteUpdateStream", 
 											"saveToXMLFile", 
 											"onRegisterActionEvents",
-											"onStateChange" } ) do
+											"onStateChange",
+											"onPreDelete" } ) do
 		SpecializationUtil.registerEventListener(vehicleType, n, AIVehicleExtension)
 	end 
 end 
@@ -181,16 +183,16 @@ function AIVehicleExtension:onLoad(saveGame)
 	self.acRefNode = createTransformGroup( "acNewRefNode" )
 	link( tempNode, self.acRefNode )
 
---if AIVEGlobals.otherAIColli > 0 then
---	self.acI3D = getChild(Utils.loadSharedI3DFile("AutoCombine.i3d", AtDirectory),"AutoCombine")	
-----self.acBackTrafficCollisionTrigger   = getChild(self.acI3D,"backCollisionTrigger")
---	self.acOtherCombineCollisionTriggerL = getChild(self.acI3D,"otherCombColliTriggerL")
---	self.acOtherCombineCollisionTriggerR = getChild(self.acI3D,"otherCombColliTriggerR")
---	link(self.acRefNode,self.acI3D)
---	
---	self.acCollidingVehicles = nil
---	self.onOtherAICollisionTrigger = AIVehicleExtension.onOtherAICollisionTrigger
---end
+	if AIVEGlobals.otherAIColli > 0 then
+		self.acI3D = getChild(g_i3DManager:loadSharedI3DFile("AutoCombine.i3d", AtDirectory),"AutoCombine")	
+	--self.acBackTrafficCollisionTrigger   = getChild(self.acI3D,"backCollisionTrigger")
+		self.acOtherCombineCollisionTriggerL = getChild(self.acI3D,"otherCombColliTriggerL")
+		self.acOtherCombineCollisionTriggerR = getChild(self.acI3D,"otherCombColliTriggerR")
+		link(self.acRefNode,self.acI3D)
+		
+		self.acCollidingVehicles = nil
+		self.onOtherAICollisionTrigger = AIVehicleExtension.onOtherAICollisionTrigger
+	end
 	
 	self.acChopperWithCourseplay = false 
 end
@@ -268,11 +270,11 @@ end
 -- delete
 ------------------------------------------------------------------------
 function AIVehicleExtension:onPreDelete()
---if AIVEGlobals.otherAIColli > 0 then
-----removeTrigger( self.acBackTrafficCollisionTrigger   )
---	removeTrigger( self.acOtherCombineCollisionTriggerL )
---	removeTrigger( self.acOtherCombineCollisionTriggerR )
---end
+	if AIVEGlobals.otherAIColli > 0 then
+	--removeTrigger( self.acBackTrafficCollisionTrigger   )
+		removeTrigger( self.acOtherCombineCollisionTriggerL )
+		removeTrigger( self.acOtherCombineCollisionTriggerR )
+	end
 	
 	if self.atMogliInitDone then
 		AIVEHud.delete(self)
@@ -946,27 +948,45 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
 			self:clearActionEventsTable( self.aiveActionEvents )
 		end 
 		
-		for _,actionName in pairs({ "AIVE_HELPPANEL" 	  
-                               ,"AIVE_STEER"          
-                               ,"AIVE_SWAP_SIDE"      
-                               ,"AIVE_ENABLE"         
-                               ,"AIVE_UTURN_ON_OFF"   
-                               ,"AIVE_STEERING"         
-                               ,"AIVE_RAISE"            
-                               ,"AIVE_START_AIVE"
-															 ,"AXIS_MOVE_SIDE_VEHICLE"
-															 ,"TOGGLE_CRUISE_CONTROL" }) do
+		local actions = {}
+		
+		if self.aiveIsStarted then
+			actions = { "AIVE_HELPPANEL" 	  
+                 ,"AIVE_SWAP_SIDE"      
+                 ,"AIVE_UTURN_ON_OFF"   
+                 ,"AIVE_STEERING"         
+                 ,"AIVE_START_AIVE"
+								 ,"TOGGLE_CRUISE_CONTROL" }
+		elseif self.spec_aiVehicle.isActive then 
+		elseif self.aiveAutoSteer then 
+			actions = { "AIVE_HELPPANEL" 	  
+                 ,"AIVE_STEER"          
+                 ,"AIVE_SWAP_SIDE"      
+                 ,"AIVE_ENABLE"         
+                 ,"AIVE_UTURN_ON_OFF"   
+                 ,"AIVE_RAISE"            
+                 ,"AIVE_START_AIVE" }
+		else 
+			actions = { "AIVE_HELPPANEL" 	  
+                 ,"AIVE_STEER"          
+                 ,"AIVE_SWAP_SIDE"      
+                 ,"AIVE_ENABLE"         
+                 ,"AIVE_UTURN_ON_OFF"   
+                 ,"AIVE_STEERING"         
+                 ,"AIVE_RAISE"            
+                 ,"AIVE_START_AIVE" }
+		end 
+		
+		for _,actionName in pairs( actions ) do
 			local pBool1, pBool2, pBool3, pBool4 = false, true, false, true 
-			if     actionName == "AXIS_MOVE_SIDE_VEHICLE" then 
-				pBool1 = true 
-			end 
-			
 			local _, eventName = self:addActionEvent(self.aiveActionEvents, InputAction[actionName], self, AIVehicleExtension.actionCallback, pBool1, pBool2, pBool3, pBool4);
 		end
 	end
 end
 
 function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, arg6)
+
+	print(tostring(actionName)..": "..tostring(keyStatus))
 
 	local guiActive = false
 	if self.atHud ~= nil and self.atHud.GuiActive ~= nil then
@@ -991,10 +1011,6 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 		self.acParameters.leftAreaActive	= self.acParameters.rightAreaActive
 		self.acParameters.rightAreaActive = not self.acParameters.leftAreaActive
 		AIVehicleExtension.sendParameters(self)
-		if self.isServer then AutoSteeringEngine.setChainStraight( self ) end
-		if self.acParameters ~= nil and self.aiveIsStarted then
-			self:aiTurnProgress( 1, self.acParameters.rightAreaActive )
-		end
 	elseif actionName == "AIVE_STEER" then
 		AIVehicleExtension.onAutoSteer(self, not ( self.aiveAutoSteer ))
 	elseif actionName == "AIVE_UTURN_ON_OFF" then
@@ -1012,10 +1028,6 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 			AIVehicleExtension.sendParameters( self )
 		end
 		AIVehicleExtension.setImplMoveDownClient(self, not ( AIVehicleExtension.getIsLowered( self ) ), true)
-	elseif  actionName == "AXIS_MOVE_SIDE_VEHICLE"
-			and self.acParameters ~= nil 
-			and not ( self.acParameters.noSteering ) then 
-		AIVehicleExtension.setAxisSide( self, keyStatus )
 	elseif  actionName == "TOGGLE_CRUISE_CONTROL" 
 			and self.aiveIsStarted then 
 		if self.speed2Level == nil or self.speed2Level > 0 then
@@ -1027,9 +1039,28 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 end 
 
 ------------------------------------------------------------------------
+-- AIVehicleExtension.onPreUpdate
+------------------------------------------------------------------------
+function AIVehicleExtension:onPreUpdate( dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected )
+
+	if      self.isClient
+			and self.getIsEntered  ~= nil
+			and self.acParameters  ~= nil 
+			and self.spec_drivable ~= nil
+			and self:getIsEntered()
+			and self:getIsActiveForInput(true, true)
+			and ( self.aiveAutoSteer or ( self.aiveIsStarted and not self.acParameters.noSteering ) )
+			and math.abs( self.spec_drivable.lastInputValues.axisSteer ) > 0.05 then 
+		self.acAxisSide = self.spec_drivable.lastInputValues.axisSteer
+	else 
+		self.acAxisSide = 0
+	end 
+end
+
+------------------------------------------------------------------------
 -- AIVehicleExtension.onUpdate
 ------------------------------------------------------------------------
-function AIVehicleExtension:onUpdate(dt)
+function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected )
 
 	self.aiveTickDt = dt 
 
@@ -1044,10 +1075,6 @@ function AIVehicleExtension:onUpdate(dt)
 	if self.aiveToolsDirty then 
 		AIVehicleExtension.invalidateState( self )
 		self.aiveToolsDirty = nil
-	end 
-	
-	if math.abs( self.acAxisSide ) > 0.05 and ( self.acParameters == nil or self.acParameters.noSteering ) then
-		AIVehicleExtension.setAxisSide( 0 )
 	end 
 	
 	if AIVEGlobals.otherAIColli > 0 and self.isServer and self.acCollidingVehicles == nil then
@@ -1143,7 +1170,7 @@ function AIVehicleExtension:onUpdate(dt)
 			self.stopMotorOnLeave = false
 			self.deactivateOnLeave = false
 			
-			AIVehicleExtension.autoSteer(self,dt)
+		--AIVehicleExtension.autoSteer(self,dt)
 		else
 			self.acTurnStage = 0
 		end
@@ -1206,6 +1233,11 @@ function AIVehicleExtension:onUpdate(dt)
 			AIVehicleExtension.setInt32Value( self, "lowered", lv )
 		end
 	end
+	
+	if self.aiveRequestActionEventUpdate then 
+		self.aiveRequestActionEventUpdate = nil 
+		self:requestActionEventUpdate()
+	end 
 end
 
 ------------------------------------------------------------------------
@@ -1215,17 +1247,6 @@ function AIVehicleExtension:onStateChange(state, data)
 	if state == Vehicle.STATE_CHANGE_ATTACH or state == Vehicle.STATE_CHANGE_DETACH then
     self.aiveToolsDirty = true
 	end
-end
-
-------------------------------------------------------------------------
--- AIVehicleExtension.setAxisSide
-------------------------------------------------------------------------
-function AIVehicleExtension:setAxisSide( axisSide )
-	if math.abs( axisSide ) < 0.05 then 
-		self.acAxisSide = 0
-	else 
-		self.acAxisSide = axisSide 
-	end 
 end
 
 ------------------------------------------------------------------------
@@ -1504,137 +1525,152 @@ end
 ------------------------------------------------------------------------
 -- autoSteer
 ------------------------------------------------------------------------
-function AIVehicleExtension:autoSteer(dt)
+function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axisSide, doHandbrake, dt )
 
-	if not self.isServer then
-		return
-	end
-	
-	if self.acTurnStage ~= 199 then
-		self.acTurnStage = 198
-	end
-	
-	if self.movingDirection < -1E-2 then	
-		self.acTurnStage = 198
-		AIVehicleExtension.setStatus( self, 0 )
-		return
-	end
-	
-	AIVehicleExtension.checkState( self )
-
-	if not AutoSteeringEngine.hasTools( self ) then
-		self.acTurnStage = 0
-		AIVehicleExtension.setStatus( self, 0 )
-		return
-	end
-
-	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( self )
-	local fruitsAdvance = fruitsDetected
-	if not fruitsAdvance and AutoSteeringEngine.hasFruits( self, true ) then
-		fruitsAdvance = true
-	end
-	
-	local isMovedDown = AIVehicleExtension.getIsLoweredServer( self )
-	
---==============================================================		
-	if fruitsAdvance and self.acImplementsMoveDown then
-		AutoSteeringEngine.getIsAIReadyForWork( self )
-	end
-		
-	local vX,vY,vZ = getWorldTranslation( self.acRefNode )
-	AutoSteeringEngine.setAiWorldPosition( self, vX, vY, vZ )
-	
-	local inField, target, angleFactor, nilAngle
-
-	if self.acTurnStage == 199 then
-		inField     = true
-		angleFactor = self.acParameters.angleFactor
-		nilAngle    = "L"
-		
-		if	   self.turnTimer < 0 
-				or AutoSteeringEngine.getIsAtEnd( self ) then
-			target = math.min( math.max( 0.5 * AutoSteeringEngine.getTurnAngle(self), -self.acDimensions.maxSteeringAngle ), self.acDimensions.maxSteeringAngle )
-			if AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then
-				target = math.max( target, 0 )
-			end
-			if not self.acParameters.leftAreaActive then
-				target = -target
-			end
-		end
-	else
-		inField     = false
-		angleFactor = 1
-		nilAngle    = "M"
-	end
-
-	local detected, angle, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( self, inField, target, angleFactor, nilAngle )	
---==============================================================						
-		
-	self.turnTimer = self.turnTimer - dt
-	
-	if fruitsDetected and detected and border <= 0 then
-		AIVehicleExtension.setStatus( self, 1 )
+	if self.isServer and self.aiveAutoSteer then 	
+		local doit = true  
 		if self.acTurnStage ~= 199 then
-			self.acTurnStage = 199
-			AutoSteeringEngine.clearTrace( self )
-			AutoSteeringEngine.saveDirection( self, false, false, true )
-		elseif AutoSteeringEngine.getIsAtEnd( self ) then
-			if self.acParameters.leftAreaActive then
-				angle = math.max( angle, 0 )
-			else
-				angle = math.min( angle, 0 )
-			end
-		end
-		AutoSteeringEngine.saveDirection( self, true, true, true )
-		self.turnTimer = self.acDeltaTimeoutRun
-	elseif self.acTurnStage == 199 and self.turnTimer >= 0 then
-		if border > 0 then
-			AIVehicleExtension.setStatus( self, 3 )
-		else
-			if AutoSteeringEngine.getIsAtEnd( self ) then
-				if self.acParameters.leftAreaActive then
-					angle = math.max( angle, 0 )
-				else
-					angle = math.min( angle, 0 )
-				end
-			end
-			if fruitsDetected then
-				self.turnTimer = self.acDeltaTimeoutRun
-			end			
-			AIVehicleExtension.setStatus( self, 2 )
-		end
-	else
-		if self.acTurnStage == 199 and border <= 0 then
-			self:setCruiseControlState( Drivable.CRUISECONTROL_STATE_OFF )
-		end
-
-		if border > 0 then
-			AIVehicleExtension.setStatus( self, 3 )
-		else
-			AIVehicleExtension.setStatus( self, 2 )
+			self.acTurnStage = 198
 		end
 		
-		self.acTurnStage = 198
-	end
-	
-	if self.acAxisSideFactor == nil then
-		self.acAxisSideFactor = 0
-	elseif self:getIsEntered() and math.abs( self.acAxisSide ) >= 0.1 then
-		self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
-	elseif self.acAxisSideFactor < 1000  then
-		self.acAxisSideFactor = math.min( self.acAxisSideFactor + dt, 1000 )
-	end
-	
-	local f = 0.001 * self.acAxisSideFactor
-	
-	if f <= 0 then
-		angle = -self.acAxisSide * self.acDimensions.maxSteeringAngle
-	elseif f < 1 then
-		angle = f * angle - (1-f) * self.acAxisSide * self.acDimensions.maxSteeringAngle
-	end
-	AutoSteeringEngine.steer( self, dt, angle, self.acSteeringSpeed, (f >= 0.999 ) and (self.acTurnStage == 199) )
+		AIVehicleExtension.checkState( self )
 
+		if not AutoSteeringEngine.hasTools( self ) then
+			self.acTurnStage = 0
+			AIVehicleExtension.setStatus( self, 0 )
+			doit = false 
+		end
+
+		if doit then 
+			local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( self )
+			local fruitsAdvance = fruitsDetected
+			if not fruitsAdvance and AutoSteeringEngine.hasFruits( self, true ) then
+				fruitsAdvance = true
+			end
+			
+			local isMovedDown = AIVehicleExtension.getIsLoweredServer( self )
+			
+		--==============================================================		
+			if fruitsAdvance and self.acImplementsMoveDown then
+				AutoSteeringEngine.getIsAIReadyForWork( self )
+			end
+				
+			local vX,vY,vZ = getWorldTranslation( self.acRefNode )
+			AutoSteeringEngine.setAiWorldPosition( self, vX, vY, vZ )
+			
+			local inField, target, angleFactor, nilAngle
+
+			if self.acTurnStage == 199 then
+				inField     = true
+				angleFactor = self.acParameters.angleFactor
+				nilAngle    = "L"
+				
+				if	   self.turnTimer < 0 
+						or AutoSteeringEngine.getIsAtEnd( self ) then
+					target = math.min( math.max( 0.5 * AutoSteeringEngine.getTurnAngle(self), -self.acDimensions.maxSteeringAngle ), self.acDimensions.maxSteeringAngle )
+					if AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then
+						target = math.max( target, 0 )
+					end
+					if not self.acParameters.leftAreaActive then
+						target = -target
+					end
+				end
+			else
+				inField     = false
+				angleFactor = 1
+				nilAngle    = "M"
+			end
+
+			local detected, angle, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( self, inField, target, angleFactor, nilAngle )	
+		--==============================================================						
+				
+			self.turnTimer = self.turnTimer - dt
+			
+			if fruitsDetected and detected and border <= 0 then
+				AIVehicleExtension.setStatus( self, 1 )
+				if self.acTurnStage ~= 199 then
+					self.acTurnStage = 199
+					AutoSteeringEngine.clearTrace( self )
+					AutoSteeringEngine.saveDirection( self, false, false, true )
+				elseif AutoSteeringEngine.getIsAtEnd( self ) then
+					if self.acParameters.leftAreaActive then
+						angle = math.max( angle, 0 )
+					else
+						angle = math.min( angle, 0 )
+					end
+				end
+				AutoSteeringEngine.saveDirection( self, true, true, true )
+				self.turnTimer = self.acDeltaTimeoutRun
+			elseif self.acTurnStage == 199 and self.turnTimer >= 0 then
+				if border > 0 then
+					AIVehicleExtension.setStatus( self, 3 )
+				else
+					if AutoSteeringEngine.getIsAtEnd( self ) then
+						if self.acParameters.leftAreaActive then
+							angle = math.max( angle, 0 )
+						else
+							angle = math.min( angle, 0 )
+						end
+					end
+					if fruitsDetected then
+						self.turnTimer = self.acDeltaTimeoutRun
+					end			
+					AIVehicleExtension.setStatus( self, 2 )
+				end
+			else
+				if self.acTurnStage == 199 and border <= 0 then
+					self:setCruiseControlState( Drivable.CRUISECONTROL_STATE_OFF )
+				end
+
+				if border > 0 then
+					AIVehicleExtension.setStatus( self, 3 )
+				else
+					AIVehicleExtension.setStatus( self, 2 )
+				end
+				
+				self.acTurnStage = 198
+			end
+						
+			if     self.acAxisSideFactor == nil then
+				self.acAxisSideFactor = 0
+			elseif self.movingDirection < -1E-2 or not self.acImplementsMoveDown then	
+				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
+			elseif self:getIsEntered() and math.abs( self.acAxisSide ) > 0 then
+				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
+			elseif border > 0 then 
+				self.acAxisSideFactor = math.min( self.acAxisSideFactor + 10 * dt, 1000 )
+			elseif not detected then 
+				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
+			else
+				self.acAxisSideFactor = math.min( self.acAxisSideFactor + dt, 1000 )
+			end
+			
+			local f = 0.001 * self.acAxisSideFactor
+			
+			local newAxisSide = - angle / self.acDimensions.maxSteeringAngle
+	
+			if self.lastAxisSide ~= nil and border <= 0 and self.acTurnStage ~= 199 then 
+			--local d = 0.0005 * ( 2 + math.min( 18, self.lastSpeed * 3600 ) ) * dt
+				local d = 0.002 * dt 
+				newAxisSide = AIVEUtils.clamp( newAxisSide, self.lastAxisSide-d, self.lastAxisSide+d )
+			end 
+	
+			if     f <= 0 then
+				newAxisSide = axisSide
+			elseif f  < 1 then
+				newAxisSide = (1-f) * axisSide + f * newAxisSide
+			end
+			
+			axisSide = AIVEUtils.clamp( newAxisSide, -1, 1)		
+		end
+		
+		self.lastAxisSide = axisSide 
+	end
+
+	return superFunc( self, axisForward, axisSide, doHandbrake, dt )
 end
+
+Drivable.updateVehiclePhysics = Utils.overwrittenFunction( Drivable.updateVehiclePhysics, AIVehicleExtension.newUpdateVehiclePhysics )
 
 ------------------------------------------------------------------------
 -- getSaveAttributesAndNodes
@@ -2593,7 +2629,7 @@ function AIVehicleExtension:onOtherAICollisionTrigger(triggerId, otherId, onEnte
 --print(" HIT @:"..self.configFileName.."   IN   "..getName(triggerId).."   BY   "..getName(otherId)..", "..getName(otherShapeId))
 
 	if g_currentMission.players[otherId] == nil then
-		local vehicle = g_currentMission.nodeToVehicle[otherId]
+		local vehicle = g_currentMission.nodeToObject[otherId]
 		local otherAI = nil
 			
 		if vehicle ~= nil then
@@ -2619,7 +2655,9 @@ function AIVehicleExtension:onOtherAICollisionTrigger(triggerId, otherId, onEnte
 end
 
 
-
+------------------------------------------------------------------------
+-- newDriveToPoint
+------------------------------------------------------------------------
 function AIVehicleExtension.newDriveToPoint( self, superFunc, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer, ... )
 	if not ( self.aiveIsStarted ) then 
 		return superFunc( self, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer, ... )

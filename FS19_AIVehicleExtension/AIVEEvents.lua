@@ -155,11 +155,17 @@ function AIVehicleExtension:setInt32Value( name, value, noEventSend )
 			end
 			if value > 0 then 
 				AIVehicleExtension.initMogliHud(self)
+				if not self.aiveAutoSteer  then 
+					self.aiveRequestActionEventUpdate = true 
+				end 
 				self.stopMotorOnLeave  = false 
 				self.deactivateOnLeave = false
 				self.acTurnStage       = 198
 				self.aiveAutoSteer     = true
 			else 
+				if self.aiveAutoSteer  then 
+					self.aiveRequestActionEventUpdate = true 
+				end 
 				self.stopMotorOnLeave  = true
 				self.deactivateOnLeave = true
 				self.acTurnStage       = 0
