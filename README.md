@@ -1,5 +1,8 @@
 # AIVehicleExtension for Farming Simulator 2019
 
+## Download
+This is the link to the latest beta version: https://github.com/Mogli12/AIVehicleExtension/blob/master/FS19_AIVehicleExtension.zip?raw=true
+
 ## Status
 This is the very first version of AIVE for FS19.
 
