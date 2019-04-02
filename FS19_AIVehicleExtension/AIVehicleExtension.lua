@@ -75,6 +75,7 @@ AIVehicleExtension.saveAttributesMapping = {
 		widthOffset		  = { xml = "acWidthOffset", tp = "F", default = 0 },
 		turnOffset			= { xml = "acTurnOffset",	 tp = "F", default = 0 },
 		angleFactor		  = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
+		precision		    = { xml = "acPrecision",   tp = "I", default = 1 },
 		noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
 		useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
 		waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true },
@@ -369,6 +370,10 @@ function AIVehicleExtension:onAIVEScreen()
 	for i=-16,16 do
 		table.insert( self.aiveUI.widthOffset, string.format("%5.3fm",i*0.125) )
 	end
+	
+	self.aiveUI.precision = { AIVEHud.getText("AIVE_PRECISION_0"),
+														AIVEHud.getText("AIVE_PRECISION_1"),
+														AIVEHud.getText("AIVE_PRECISION_2") }
 	
 	
 	g_AIVEScreen:setVehicle( self )
@@ -956,6 +961,7 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
                  ,"AIVE_UTURN_ON_OFF"   
                  ,"AIVE_STEERING"         
                  ,"AIVE_START_AIVE"
+                 ,"AXIS_MOVE_SIDE_VEHICLE"
 								 ,"TOGGLE_CRUISE_CONTROL" }
 		elseif self.spec_aiVehicle.isActive then 
 		elseif self.aiveAutoSteer then 
@@ -979,6 +985,9 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
 		
 		for _,actionName in pairs( actions ) do
 			local pBool1, pBool2, pBool3, pBool4 = false, true, false, true 
+			if actionName == "AXIS_MOVE_SIDE_VEHICLE" then 
+				pBool1 = true 
+			end 
 			local _, eventName = self:addActionEvent(self.aiveActionEvents, InputAction[actionName], self, AIVehicleExtension.actionCallback, pBool1, pBool2, pBool3, pBool4);
 		end
 	end
@@ -986,7 +995,7 @@ end
 
 function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, arg6)
 
-	print(tostring(actionName)..": "..tostring(keyStatus))
+	AIVehicleExtension.debugPrint( self, tostring(actionName)..": "..tostring(keyStatus) )
 
 	local guiActive = false
 	if self.atHud ~= nil and self.atHud.GuiActive ~= nil then
@@ -1028,6 +1037,15 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 			AIVehicleExtension.sendParameters( self )
 		end
 		AIVehicleExtension.setImplMoveDownClient(self, not ( AIVehicleExtension.getIsLowered( self ) ), true)
+	elseif  actionName == "AXIS_MOVE_SIDE_VEHICLE" 
+			and self.aiveIsStarted 
+			and self.acParameters ~= nil 
+			and not self.acParameters.noSteering then 
+		if math.abs( keyStatus ) > 0.05 then 
+			self.acAxisSide = keyStatus
+		else 
+			self.acAxisSide = 0
+		end 
 	elseif  actionName == "TOGGLE_CRUISE_CONTROL" 
 			and self.aiveIsStarted then 
 		if self.speed2Level == nil or self.speed2Level > 0 then
@@ -1043,15 +1061,17 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:onPreUpdate( dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected )
 
-	if      self.isClient
+	if      self.aiveAutoSteer
+			and self.isClient
 			and self.getIsEntered  ~= nil
 			and self.acParameters  ~= nil 
 			and self.spec_drivable ~= nil
 			and self:getIsEntered()
 			and self:getIsActiveForInput(true, true)
-			and ( self.aiveAutoSteer or ( self.aiveIsStarted and not self.acParameters.noSteering ) )
+		--and ( self.aiveAutoSteer or ( self.aiveIsStarted and not self.acParameters.noSteering ) )
 			and math.abs( self.spec_drivable.lastInputValues.axisSteer ) > 0.05 then 
 		self.acAxisSide = self.spec_drivable.lastInputValues.axisSteer
+	elseif self.aiveIsStarted then
 	else 
 		self.acAxisSide = 0
 	end 
@@ -1264,8 +1284,10 @@ function AIVehicleExtension:shiftAIMarker()
 		if self.acDimensions == nil then
 			AIVehicleExtension.calculateDimensions( self )
 		end
-		local d, t, z = AutoSteeringEngine.checkTools( self )
-		h = math.max( 0, math.max( 0, t-z ) + math.max( 0, -t-self.acDimensions.zOffset ) + AIVehicleExtension.calculateHeadland( "T", d, z, t, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) ) + self.acParameters.turnOffset )
+		local d, t, z, f, r = AutoSteeringEngine.checkTools( self )
+		h = math.max( 0, math.max( 0, t-z ) + math.max( 0, -t-self.acDimensions.zOffset ) + AIVehicleExtension.calculateHeadland( "T", d, z, t, f, 
+																				self.acDimensions.radius, r, self.acDimensions.wheelBase, self.acParameters.bigHeadland, 
+																				AutoSteeringEngine.getNoReverseIndex( self ) ) + self.acParameters.turnOffset )
 	end 
 	
 	if math.abs( h ) < 0.01 and self.atShiftedMarker == nil then
@@ -1795,8 +1817,12 @@ function AIVehicleExtension:getHeadlandSmallBig()
 	end
 	AIVehicleExtension.calculateDistances( self )
 	local nri   = AutoSteeringEngine.getNoReverseIndex( self )
-  local small = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, false, nri )
-	local big   = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, true,  nri )
+  local small = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, 
+																											self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.frontToBack,
+																											self.acDimensions.radius, self.acDimensions.radius75, self.acDimensions.wheelBase, false, nri )
+	local big   = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, 
+																											self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.frontToBack,
+																											self.acDimensions.radius, self.acDimensions.radius75, self.acDimensions.wheelBase, true,  nri )
 	
 	return small, big
 end
@@ -1804,7 +1830,7 @@ end
 ------------------------------------------------------------------------
 -- calculateHeadland
 ------------------------------------------------------------------------
-function AIVehicleExtension.calculateHeadland( turnMode, realWidth, zBack, toolDist, radius, wheelBase, big, noRevIdx )
+function AIVehicleExtension.calculateHeadland( turnMode, realWidth, zBack, toolDist, frontToBack, radius, radius75, wheelBase, big, noRevIdx )
 
 	local width = 1.5
 	if big then
@@ -1814,40 +1840,40 @@ function AIVehicleExtension.calculateHeadland( turnMode, realWidth, zBack, toolD
 		width = width + 2
 	end
 	
-	local frontToBack = 1
-	if noRevIdx ~= nil and noRevIdx <= 0 and turnMode == "T" then
-		frontToBack = math.max( -zBack, 1 )
-	elseif big then
-		frontToBack = math.max( toolDist - zBack, 1 )
-	end
+--local frontToBack = 1
+--if noRevIdx ~= nil and noRevIdx <= 0 and turnMode == "T" then
+--	frontToBack = math.max( -zBack, 1 )
+--elseif big then
+--	frontToBack = math.max( toolDist - zBack, 1 )
+--end
 	
---print("calculateHeadland: width: "..tostring(width)..
---										   ", zBack: "..tostring(zBack)..
---										", toolDist: "..tostring(toolDist)..
---										", turnMode: "..tostring(turnMode)..
---											", radius: "..tostring(radius)..
---									 ", wheelBase: "..tostring(wheelBase)..
---								 ", frontToBack: "..tostring(frontToBack))
 	
 	local ret = 0
 	if		 turnMode == "A"
 			or turnMode == "L" then
-		ret	 = math.max( 2, toolDist ) + math.abs( wheelBase ) + math.abs( zBack ) + frontToBack
+	--ret	 = math.max( 2, toolDist ) + math.abs( wheelBase ) + math.abs( zBack ) + frontToBack
+		ret	 = 1 + math.max( frontToBack - toolDist + math.abs( wheelBase ) + 1, 
+												 - toolDist - zBack )
 		if big then
 			ret = ret + 3
 		end
 		ret	 = math.max( ret, width ) 
 	elseif turnMode == "C" then
 		ret	 = width + math.max( -zBack, 0 ) + radius
-	elseif turnMode == "O" or turnMode == "8" then
-		local beta = math.acos( math.min(math.max(realWidth / radius, 0),1) )
-		local z		= 2.2 * radius * math.sin( beta )
-		if big then
-			z = z + 1.1
-		end
-		ret	 = width + math.max( -zBack, 0 ) + math.max( frontToBack, z ) + math.max( toolDist, 0 ) + radius
 	else
-		ret	 = width + math.max( -zBack, 0 ) + frontToBack + math.max( toolDist, 0 ) + radius
+		local r = radius
+		local z = 0
+		if turnMode == "O" or turnMode == "8" then
+			r = radius75
+		end 
+		if turnMode == "O" then -- or turnMode == "8" then
+			local beta = math.acos( math.min(math.max(realWidth / r, 0),1) )
+			z	= 2.2 * radius * math.sin( beta )
+			if big then
+				z = z + 1.1
+			end
+		end
+		ret	= width + r + math.max( frontToBack - toolDist + z, toolDist )
 	end
 	
 	if ret < 0 then
@@ -1872,9 +1898,11 @@ function AIVehicleExtension.calculateDistances( self )
 		rd = true 
 	end 
 	
-	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, rd, self.acParameters.useAIFieldFct )
+	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, rd, 
+																 self.acParameters.useAIFieldFct, self.acParameters.precision )
 
-	self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack = AutoSteeringEngine.checkTools( self )
+	self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack, self.acDimensions.frontToBack, self.acDimensions.radius75 
+								= AutoSteeringEngine.checkTools( self )
 	
 	self.acDimensions.distance0				= self.acDimensions.distance
 	if self.acParameters.widthOffset ~= nil then
@@ -1890,8 +1918,14 @@ function AIVehicleExtension.calculateDistances( self )
 
 	self.acDimensions.insideDistance = math.max( 0, self.acDimensions.toolDistance - 1 - self.acDimensions.distance +(self.acDimensions.radius * math.cos( self.acDimensions.maxSteeringAngle )) )
 	self.acDimensions.uTurnDistance	= math.max( 0, self.acDimensions.toolDistance, self.acDimensions.distance - self.acDimensions.radius )
-	self.acDimensions.headlandDist	 = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
-	self.acDimensions.collisionDist	= 1 + AIVehicleExtension.calculateHeadland( self.acTurnMode, math.max( self.acDimensions.distance, 1.5 ), self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.radius, self.acDimensions.wheelBase, self.acParameters.bigHeadland, AutoSteeringEngine.getNoReverseIndex( self ) )
+	self.acDimensions.headlandDist	 = AIVehicleExtension.calculateHeadland( self.acTurnMode, self.acDimensions.distance, 
+																					self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.frontToBack, 
+																					self.acDimensions.radius, self.acDimensions.radius75, self.acDimensions.wheelBase, self.acParameters.bigHeadland, 
+																					AutoSteeringEngine.getNoReverseIndex( self ) )
+	self.acDimensions.collisionDist	= 1 + AIVehicleExtension.calculateHeadland( self.acTurnMode, math.max( self.acDimensions.distance, 1.5 ), 
+																					self.acDimensions.zBack, self.acDimensions.toolDistance, self.acDimensions.frontToBack,
+																					self.acDimensions.radius, self.acDimensions.radius75, self.acDimensions.wheelBase, self.acParameters.bigHeadland,
+																					AutoSteeringEngine.getNoReverseIndex( self ) )
 	self.acDimensions.uTurnDist4x   = 1 + math.max( math.max( self.acDimensions.toolDistance - self.acDimensions.radius, self.acDimensions.distance ) - self.acDimensions.radius, 0 )
 	--if self.acShowDistOnce == nil then
 	--	self.acShowDistOnce = 1

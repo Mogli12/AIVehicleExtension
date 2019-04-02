@@ -53,10 +53,15 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.limitOutside = 0
 	AIVEGlobals.limitInside  = 0
 	AIVEGlobals.maxDtSumT     = 0
-	AIVEGlobals.maxDtSumP0    = 0
-	AIVEGlobals.maxDtSumP1    = 0
-	AIVEGlobals.maxDtProd     = 0
-	AIVEGlobals.maxDtSumF     = 0
+	AIVEGlobals.maxDtSumP0N   = 0
+	AIVEGlobals.maxDtSumP1N   = 0
+	AIVEGlobals.maxDtProdN    = 0
+	AIVEGlobals.maxDtSumP0L   = 0
+	AIVEGlobals.maxDtSumP1L   = 0
+	AIVEGlobals.maxDtProdL    = 0
+	AIVEGlobals.maxDtSumP0H   = 0
+	AIVEGlobals.maxDtSumP1H   = 0
+	AIVEGlobals.maxDtProdH    = 0
 	AIVEGlobals.showStat      = 0
 	AIVEGlobals.maxTurnCheck  = 0
 	AIVEGlobals.maxToolAngle  = 0
@@ -1008,7 +1013,7 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 			or nilAngleMode               ~= "L"
 			or vehicle.aiveChain.valid    == nil 
 			or vehicle.aiveChain.lastBest == nil
-			or g_currentMission.time - vehicle.aiveChain.valid > AIVEGlobals.maxDtSumP1 then
+			or g_currentMission.time - vehicle.aiveChain.valid > vehicle.aiveChain.maxDtSumP1 then
 		vehicle.aiveChain.averageAngle = nil
 	end
 	
@@ -1037,7 +1042,7 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 	local detected = false
 	
 	if  not ( vehicle.aiveChain.valid == nil or vehicle.aiveChain.lastBest == nil )
-			and g_currentMission.time - vehicle.aiveChain.valid < AIVEGlobals.maxDtSumP0
+			and g_currentMission.time - vehicle.aiveChain.valid < vehicle.aiveChain.maxDtSumP0
 			and vehicle.aiveChain.lastBest.detected 
 			and vehicle.aiveChain.lastBest.border <= 0 then
 		local d0, bi0, bo0, to0, ll0 = AutoSteeringEngine.processChainStep( vehicle, best, vehicle.aiveChain.lastBest.angle, vehicle.aiveChain.lastBest.indexMin, vehicle.aiveChain.lastBest.indexMax )
@@ -1053,7 +1058,7 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 	if fromStart then	
 		if     vehicle.aiveChain.valid    == nil
 				or vehicle.aiveChain.lastBest == nil
-				or g_currentMission.time - vehicle.aiveChain.valid > AIVEGlobals.maxDtSumP1 then
+				or g_currentMission.time - vehicle.aiveChain.valid > vehicle.aiveChain.maxDtSumP1 then
 			if vehicle.aiveChain.valid == nil then
 				vehicle.aiveProcessChainInfo = vehicle.aiveProcessChainInfo.."P1.0\n"
 			else
@@ -1201,7 +1206,7 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 			if vehicle.aiveChain.fullSpeed then
 				if vehicle.aiveChain.valid == nil then
 					vehicle.aiveChain.fullSpeed = false
-				elseif ( g_currentMission.time - vehicle.aiveChain.valid ) * vehicle.lastSpeed > AIVEGlobals.maxDtProd then
+				elseif ( g_currentMission.time - vehicle.aiveChain.valid ) * vehicle.lastSpeed > vehicle.aiveChain.maxDtProd then
 					vehicle.aiveProcessChainInfo = vehicle.aiveProcessChainInfo..string.format("P1.2: %d %f\n", g_currentMission.time - vehicle.aiveChain.valid, ( g_currentMission.time - vehicle.aiveChain.valid ) * vehicle.lastSpeed)
 					vehicle.aiveChain.fullSpeed = false
 				end
@@ -1494,9 +1499,27 @@ end
 ------------------------------------------------------------------------
 -- checkChain
 ------------------------------------------------------------------------
-function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteering, widthOffset, turnOffset, isInverted, useAIFieldFct )
+function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteering, widthOffset, turnOffset, isInverted, useAIFieldFct, precision )
 
 	local resetTools = false
+	
+	local wx,wy,wz = getWorldTranslation( iRefNode )
+	local ty = getTerrainHeightAtWorldPos( g_currentMission.terrainRootNode, wx,wy,wz )
+	
+	if math.abs( wy-ty ) > 0.01 then 
+		local lx,ly,lz = getTranslation( iRefNode )
+		AIVehicleExtension.debugPrint( self, string.format( "Adjusting height of reference node: %5.2f, %5.2f, %5.2f, %5.2f", ty, wy, ly, ly + ty - wy ) )
+		ly = ly + ty - wy 
+		setTranslation( iRefNode, lx,ly,lz )
+	end 
+	
+--local wz = AutoSteeringEngine.getAbsoulteZRotation( iRefNode )
+--if math.abs( wz ) > 0.01 then 
+--	local lx,ly,lz = getRotation( iRefNode )
+--	AIVehicleExtension.debugPrint( self, string.format( "Adjusting Z rotation of reference node: %5.1f°, %5.1f°, %5.1f°", math.deg( wz ), math.deg( lz ), math.deg( lz - wz ) ) )
+--	lz = lz - wz 
+--	setRotation( iRefNode, lx,ly,lz )
+--end 
 	
 	if     vehicle.aiveChain == nil
 			or vehicle.aiveChain.resetCounter == nil
@@ -1524,7 +1547,21 @@ function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteerin
 		AutoSteeringEngine.invalidateField( vehicle, true )
 	end
 	vehicle.aiveChain.useAIFieldFct = useAIFieldFct
-
+	
+	if     precision == 0 then 
+		vehicle.aiveChain.maxDtSumP0  = AIVEGlobals.maxDtSumP0L
+		vehicle.aiveChain.maxDtSumP1  = AIVEGlobals.maxDtSumP1L
+		vehicle.aiveChain.maxDtProd   = AIVEGlobals.maxDtProdL
+	elseif precision == 2 then 
+		vehicle.aiveChain.maxDtSumP0  = AIVEGlobals.maxDtSumP0H
+		vehicle.aiveChain.maxDtSumP1  = AIVEGlobals.maxDtSumP1H
+		vehicle.aiveChain.maxDtProd   = AIVEGlobals.maxDtProdH
+	else 
+		vehicle.aiveChain.maxDtSumP0  = AIVEGlobals.maxDtSumP0N
+		vehicle.aiveChain.maxDtSumP1  = AIVEGlobals.maxDtSumP1N
+		vehicle.aiveChain.maxDtProd   = AIVEGlobals.maxDtProdN
+	end 
+	
 	AutoSteeringEngine.currentSteeringAngle( vehicle, isInverted )
 
 	if maxSteering ~= nil and 1E-4 < maxSteering and maxSteering < 0.5 * math.pi then
@@ -1636,7 +1673,7 @@ function AutoSteeringEngine.checkTools( vehicle, reset )
 	
 	AutoSteeringEngine.checkTools1( vehicle, reset )
 	
-	local dx,dz,zb = 0,0,0
+	local dx,dz,zb,fb = 0,0,0,1
 	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
 		dz = -99
@@ -1653,14 +1690,20 @@ function AutoSteeringEngine.checkTools( vehicle, reset )
 				local dx1 = xl - xr
 				local dz1 = z1 + zDist - vehicle.aiveChain.tools[i].zOffset
 				local zb1 = z2 + zDist - vehicle.aiveChain.tools[i].zOffset
+				local fb1 = 1
 				if vehicle.aiveChain.tools[i].isSprayer and zb1 < dz1 then
 					zb1 = dz1 -1
 				end
+				if vehicle.aiveChain.tools[i].isPlow then --or vehicle.aiveChain.tools[i].aiForceTurnNoBackward then 
+					fb1 = z1 - z2 
+				else 
+					fb1 = 0.5 * ( z1 - z2 )
+				end 
 				
 				if dx < dx1 then dx = dx1 end
 				if dz < dz1 then dz = dz1 end
 				if zb > zb1 then zb = zb1 end
-				
+				if fb < fb1 then fb = fb1 end 
 			end
 		--local wo = AutoSteeringEngine.getWidthOffsetStd( vehicle, dx )
 			local wo = vehicle.aiveChain.offsetZ
@@ -1672,7 +1715,9 @@ function AutoSteeringEngine.checkTools( vehicle, reset )
 		end
 	end
 	
-	return dx,dz,zb
+	local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( vehicle )
+	
+	return dx,dz,zb,fb,turn75.radiusT
 end
 
 ------------------------------------------------------------------------
@@ -5112,6 +5157,12 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 		toolParam.minAngle = -math.min(toolParam.refAngle,  maxLooking )
 		toolParam.maxAngle = math.min( toolParam.refAngle2, maxLooking )
 	end
+	
+	local wx,wy,wz = worldDirectionToLocal(vehicle.aiveChain.refNode, 0, 1, 0)
+	local cf = math.abs( wy ) 
+	toolParam.x        = toolParam.x      * cf
+	toolParam.offset   = toolParam.offset * cf
+	toolParam.width    = toolParam.width  * cf
 
 	-- width is always left - right 
 	if vehicle.aiveChain.leftActive then
@@ -6651,6 +6702,24 @@ function AutoSteeringEngine.getRelativeZRotation(root,node)
 end
 
 ------------------------------------------------------------------------
+-- getRelativeYRotation
+------------------------------------------------------------------------
+function AutoSteeringEngine.getAbsoulteZRotation(node)
+	if node == nil then
+		AIVehicleExtension.printCallstack()
+		return 0
+	end
+	local x, y, z = worldDirectionToLocal(node, 0, 1, 0)
+	local dot = y
+	dot = dot / AIVEUtils.vector2Length(x, y)
+	local angle = math.acos(dot)
+	if x < 0 then
+		angle = -angle
+	end
+	return angle
+end
+
+------------------------------------------------------------------------
 -- initChain
 ------------------------------------------------------------------------
 function AutoSteeringEngine.initChain( vehicle, iRefNode, wheelBase, maxSteering, widthOffset, turnOffset )
@@ -6903,10 +6972,9 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	end
 	
 	if tool.isPlow and tool.aiForceTurnNoBackward then
-    if object.aiPlough ~= nil and object.aiPlough.rotateEarly == true then
-			if object.rotationPart ~= nil and object.rotationPart.turnAnimation ~= nil and object.rotationMax ~= nil then
-				tool.ploughTransport = true
-			end
+		local specP = object.spec_plow 
+    if specP.ai ~= nil and specP.ai.rotateToCenterHeadlandPos < 0.4 and  specP.ai.rotateCompletelyHeadlandPos > 0.6 then
+			tool.ploughTransport = true
 		end
 		local wheel = nil
 		if spec.turningRadiusLimitation.wheels ~= nil then

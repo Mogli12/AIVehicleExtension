@@ -76,6 +76,10 @@
 		<text name="AIVE_USE_AI_FIELD"             text="detect connected field only"/>
 		<text name="AIVE_FIELD_W"                  text="Field detection is running"/>
 		<text name="AIVE_FIELD_E"                  text="Field detection failed"/>
+		<text name="AIVE_PRECISION"                text="Precision of AI Vehicle"/>
+		<text name="AIVE_PRECISION_0"              text="low"/>
+		<text name="AIVE_PRECISION_1"              text="normal"/>
+		<text name="AIVE_PRECISION_2"              text="high"/>
 
 		<text name="input_AIVE_HELPPANEL"          text="Alternative AI: Show/hide HUD"/>
 		<text name="input_AIVE_STEER"              text="Alternative AI: Automatic steering"/>

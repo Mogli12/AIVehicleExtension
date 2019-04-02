@@ -76,6 +76,10 @@
 		<text name="AIVE_USE_AI_FIELD"             text="Nur zusammenhängdes Feld erkennen"/>
 		<text name="AIVE_FIELD_W"                  text="Feld Erkennung läuft"/>
 		<text name="AIVE_FIELD_E"                  text="Feld Erkennung ist abgebrochen"/>
+		<text name="AIVE_PRECISION"                text="Präzision des alternativen Helfers"/>
+		<text name="AIVE_PRECISION_0"              text="niedrig"/>
+		<text name="AIVE_PRECISION_1"              text="normal"/>
+		<text name="AIVE_PRECISION_2"              text="hoch"/>
 
 		<text name="input_AIVE_HELPPANEL"          text="Alternativer Helfer: HUD ein-/ausblenden"/>
 		<text name="input_AIVE_STEER"              text="Alternativer Helfer: Automatisch Lenken"/>

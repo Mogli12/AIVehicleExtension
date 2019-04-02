@@ -77,9 +77,18 @@
 		<limitInside type="bool" value="true" />
 
 		<maxDtSumT  value="50"/>  <!-- 10 fps => 100 ms -->
-		<maxDtSumP0 value="30"/>   
-		<maxDtSumP1 value="800"/>   
-		<maxDtProd  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
+		
+		<maxDtSumP0N value="30"/>   
+		<maxDtSumP1N value="300"/>   
+		<maxDtProdN  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
+		
+		<maxDtSumP0L value="50"/>   
+		<maxDtSumP1L value="1000"/>   
+		<maxDtProdL  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
+		
+		<maxDtSumP0H value="10"/>   
+		<maxDtSumP1H value="100"/>   
+		<maxDtProdH  type="float" value="0.11"/> <!-- meter (dt * lastSpeed) -->
 		
 		<maxTurnCheck type="float" value="15"/>		
 		<maxToolAngle type="degree" value="65" />

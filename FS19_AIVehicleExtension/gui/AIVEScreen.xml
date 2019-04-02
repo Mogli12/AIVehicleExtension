@@ -110,6 +110,15 @@
 					<GuiElement type="text"   profile="multiTextOptionTitle" text="$mogli_AIVE_ANGLE_OFFSET"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
+
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="precision" toolTip="$mogli_AIVE_PRECISION" onCreate="onCreateSubElement" onCreateArgs="list0"
+										focusId="25" focusChangeTop="15" focusChangeBottom="35">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text"   profile="multiTextOptionText" />
+					<GuiElement type="text"   profile="multiTextOptionTitle" text="$mogli_AIVE_PRECISION"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
 		</GuiElement>
 
 
