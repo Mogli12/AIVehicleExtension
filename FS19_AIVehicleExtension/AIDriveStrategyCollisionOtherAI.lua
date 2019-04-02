@@ -88,7 +88,7 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 
 					if not self.stopNotificationShown then
 						self.stopNotificationShown = true
-						g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, string.format(g_i18n:getText(AIVehicle.REASON_TEXT_MAPPING[AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT]), self.vehicle.currentHelper.name))
+						g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, string.format(g_i18n:getText(AIVehicle.REASON_TEXT_MAPPING[AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT]), self.vehicle:getCurrentHelper().name))
 						self.vehicle:setBeaconLightsVisibility(true, false)
 					end
 
