@@ -7,19 +7,23 @@ AIVehicleExtensionRegister.specName = "AIVehicleExtension"
 source(Utils.getFilename("AIVehicleExtension.lua", g_currentModDirectory))
 source(Utils.getFilename("AIVEScreen.lua", g_currentModDirectory));
 
-if g_specializationManager:getSpecializationByName(AIVehicleExtensionRegister.specName) == nil then
+function AIVehicleExtensionRegister:beforeFinalizeVehicleTypes()
+
 	if AIVehicleExtension == nil then 
 		print("Failed to add specialization AIVehicleExtension")
 	else 
 		for k, typeDef in pairs(g_vehicleTypeManager.vehicleTypes) do
 			if typeDef ~= nil and k ~= "locomotive" then 
-				local isAIVehicle  = false
+				local isAIVehicle, hasNotAIVE  = false, true
 				for name, spec in pairs(typeDef.specializationsByName) do
 					if name == "aiVehicle" then 
 						isAIVehicle = true 
 					end 
+					if name == AIVehicleExtensionRegister.specName then 
+						hasNotAIVE = false 
+					end 
 				end 
-				if isAIVehicle then 
+				if isAIVehicle and hasNotAIVE then 
 					print("  adding AIVehicleExtension to vehicleType '"..tostring(k).."'")
 					typeDef.specializationsByName[AIVehicleExtensionRegister.specName] = AIVehicleExtension
 					table.insert(typeDef.specializationNames, AIVehicleExtensionRegister.specName)
@@ -27,8 +31,9 @@ if g_specializationManager:getSpecializationByName(AIVehicleExtensionRegister.sp
 				end 
 			end 
 		end 	
-	end 
+	end 	
 end 
+VehicleTypeManager.finalizeVehicleTypes = Utils.prependedFunction(VehicleTypeManager.finalizeVehicleTypes, AIVehicleExtensionRegister.beforeFinalizeVehicleTypes)
 
 function AIVehicleExtensionRegister:loadMap(name)		
 

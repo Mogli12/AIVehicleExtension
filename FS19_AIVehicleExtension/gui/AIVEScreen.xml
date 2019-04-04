@@ -8,8 +8,9 @@
 		
 		<GuiElement type="boxLayout" profile="settingsBox" size="390px 688px" position="20px 88px" positionOrigin="bottomLeft">	
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="enabled" toolTip="$mogli_AIVE_ENABLED"  onCreate="onCreateSubElement" 
-										focusId="11" focusChangeTop="103" focusChangeBottom="21">										
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="enabled" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_ENABLED"  
+										onCreate="onCreateSubElement" 
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="11" focusChangeTop="103" focusChangeBottom="21">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -17,8 +18,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="rightAreaActive" toolTip="$mogli_AIVE_ACTIVESIDE"  onCreate="onCreateSubElement" onCreateArgs="list"
-										focusId="12" focusChangeTop="31" focusChangeBottom="22">										
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="rightAreaActive" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_ACTIVESIDE"
+										onCreate="onCreateSubElement" onCreateArgs="list"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="12" focusChangeTop="31" focusChangeBottom="22">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -26,8 +28,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="upNDown" toolTip="$mogli_AIVE_UTURN_ON" onCreate="onCreateSubElement" 
-										focusId="13" focusChangeTop="32" focusChangeBottom="23">										
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="upNDown" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_UTURN_ON" 
+										onCreate="onCreateSubElement" 
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="13" focusChangeTop="32" focusChangeBottom="23">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -35,9 +38,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="noSteering" toolTip="$mogli_AIVE_NOSTEERING"  
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="noSteering" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_NOSTEERING"  
 										onCreate="onCreateSubElement" onCreateArgs="inverted" 
-										focusId="14" focusChangeTop="33" focusChangeBottom="24">										
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="14" focusChangeTop="33" focusChangeBottom="24">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -45,8 +48,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="waitForPipe" toolTip="$mogli_AIVE_WAIT_FOR_PIPE" onCreate="onCreateSubElement"
-										focusId="15" focusChangeTop="34" focusChangeBottom="25">										
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="waitForPipe" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_WAIT_FOR_PIPE" 
+										onCreate="onCreateSubElement"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="15" focusChangeTop="34" focusChangeBottom="25">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -54,8 +58,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="inverted" toolTip="$mogli_AIVE_INVERTED"  onCreate="onCreateSubElement"
-										focusId="16" focusChangeTop="35" focusChangeBottom="101">										
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="inverted" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_INVERTED"
+										onCreate="onCreateSubElement"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="16" focusChangeTop="35" focusChangeBottom="101">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -66,8 +71,9 @@
 		
 		<GuiElement type="boxLayout" profile="settingsBox" size="390px 688px" position="430px 88px" positionOrigin="bottomLeft">	
 		
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="widthOffset" toolTip="$mogli_AIVE_WIDTH_OFFSET" onCreate="onCreateSubElement" onCreateArgs="list"
-										focusId="21" focusChangeTop="11" focusChangeBottom="31">										
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="widthOffset" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_WIDTH_OFFSET"
+										onCreate="onCreateSubElement" onCreateArgs="list"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="21" focusChangeTop="11" focusChangeBottom="31">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -75,8 +81,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnModeIndex" toolTip="$mogli_AIVE_TURN_MODE" onCreate="onCreateSubElement" onCreateArgs="list"
-										focusId="22" focusChangeTop="12" focusChangeBottom="32">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnModeIndex" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_TURN_MODE"
+										onCreate="onCreateSubElement" onCreateArgs="list"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="22" focusChangeTop="12" focusChangeBottom="32">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -84,8 +91,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnOffset" toolTip="$mogli_AIVE_TURN_OFFSET" onCreate="onCreateSubElement" onCreateArgs="list"
-										focusId="23" focusChangeTop="13" focusChangeBottom="33">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnOffset" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_TURN_OFFSET"
+										onCreate="onCreateSubElement" onCreateArgs="list"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="23" focusChangeTop="13" focusChangeBottom="33">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -93,8 +101,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="headland" toolTip="$mogli_AIVE_HEADLAND" onCreate="onCreateSubElement" onCreateArgs="list"
-										focusId="24" focusChangeTop="14" focusChangeBottom="34">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="headland" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_HEADLAND"
+										onCreate="onCreateSubElement" onCreateArgs="list"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="24" focusChangeTop="14" focusChangeBottom="34">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -102,8 +111,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="angleFactor" toolTip="$mogli_AIVE_ANGLE_OFFSET" onCreate="onCreateSubElement" onCreateArgs="percent5"
-										focusId="25" focusChangeTop="15" focusChangeBottom="35">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="angleFactor" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_ANGLE_OFFSET"
+										onCreate="onCreateSubElement" onCreateArgs="percent5"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="25" focusChangeTop="15" focusChangeBottom="35">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -111,8 +121,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="precision" toolTip="$mogli_AIVE_PRECISION" onCreate="onCreateSubElement" onCreateArgs="list0"
-										focusId="25" focusChangeTop="15" focusChangeBottom="35">
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="precision" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_PRECISION"
+										onCreate="onCreateSubElement" onCreateArgs="list0"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="25" focusChangeTop="15" focusChangeBottom="35">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -122,9 +133,10 @@
 		</GuiElement>
 
 
-		<GuiElement type="boxLayout" profile="settingsBox" size="390px 688px" position="1250px 88px" positionOrigin="bottomLeft">	
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="GuiActive" toolTip="$mogli_AIVE_TEXTHELPPANELON" onCreate="onCreateSubElement"
-										focusId="31" focusChangeTop="21" focusChangeBottom="12">
+		<GuiElement type="boxLayout" profile="settingsBox" size="390px 688px" position="840px 88px" positionOrigin="bottomLeft">	
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="GuiActive" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_TEXTHELPPANELON"
+										onCreate="onCreateSubElement"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="31" focusChangeTop="21" focusChangeBottom="12">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -132,8 +144,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="showTrace" toolTip="$mogli_AIVE_TRACE" onCreate="onCreateSubElement"
-										focusId="32" focusChangeTop="22" focusChangeBottom="13">
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="showTrace" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_TRACE"
+										onCreate="onCreateSubElement"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="32" focusChangeTop="22" focusChangeBottom="13">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -141,8 +154,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="acPause" toolTip="$mogli_AIVE_PAUSE_OFF" onCreate="onCreateSubElement"
-										focusId="33" focusChangeTop="23" focusChangeBottom="14">
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="acPause" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_PAUSE_OFF"
+										onCreate="onCreateSubElement"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="33" focusChangeTop="23" focusChangeBottom="14">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -150,8 +164,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 				
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="useAIFieldFct" toolTip="$mogli_AIVE_USE_AI_FIELD" onCreate="onCreateSubElement"
-										focusId="34" focusChangeTop="24" focusChangeBottom="15">
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="useAIFieldFct" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_USE_AI_FIELD"
+										onCreate="onCreateSubElement"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="34" focusChangeTop="24" focusChangeBottom="15">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -159,8 +174,9 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 				
-				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="collision" toolTip="$mogli_AIVE_COLLISION_ON" onCreate="onCreateSubElement"
-										focusId="35" focusChangeTop="25" focusChangeBottom="101">
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="collision" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_COLLISION_ON"
+										onCreate="onCreateSubElement"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="35" focusChangeTop="25" focusChangeBottom="101">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -180,8 +196,8 @@
 		</GuiElement>
 
 		<GuiElement type="flowLayout" profile="buttonBoxDocked" id="buttonsPC" >
-			<GuiElement type="button" profile="buttonOK"   text="$l10n_button_ok"   onClick="onClickOk"    focusId="501" focusChangeTop="430" focusChangeBottom="502" />
-			<GuiElement type="button" profile="buttonBack" text="$l10n_button_back" onClick="onClickBack"  focusId="502" focusChangeTop="501" focusChangeBottom="110" />
+			<GuiElement type="button" profile="buttonOK"   text="$l10n_button_ok"   onClick="onClickOk"   focusId="501" focusChangeTop="430" focusChangeBottom="502" />
+			<GuiElement type="button" profile="buttonBack" text="$l10n_button_back" onClick="onClickBack" focusId="502" focusChangeTop="501" focusChangeBottom="110" />
 		</GuiElement>
 	</GuiElement>
 </GUI>
