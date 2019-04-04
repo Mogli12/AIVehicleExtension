@@ -1150,11 +1150,15 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 				setRotation( self.acRefNode, 0, angle, 0 )				
 			end
 			
-			self.acDimensions.artAxisR = 0
-			if math.max( math.abs( self.acDimensions.artAxisX ), math.abs( self.acDimensions.artAxisZ ) ) > 0.001 then
-				setTranslation( self.acRefNode, 0, 0, self.acDimensions.acRefNodeZ )			
-				self.acDimensions.artAxisX = dx 
-				self.acDimensions.artAxisZ = dz 
+			if      self.acDimensions          ~= nil
+					and self.acDimensions.artAxisX ~= nil
+					and self.acDimensions.artAxisZ ~= nil then 
+				self.acDimensions.artAxisR = 0
+				if math.max( math.abs( self.acDimensions.artAxisX ), math.abs( self.acDimensions.artAxisZ ) ) > 0.001 then
+					setTranslation( self.acRefNode, 0, 0, self.acDimensions.acRefNodeZ )			
+					self.acDimensions.artAxisX = 0 
+					self.acDimensions.artAxisZ = 0 
+				end 
 			end 
 		end
 	end

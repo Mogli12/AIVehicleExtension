@@ -198,15 +198,17 @@ function AIDriveStrategy:adjustPosition( eX, eZ, moveForwards, distanceToStop, i
 		return eX, eZ, mF2
 	end
 	
-	local refNode = vehicle.aiveChain.refNode
-	
-	if      not ( moveForwards ) 
-			and AutoSteeringEngine.hasArticulatedAxis( vehicle )
-      and vehicle.spec_articulatedAxis.aiRevereserNode ~= nil then
-		refNode = vehicle.aiVehicleDirectionNode
-	elseif  vehicle.aiVehicleDirectionNode ~= nil then
-		refNode = vehicle.aiVehicleDirectionNode
-	end
+--local refNode = vehicle.aiveChain.refNode
+--
+--if      not ( moveForwards ) 
+--		and AutoSteeringEngine.hasArticulatedAxis( vehicle )
+--    and vehicle.spec_articulatedAxis.aiRevereserNode ~= nil then
+--	refNode = vehicle.aiVehicleDirectionNode
+--elseif  vehicle.aiVehicleDirectionNode ~= nil then
+--	refNode = vehicle.aiVehicleDirectionNode
+--end
+
+	local refNode = vehicle:getAIVehicleDirectionNode()
 	
 	local nIn  = vehicle.aiveChain.refNode
 	local nOut = refNode
