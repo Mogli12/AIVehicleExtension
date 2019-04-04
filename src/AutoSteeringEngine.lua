@@ -1503,15 +1503,6 @@ function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteerin
 
 	local resetTools = false
 	
-	local wx,wy,wz = getWorldTranslation( iRefNode )
-	local ty = getTerrainHeightAtWorldPos( g_currentMission.terrainRootNode, wx,wy,wz )
-	
-	if math.abs( wy-ty ) > 0.01 then 
-		local lx,ly,lz = getTranslation( iRefNode )
-		AIVehicleExtension.debugPrint( self, string.format( "Adjusting height of reference node: %5.2f, %5.2f, %5.2f, %5.2f", ty, wy, ly, ly + ty - wy ) )
-		ly = ly + ty - wy 
-		setTranslation( iRefNode, lx,ly,lz )
-	end 
 	
 --local wz = AutoSteeringEngine.getAbsoulteZRotation( iRefNode )
 --if math.abs( wz ) > 0.01 then 

@@ -1137,7 +1137,6 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 				angle = angle + math.pi
 			end
 			setRotation( self.acRefNode, 0, angle, 0 )				
-			setTranslation( self.acRefNode, dx, 0, dz + self.acDimensions.acRefNodeZ )			
 			self.acDimensions.artAxisX = dx 
 			self.acDimensions.artAxisZ = dz 
 		else
@@ -1149,18 +1148,22 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 			if math.abs( y - angle ) > 0.01 then
 				setRotation( self.acRefNode, 0, angle, 0 )				
 			end
-			
-			if      self.acDimensions          ~= nil
-					and self.acDimensions.artAxisX ~= nil
-					and self.acDimensions.artAxisZ ~= nil then 
-				self.acDimensions.artAxisR = 0
-				if math.max( math.abs( self.acDimensions.artAxisX ), math.abs( self.acDimensions.artAxisZ ) ) > 0.001 then
-					setTranslation( self.acRefNode, 0, 0, self.acDimensions.acRefNodeZ )			
-					self.acDimensions.artAxisX = 0 
-					self.acDimensions.artAxisZ = 0 
-				end 
-			end 
+			self.acDimensions.artAxisX = 0 
+			self.acDimensions.artAxisZ = 0 
 		end
+
+		if self.acDimensions.refNodeTranslation == nil then 
+			self.acDimensions.refNodeTranslation = { 0, 0, 0 }
+		end 
+		local lx,ly,lz = unpack( self.acDimensions.refNodeTranslation )
+		local wx,wy,wz = getWorldTranslation( self.acRefNode )
+		local ty       = getTerrainHeightAtWorldPos( g_currentMission.terrainRootNode, wx,wy,wz )		
+		local rx,ry,rz = self.acDimensions.artAxisX, ly + ty - wy, self.acDimensions.artAxisZ + self.acDimensions.acRefNodeZ
+	
+		if self.acDimensions.refNodeTranslation == nil or math.abs( lx-rx ) > 0.01 or math.abs( ly-ry ) > 0.01 or math.abs( lz-rz ) > 0.01 then
+			self.acDimensions.refNodeTranslation = { rx,ry,rz }
+			setTranslation( self.acRefNode, rx,ry,rz )
+		end 
 	end
 
 	if atDump and self:getIsActiveForInput(false) then
@@ -1803,8 +1806,6 @@ function AIVehicleExtension.calculateDimensions( self )
 			end
 		end
 	end
-	
-	setTranslation( self.acRefNode, 0, 0, self.acDimensions.acRefNodeZ )
 	
 	if AIVEGlobals.devFeatures > 0 then
 		print(string.format("wb: %0.3fm, r: %0.3fm, z: %0.3fm", self.acDimensions.wheelBase, self.acDimensions.radius, self.acDimensions.acRefNodeZ ))
