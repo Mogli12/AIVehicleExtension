@@ -4261,7 +4261,11 @@ end
 ------------------------------------------------------------------------
 function AutoSteeringEngine.checkField( vehicle, x, z )
 	if vehicle.aiveCurrentField == nil then 
-		return true
+		if vehicle.aiveChain.useAIFieldFct then 
+			return true
+		else 
+			return AutoSteeringEngine.checkFieldNoBuffer( x, z, FieldBitmap.isFieldFast ) 
+		end 
 	else
 		return vehicle.aiveCurrentField.getBit( x, z )
 	end

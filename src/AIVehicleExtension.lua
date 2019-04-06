@@ -172,7 +172,6 @@ function AIVehicleExtension:onLoad(saveGame)
 	self.acImplMoveDownTimer  = 0
 	self.acSteeringSpeed      = self.spec_aiVehicle.aiSteeringSpeed
 	self.aiveCanStartArtAxis  = false
-	self.aiveTickDt           = 0
 	
 	self.acAutoRotateBackSpeedBackup = self.autoRotateBackSpeed	
 	
@@ -324,7 +323,6 @@ function AIVehicleExtension:onAIVEScreen()
 		sbtt = true
 	elseif self.isServer then
 		sbtt = true
-		AIVehicleExtension.checkState( self )
 	end
 	
 	if sbtt then
@@ -1001,11 +999,6 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 	if self.atHud ~= nil and self.atHud.GuiActive ~= nil then
 		guiActive = self.atHud.GuiActive
 	end
-	
-	if      guiActive and self:getCanStartAIVehicle() and self.acParameters.enabled 
-			and ( not ( self.aiveIsStarted or self.aiveAutoSteer ) or not self.isServer ) then
-		AIVehicleExtension.checkState( self, false, true )
-	end
 
 	if     actionName == "AIVE_HELPPANEL"  then
 		AIVehicleExtension.showGui( self, not guiActive )
@@ -1082,11 +1075,15 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected )
 
-	self.aiveTickDt = dt 
-
 	if self.aiveIsStarted and not self.spec_aiVehicle.isActive then
 		self.aiveIsStarted   = false
 	end
+
+	if      self.acParameters ~= nil
+			and self.acParameters.enabled
+			and ( self.aiveIsStarted or self:getCanStartAIVehicle() ) then 
+		AIVehicleExtension.checkState( self )
+	end 
 	
 	if not ( self.aiveIsStarted ) and self.spec_aiVehicle.aiSteeringSpeed ~= self.acSteeringSpeed then
 		self.spec_aiVehicle.aiSteeringSpeed = self.acSteeringSpeed
@@ -1097,80 +1094,82 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 		self.aiveToolsDirty = nil
 	end 
 	
-	if AIVEGlobals.otherAIColli > 0 and self.isServer and self.acCollidingVehicles == nil then
-		self.acCollidingVehicles = {}
-		if self.acOtherCombineCollisionTriggerR ~= 0 then
-			local triggerID = self.acOtherCombineCollisionTriggerR
-			self.acCollidingVehicles[triggerID] = {}
-			addTrigger( triggerID, "onOtherAICollisionTrigger", self )
-		end
-		if self.acOtherCombineCollisionTriggerL ~= 0 then
-			local triggerID = self.acOtherCombineCollisionTriggerL
-			self.acCollidingVehicles[triggerID] = {}
-			addTrigger( triggerID, "onOtherAICollisionTrigger", self )
-		end
-	end
-	
-	if self.aiveIsStarted or self.aiveAutoSteer then
-		if			AutoSteeringEngine.hasArticulatedAxis( self )
-				and self.spec_articulatedAxis.rotationNode ~= nil 
-				and self.acDimensions                      ~= nil 
-				and self.acDimensions.wheelBase            ~= nil 
-				and self.acDimensions.acRefNodeZ           ~= nil then	
-			
-			local node = getParent( self.acRefNode )
-			local dx = 0
-			local dz = 0
-			local dn = 0
-			for n,i in pairs( self.acDimensions.wheelParents ) do
-				local x,_,z	=AutoSteeringEngine.getRelativeTranslation( node, n )
-				dx = dx + x
-				dz = dz + z
-				dn = dn + i
-			end
-			dx = dx / dn
-			dz = dz / dn
-			local _,angle,_ = getRotation( self.spec_articulatedAxis.rotationNode )
-			self.acDimensions.artAxisR = angle 
-			angle = 0.5 * angle
-			if self.acParameters.inverted then
-				angle = angle + math.pi
-			end
-			setRotation( self.acRefNode, 0, angle, 0 )				
-			self.acDimensions.artAxisX = dx 
-			self.acDimensions.artAxisZ = dz 
-		else
-			local angle = 0
-			if self.acParameters.inverted then
-				angle = angle + math.pi
-			end
-			local _,y,_ = getRotation( self.acRefNode )
-			if math.abs( y - angle ) > 0.01 then
-				setRotation( self.acRefNode, 0, angle, 0 )				
-			end
-			self.acDimensions.artAxisX = 0 
-			self.acDimensions.artAxisZ = 0 
-		end
-
-		if self.acDimensions.refNodeTranslation == nil then 
-			self.acDimensions.refNodeTranslation = { 0, 0, 0 }
-		end 
-		local lx,ly,lz = unpack( self.acDimensions.refNodeTranslation )
-		local wx,wy,wz = getWorldTranslation( self.acRefNode )
-		local ty       = getTerrainHeightAtWorldPos( g_currentMission.terrainRootNode, wx,wy,wz )		
-		local rx,ry,rz = self.acDimensions.artAxisX, ly + ty - wy, self.acDimensions.artAxisZ + self.acDimensions.acRefNodeZ
-	
-		if self.acDimensions.refNodeTranslation == nil or math.abs( lx-rx ) > 0.01 or math.abs( ly-ry ) > 0.01 or math.abs( lz-rz ) > 0.01 then
-			self.acDimensions.refNodeTranslation = { rx,ry,rz }
-			setTranslation( self.acRefNode, rx,ry,rz )
-		end 
-	end
-
 	if atDump and self:getIsActiveForInput(false) then
 		AIVehicleExtension.acDump2(self)
 	end
 	
 	if self.isServer then		
+-- in MP on server only 
+
+		if AIVEGlobals.otherAIColli > 0 and self.acCollidingVehicles == nil then
+			self.acCollidingVehicles = {}
+			if self.acOtherCombineCollisionTriggerR ~= 0 then
+				local triggerID = self.acOtherCombineCollisionTriggerR
+				self.acCollidingVehicles[triggerID] = {}
+				addTrigger( triggerID, "onOtherAICollisionTrigger", self )
+			end
+			if self.acOtherCombineCollisionTriggerL ~= 0 then
+				local triggerID = self.acOtherCombineCollisionTriggerL
+				self.acCollidingVehicles[triggerID] = {}
+				addTrigger( triggerID, "onOtherAICollisionTrigger", self )
+			end
+		end
+	
+		if      ( self.aiveIsStarted or self.aiveAutoSteer )
+				and self.acDimensions            ~= nil
+				and self.acDimensions.acRefNodeZ ~= nil
+				and self.acDimensions.wheelBase  ~= nil then
+			if			AutoSteeringEngine.hasArticulatedAxis( self )
+					and self.spec_articulatedAxis.rotationNode ~= nil then	
+				
+				local node = getParent( self.acRefNode )
+				local dx = 0
+				local dz = 0
+				local dn = 0
+				for n,i in pairs( self.acDimensions.wheelParents ) do
+					local x,_,z	=AutoSteeringEngine.getRelativeTranslation( node, n )
+					dx = dx + x
+					dz = dz + z
+					dn = dn + i
+				end
+				dx = dx / dn
+				dz = dz / dn
+				local _,angle,_ = getRotation( self.spec_articulatedAxis.rotationNode )
+				self.acDimensions.artAxisR = angle 
+				angle = 0.5 * angle
+				if self.acParameters.inverted then
+					angle = angle + math.pi
+				end
+				setRotation( self.acRefNode, 0, angle, 0 )				
+				self.acDimensions.artAxisX = dx 
+				self.acDimensions.artAxisZ = dz 
+			else
+				local angle = 0
+				if self.acParameters.inverted then
+					angle = angle + math.pi
+				end
+				local _,y,_ = getRotation( self.acRefNode )
+				if math.abs( y - angle ) > 0.01 then
+					setRotation( self.acRefNode, 0, angle, 0 )				
+				end
+				self.acDimensions.artAxisX = 0 
+				self.acDimensions.artAxisZ = 0 
+			end
+
+			if self.acDimensions.refNodeTranslation == nil then 
+				self.acDimensions.refNodeTranslation = { 0, 0, 0 }
+			end 
+			local lx,ly,lz = unpack( self.acDimensions.refNodeTranslation )
+			local wx,wy,wz = getWorldTranslation( self.acRefNode )
+			local ty       = getTerrainHeightAtWorldPos( g_currentMission.terrainRootNode, wx,wy,wz )		
+			local rx,ry,rz = self.acDimensions.artAxisX, ly + ty - wy, self.acDimensions.artAxisZ + self.acDimensions.acRefNodeZ
+		
+			if self.acDimensions.refNodeTranslation == nil or math.abs( lx-rx ) > 0.01 or math.abs( ly-ry ) > 0.01 or math.abs( lz-rz ) > 0.01 then
+				self.acDimensions.refNodeTranslation = { rx,ry,rz }
+				setTranslation( self.acRefNode, rx,ry,rz )
+			end 
+		end
+
 		if     self.aiveIsStarted      then
 			if AIVEGlobals.devFeatures <= 0 or self.atHud.InfoText == nil or self.atHud.InfoText == "" then
 				AIVEHud.setInfoText( self )
@@ -1196,10 +1195,50 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 		elseif self.aiveAutoSteer then
 			self.stopMotorOnLeave = false
 			self.deactivateOnLeave = false
-			
-		--AIVehicleExtension.autoSteer(self,dt)
 		else
 			self.acTurnStage = 0
+		end
+	
+		if      AutoSteeringEngine.hasArticulatedAxis( self )
+				and ( self.aiveCanStartArtAxisTimer == nil or g_currentMission.time > self.aiveCanStartArtAxisTimer + 1000 ) then
+				
+			AIVehicleExtension.checkState( self )
+
+			self.aiveCanStartArtAxisTimer = g_currentMission.time
+			local backup = 0
+			if self.aiveCanStartArtAxis then
+				backup = 1
+			end
+			local canStart = 0
+			
+			if self.aiveChain ~= nil then			
+				AutoSteeringEngine.checkTools( self )
+				for _,tool in pairs(self.aiveChain.tools) do
+					if tool.aiForceTurnNoBackward then
+						canStart = 1
+					else
+						canStart = 0
+						break
+					end
+				end
+			end
+		
+			if canStart ~= backup then
+				AIVehicleExtension.setInt32Value( self, "aiveCanStartArtAxis", canStart )
+			end
+		end 
+
+		local lb = AIVehicleExtension.getIsLoweredServer( self )
+		local lv
+		if lb == nil then
+			lv = 0
+		elseif lb then
+			lv = 2
+		else
+			lv = 1
+		end
+		if self.acIsLowered ~= lv then
+			AIVehicleExtension.setInt32Value( self, "lowered", lv )
 		end
 	end
 	
@@ -1217,49 +1256,6 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 			AutoSteeringEngine.drawMarker( self )
 		end
 	end	
-	
-	if      self.isServer 
-			and AutoSteeringEngine.hasArticulatedAxis( self )
-			and ( self.aiveCanStartArtAxisTimer == nil or g_currentMission.time > self.aiveCanStartArtAxisTimer + 1000 ) then
-		self.aiveCanStartArtAxisTimer = g_currentMission.time
-		AIVehicleExtension.checkState( self, false, true )
-		local backup = 0
-		if self.aiveCanStartArtAxis then
-			backup = 1
-		end
-		local canStart = 0
-		
-		if self.aiveChain ~= nil then			
-			AutoSteeringEngine.checkTools( self )
-			for _,tool in pairs(self.aiveChain.tools) do
-				if tool.aiForceTurnNoBackward then
-					canStart = 1
-				else
-					canStart = 0
-					break
-				end
-			end
-		end
-		
-		if canStart ~= backup then
-			AIVehicleExtension.setInt32Value( self, "aiveCanStartArtAxis", canStart )
-		end
-	end
-	
-	if self.isServer then
-		local lb = AIVehicleExtension.getIsLoweredServer( self )
-		local lv
-		if lb == nil then
-			lv = 0
-		elseif lb then
-			lv = 2
-		else
-			lv = 1
-		end
-		if self.acIsLowered ~= lv then
-			AIVehicleExtension.setInt32Value( self, "lowered", lv )
-		end
-	end
 	
 	if self.aiveRequestActionEventUpdate then 
 		self.aiveRequestActionEventUpdate = nil 
@@ -1562,8 +1558,6 @@ function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axi
 			self.acTurnStage = 198
 		end
 		
-		AIVehicleExtension.checkState( self )
-
 		if not AutoSteeringEngine.hasTools( self ) then
 			self.acTurnStage = 0
 			AIVehicleExtension.setStatus( self, 0 )
@@ -2453,9 +2447,6 @@ end
 function AIVehicleExtension:getIsLoweredServer()
 	if self.acImplementsMoveDown == nil then
 		if self.acImplMoveDownTimer < g_currentMission.time then
-			if self.isServer then
-				AIVehicleExtension.checkState( self, false, true )
-			end
 			self.acImplMoveDownTimer   = g_currentMission.time + 250
 			self.acImplementsMoveDown2 = AutoSteeringEngine.areToolsLowered( self )
 		end
