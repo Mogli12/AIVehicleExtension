@@ -1082,7 +1082,7 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 	if      self.acParameters ~= nil
 			and self.acParameters.enabled
 			and ( self.aiveIsStarted or self:getCanStartAIVehicle() ) then 
-		AIVehicleExtension.checkState( self )
+		AIVehicleExtension.checkState( self, false, true )
 	end 
 	
 	if not ( self.aiveIsStarted ) and self.spec_aiVehicle.aiSteeringSpeed ~= self.acSteeringSpeed then
