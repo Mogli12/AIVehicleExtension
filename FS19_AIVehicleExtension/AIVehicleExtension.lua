@@ -2599,6 +2599,7 @@ function AIVehicleExtension:afterUpdateAIDriveStrategies()
 			end
 			if driveStrategyMogli ~= nil then
 				driveStrategyMogli:setAIVehicle(self)
+				spec.driveStrategies[i]:delete()
 				spec.driveStrategies[i] = driveStrategyMogli
 			end
 		end
@@ -2658,6 +2659,10 @@ AIVehicle.getCanStartAIVehicle = Utils.overwrittenFunction( AIVehicle.getCanStar
 function AIVehicleExtension:onOtherAICollisionTrigger(triggerId, otherId, onEnter, onLeave, onStay, otherShapeId)
 --print(" HIT @:"..self.configFileName.."   IN   "..getName(triggerId).."   BY   "..getName(otherId)..", "..getName(otherShapeId))
 
+	if self.acCollidingVehicles == nil or self.acCollidingVehicles[triggerId] == nil then 
+		return
+	end 
+
 	if g_currentMission.players[otherId] == nil then
 		local vehicle = g_currentMission.nodeToObject[otherId]
 		local otherAI = nil
@@ -2675,10 +2680,10 @@ function AIVehicleExtension:onOtherAICollisionTrigger(triggerId, otherId, onEnte
 			
 		if      otherAI ~= nil
 				and otherAI ~= self then
-			if onLeave then
-				self.acCollidingVehicles[triggerId][otherAI] = nil
-			else
+			if not onLeave then
 				self.acCollidingVehicles[triggerId][otherAI] = true
+			elseif self.acCollidingVehicles[triggerId][otherAI] then
+				self.acCollidingVehicles[triggerId][otherAI] = nil
 			end
 		end		
 	end

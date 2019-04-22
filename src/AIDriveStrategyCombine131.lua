@@ -33,9 +33,12 @@ end
 
 
 function AIDriveStrategyCombine131:addDebugText( s )
-	if self.vehicle ~= nil and type( self.vehicle.aiveAddDebugText ) == "function" then
-		self.vehicle:aiveAddDebugText( s ) 
-	end
+--if self.vehicle ~= nil and type( self.vehicle.aiveAddDebugText ) == "function" then
+--	self.vehicle:aiveAddDebugText( s ) 
+--end
+	if AIVEGlobals.devFeatures > 0 then 
+		print( s ) 
+	end 
 end
 
 function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
@@ -46,7 +49,7 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 	for _, combine in pairs(self.combines) do
 		if not combine:getIsThreshingAllowed() then
 			self.vehicle:stopAIVehicle(AIVehicle.STOP_REASON_REGULAR)
-			self:debugPrint("Stopping AIVehicle - combine not allowed to thresh")
+			self:addDebugText("Stopping AIVehicle - combine not allowed to thresh")
 			return nil, nil, nil, nil, nil
 		end
 		if combine.spec_pipe ~= nil then
@@ -198,10 +201,12 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 	--local dist = MathUtil.vector2Length(vX-x, vZ-z)
 	--return x, z, false, 10, dist
 	if not allowedToDrive then
+		self:addDebugText("COMBINE is not allowed to drive")
 		return 0, 1, true, 0, math.huge
-	else
-		return nil, nil, nil, maxSpeed, nil
-	end
+	end 
+
+--self:addDebugText("COMBINE may drive")
+	return nil, nil, nil, nil, nil
 end
 
 function AIDriveStrategyCombine131:updateDriving(dt)

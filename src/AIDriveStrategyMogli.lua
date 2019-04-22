@@ -421,10 +421,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	-- 20 km/h => lastSpeed = 5.555E-3 => speedLevelFactor = 234 * 5.555E-3 = 1.3
 	-- 10 km/h =>						 speedLevelFactor				  = 0.7
 	local speedLevelFactor = math.min( veh.lastSpeed * 234, 0.5 ) 
-
+	
 	if not allowedToDrive or speedLevel == 0 then
 		AIVehicleExtension.statEvent( veh, "tS", dt )
-		veh.isHirableBlocked = true		
 		
 		if self.lastDirection == nil then
 			self.lastDirection = { AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, 0 ) }
@@ -433,9 +432,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		return self.lastDirection[1], self.lastDirection[2], not veh.acParameters.inverted, AutoSteeringEngine.getMaxSpeed( veh, dt, 1, false, true, 0, false, 0.7 ), 0
 	end
 	
-	if veh.isHirableBlocked then
-		veh.isHirableBlocked = false
-	--AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)
+	if not veh:getAILastAllowedToDrive() then
+		AIVehicleExtension.setAIImplementsMoveDown(veh,true,true)
 	end
 	
 	local offsetOutside = 0;

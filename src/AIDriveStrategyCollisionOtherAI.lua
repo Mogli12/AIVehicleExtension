@@ -27,6 +27,15 @@ function AIDriveStrategyCollisionOtherAI:setAIVehicle(vehicle)
 	AIDriveStrategyCollisionOtherAI:superClass().setAIVehicle(self, vehicle)
 end
 
+function AIDriveStrategyCollisionOtherAI:addDebugText( s )
+--if self.vehicle ~= nil and type( self.vehicle.aiveAddDebugText ) == "function" then
+--	self.vehicle:aiveAddDebugText( s ) 
+--end
+	if AIVEGlobals.devFeatures > 0 then 
+		print( s ) 
+	end 
+end
+
 function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 	-- we do not check collisions at the back, at least currently
 	self.vehicle.aiveMaxCollisionSpeed = nil
@@ -48,13 +57,14 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 
 	if triggerId ~= nil and self.vehicle.acCollidingVehicles[triggerId] ~= nil then
 		for otherAI,bool in pairs(self.vehicle.acCollidingVehicles[triggerId]) do
-			if bool and otherAI.spec_aiVehicle.isActive then
+		--if bool and otherAI.spec_aiVehicle.isActive then
+			if bool and otherAI.spec_aiVehicle.isActive and ( otherAI.ad == nil or otherAI.ad.isActive == false ) then 
 				local blocked   = true
 				
 				if      g_currentMission.time < self.collisionTime + 2000 then
 				
 					local tX,_,tZ = localToWorld(self.vehicle.acRefNode, 0,0,1)
-				--table.insert(self.vehicle.debugTexts, " AIDriveStrategyCollisionOtherAI :: STOP due to collision ")
+				--self:addDebugText("AIDriveStrategyCollisionOtherAI :: STOP due to collision ")
 					return tX, tZ, true, 0, math.huge
 					
 				elseif  otherAI.acRefNode ~= nil 
@@ -82,8 +92,8 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 				
 				if blocked then
 					local tX,_,tZ = localToWorld(self.vehicle.acRefNode, 0,0,1)
-				--table.insert(self.vehicle.debugTexts, " AIDriveStrategyCollisionOtherAI :: STOP due to collision ")
-					
+				--self:addDebugText("AIDriveStrategyCollisionOtherAI : STOP due to collision ")
+
 					self.collisionTime = g_currentMission.time 
 
 					if not self.stopNotificationShown then
@@ -103,7 +113,7 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 		self.vehicle:setBeaconLightsVisibility(false, false)
 	end
 
---table.insert(self.vehicle.debugTexts, " AIDriveStrategyCollisionOtherAI :: no collision ")
+--self:addDebugText("AIDriveStrategyCollisionOtherAI :: no collision ")
 	return nil, nil, nil, nil, nil
 end
 
