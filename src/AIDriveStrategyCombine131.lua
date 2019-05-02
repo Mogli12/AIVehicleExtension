@@ -12,11 +12,12 @@ function AIDriveStrategyCombine131:new(customMt)
 	self.beaconLightsActive = false
 	self.slowDownFillLevel = 200
 	self.slowDownStartSpeed = 20
-	self.forageHarvesterFoundTimer = 0
+	self.forageHarvesterFoundTimer = 0	
 	return self
 end
 
 function AIDriveStrategyCombine131:setAIVehicle(vehicle)
+	self.mogliText = "AIDriveStrategyCombine131"
 	AIDriveStrategyCombine131:superClass().setAIVehicle(self, vehicle)
 	if SpecializationUtil.hasSpecialization(Combine, self.vehicle.specializations) then
 		table.insert(self.combines, self.vehicle)
@@ -127,9 +128,9 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 					self.notificationFullGrainTankShown = false
 				end
 				
-				if     fillLevel <= 0 then
+				if     fillLevel < 0.1 then
 					self.wasEmpty = true
-				elseif fillLevel >= 0.1 * capacity then
+				elseif fillLevel > 0.2 * capacity then
 					self.wasEmpty = false
 				elseif self.wasEmpty == nil then
 					self.wasEmpty = false
@@ -164,10 +165,6 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 					combine:setPipeState(pipeState)
 				end
 				allowedToDrive = fillLevel < capacity
-			--if pipeState == 2 and self.wasCompletelyFull then
-			--	allowedToDrive = false
-			--	self:addDebugText("COMBINE -> Waiting for trailer to unload")
-			--end
 			
 				if trailerInTrigger and not self.wasEmpty then 
 					if self.vehicle.acParameters.waitForPipe then 
@@ -185,21 +182,9 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 					self:addDebugText(string.format("COMBINE -> Slow down because nearly full: %.2f", maxSpeed))
 				end
 			end
-			if not trailerInTrigger then
-				if combine.spec_combine.isSwathActive then
-					if combine.spec_combine.strawPSenabled then
-						waitForStraw = true
-					end
-				end
-			end
 		end
 	end
-	--if isTurning and waitForStraw then
-	--self:addDebugText("COMBINE -> Waiting for straw to drop")
-	--local h = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, self.vehicle.aiDriveTarget[1],0,self.vehicle.aiDriveTarget[2])
-	--local x,_,z = worldToLocal(self.vehicle:getAIVehicleDirectionNode(), self.vehicle.aiDriveTarget[1],h,self.vehicle.aiDriveTarget[2])
-	--local dist = MathUtil.vector2Length(vX-x, vZ-z)
-	--return x, z, false, 10, dist
+
 	if not allowedToDrive then
 		self:addDebugText("COMBINE is not allowed to drive")
 		return 0, 1, true, 0, math.huge

@@ -24,6 +24,7 @@ function AIDriveStrategyCollisionOtherAI:delete()
 end
 
 function AIDriveStrategyCollisionOtherAI:setAIVehicle(vehicle)
+	self.mogliText = "AIDriveStrategyCollisionOtherAI"
 	AIDriveStrategyCollisionOtherAI:superClass().setAIVehicle(self, vehicle)
 end
 

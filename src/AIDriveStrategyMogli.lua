@@ -38,6 +38,7 @@ function AIDriveStrategyMogli:new(customMt)
 end
 
 function AIDriveStrategyMogli:setAIVehicle(vehicle)
+	self.mogliText = "AIDriveStrategyMogli"
 	AIDriveStrategyMogli:superClass().setAIVehicle(self, vehicle)
 	
 --==============================================================				

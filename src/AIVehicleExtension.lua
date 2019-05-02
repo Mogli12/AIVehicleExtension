@@ -1770,7 +1770,7 @@ function AIVehicleExtension.calculateDimensions( self )
 	self.acDimensions								 	 = {}
 	self.acDimensions.zOffset				 	 = 0 
 	self.acDimensions.acRefNodeZ       = 0
-	self.acDimensions.maxSteeringAngle = AIVEUtils.getNoNil( self.maxRotation, math.rad( 25 ))
+	self.acDimensions.maxSteeringAngle = math.rad( AIVEUtils.getNoNil( self.maxRotation, 25 ))
 	self.acDimensions.radius           = AIVEUtils.getNoNil( self.maxTurningRadius, 6.25 )
 	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
 	self.acDimensions.artAxisR         = 0
@@ -2248,7 +2248,7 @@ function AIVehicleExtension:getMaxAngleWithTool( outside )
 		angle = AIVEUtils.clamp(  turn75.alpha - f * (  toolAngle - maxToolAngle ), 0, self.acDimensions.maxSteeringAngle )
 	end
 	
-	if AIVEGlobals.devFeatures > 0 and math.abs( toolAngle ) >= maxToolAngle - 0.01745 then
+	if AIVEGlobals.devFeatures > 0 then -- and math.abs( toolAngle ) >= maxToolAngle - 0.01745 then
 		self:acDebugPrint( string.format("Tool angle: ts: %d a: %0.1f° mt: %0.1f° ms: %0.1f° to: %0.1f°", self.acTurnStage, math.deg(angle), math.deg(maxToolAngle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
 	end
 	
@@ -2414,6 +2414,8 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 	local ratio  = AIVEUtils.clamp( 3 * AutoSteeringEngine.normalizeAngle( yv - yt ) / AIVEGlobals.maxToolAngle, -maxWorldRatio, maxWorldRatio )
 	local target = ratio
 
+	self:acDebugPrint( AutoSteeringEngine.radToString( yv ) .." - " ..AutoSteeringEngine.radToString( yt ) .." => "..string.format("ratio: %5.3f", ratio) )
+	
 	local sumTargetFactors = 0
 	for _,joint in pairs( taJoints ) do
 		sumTargetFactors = sumTargetFactors + joint.targetFactor
@@ -2423,6 +2425,10 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 	for _,joint in pairs( taJoints ) do
 		target    = joint.targetFactor * ratio
 		degree    = AutoSteeringEngine.getRelativeYRotation( joint.nodeVehicle, joint.nodeTrailer )
+		self:acDebugPrint( "f: "..tostring(joint.targetFactor)
+											.." / "..tostring(sumTargetFactors)
+											..", d: "..AutoSteeringEngine.radToString(degree)
+											..", t: "..AutoSteeringEngine.radToString(target))
 		if joint.otherDirection then
 			degree  = AutoSteeringEngine.normalizeAngle( degree + math.pi )
 		end
@@ -2436,7 +2442,7 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 		angle = -angle 
 	end
 	
-	self:acDebugPrint( "gSBA: current: "..AutoSteeringEngine.radToString( yt ).." target: "..AutoSteeringEngine.radToString( yv ).." => angle: "..AutoSteeringEngine.radToString( angle ).." ("..tostring( self.acParameters.leftAreaActive ).." / "..tostring( iTarget ).." / "..AutoSteeringEngine.radToString( self.aiveChain.trace.a )..")")
+	self:acDebugPrint( "gSBA: current: "..AutoSteeringEngine.radToString( yt ).." target: "..AutoSteeringEngine.radToString( yv ).." => angle: "..AutoSteeringEngine.radToString( angle ).." ("..tostring( self.acParameters.leftAreaActive ).." / "..AutoSteeringEngine.radToString( iTarget ).." / "..AutoSteeringEngine.radToString( self.aiveChain.trace.a )..")")
 	
 	return angle 
 end

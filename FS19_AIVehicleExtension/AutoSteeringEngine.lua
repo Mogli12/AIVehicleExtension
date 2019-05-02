@@ -2928,6 +2928,7 @@ function AutoSteeringEngine.getTurnMode( vehicle )
 	if AutoSteeringEngine.hasArticulatedAxis( vehicle ) then
 		revUTurn   = false
 		smallUTurn = false
+		revStraight= false 
 	end
 	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
@@ -8521,7 +8522,7 @@ function AutoSteeringEngine.getTaJoints2( vehicle, implement, refNode, zOffset )
 			or type( implement.object)           ~= "table"
 			or refNode                           == nil
 			or implement.object.steeringAxleNode == nil
-			or  vehicle.spec_attacherJoints      == nil
+			or vehicle.spec_attacherJoints      == nil
 			or AutoSteeringEngine.tableGetN( vehicle.spec_attacherJoints.attachedImplements ) < 1 then
 		return 
 	end
@@ -8543,8 +8544,12 @@ function AutoSteeringEngine.getTaJoints2( vehicle, implement, refNode, zOffset )
 	if      implement.jointRotLimit    ~= nil
 			and implement.jointRotLimit[2] ~= nil
 			and implement.jointRotLimit[2] >  math.rad( 0.1 ) then
+		local n = vehicle.spec_attacherJoints.attacherJoints[implement.jointDescIndex].rootNode
+	--if vehicle.aiveChain ~= nil and vehicle.aiveChain.refNode ~= nil then 
+	--	n = vehicle.aiveChain.refNode
+	--end 
 		table.insert( taJoints, index,
-									{ nodeVehicle  = vehicle.spec_attacherJoints.attacherJoints[implement.jointDescIndex].rootNode, --refNode, 
+									{ nodeVehicle  = n,
 										nodeTrailer  = trailer.spec_attachable.attacherJoint.rootNode, 
 										targetFactor = 1 } )
 	end

@@ -188,7 +188,13 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	local turnAngle = math.deg(AutoSteeringEngine.getTurnAngle(veh));
 
 	if AIVEGlobals.devFeatures > 0 then
-		veh.atHud.InfoText = string.format( "Turn stage: %2i, angle: %3i",turnData.stage,turnAngle )
+		local t = AIVehicleExtension.getToolAngle( veh )
+		if t ~= nil then 
+			t = math.deg( t )
+		else 
+			t = 999 
+		end 
+		veh.atHud.InfoText = string.format( "Turn stage: %2i, angle: %3.0f, tool: %3.0f",turnData.stage,turnAngle,t )
 	end
 
 	if veh.acParameters.leftAreaActive then
