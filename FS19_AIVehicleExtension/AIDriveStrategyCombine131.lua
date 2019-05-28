@@ -13,6 +13,7 @@ function AIDriveStrategyCombine131:new(customMt)
 	self.slowDownFillLevel = 200
 	self.slowDownStartSpeed = 20
 	self.forageHarvesterFoundTimer = 0	
+	self.allowedToDriveTimer = 0 
 	return self
 end
 
@@ -142,9 +143,6 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 				if not trailerInTrigger then
 					if fillLevel < capacity * 0.8 then
 						self.wasCompletelyFull = false
-						if not combine:getIsTurnedOn() then
-							combine:setIsTurnedOn(true)
-						end
 					end
 				end
 				if not trailerInTrigger and fillLevel < capacity then
@@ -154,9 +152,6 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 					if not combine.spec_pipe.aiFoldedPipeUsesTrailerSpace then
 						if not trailerInTrigger then
 							pipeState = 1
-						end
-						if not combine:getIsTurnedOn() then
-							combine:setIsTurnedOn(true)
 						end
 					end
 					self.wasCompletelyFull = false
@@ -183,15 +178,26 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 				end
 			end
 		end
-	end
-
+	end 
+	
 	if not allowedToDrive then
+		self.allowedToDriveTimer = 3000
 		self:addDebugText("COMBINE is not allowed to drive")
 		return 0, 1, true, 0, math.huge
 	end 
-
+	
+	if self.allowedToDriveTimer > 0 then 
+		for _, combine in pairs(self.combines) do
+			 if not combine:getIsTurnedOn() then
+				combine:setIsTurnedOn(true)
+			end
+		end
+		maxSpeed = math.min( maxSpeed, math.max( ( 2000 - self.allowedToDriveTimer ) * 0.005, 2 ) )		
+		self.allowedToDriveTimer = self.allowedToDriveTimer - dt 
+	end
+	
 --self:addDebugText("COMBINE may drive")
-	return nil, nil, nil, nil, nil
+	return nil, nil, nil, maxSpeed, nil
 end
 
 function AIDriveStrategyCombine131:updateDriving(dt)

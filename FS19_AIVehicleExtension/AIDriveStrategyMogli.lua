@@ -43,8 +43,6 @@ function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	
 --==============================================================				
 --==============================================================					
-	AutoSteeringEngine.invalidateField( vehicle )		
-	AutoSteeringEngine.checkTools1( vehicle, true )
 	AutoSteeringEngine.saveDirection( vehicle )
 
 	vehicle.acClearTraceAfterTurn = true
@@ -405,10 +403,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh )
 	
 	if      allowedToDrive
-			and ( fruitsDetected 
-				or ( self.search == nil and AIVEGlobals.raiseNoFruits <= 0 )
-			)--or self.acImplementsMoveDown )
-			and not AutoSteeringEngine.getIsAIReadyForWork( veh ) then
+			and ( fruitsDetected or ( self.search == nil and AIVEGlobals.raiseNoFruits <= 0 ) )
+			and not ( AutoSteeringEngine.getIsAIReadyForWork( veh ) and veh:getCanAIVehicleContinueWork() ) then
 		allowedToDrive = false
 	end
 	
