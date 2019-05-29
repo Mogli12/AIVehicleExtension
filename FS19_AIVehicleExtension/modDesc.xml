@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="41">
 	<author>Mogli</author>
-	<version>0.0.2.8</version>
+	<version>0.0.2.9</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v0.0.2.8</en>
-			<de>AI Vehicle Extension v0.0.2.8</de>
-										<cs>车辆助手 v0.0.2.8</cs>
+			<en>AI Vehicle Extension v0.0.2.9</en>
+			<de>AI Vehicle Extension v0.0.2.9</de>
+										<cs>车辆助手 v0.0.2.9</cs>
 		</text>
 	</l10n>
 	<title>
@@ -25,6 +25,8 @@ When starting this alternative helper it briefly scans the field at the current 
 
 On beautiful rectangular fields with lots of free space around you can better use the normal hired worker. If you want to follow a certain path on the field then I recommend using CoursePlay. The mod FollowMe is great for simple following tasks. I have the two mods together with AIVehicleExtension in my mods folder.
 
+Many thanks to Gonimy-Vetrom for the nice reworked icons and to all other contributors on Github
+
 Here are the most important input bindings:
 * H: Start or stop the hired worker
 * Left shift + H: Open the settings dialog
@@ -42,6 +44,8 @@ Dieser Mod baut sich automatisch in alle Fahrzeuge ein, wenn diese bereits den n
 Beim Start dieses alternativen Helfers überprüft er kurz das Feld an der aktuellen Fahrzeugposition. Abgesehen davon hat der alternative Helfer aber wenig Ahnung, wo er sich gerade auf dem Feld bedindet. Stattdessen schaut dieser Mod ausgehend von der aktuellen Position, wo noch unbearbeitetes Feld und wo bereits bearbeites Feld ist.
 
 Auf schönen rechteckigen Feldern mit viel Platz drumherum kann man besser den normalen Helfer benutzen. Wenn man einen bestimmten Weg auf dem Feld abfahren will, dann empfehle ich CoursePlay. Für einfaches Hinterherfahren ist auch FollowMe ganz toll. Ich habe meistens alle 3 Mods installiert.
+
+Vielen Dank an Gonimy-Vetrom für die schönen, überarbeiteten Ikonen und an alle anderen Kontributoren auf Github.
 
 Hier ist die Tastaturbelegung:
 * H: Helfer einstellen oder entlassen

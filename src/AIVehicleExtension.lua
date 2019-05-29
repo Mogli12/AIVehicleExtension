@@ -215,7 +215,7 @@ function AIVehicleExtension:initMogliHud()
 	local mogliRows = 1
 	local mogliCols = 8
 	--(												directory,	 hudName, hudBackground, onTextID, offTextID, showHudKey, x,y, nx, ny, w, h, cbOnClick )
-	AIVEHud.init( self, AtDirectory, "AIVEHud", 0.4, "AIVE_TEXTHELPPANELON", "AIVE_TEXTHELPPANELOFF", "AIVE_HELPPANEL", 0.5-0.015*mogliCols, 0.0108, mogliCols, mogliRows, AIVehicleExtension.sendParameters )--, nil, nil, 0.8 )
+	AIVEHud.init( self, AtDirectory, "AIVEHud", 0.8, "AIVE_TEXTHELPPANELON", "AIVE_TEXTHELPPANELOFF", "AIVE_HELPPANEL", 0.5-0.015*mogliCols, 0.0108, mogliCols, mogliRows, AIVehicleExtension.sendParameters )--, nil, nil, 0.8 )
 	AIVEHud.setTitle( self, "AIVE_VERSION" )
 
 	AIVEHud.addButton(self, "dds/ai_combine.dds",     "dds/auto_combine.dds",  AIVehicleExtension.onEnable,      AIVehicleExtension.evalEnable,     1,1, "AIVE_STOP", "AIVE_START", nil, AIVehicleExtension.getEnableImage )
