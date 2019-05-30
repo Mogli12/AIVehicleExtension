@@ -58,6 +58,7 @@
 		<text name="AIVE_HIRE_OFF"                 text="seed usage [on]"/>
 		<text name="AIVE_HEADLAND"                 text="headland"/>
 		<text name="AIVE_TURN_MODE"                text="Turn modes"/>
+		<text name="AIVE_TURN_MODE_"               text=""/>
 		<text name="AIVE_TURN_MODE_O"              text="O-shape turn"/>
 		<text name="AIVE_TURN_MODE_A"              text="reverse with curve"/>
 		<text name="AIVE_TURN_MODE_Y"              text="reverse with curve (thresher)"/>

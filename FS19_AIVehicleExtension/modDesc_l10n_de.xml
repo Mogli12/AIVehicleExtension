@@ -58,6 +58,7 @@
 		<text name="AIVE_HIRE_OFF"                 text="Saatgutverbrauch [an]"/>
 		<text name="AIVE_HEADLAND"                 text="Vorgewende"/>
 		<text name="AIVE_TURN_MODE"                text="Form des Wendemanövers"/>
+		<text name="AIVE_TURN_MODE_"               text=""/>
 		<text name="AIVE_TURN_MODE_O"              text="Wende in Form eines O"/>
 		<text name="AIVE_TURN_MODE_A"              text="Rückwärts mit Kurve"/>
 		<text name="AIVE_TURN_MODE_Y"              text="Rückwärts mit Kurve (Drescher)"/>

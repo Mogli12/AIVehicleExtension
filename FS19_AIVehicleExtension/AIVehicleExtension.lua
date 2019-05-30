@@ -1772,7 +1772,7 @@ function AIVehicleExtension.calculateDimensions( self )
 	self.acDimensions								 	 = {}
 	self.acDimensions.zOffset				 	 = 0 
 	self.acDimensions.acRefNodeZ       = 0
-	self.acDimensions.maxSteeringAngle = math.rad( AIVEUtils.getNoNil( self.maxRotation, 25 ))
+	self.acDimensions.maxSteeringAngle = math.min( AIVEUtils.getNoNil( self.maxRotation, math.rad( 25 )), math.rad( 45 ) )
 	self.acDimensions.radius           = AIVEUtils.getNoNil( self.maxTurningRadius, 6.25 )
 	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
 	self.acDimensions.artAxisR         = 0
