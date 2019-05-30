@@ -68,27 +68,33 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 				--self:addDebugText("AIDriveStrategyCollisionOtherAI :: STOP due to collision ")
 					return tX, tZ, true, 0, math.huge
 					
-				elseif  otherAI.acRefNode ~= nil 
+				elseif  otherAI.acRefNode ~= nil
 						and otherAI.aiveIsStarted 
 						and otherAI.acLastWantedSpeed ~= nil
 						and otherAI.acTurnStage       <= 0 
 						and otherAI.acLastWantedSpeed  > 6 then
 					local angle   = AutoSteeringEngine.getRelativeYRotation( otherAI.acRefNode, self.vehicle.acRefNode )
-					if math.abs( angle ) < 0.1667 * math.pi then
-						blocked = false 
-						local s = otherAI.motor.speedLimit * math.cos( angle )
+					if      math.abs( angle ) < 0.1667 * math.pi
+							and otherAI.spec_motorized ~= nil
+							and otherAI.spec_motorized.motor ~= nil
+							and otherAI.spec_motorized.motor.speedLimit ~= nil then 
+						local s = otherAI.spec_motorized.motor.speedLimit * math.cos( angle )
 						if     self.vehicle.aiveMaxCollisionSpeed == nil
 								or self.vehicle.aiveMaxCollisionSpeed  > s then
 							self.vehicle.aiveMaxCollisionSpeed = s
-						end
-						local wx1, _, wz1 = getWorldTranslation( otherAI.acRefNode )
-						local wx2, _, wz2 = getWorldTranslation( self.vehicle.acRefNode )
-						local d = AIVEUtils.vector2Length( wx1-wx2, wz1-wz2 )
-						if     self.vehicle.aiveCollisionDistance == nil
-								or self.vehicle.aiveCollisionDistance  > d then
-							self.vehicle.aiveCollisionDistance = d
-						end
+						end 
+					end 
+					
+					local wx1, _, wz1 = getWorldTranslation( otherAI.acRefNode )
+					local wx2, _, wz2 = getWorldTranslation( self.vehicle.acRefNode )
+					local d = AIVEUtils.vector2Length( wx1-wx2, wz1-wz2 )
+					if     self.vehicle.aiveCollisionDistance == nil
+							or self.vehicle.aiveCollisionDistance  > d then
+						self.vehicle.aiveCollisionDistance = d
 					end
+					if d > 10 then 
+						blocked = false 
+					end 
 				end
 				
 				if blocked then

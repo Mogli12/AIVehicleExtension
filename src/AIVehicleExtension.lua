@@ -336,9 +336,11 @@ function AIVehicleExtension:onAIVEScreen()
 													 AIVEHud.getText("AIVE_HEADLAND")..bt }
 	self.aiveUI.rightAreaActive = { AIVEHud.getText("AIVE_ACTIVESIDELEFT"),  AIVEHud.getText("AIVE_ACTIVESIDERIGHT") }
 	self.aiveUI.turnModeIndex = {}
-	for i,v in pairs( self.acTurnModes ) do 
-		self.aiveUI.turnModeIndex[i] = AIVEHud.getText("AIVE_TURN_MODE_"..v)	
-	end 
+	if type( self.acTurnModes ) == "table" then 
+		for i,v in pairs( self.acTurnModes ) do 
+			self.aiveUI.turnModeIndex[i] = AIVEHud.getText("AIVE_TURN_MODE_"..v)	
+		end 
+	end
 	
 	if AIVehicleExtension.Distance == nil then
 		AIVehicleExtension.Distance = {}
@@ -2396,7 +2398,8 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 			or self.aiveChain.trace   == nil
 			or self.aiveChain.trace.a == nil then
 		self:acDebugPrint( "gSBA: no tools with joint found: "..AutoSteeringEngine.radToString( -turnAngle ))
-		return -turnAngle
+		local m = 0.5 * self.acDimensions.maxSteeringAngle
+		return AIVEUtils.clamp( -turnAngle, -m, m )
 	end
 
 	local yv = -self.aiveChain.trace.a - math.pi
