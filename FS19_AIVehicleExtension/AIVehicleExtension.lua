@@ -1118,12 +1118,12 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 		end
 	
 		if      ( self.aiveIsStarted or self.aiveAutoSteer )
-				and self.acDimensions            ~= nil
-				and self.acDimensions.acRefNodeZ ~= nil
-				and self.acDimensions.wheelBase  ~= nil then
-			if			AutoSteeringEngine.hasArticulatedAxis( self )
-					and self.spec_articulatedAxis.rotationNode ~= nil then	
+				and self.acDimensions              ~= nil
+				and self.acDimensions.acRefNodeZ   ~= nil
+				and self.acDimensions.wheelBase    ~= nil 
+				and self.acDimensions.wheelParents ~= nil then
 				
+			if AutoSteeringEngine.hasArticulatedAxis( self ) then	
 				local node = getParent( self.acRefNode )
 				local dx = 0
 				local dz = 0
@@ -1139,25 +1139,23 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 				local _,angle,_ = getRotation( self.spec_articulatedAxis.rotationNode )
 				self.acDimensions.artAxisR = angle 
 				angle = 0.5 * angle
-				if self.acParameters.inverted then
-					angle = angle + math.pi
-				end
-				setRotation( self.acRefNode, 0, angle, 0 )				
 				self.acDimensions.artAxisX = dx 
 				self.acDimensions.artAxisZ = dz 
+				self.acDimensions.refNodeAngle = angle 
 			else
-				local angle = 0
-				if self.acParameters.inverted then
-					angle = angle + math.pi
-				end
-				local _,y,_ = getRotation( self.acRefNode )
-				if math.abs( y - angle ) > 0.01 then
-					setRotation( self.acRefNode, 0, angle, 0 )				
-				end
 				self.acDimensions.artAxisX = 0 
 				self.acDimensions.artAxisZ = 0 
+				self.acDimensions.refNodeAngle = 0
 			end
-
+			
+			if self.acParameters.inverted then
+				self.acDimensions.refNodeAngle = self.acDimensions.refNodeAngle + math.pi
+			end
+			local _,y,_ = getRotation( self.acRefNode )
+			if math.abs( y - self.acDimensions.refNodeAngle ) > 0.01 then
+				setRotation( self.acRefNode, 0, self.acDimensions.refNodeAngle, 0 )				
+			end
+			
 			if self.acDimensions.refNodeTranslation == nil then 
 				self.acDimensions.refNodeTranslation = { 0, 0, 0 }
 			end 
@@ -1743,22 +1741,6 @@ function AIVehicleExtension:onPostLoad(savegame)
 end
 
 ------------------------------------------------------------------------
--- getCorrectedMaxSteeringAngle
-------------------------------------------------------------------------
-function AIVehicleExtension:getCorrectedMaxSteeringAngle()
-
-	local steeringAngle = self.acDimensions.maxSteeringAngle
-	if			AutoSteeringEngine.hasArticulatedAxis( self )
-			and self.spec_articulatedAxis.rotationNode ~= nil 
-			and self.spec_articulatedAxis.rotMax then
-		-- Ropa
-		steeringAngle = steeringAngle + 0.15 * self.spec_articulatedAxis.rotMax
-	end
-
-	return steeringAngle
-end
-
-------------------------------------------------------------------------
 -- calculateDimensions
 ------------------------------------------------------------------------
 function AIVehicleExtension.calculateDimensions( self )
@@ -1772,9 +1754,15 @@ function AIVehicleExtension.calculateDimensions( self )
 	self.acDimensions								 	 = {}
 	self.acDimensions.zOffset				 	 = 0 
 	self.acDimensions.acRefNodeZ       = 0
-	self.acDimensions.maxSteeringAngle = math.min( AIVEUtils.getNoNil( self.maxRotation, math.rad( 25 )), math.rad( 45 ) )
+	self.acDimensions.maxSteeringAngle = math.min( AIVEUtils.getNoNil( self.maxRotation, math.rad( 25 )), math.rad( 60 ) )
 	self.acDimensions.radius           = AIVEUtils.getNoNil( self.maxTurningRadius, 6.25 )
-	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
+--max rotation is for the inner radius
+	local d = math.min( 1.25, self.acDimensions.radius )
+--self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
+	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * ( self.acDimensions.radius - d )
+	if self.acDimensions.radius > 0 then 
+		self.acDimensions.maxSteeringAngle = math.atan2( self.acDimensions.wheelBase, self.acDimensions.radius )
+	end 
 	self.acDimensions.artAxisR         = 0
 	self.acDimensions.artAxisX         = 0
 	self.acDimensions.artAxisZ         = 0
@@ -1786,20 +1774,15 @@ function AIVehicleExtension.calculateDimensions( self )
 	else
 		self.acDimensions.radius         = self.acDimensions.radius - 1.25
 	end
-	
-	if			AutoSteeringEngine.hasArticulatedAxis( self )
-			and self.spec_articulatedAxis.rotationNode ~= nil 
-			and self.spec_articulatedAxis.rotMax then
-			
-		self.acDimensions.wheelParents = {}
+				
+	self.acDimensions.wheelParents = {}
 
-		for _,wheel in pairs(self.spec_wheels.wheels) do
-			local node = getParent( wheel.driveNode )
-			if self.acDimensions.wheelParents[node] == nil then
-				self.acDimensions.wheelParents[node] = 1
-			else
-				self.acDimensions.wheelParents[node] = self.acDimensions.wheelParents[node] + 1
-			end
+	for _,wheel in pairs(self.spec_wheels.wheels) do
+		local node = getParent( wheel.driveNode )
+		if self.acDimensions.wheelParents[node] == nil then
+			self.acDimensions.wheelParents[node] = 1
+		else
+			self.acDimensions.wheelParents[node] = self.acDimensions.wheelParents[node] + 1
 		end
 	end
 	
@@ -2642,7 +2625,7 @@ function AIVehicleExtension:newgetCanStartAIVehicle( superFunc, ... )
 	if      self.acParameters ~= nil
 			and self.acParameters.enabled
 			and AutoSteeringEngine.hasArticulatedAxis( self )
-			and not ( self.aiveCanStartArtAxis ) then
+			and not ( self.aiveCanStartArtAxis ) then 
 		return false
 	end
 	
@@ -2793,3 +2776,12 @@ function AIVehicleExtension.newDriveToPoint( self, superFunc, dt, acceleration, 
 end
 
 AIVehicleUtil.driveToPoint = Utils.overwrittenFunction( AIVehicleUtil.driveToPoint, AIVehicleExtension.newDriveToPoint )
+
+function AIVehicleExtension:newCrabSteeringOnAIImplementStart( superFunc )
+	if self.acParameters ~= nil and self.acParameters.enabled then 
+		return 
+	end 
+	return superFunc( self ) 
+end 
+
+CrabSteering.onAIImplementStart = Utils.overwrittenFunction( CrabSteering.onAIImplementStart, AIVehicleExtension.newCrabSteeringOnAIImplementStart )

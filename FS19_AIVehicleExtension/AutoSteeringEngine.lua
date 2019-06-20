@@ -382,9 +382,21 @@ AIVEStatus.border   = 4
 function AutoSteeringEngine.hasArticulatedAxis( vehicle )
 	if     vehicle == nil or vehicle.spec_articulatedAxis == nil then 
 		return false 
-	elseif vehicle.spec_articulatedAxis.componentJoint == nil then 
+	elseif vehicle.spec_articulatedAxis.componentJoint == nil
+			or vehicle.spec_articulatedAxis.rotationNode   == nil 
+			or vehicle.spec_articulatedAxis.rotMax         == nil
+			or vehicle.spec_articulatedAxis.rotSpeed       == nil then
 		return false 
 	end
+	if      vehicle.spec_crabSteering          ~= nil 
+			and vehicle.spec_crabSteering.stateMax > 0
+			and vehicle.spec_crabSteering.state    > 0 then
+		local spec    = vehicle.spec_crabSteering 
+		local curMode = spec.steeringModes[spec.state]
+		if curMode.articulatedAxis ~= nil and curMode.articulatedAxis.locked then
+			return false 
+		end 
+	end 
 	return true 
 end 
 
@@ -2925,12 +2937,6 @@ function AutoSteeringEngine.getTurnMode( vehicle )
 	local zb         = nil
 	local noHire     = false
 	
-	if AutoSteeringEngine.hasArticulatedAxis( vehicle ) then
-		revUTurn   = false
-		smallUTurn = false
-		revStraight= false 
-	end
-	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
 		for i=1,vehicle.aiveChain.toolCount do
 --		local _,_,z = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.refNode, vehicle.aiveChain.tools[i].refNode ) 
@@ -2951,6 +2957,11 @@ function AutoSteeringEngine.getTurnMode( vehicle )
 					and vehicle.aiveChain.tools[i].steeringAxleNode ~= nil then
 				revUTurn   = false
 				smallUTurn = false
+
+				if AutoSteeringEngine.hasArticulatedAxis( vehicle ) then
+					revStraight= false 
+				end
+				
 --			elseif  vehicle.aiveChain.tools[i].isSprayer then
 --				revUTurn   = false
 --				smallUTurn = false
@@ -3079,9 +3090,8 @@ function AutoSteeringEngine.currentSteeringAngle( vehicle, isInverted )
 
 	local steeringAngle = 0		
 
-	if      AutoSteeringEngine.hasArticulatedAxis( vehicle )
-			and vehicle.spec_articulatedAxis.rotationNode ~= nil then
-		steeringAngle = 0.5 * math.min( math.max( -vehicle.rotatedTime * vehicle.spec_articulatedAxis.rotSpeed, vehicle.spec_articulatedAxis.rotMin ), vehicle.spec_articulatedAxis.rotMax )
+	if      AutoSteeringEngine.hasArticulatedAxis( vehicle ) then
+		steeringAngle = 0.5 * math.min( math.max( -vehicle.rotatedTime * vehicle.spec_articulatedAxis.rotMax, vehicle.spec_articulatedAxis.rotMin ), vehicle.spec_articulatedAxis.rotMax )
 	else
 		for _,wheel in pairs(vehicle.spec_wheels.wheels) do
 			if math.abs(wheel.rotSpeed) > 1E-3 then
@@ -3847,18 +3857,47 @@ function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, toolIndex, lx1,lz1,lx2,
 	if tool == nil then 
 		return 0, 0
 	end 
-	local terrainDetailRequiredValueRanges  = tool.terrainDetailRequiredValueRanges
---local terrainDetailRequiredValueRanges  = tool.obj:getAITerrainDetailRequiredRange()
-	local terrainDetailProhibitValueRanges  = tool.obj:getAITerrainDetailProhibitedRange()
-	local fruitRequirements = tool.obj:getAIFruitRequirements()
-	local useDensityHeightMap, useWindrowFruitType = tool.obj:getAIFruitExtraRequirements()
-	local fruitProhibitions = tool.fruitProhibitions
 	
-	if not useDensityHeightMap then
-		return AIVehicleUtil.getAIFruitArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
+	if AIImplement.getFieldCropsQuery == nil then 
+	--1.3
+		if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 0 then 
+			vehicle.aiveAIAreaLog = 0 
+			print( "AutoSteeringEngine.getAIAreaOfVehicle v1.3" ) 
+		end 
+	
+		local terrainDetailRequiredValueRanges  = tool.terrainDetailRequiredValueRanges
+		local terrainDetailProhibitValueRanges  = tool.obj:getAITerrainDetailProhibitedRange()
+		local fruitRequirements = tool.obj:getAIFruitRequirements()
+		local useDensityHeightMap, useWindrowFruitType = tool.obj:getAIFruitExtraRequirements()
+		local fruitProhibitions = tool.fruitProhibitions
+		
+		if not useDensityHeightMap then
+			return AIVehicleUtil.getAIFruitArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
+		else
+			return AIVehicleUtil.getAIDensityHeightArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
+		end
 	else
-		return AIVehicleUtil.getAIDensityHeightArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
-	end
+	-- 1.4
+		local useDensityHeightMap, useWindrowFruitType =  tool.obj:getAIFruitExtraRequirements()
+	
+		if not useDensityHeightMap then
+			if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 1 then 
+				vehicle.aiveAIAreaLog = 1
+				print( "AutoSteeringEngine.getAIAreaOfVehicle v1.4 I" ) 
+			end 
+				
+			local query =  tool.obj:getFieldCropsQuery()
+			return AIVehicleUtil.getAIFruitArea(lx1,lz1,lx2,lz2,lx3,lz3, query)
+		else
+			if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 2 then 
+				vehicle.aiveAIAreaLog = 2
+				print( "AutoSteeringEngine.getAIAreaOfVehicle v1.4 II" ) 
+			end 
+
+			local fruitRequirements =  tool.obj:getAIFruitRequirements()
+			return AIVehicleUtil.getAIDensityHeightArea(lx1,lz1,lx2,lz2,lx3,lz3, fruitRequirements, useWindrowFruitType)
+		end 
+	end 
 end
 
 ------------------------------------------------------------------------
@@ -4443,6 +4482,16 @@ function AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 		vehicle.aiveChain.nodes[i].tool[tp.i].a = tp.angle 
 
 		local x,y,z
+		
+		local r = 0
+		if i == 1 and ( tp.attacherRotFactor < 0.01 or tp.attacherRotFactor > 0.01 ) then 
+			r = tp.attacherRotFactor * vehicle.aiveChain.nodes[i].steering 
+		end 
+		x,y,z = getRotation( vehicle.aiveChain.nodes[i].index )
+		if math.max( math.abs( x ) , math.abs( y - r ), math.abs( z ) ) > 1e-5 then		
+			setRotation( vehicle.aiveChain.nodes[i].index, 0, r, 0 )
+		end		
+
 		x,y,z = getTranslation( vehicle.aiveChain.nodes[i].index3 )
 		if math.max( math.abs( x ) , math.abs( y ), math.abs( tp.b1 - z ) ) > 1e-4 then
 			setTranslation( vehicle.aiveChain.nodes[i].index3, 0, 0, tp.b1 )
@@ -4463,7 +4512,10 @@ function AutoSteeringEngine.getChainPoint( vehicle, i, tp )
 				end
 			else
 				if i <= vehicle.aiveChain.chainMax then
-					setTranslation( vehicle.aiveChain.nodes[i+1].index3, 0, 0, tp.b1 )
+					x,y,z = getTranslation( vehicle.aiveChain.nodes[i+1].index3 )
+					if math.max( math.abs( x ) , math.abs( y ), math.abs( tp.b1 - z ) ) > 1e-4 then
+						setTranslation( vehicle.aiveChain.nodes[i+1].index3, 0, 0, tp.b1 )
+					end 
 					local dx, dy, dz = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.nodes[i+1].index, vehicle.aiveChain.nodes[i].index4 )
 					dz = dz - tp.b1
 					local oldAngle   = tp.angle
@@ -4887,7 +4939,7 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 	
 	local toolParam = {}
 	toolParam.i       = toolIndex
-
+	
 	local tool = vehicle.aiveChain.tools[toolIndex]
 	local maxAngle, minAngle
 	local xl = -999
@@ -4895,6 +4947,7 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 	local zb = 999
 	local il, ir, ib, i1, zl, zr	
 	
+	toolParam.attacherRotFactor = 0
 	toolParam.limitOutside = false
 	toolParam.limitInside  = false
 	if AIVEGlobals.limitOutside > 0 then --and tool.hasFruits then
@@ -5021,6 +5074,9 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 		toolParam.refAngle2= maxLooking
 
 	else
+		toolParam.attacherRotFactor = tool.attacherRotFactor
+	
+	
 		local x1
 		local z1 = -999
 	
@@ -6920,11 +6976,47 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	local object     = vehicle
 	local reference  = vehicle.aiveChain.refNode
 	
+	tool.attacherRotFactor = 0
+	
 	if implement == nil or implement.object == nil then
 		return 
 	elseif implement.object ~= vehicle then
 		object    = implement.object
 		reference = implement.object.spec_attachable.attacherJoint.node
+
+		print( "attacherRotFactor 1" )
+		print( tostring( vehicle ) .." == "..tostring( implement.object.spec_attachable.attacherVehicle ) )
+		if AutoSteeringEngine.hasArticulatedAxis( vehicle ) then 
+			print( AutoSteeringEngine.radToString( vehicle.spec_articulatedAxis.rotMax ) ) 
+		end 
+
+		if      vehicle == implement.object.spec_attachable.attacherVehicle
+				and AutoSteeringEngine.hasArticulatedAxis( vehicle )
+				and vehicle.spec_attacherJoints           ~= nil then 
+			local attacherJoint = vehicle:getAttacherJointDescFromObject( object )
+			local spec = vehicle.spec_articulatedAxis
+			
+			if attacherJoint ~= nil then 
+				print( "attacherRotFactor 2" )
+				print( tostring( attacherJoint.rootNode ) )
+				local f = 0.5 
+				for i=1,2 do 
+					print( tostring(i)..": "..tostring( spec.componentJoint.componentIndices[i] ) )
+					if spec.componentJoint.componentIndices[i] ~= nil then 
+						c = vehicle.components[spec.componentJoint.componentIndices[i]] 
+						if c == nil then  
+							print( "component not found" )
+						else
+							print( tostring(c.node) )
+							if c.node == attacherJoint.rootNode then 
+								tool.attacherRotFactor = f 
+							end 
+						end 
+					end 
+					f = -f 
+				end 
+			end 
+		end 
 	end
 	
 	local spec = object.spec_aiImplement
@@ -7242,10 +7334,7 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 	--b1  = AIVEUtils.vector2Length( rx, rz )
 		b1 = math.abs( rz )
 		
-		if      vehicle.spec_articulatedAxis        ~= nil
-				and vehicle.spec_articulatedAxis.rotMax ~= nil 
-				and vehicle.spec_articulatedAxis.rotMax > 0
-				and b1 > 0 then
+		if AutoSteeringEngine.hasArticulatedAxis( vehicle ) and b1 > 0 then
 			b1 = b1 * math.cos( 0.5 * vehicle.spec_articulatedAxis.rotMax )
 		end
 		
@@ -7331,10 +7420,7 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 	local dummy = radius 
 	radius = math.max( radius, b2 )
 	
-	if      vehicle.spec_articulatedAxis        ~= nil
-			and vehicle.spec_articulatedAxis.rotMax ~= nil 
-			and vehicle.spec_articulatedAxis.rotMax > 0
-			and b1 > 0 then
+	if AutoSteeringEngine.hasArticulatedAxis( vehicle ) and b1 > 0 then
 		radius = radius + b1 * math.tan( 0.5 * vehicle.spec_articulatedAxis.rotMax )
 	end
 	
@@ -8545,13 +8631,13 @@ function AutoSteeringEngine.getTaJoints2( vehicle, implement, refNode, zOffset )
 			and implement.jointRotLimit[2] ~= nil
 			and implement.jointRotLimit[2] >  math.rad( 0.1 ) then
 		local n = vehicle.spec_attacherJoints.attacherJoints[implement.jointDescIndex].rootNode
-	--if vehicle.aiveChain ~= nil and vehicle.aiveChain.refNode ~= nil then 
-	--	n = vehicle.aiveChain.refNode
-	--end 
+		if vehicle.aiveChain ~= nil and vehicle.aiveChain.refNode ~= nil then 
+			n = vehicle.aiveChain.refNode
+		end 
 		table.insert( taJoints, index,
-									{ nodeVehicle  = n,
-										nodeTrailer  = trailer.spec_attachable.attacherJoint.rootNode, 
-										targetFactor = 1 } )
+									{ nodeVehicle    = n,
+										nodeTrailer    = trailer.spec_attachable.attacherJoint.rootNode, 
+										targetFactor   = 1 } )
 	end
 	
 	if      AutoSteeringEngine.tableGetN( trailer.spec_wheels.wheels )          > 0
