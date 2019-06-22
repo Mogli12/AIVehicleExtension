@@ -379,7 +379,7 @@ AIVEStatus.position = 3
 AIVEStatus.border   = 4
 
 
-function AutoSteeringEngine.hasArticulatedAxis( vehicle )
+function AutoSteeringEngine.hasArticulatedAxis( vehicle, useCurrentState, whileTurning )
 	if     vehicle == nil or vehicle.spec_articulatedAxis == nil then 
 		return false 
 	elseif vehicle.spec_articulatedAxis.componentJoint == nil
@@ -388,11 +388,19 @@ function AutoSteeringEngine.hasArticulatedAxis( vehicle )
 			or vehicle.spec_articulatedAxis.rotSpeed       == nil then
 		return false 
 	end
+	if whileTurning then 
+		return true 
+	end 
 	if      vehicle.spec_crabSteering          ~= nil 
 			and vehicle.spec_crabSteering.stateMax > 0
 			and vehicle.spec_crabSteering.state    > 0 then
 		local spec    = vehicle.spec_crabSteering 
-		local curMode = spec.steeringModes[spec.state]
+		local state   = spec.state 
+		if useCurrentState then 
+		elseif vehicle.aiveIsStarted and vehicle.aiveCrabSteeringState ~= nil then 
+			state       = vehicle.aiveCrabSteeringState 
+		end 
+		local curMode = spec.steeringModes[state]
 		if curMode.articulatedAxis ~= nil and curMode.articulatedAxis.locked then
 			return false 
 		end 
@@ -2937,6 +2945,11 @@ function AutoSteeringEngine.getTurnMode( vehicle )
 	local zb         = nil
 	local noHire     = false
 	
+	if AutoSteeringEngine.hasArticulatedAxis( vehicle, false, true ) then 
+		revUTurn   = false
+		smallUTurn = false
+	end 
+	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
 		for i=1,vehicle.aiveChain.toolCount do
 --		local _,_,z = AutoSteeringEngine.getRelativeTranslation( vehicle.aiveChain.refNode, vehicle.aiveChain.tools[i].refNode ) 
@@ -3055,6 +3068,9 @@ end
 -- isSetAngleZero
 ------------------------------------------------------------------------
 function AutoSteeringEngine.isSetAngleZero( vehicle )
+	if AutoSteeringEngine.hasArticulatedAxis( vehicle, true ) then 
+		return false 
+	end 
 	if AIVEGlobals.zeroAngle > 0 then
 		return true
 	end
@@ -8352,7 +8368,7 @@ function AutoSteeringEngine.setToolsAreLowered( vehicle, isLowered, immediate, o
 	if immediate then 
 		doItNow = true
 	end
-		
+	
 	for i=1,vehicle.aiveChain.toolCount do		
 		if immediate then
 			vehicle.aiveChain.tools[i].currentLowerState = nil
@@ -8416,7 +8432,7 @@ function AutoSteeringEngine.ensureToolIsLowered( vehicle, isLowered, indexFilter
 	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
 		return
 	end
-	
+		
 	for i=1,table.getn( vehicle.aiveChain.toolParams ) do
 		local doit = false
 		local tool = vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i]

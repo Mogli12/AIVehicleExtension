@@ -138,7 +138,9 @@ function AIVehicleExtension.registerEventListeners(vehicleType)
 											"saveToXMLFile", 
 											"onRegisterActionEvents",
 											"onStateChange",
-											"onPreDelete" } ) do
+											"onPreDelete",
+											"onAIEnd",
+											"onAITurnProgress"} ) do
 		SpecializationUtil.registerEventListener(vehicleType, n, AIVehicleExtension)
 	end 
 end 
@@ -1123,7 +1125,7 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 				and self.acDimensions.wheelBase    ~= nil 
 				and self.acDimensions.wheelParents ~= nil then
 				
-			if AutoSteeringEngine.hasArticulatedAxis( self ) then	
+			if AutoSteeringEngine.hasArticulatedAxis( self, true ) then	
 				local node = getParent( self.acRefNode )
 				local dx = 0
 				local dz = 0
@@ -1363,6 +1365,7 @@ function AIVehicleExtension:setAIImplementsMoveDown( moveDown, immediate )
 	if immediate then
 		AutoSteeringEngine.ensureToolIsLowered( self, moveDown )
 	end
+	
 	self.acImplementsMoveDown  = moveDown
 	self.acImplementsMoveDown2 = moveDown
 	self.acImplMoveDownTimer   = 0 
@@ -1754,7 +1757,14 @@ function AIVehicleExtension.calculateDimensions( self )
 	self.acDimensions								 	 = {}
 	self.acDimensions.zOffset				 	 = 0 
 	self.acDimensions.acRefNodeZ       = 0
-	self.acDimensions.maxSteeringAngle = math.min( AIVEUtils.getNoNil( self.maxRotation, math.rad( 25 )), math.rad( 60 ) )
+	
+	local r = self.maxRotation
+	if r == nil then 
+		r = 25
+	elseif r < 2 then 
+		r = math.deg( r ) 
+	end 
+	self.acDimensions.maxSteeringAngle = math.rad( math.min( r, 60 ) )
 	self.acDimensions.radius           = AIVEUtils.getNoNil( self.maxTurningRadius, 6.25 )
 --max rotation is for the inner radius
 	local d = math.min( 1.25, self.acDimensions.radius )
@@ -2381,7 +2391,7 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 			or self.aiveChain.trace   == nil
 			or self.aiveChain.trace.a == nil then
 		self:acDebugPrint( "gSBA: no tools with joint found: "..AutoSteeringEngine.radToString( -turnAngle ))
-		local m = 0.5 * self.acDimensions.maxSteeringAngle
+		local m = self.acDimensions.maxSteeringAngle
 		return AIVEUtils.clamp( -turnAngle, -m, m )
 	end
 
@@ -2662,8 +2672,8 @@ function AIVehicleExtension:onOtherAICollisionTrigger(triggerId, otherId, onEnte
 		if vehicle ~= nil then
 			if vehicle.specializations ~= nil and SpecializationUtil.hasSpecialization( AIVehicle, vehicle.specializations ) then
 				otherAI = vehicle 
-			elseif type( vehicle.getRootAttacherVehicle ) == "function" then
-				otherAI = vehicle:getRootAttacherVehicle()
+			else
+				otherAI = vehicle:getRootVehicle()
 				if otherAI.specializations == nil or not SpecializationUtil.hasSpecialization( AIVehicle, otherAI.specializations ) then
 					otherAI = nil
 				end
@@ -2777,11 +2787,133 @@ end
 
 AIVehicleUtil.driveToPoint = Utils.overwrittenFunction( AIVehicleUtil.driveToPoint, AIVehicleExtension.newDriveToPoint )
 
+function AIVehicleExtension:getImplementObjectList()
+	local obj = { self }
+	
+	for _, implement in ipairs(self:getAttachedAIImplements()) do
+		table.insert( obj, implement.object )
+	end
+
+	return obj
+end 
+
+
 function AIVehicleExtension:newCrabSteeringOnAIImplementStart( superFunc )
-	if self.acParameters ~= nil and self.acParameters.enabled then 
+	local rootVehicle = self:getRootVehicle()
+	if rootVehicle.acParameters ~= nil and rootVehicle.acParameters.enabled then 
+		rootVehicle.aiveSetCrabSteeringState = true 
+		rootVehicle.aiveSetCrabSteeringEnd   = nil
+		self.aiveCrabSteeringState  = self.spec_crabSteering.state
+		
+		local spec = self.spec_crabSteering
+		local crab = spec.steeringModes[self.aiveCrabSteeringState]
+		local test = {}
+		
+		for s,c in pairs( spec.steeringModes ) do 
+			if s ~= self.aiveCrabSteeringState then
+				test[s] = true 
+				for i,w in pairs( crab.wheels ) do
+					local v = c.wheels[i] 
+					if v == nil then 
+						test[s] = false 
+					elseif w.locked and not ( v.locked ) then 
+						test[s] = false 
+					elseif v.locked and not ( w.locked ) then 
+						test[s] = false 
+					elseif math.abs( w.offset + v.offset ) > 0.01 then 
+						test[s] = false 
+					end 
+					if not ( test[s] ) then 
+						break 
+					end 
+				end 
+				
+				if crab.articulatedAxis ~= nil then 
+					local w = crab.articulatedAxis
+					local v = c.articulatedAxis
+					if v == nil then 
+						test[s] = false 
+					elseif w.locked and not ( v.locked ) then 
+						test[s] = false 
+					elseif v.locked and not ( w.locked ) then 
+						test[s] = false 
+					elseif math.abs( w.offset + v.offset ) > 0.01 then 
+						test[s] = false 
+					end 
+				end 
+			end 
+		end 
+		
+		self.aiveCrabSteeringState1 = self.aiveCrabSteeringState 
+		self.aiveCrabSteeringState2 = self.aiveCrabSteeringState 
+		for s,b in pairs( test ) do 
+			if b then 
+				self.aiveCrabSteeringState2 = s
+			end 
+		end 
+		
 		return 
 	end 
 	return superFunc( self ) 
 end 
 
 CrabSteering.onAIImplementStart = Utils.overwrittenFunction( CrabSteering.onAIImplementStart, AIVehicleExtension.newCrabSteeringOnAIImplementStart )
+
+
+function AIVehicleExtension:onAITurnProgress( progress, left )
+	if      self.acParameters       ~= nil
+			and self.acParameters.enabled
+			and self.aiveSetCrabSteeringState
+			and progress > 0.05 then 
+		local target = progress > 0.95
+		
+		if self.aiveSetCrabSteeringEnd == nil or self.aiveSetCrabSteeringEnd ~= target then 	
+			self.aiveSetCrabSteeringEnd = target
+			
+			for _,o in pairs( AIVehicleExtension.getImplementObjectList( self ) ) do 
+				if      o.spec_crabSteering     ~= nil
+						and o.spec_crabSteering.stateMax > 0
+						and o.spec_crabSteering.aiSteeringModeIndex > 0 then 
+					local state = o.spec_crabSteering.state 
+					if not target then 
+						state = o.spec_crabSteering.aiSteeringModeIndex 
+					else 
+						state = o.aiveCrabSteeringState1
+						
+						if      o.aiveCrabSteeringState1 ~= nil 
+								and o.aiveCrabSteeringState2 ~= nil 
+								and o.aiveCrabSteeringState2 ~= o.aiveCrabSteeringState1
+								and self.aiveChain           ~= nil 
+								and self.aiveChain.trace     ~= nil 
+								and self.aiveChain.trace.isUTurn then 
+							state = o.aiveCrabSteeringState2
+							o.aiveCrabSteeringState2 = o.aiveCrabSteeringState1
+							o.aiveCrabSteeringState1 = state 
+						end 	
+					end 
+					
+					o:setCrabSteering(state)
+				end 
+			end 
+		end 
+	end 
+end 
+
+function AIVehicleExtension:onAIEnd()
+	if      self.acParameters       ~= nil
+			and self.acParameters.enabled 
+			and self.aiveSetCrabSteeringState then 
+		for _,o in pairs( AIVehicleExtension.getImplementObjectList( self ) ) do 
+			if      o.aiveCrabSteeringState ~= nil
+					and o.spec_crabSteering     ~= nil
+					and o.spec_crabSteering.stateMax > 0 then 
+				o:setCrabSteering(o.aiveCrabSteeringState)
+				o.aiveCrabSteeringState  = nil 
+				o.aiveCrabSteeringState1 = nil 
+				o.aiveCrabSteeringState2 = nil 
+			end 
+		end 
+	end 	
+	self.aiveSetCrabSteeringState = nil
+	self.aiveSetCrabSteeringEnd   = nil 
+end 
