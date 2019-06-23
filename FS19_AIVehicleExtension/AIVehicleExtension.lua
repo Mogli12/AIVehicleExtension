@@ -2672,7 +2672,7 @@ function AIVehicleExtension:onOtherAICollisionTrigger(triggerId, otherId, onEnte
 		if vehicle ~= nil then
 			if vehicle.specializations ~= nil and SpecializationUtil.hasSpecialization( AIVehicle, vehicle.specializations ) then
 				otherAI = vehicle 
-			else
+			elseif type( vehicle.getRootVehicle ) == "function" then 
 				otherAI = vehicle:getRootVehicle()
 				if otherAI.specializations == nil or not SpecializationUtil.hasSpecialization( AIVehicle, otherAI.specializations ) then
 					otherAI = nil
