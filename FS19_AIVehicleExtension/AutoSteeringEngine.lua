@@ -3876,10 +3876,10 @@ function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, toolIndex, lx1,lz1,lx2,
 	
 	if AIImplement.getFieldCropsQuery == nil then 
 	--1.3
-		if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 0 then 
-			vehicle.aiveAIAreaLog = 0 
-			print( "AutoSteeringEngine.getAIAreaOfVehicle v1.3" ) 
-		end 
+	--if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 0 then 
+	--	vehicle.aiveAIAreaLog = 0 
+	--	print( "AutoSteeringEngine.getAIAreaOfVehicle v1.3" ) 
+	--end 
 	
 		local terrainDetailRequiredValueRanges  = tool.terrainDetailRequiredValueRanges
 		local terrainDetailProhibitValueRanges  = tool.obj:getAITerrainDetailProhibitedRange()
@@ -3897,18 +3897,18 @@ function AutoSteeringEngine.getAIAreaOfVehicle( vehicle, toolIndex, lx1,lz1,lx2,
 		local useDensityHeightMap, useWindrowFruitType =  tool.obj:getAIFruitExtraRequirements()
 	
 		if not useDensityHeightMap then
-			if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 1 then 
-				vehicle.aiveAIAreaLog = 1
-				print( "AutoSteeringEngine.getAIAreaOfVehicle v1.4 I" ) 
-			end 
+		--if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 1 then 
+		--	vehicle.aiveAIAreaLog = 1
+		--	print( "AutoSteeringEngine.getAIAreaOfVehicle v1.4 I" ) 
+		--end 
 				
 			local query =  tool.obj:getFieldCropsQuery()
 			return AIVehicleUtil.getAIFruitArea(lx1,lz1,lx2,lz2,lx3,lz3, query)
 		else
-			if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 2 then 
-				vehicle.aiveAIAreaLog = 2
-				print( "AutoSteeringEngine.getAIAreaOfVehicle v1.4 II" ) 
-			end 
+		--if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 2 then 
+		--	vehicle.aiveAIAreaLog = 2
+		--	print( "AutoSteeringEngine.getAIAreaOfVehicle v1.4 II" ) 
+		--end 
 
 			local fruitRequirements =  tool.obj:getAIFruitRequirements()
 			return AIVehicleUtil.getAIDensityHeightArea(lx1,lz1,lx2,lz2,lx3,lz3, fruitRequirements, useWindrowFruitType)
@@ -7000,12 +7000,6 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		object    = implement.object
 		reference = implement.object.spec_attachable.attacherJoint.node
 
-		print( "attacherRotFactor 1" )
-		print( tostring( vehicle ) .." == "..tostring( implement.object.spec_attachable.attacherVehicle ) )
-		if AutoSteeringEngine.hasArticulatedAxis( vehicle ) then 
-			print( AutoSteeringEngine.radToString( vehicle.spec_articulatedAxis.rotMax ) ) 
-		end 
-
 		if      vehicle == implement.object.spec_attachable.attacherVehicle
 				and AutoSteeringEngine.hasArticulatedAxis( vehicle )
 				and vehicle.spec_attacherJoints           ~= nil then 
@@ -7013,17 +7007,11 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 			local spec = vehicle.spec_articulatedAxis
 			
 			if attacherJoint ~= nil then 
-				print( "attacherRotFactor 2" )
-				print( tostring( attacherJoint.rootNode ) )
 				local f = 0.5 
 				for i=1,2 do 
-					print( tostring(i)..": "..tostring( spec.componentJoint.componentIndices[i] ) )
 					if spec.componentJoint.componentIndices[i] ~= nil then 
 						c = vehicle.components[spec.componentJoint.componentIndices[i]] 
-						if c == nil then  
-							print( "component not found" )
-						else
-							print( tostring(c.node) )
+						if c ~= nil then  
 							if c.node == attacherJoint.rootNode then 
 								tool.attacherRotFactor = f 
 							end 

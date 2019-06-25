@@ -171,30 +171,73 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 					end 
 				end
 				local freeFillLevel = capacity - fillLevel
-				if freeFillLevel < self.slowDownFillLevel then
-					-- we want to drive at least 2 km/h to avoid combine stops too early
-					maxSpeed = 2 + (freeFillLevel / self.slowDownFillLevel) * self.slowDownStartSpeed
-					self:addDebugText(string.format("COMBINE -> Slow down because nearly full: %.2f", maxSpeed))
-				end
+			--if freeFillLevel < self.slowDownFillLevel then
+			--	-- we want to drive at least 2 km/h to avoid combine stops too early
+			--	maxSpeed = 2 + (freeFillLevel / self.slowDownFillLevel) * self.slowDownStartSpeed
+			--	self:addDebugText(string.format("COMBINE -> Slow down because nearly full: %.2f", maxSpeed))
+			--end
 			end
 		end
 	end 
 	
 	if not allowedToDrive then
-		self.allowedToDriveTimer = 3000
+		local refNode = self.vehicle:getAIVehicleDirectionNode()
+		local wx,_,wz = getWorldTranslation( refNode )
+		self.restartPointX2 = wx 		
+		self.restartPointZ2 = wz
+		if self.restartPointX == nil then 
+			self.restartPointX = wx 		
+			self.restartPointZ = wz
+			self.restartPoint2 = 0
+			self.restartDirX,_,self.restartDirZ = localToWorld( refNode, 0, 0, 5 ) 
+		else 
+			self.restartPoint2 = ( wx - self.restartPointX  )^2 + ( wz - self.restartPointZ  )^2
+		end 
+	--self.allowedToDriveTimer = 2000
 		self:addDebugText("COMBINE is not allowed to drive")
 		return 0, 1, true, 0, math.huge
 	end 
 	
-	if self.allowedToDriveTimer > 0 then 
+	if self.restartPointX ~= nil then 
 		for _, combine in pairs(self.combines) do
 			 if not combine:getIsTurnedOn() then
 				combine:setIsTurnedOn(true)
 			end
 		end
-		maxSpeed = math.min( maxSpeed, math.max( ( 2000 - self.allowedToDriveTimer ) * 0.005, 2 ) )		
-		self.allowedToDriveTimer = self.allowedToDriveTimer - dt 
-	end
+		
+		local refNode   = self.vehicle:getAIVehicleDirectionNode()
+		local wx, _, wz = getWorldTranslation( refNode )
+		local l1        = ( wx - self.restartPointX  )^2 + ( wz - self.restartPointZ  )^2
+		local l2        = ( wx - self.restartPointX2 )^2 + ( wz - self.restartPointZ2 )^2
+		local dts       = math.max( 1 - l1, self.restartPoint2 + 1 - l2 )
+		if dts > 0 then 
+		-- closer than 1 meter to the 1st stop point or closer than 1 meter plus distance between stop points 
+			self:addDebugText("Reverse")
+			return self.restartDirX, self.restartDirZ, self.vehicle.acParameters.inverted, 7, dts
+		end 
+		
+		self.restartPointX  = nil 
+		self.restartPointZ  = nil 
+		self.restartPointX2 = nil 
+		self.restartPointZ2 = nil 
+		self.restartPoint2  = nil
+		self.restartDirX    = nil 
+		self.restartDirZ    = nil 
+	end 
+	
+--if self.allowedToDriveTimer > 0 then 
+--	for _, combine in pairs(self.combines) do
+--		 if not combine:getIsTurnedOn() then
+--			combine:setIsTurnedOn(true)
+--		end
+--	end
+--	maxSpeed = math.min( maxSpeed, math.max( ( 2000 - self.allowedToDriveTimer ) * 0.005, 2 ) )		
+--	self.allowedToDriveTimer = self.allowedToDriveTimer - dt 
+--	
+--	if self.allowedToDriveTimer > 2000 then 
+--		local tX,_,tZ  = localToWorld( self.vehicle:getAIVehicleDirectionNode(), 0, 0, 1 )
+--	end 
+--end
 	
 --self:addDebugText("COMBINE may drive")
 	return nil, nil, nil, maxSpeed, nil
