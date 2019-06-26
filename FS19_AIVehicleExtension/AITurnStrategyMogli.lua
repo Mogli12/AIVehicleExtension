@@ -51,6 +51,7 @@ function AITurnStrategyMogli:startTurn( turnData )
 	self.animWaitTimer = nil
 	self.noSneakTimer  = nil
 	self.isTurning     = false
+	self.aiveTurnTimer = 0
 end
 
 --============================================================================================================================
