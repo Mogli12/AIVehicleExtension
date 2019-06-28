@@ -887,9 +887,7 @@ function AutoSteeringEngine.processChainRefine( vehicle, indexMax )
 	local indexMin = math.min( AIVEGlobals.chainStart, indexMax )
 	bi, ti, bo, to, bw, tw, ll, lo  = AutoSteeringEngine.getAllChainBorders( vehicle, indexMin, indexMax, vehicle.aiveChain.inField )
 			
-	vehicle.aiveChain.fullSpeed = ( border <= 0 )
-			
-	while border > AIVEGlobals.ignoreBorder  and indexMax > 1 do 
+	while bi > AIVEGlobals.ignoreBorder  and indexMax > 1 do 
 		indexMax      = indexMax - 1 
 		bi, ti, bo, to, bw, tw, ll, lo = AutoSteeringEngine.getAllChainBorders( vehicle, indexMin, indexMax, vehicle.aiveChain.inField )
 		if total <= 0 then
@@ -907,6 +905,8 @@ function AutoSteeringEngine.processChainRefine( vehicle, indexMax )
 		border = 0
 	end
 	
+	vehicle.aiveChain.fullSpeed = ( border <= 0 )
+			
 	local dist = 0.5*vehicle.aiveChain.radius 
 	local wx,wy,wz 
 	
@@ -1127,13 +1127,14 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 				j2 = j3
 			end
 			
-			if AIVEGlobals.chainDivideP2 <= 0 then
-				vehicle.aiveChain.fullSpeed = true
-			elseif targetSteering == nil and vehicle.aiveChain.lastBest ~= nil then
-				vehicle.aiveChain.fullSpeed = true
-			else
-				vehicle.aiveChain.fullSpeed = false
-			end
+--			if AIVEGlobals.chainDivideP2 <= 0 then
+					vehicle.aiveChain.fullSpeed = true
+--			elseif targetSteering == nil and vehicle.aiveChain.lastBest ~= nil then
+--				vehicle.aiveChain.fullSpeed = true
+--			else
+--print("No full speed I")
+--				vehicle.aiveChain.fullSpeed = false
+--			end
 								
 			for plusMinus=1,2 do						
 				if     ( plusMinus == 1 and not ( bi0 <= 0 and bo0 <= 0 ) )
@@ -1223,14 +1224,16 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 				vehicle.aiveChain.fullSpeed = false
 			end
 			
-			if vehicle.aiveChain.fullSpeed then
-				if vehicle.aiveChain.valid == nil then
-					vehicle.aiveChain.fullSpeed = false
-				elseif ( g_currentMission.time - vehicle.aiveChain.valid ) * vehicle.lastSpeed > vehicle.aiveChain.maxDtProd then
-					vehicle.aiveProcessChainInfo = vehicle.aiveProcessChainInfo..string.format("P1.2: %d %f\n", g_currentMission.time - vehicle.aiveChain.valid, ( g_currentMission.time - vehicle.aiveChain.valid ) * vehicle.lastSpeed)
-					vehicle.aiveChain.fullSpeed = false
-				end
-			end
+--			if vehicle.aiveChain.fullSpeed then
+--				if vehicle.aiveChain.valid == nil then
+--print("No full speed V")
+--					vehicle.aiveChain.fullSpeed = false
+--				elseif ( g_currentMission.time - vehicle.aiveChain.valid ) * vehicle.lastSpeed > vehicle.aiveChain.maxDtProd then
+--					vehicle.aiveProcessChainInfo = vehicle.aiveProcessChainInfo..string.format("P1.2: %d %f\n", g_currentMission.time - vehicle.aiveChain.valid, ( g_currentMission.time - vehicle.aiveChain.valid ) * vehicle.lastSpeed)
+--print("No full speed VI: "..vehicle.aiveProcessChainInfo)
+--					vehicle.aiveChain.fullSpeed = false
+--				end
+--			end
 
 			if      vehicle.aiveChain.fixAttacher
 					and turnAngle              > 0				
@@ -4090,7 +4093,7 @@ function AutoSteeringEngine.applyRotation( vehicle, toIndex )
 					limited  = true
 					cumulRot = oldCumulRot + vehicle.aiveChain.nodes[j].rotation
 					vehicle.aiveChain.nodes[j].invRadius  = math.sin( 0.5 * vehicle.aiveChain.nodes[j].rotation ) * 2 / vehicle.aiveChain.nodes[j].length
-					if vehicle.aiveChain.nodes[j].invRadius > 1E-6 then
+					if math.abs( vehicle.aiveChain.nodes[j].invRadius ) > 1E-6 then
 						vehicle.aiveChain.nodes[j].radius   = 1 / vehicle.aiveChain.nodes[j].invRadius
 						vehicle.aiveChain.nodes[j].steering = math.atan2( vehicle.aiveChain.wheelBase, vehicle.aiveChain.nodes[j].radius )
 					else

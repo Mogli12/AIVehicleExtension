@@ -540,12 +540,12 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			end
 		end
 		
-		if search == nil then
+		if     self.search == nil then
 			af = veh.acParameters.angleFactor 
 			na = "L"
-		elseif search == AIDriveStrategyMogli.searchStart  then
+		elseif self.search == AIDriveStrategyMogli.searchStart  then
 			na = "M"
-		elseif search == AIDriveStrategyMogli.searchUTurn  then
+		elseif self.search == AIDriveStrategyMogli.searchUTurn  then
 			na = "M"
 		else
 			na = "I"
