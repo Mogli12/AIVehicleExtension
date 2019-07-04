@@ -7,7 +7,7 @@
     <!--angleSafety type="float" value="0.800000" /-->
     <angleSafety type="float" value="0.8" />
 		
-		<zeroAngle  type="bool" value="false" />
+		<zeroAngle  type="bool" value="true" />
 		
     <angleStep    type="degree" value="0" />
     <angleStepInc type="degree" value="45" /> <!-- 27° / 45° -->
@@ -20,7 +20,7 @@
     <chainDivideP3 value="8" />
 		<lastBestFactor value="1.0"/>
 		
-		<staticRoot type="bool" value="true" />
+		<staticRoot type="bool" value="false" />
 		
     <!--                                            1 1 2 2 3 3 4 4-->
     <!--                              1 2.5  4  6 8 2 7 2 7 2 7 2 7-->
@@ -112,7 +112,7 @@
 		<minOffsetArt type="float" value="0.5" />
 		<testOutside type="float" value="1.5" />
 		<useFBB123   type="bool" value="true"/>
-		<angleBuffer type="bool" value="true"/>
+		<angleBuffer type="bool" value="false"/>
 		<minTraceLen value="5"/>
 		<offTracking type="float" value="1.0" />
 		

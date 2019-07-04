@@ -2629,7 +2629,7 @@ AIVehicle.updateAIDriveStrategies = Utils.appendedFunction( AIVehicle.updateAIDr
 ---Returns true if ai can start
 -- @return boolean canStart can start ai
 -- @includeCode
-function AIVehicleExtension:newgetCanStartAIVehicle( superFunc, ... )
+function AIVehicleExtension:newGetCanStartAIVehicle( superFunc, ... )
 	-- check if reverse driving is available and used, we do not allow the AI to work when reverse driving is enabled
 
 	if      self.acParameters ~= nil
@@ -2638,6 +2638,31 @@ function AIVehicleExtension:newgetCanStartAIVehicle( superFunc, ... )
 			and not ( self.aiveCanStartArtAxis ) then 
 		return false
 	end
+	
+	if      self.acParameters ~= nil
+			and self.acParameters.enabled then 
+		if self.aiveChain == nil or self.aiveHas == nil then 
+			AIVehicleExtension.checkState( self )
+			if self.aiveChain == nil or self.aiveHas == nil then 
+				return false 
+			end 
+		end 
+		if self.aiveHas.noDHM then 
+			for _,obj in pairs( g_currentMission.nodeToObject ) do 
+				if obj.aiveIsStarted and type( obj.aiveHas ) == "table" then 
+					if not ( obj.aiveHas.noDHM ) then 
+					elseif self.aiveHas.combine       ~= obj.aiveHas.combine       
+							or self.aiveHas.plow          ~= obj.aiveHas.plow          
+							or self.aiveHas.cultivator    ~= obj.aiveHas.cultivator    
+							or self.aiveHas.sowingMachine ~= obj.aiveHas.sowingMachine 
+							or self.aiveHas.sprayer       ~= obj.aiveHas.sprayer       
+							or self.aiveHas.mower         ~= obj.aiveHas.mower then 
+						return false 
+					end 
+				end 
+			end 
+		end 
+	end 
 	
 	local backup = self.isReverseDriving
 	
@@ -2653,7 +2678,7 @@ function AIVehicleExtension:newgetCanStartAIVehicle( superFunc, ... )
 	return unpack( res )
 end
 
-AIVehicle.getCanStartAIVehicle = Utils.overwrittenFunction( AIVehicle.getCanStartAIVehicle, AIVehicleExtension.newgetCanStartAIVehicle )
+AIVehicle.getCanStartAIVehicle = Utils.overwrittenFunction( AIVehicle.getCanStartAIVehicle, AIVehicleExtension.newGetCanStartAIVehicle )
 
 ------------------------------------------------------------------------
 -- onOtherAICollisionTrigger

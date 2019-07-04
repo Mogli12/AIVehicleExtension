@@ -287,7 +287,6 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	end
 		
 	veh.spec_aiVehicle.aiSteeringSpeed = veh.acSteeringSpeed
-	
 	self.activeTurnStrategy = nil
 	
 	local resetState = false 
@@ -960,10 +959,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, angle )
 	elseif tX == nil and angle2 ~= nil then
 		tX,tZ  = AutoSteeringEngine.getWorldTargetFromSteeringAngle( veh, angle2 )
-	elseif true then
-		veh.spec_aiVehicle.aiSteeringSpeed = 1
 	elseif border > 0 then
 		veh.spec_aiVehicle.aiSteeringSpeed = 1
+	elseif not detected then 
+		veh.spec_aiVehicle.aiSteeringSpeed = 2 * veh.acSteeringSpeed
 	elseif veh.acLastAbsAngle == nil then
 		veh.spec_aiVehicle.aiSteeringSpeed = veh.acSteeringSpeed
 	else
@@ -981,7 +980,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		end
 	end	
 	
-	veh.spec_aiVehicle.aiSteeringSpeed = math.min( veh.spec_aiVehicle.aiSteeringSpeed, ( veh.maxRotTime - veh.minRotTime ) / 200 )
+	veh.spec_aiVehicle.aiSteeringSpeed = veh.spec_aiVehicle.aiSteeringSpeed * math.max( 1, veh.lastSpeed * 360 ) 
+	veh.spec_aiVehicle.aiSteeringSpeed = math.min( veh.spec_aiVehicle.aiSteeringSpeed, ( veh.maxRotTime - veh.minRotTime ) / 100 )
 	veh.acLastAbsAngle  = absAngle
 	
 	local tX2 = tX
