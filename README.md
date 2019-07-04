@@ -4,7 +4,11 @@
 This is the link to the latest beta version: https://github.com/Mogli12/AIVehicleExtension/blob/master/FS19_AIVehicleExtension.zip?raw=true
 
 ## Status
-This is the very first version of AIVE for FS19.
+AIVE does not work with patch 1.4. AIVehicleUtil.getAIFruitArea or AIVehicleUtil.getAIDensityHeightArea seem to make problems, which I cannot fix.
+
+************************************************************
+=> Please do not use AIVE anymore
+************************************************************
 
 #### New User Interface
 The idea behind the new user interface is to move as many settings as possible into new settings dialog. This dialog uses standard elements. Only those options needed for visualization or intermediate action are still available in the head up display (HUD).
