@@ -292,7 +292,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 
 		AutoSteeringEngine.setSteeringAngle( veh, 0 )
 		if veh_acTurn2Outside then
-			detected, _, border = AutoSteeringEngine.processChain( veh )
+			detected, _, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 			if border <= 0 then
 				detected = true
 			end
@@ -344,9 +344,9 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		turnProgress = 0.4
 
 		if veh_acTurn2Outside then
-			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 		else 
-			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 		end 
 		
 		moveForwards = false;					
@@ -492,7 +492,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		noLower  = false
 	
 		if turnAngle < 90 + angleOffset then -- math.deg( veh.acDimensions.maxSteeringAngle ) then
-			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 		else
 			detected = false
 			border   = 1
@@ -721,7 +721,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local onTrack, absAngle = false, nil
 		angle = nil
 		if doIt > 0 then
-			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 			if detected then
 				if veh.acParameters.leftAreaActive then
 					absAngle =  angle2 
@@ -894,7 +894,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 		local _,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh );
 		
-		detected, angle2, border = AutoSteeringEngine.processChain( veh )
+		detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 		
 		if z < 0 or ( detected and z < 0.5 * veh.acDimensions.distance ) then				
 			turnData.stage   = turnData.stage + 1;					
@@ -922,7 +922,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local x, allowedToDrive = AIVehicleExtension.getTurnVector( veh );
 		if veh.acParameters.leftAreaActive then x = -x end
 
-		detected, angle2, border = AutoSteeringEngine.processChain( veh )
+		detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 			
 		if turnAngle < 90 - math.deg( veh.acDimensions.maxSteeringAngle ) then
 			angle = -veh.acDimensions.maxSteeringAngle;
@@ -980,15 +980,15 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		inactive     = true
 		noLower      = true
 		moveForwards = false
-		angle        = math.rad( turnAngle )
+		angle        = -math.rad( turnAngle )
 		local x,z    = AIVehicleExtension.getTurnVector( veh );
 		if not veh.acParameters.leftAreaActive then x = -x end
 		veh:acDebugPrint( string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
 		
 		if z <= veh.acDimensions.uTurnDist4x + 0.5 then
 			turnData.stage = turnData.stage + 2
-			self.aiveTurnTimer  = veh.acDeltaTimeoutRun
 		end
+		self.aiveTurnTimer  = veh.acDeltaTimeoutRun
 
 --==============================================================				
 -- go to the right distance before the U-turn
@@ -1135,7 +1135,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		veh:acDebugPrint( string.format("T%d: %4.1f %4.1f %3d°",turnData.stage,x,z,turnAngle) )
 		
 		if not fruitsDetected then
-			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 			
 			if detected then
 				angle  = nil
@@ -1320,7 +1320,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		if fruitsDetected then
 			angle2   = nil
 		else
-			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 			
 			if detected then
 				angle  = nil
@@ -1381,7 +1381,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		noLower  = false
 		inactive = true
 		
-		detected, angle2, border = AutoSteeringEngine.processChain( veh )
+		detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 		
 		if detected then
 			if turnData.stage == 60 then
@@ -1626,7 +1626,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 				or ( math.abs( turnAngle ) >= 180 - angleOffset 
 				and math.abs( AutoSteeringEngine.getToolAngle( veh ) ) <= AIVEGlobals.maxToolAngle2 ) then
 			nav = false
-			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 			if border <= 0 then
 				detected = true
 			end
@@ -1754,7 +1754,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			-- go all the way around the corner
 			angle = -veh.acDimensions.maxSteeringAngle
 		else
-			detected, angle2, border = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 
 			if     border    > 0 then
 				-- giving up
@@ -1983,7 +1983,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		end
 		
 		local a2
-		detected, a2, border = AutoSteeringEngine.processChain( veh )
+		detected, a2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 		if not veh.acParameters.leftAreaActive then
 			a2 = -a2
 		end
@@ -2278,7 +2278,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			elseif fruitsDetected or targetZ < 0 then
 				self.aiveTurnTimer    = veh.acDeltaTimeoutWait
 			elseif self.aiveTurnTimer < 0 then
-				detected,_,border = AutoSteeringEngine.processChain( veh )
+				detected,_,border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 				if border <= 0 then
 					turnData.stage = turnData.stage + 1
 					self.aiveTurnTimer  = veh.acDeltaTimeoutRun
@@ -2292,7 +2292,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			inactive = true
 			moveForwards      = false
 			angle             = AIVehicleExtension.getStraighBackwardsAngle( veh, targetT )
-			detected,_,border = AutoSteeringEngine.processChain( veh )
+			detected,_,border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 			if border > 0 then
 				self.aiveTurnTimer   = veh.acDeltaTimeoutRun;
 			elseif self.aiveTurnTimer < 0 then
@@ -2308,7 +2308,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			noLower  = false
 		
 			moveForwards     = true
-			detected, angle2, border, tX,_,tZ = AutoSteeringEngine.processChain( veh )
+			detected, angle2, border, tX,_,tZ = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 			
 			local onTrack  = false
 			if border <= 0 and not detected then

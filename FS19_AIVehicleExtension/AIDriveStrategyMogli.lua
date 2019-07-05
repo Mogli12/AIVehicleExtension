@@ -550,7 +550,24 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			na = "I"
 		end
 		
-		detected, angle2, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( veh, isInField, ta, af, na )
+	--if      not AutoSteeringEngine.hasArticulatedAxis( vehicle ) and AIVEGlobals.staticRoot > 0
+	--		and self.search == nil
+	--		and ta == nil
+	--		and self.lastChainResult ~= nil
+	--		and g_currentMission.time - self.lastChainResult[1] < 500
+	--		and self.lastChainResult[2]
+	--		and self.lastChainResult[4] <= 0 then 
+	--	detected = self.lastChainResult[2]
+	--	angle2   = self.lastChainResult[3]
+	--	border   = self.lastChainResult[4]
+	--	tX       = self.lastChainResult[5]
+	--	tZ       = self.lastChainResult[6]
+	--	dist     = self.lastChainResult[7]
+	--else 
+			detected, angle2, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( veh, isInField, ta, af, na )
+	--	--                       1                      2         3       4       5   6   7
+	--	self.lastChainResult = { g_currentMission.time, detected, angle2, border, tX, tZ, dist }
+	--end 
 	end
 	
 	local absAngle = angle2 

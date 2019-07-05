@@ -2639,7 +2639,20 @@ function AIVehicleExtension:newGetCanStartAIVehicle( superFunc, ... )
 		return false
 	end
 	
+	local backup = self.isReverseDriving
+	
 	if      self.acParameters ~= nil
+			and self.acParameters.enabled then
+		self.isReverseDriving = false
+	end
+
+	local res = { superFunc( self, ... ) }
+	
+	self.isReverseDriving = backup
+	
+	if      res[1]
+			and AIVEGlobals.devFeatures <= 0
+			and self.acParameters ~= nil
 			and self.acParameters.enabled then 
 		if self.aiveChain == nil or self.aiveHas == nil then 
 			AIVehicleExtension.checkState( self )
@@ -2663,17 +2676,6 @@ function AIVehicleExtension:newGetCanStartAIVehicle( superFunc, ... )
 			end 
 		end 
 	end 
-	
-	local backup = self.isReverseDriving
-	
-	if      self.acParameters ~= nil
-			and self.acParameters.enabled then
-		self.isReverseDriving = false
-	end
-
-	local res = { superFunc( self, ... ) }
-	
-	self.isReverseDriving = backup
 	
 	return unpack( res )
 end
@@ -2760,12 +2762,12 @@ function AIVehicleExtension.newDriveToPoint( self, superFunc, dt, acceleration, 
 			local steerDiff = targetRotTime - self.rotatedTime
 			local fac = math.abs(steerDiff) / math.max(self.maxRotTime, -self.minRotTime)
 			local speedReduction = 1.0 - math.pow(fac, 0.25)
-			maxSpeed = maxSpeed * speedReduction
+			maxSpeed = math.max( math.min( 2, maxSpeed ), maxSpeed * speedReduction )
 			
 			if self.aiveLastSpeedLimit == nil then 
 				self.aiveLastSpeedLimit = maxSpeed
 			else 
-				self.aiveLastSpeedLimit = math.max( math.min( 7, self.aiveLastSpeedLimit - 0.001 * dt ), maxSpeed ) 
+				self.aiveLastSpeedLimit = math.max( self.aiveLastSpeedLimit - 0.002 * dt, maxSpeed ) 
 			end 
 			maxSpeed = self.aiveLastSpeedLimit
 		end

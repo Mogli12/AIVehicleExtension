@@ -20,7 +20,11 @@
     <chainDivideP3 value="8" />
 		<lastBestFactor value="1.0"/>
 		
-		<staticRoot type="bool" value="false" />
+		<staticRoot type="bool" value="true" />
+		
+		<fruitBuffer value="2"/> <!-- 0 built in; 1 round x/z values; 2 buffer on -->		
+		<maxDtSumF  value="200"/>
+		<maxDtDistF type="float" value="0.308642" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
 		
     <!--                                            1 1 2 2 3 3 4 4-->
     <!--                              1 2.5  4  6 8 2 7 2 7 2 7 2 7-->
@@ -78,17 +82,17 @@
 
 		<maxDtSumT  value="50"/>  <!-- 10 fps => 100 ms -->
 		
-		<maxDtSumP0N value="30"/>   
-		<maxDtSumP1N value="300"/>   
-		<maxDtProdN  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
+		<maxDtSumP0N value="115"/>   
+		<maxDtSumP1N value="1000"/>   
+		<maxDtProdN  type="float" value="1000000"/> <!-- 0.22 meter (dt * lastSpeed) -->
 		
-		<maxDtSumP0L value="50"/>   
-		<maxDtSumP1L value="1000"/>   
-		<maxDtProdL  type="float" value="0.22"/> <!-- meter (dt * lastSpeed) -->
+		<maxDtSumP0L value="350"/>   
+		<maxDtSumP1L value="3000"/>   
+		<maxDtProdL  type="float" value="1000000"/> <!-- 0.22 meter (dt * lastSpeed) -->
 		
 		<maxDtSumP0H value="10"/>   
 		<maxDtSumP1H value="100"/>   
-		<maxDtProdH  type="float" value="0.11"/> <!-- meter (dt * lastSpeed) -->
+		<maxDtProdH  type="float" value="1000000"/> <!-- 0.11 meter (dt * lastSpeed) -->
 		
 		<maxTurnCheck type="float" value="15"/>		
 		<maxToolAngle type="degree" value="65" />
@@ -112,6 +116,8 @@
 		<minOffsetArt type="float" value="0.5" />
 		<testOutside type="float" value="1.5" />
 		<useFBB123   type="bool" value="true"/>
+		<FBB123disq1 type="float" value="0.04" /> 0,2m ^2
+		<FBB123disq2 type="float" value="0.25" /> 0,5m ^2
 		<angleBuffer type="bool" value="false"/>
 		<minTraceLen value="5"/>
 		<offTracking type="float" value="1.0" />
