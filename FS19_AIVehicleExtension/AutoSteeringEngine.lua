@@ -7113,7 +7113,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	tool.ignoreAI                = ignore 
 	
 	
-	if tool.isSprayer and not ( object.spec_sprayer.allowsSpraying ) and spec_aiImplement.leftMarker == nil and spec_aiImplement.rightMarker == nil then
+	if tool.isSprayer and not ( object.spec_sprayer.allowsSpraying ) and spec.leftMarker == nil and spec.rightMarker == nil then
 		return 0
 	end
 	

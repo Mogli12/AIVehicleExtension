@@ -1423,21 +1423,16 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	
 		inactive = true
 
-		local dist = math.max( 1, veh.acDimensions.toolDistance )
+		local dist = math.max( 2, veh.acDimensions.toolDistance )
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 		if veh.acParameters.leftAreaActive then x = -x end
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
-	--local dx       = 0.5 * ( x - turn75.radius - turn75.radiusT )
-		local d2 = 4 * turn75.radius * turn75.radius - x * x 
+		x = x + turn75.radius - turn75.radiusT 
+		local d2 = 4 * veh.acDimensions.radius * veh.acDimensions.radius - x * x 
 		local dx = 0
 		if d2 > 0 then 
 			dx = - math.sqrt( d2 )
 		end 
-	
-	--local toolAngle = AutoSteeringEngine.getToolAngle( veh )
-	--
-	--angle  = nil;		
-	--angle2 = math.min( math.max( -toolAngle, -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle );
 		angle  = math.rad( turnAngle )
 		
 		veh:acDebugPrint( string.format("T70: x: %0.3fm z: %0.3fm td: %0.3fm dx: %0.3fm (%0.3fm %0.1f° %0.3fm %0.3fm)",
@@ -1459,15 +1454,15 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 		if veh.acParameters.leftAreaActive then x = -x end
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
-		
+		x = x + turn75.radius - turn75.radiusT 
 		if turnAngle < 90 - angleOffset then
 			angle = AIVehicleExtension.getMaxAngleWithTool( veh, true )
 		else
 			angle = 0
 		end
 		
-		local corr     = veh.acDimensions.radius * ( 1 - math.cos( math.rad(turnAngle)))
-		local dx       = 0.5 * ( x - turn75.radius - turn75.radiusT )
+		local corr = veh.acDimensions.radius * ( 1 - math.cos( math.rad(turnAngle)))
+		local dx   = 0.5 * ( x - turn75.radius - veh.acDimensions.radius )
 
 		if turnAngle > 0 then
 			dx = math.min(0,dx + corr)

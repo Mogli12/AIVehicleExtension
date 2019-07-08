@@ -1857,9 +1857,9 @@ function AIVehicleExtension.calculateHeadland( turnMode, realWidth, zBack, toolD
 	else
 		local r = radius
 		local z = 0
-		if turnMode == "O" or turnMode == "8" then
-			r = radius75
-		end 
+	--if turnMode == "O" or turnMode == "8" then
+	--	r = 0.5 * ( radius + radius75 )
+	--end 
 		if turnMode == "O" then -- or turnMode == "8" then
 			local beta = math.acos( math.min(math.max(realWidth / r, 0),1) )
 			z	= 2.2 * radius * math.sin( beta )
