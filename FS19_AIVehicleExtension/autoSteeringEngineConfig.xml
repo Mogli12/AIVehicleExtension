@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <AIVEGlobals>
+		<oldFruitArea type="bool" value="false"/>
+
     <aiSteering type="float" value="1.000000" />
     <aiSteeringD type="float" value="-1.000000" />
     <artSteering type="float" value="1.000000" />
@@ -84,15 +86,15 @@
 		
 		<maxDtSumP0N value="115"/>   
 		<maxDtSumP1N value="1000"/>   
-		<maxDtProdN  type="float" value="1000000"/> <!-- 0.22 meter (dt * lastSpeed) -->
+		<maxDtProdN  type="float" value="0"/> <!-- 0.22 meter (dt * lastSpeed) -->
 		
 		<maxDtSumP0L value="350"/>   
 		<maxDtSumP1L value="3000"/>   
-		<maxDtProdL  type="float" value="1000000"/> <!-- 0.22 meter (dt * lastSpeed) -->
+		<maxDtProdL  type="float" value="0"/> <!-- 0.22 meter (dt * lastSpeed) -->
 		
 		<maxDtSumP0H value="10"/>   
 		<maxDtSumP1H value="100"/>   
-		<maxDtProdH  type="float" value="1000000"/> <!-- 0.11 meter (dt * lastSpeed) -->
+		<maxDtProdH  type="float" value="0"/> <!-- 0.11 meter (dt * lastSpeed) -->
 		
 		<maxTurnCheck type="float" value="15"/>		
 		<maxToolAngle type="degree" value="65" />

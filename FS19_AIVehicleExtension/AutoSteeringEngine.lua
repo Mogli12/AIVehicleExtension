@@ -7,6 +7,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 
 	AIVEGlobals = {}
 	AIVEGlobals.devFeatures  = 0
+	AIVEGlobals.oldFruitArea = 0
 	AIVEGlobals.staticRoot   = 0
 	AIVEGlobals.chainBorder  = 0
 	AIVEGlobals.chainLen     = { 2, 4, 6, 8, 10, 12 }
@@ -1419,7 +1420,7 @@ end
 ------------------------------------------------------------------------
 -- checkChain
 ------------------------------------------------------------------------
-function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteering, widthOffset, turnOffset, isInverted, useAIFieldFct, precision )
+function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteering, radius, widthOffset, turnOffset, isInverted, useAIFieldFct, precision )
 
 	local resetTools = false
 	
@@ -1447,6 +1448,7 @@ function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteerin
 		vehicle.aiveChain.invWheelBase = 1 / wheelBase
 		vehicle.aiveChain.maxSteering = maxSteering
 	end	
+	vehicle.aiveChain.radius        = radius
 	
 	vehicle.aiveChain.maxToolAngle = AIVEGlobals.maxToolAngle	
 	if AutoSteeringEngine.hasArticulatedAxis( vehicle ) then
@@ -1473,14 +1475,12 @@ function AutoSteeringEngine.checkChain( vehicle, iRefNode, wheelBase, maxSteerin
 		vehicle.aiveChain.maxDtProd   = AIVEGlobals.maxDtProdN
 	end 
 	
+	if vehicle.aiveChain.maxDtProd <= 0 then 
+		vehicle.aiveChain.maxDtProd   = math.huge 
+	end 
+	
 	AutoSteeringEngine.currentSteeringAngle( vehicle, isInverted )
 
-	if maxSteering ~= nil and 1E-4 < maxSteering and maxSteering < 0.5 * math.pi then
-		vehicle.aiveChain.radius    = wheelBase / math.tan( maxSteering )
-	else
-		vehicle.aiveChain.radius    = 5
-	end
-	
 	AutoSteeringEngine.checkTools1( vehicle, resetTools )
 	vehicle.aiveChain.wantedSpeed    = AutoSteeringEngine.getToolsSpeedLimit( vehicle )
 	
@@ -3829,13 +3829,30 @@ function AutoSteeringEngine.getAIAreaOfVehicle2( vehicle, toolIndex, lx1,lz1,lx2
 		return 0, 0
 	end 
 	
-	if AIImplement.getFieldCropsQuery == nil then 
-	--1.3
-	--if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 0 then 
-	--	vehicle.aiveAIAreaLog = 0 
-	--	print( "AutoSteeringEngine.getAIAreaOfVehicle v1.3" ) 
-	--end 
+	if AIVEGlobals.oldFruitArea > 0 then 
+	-- like in FS17
+		local terrainDetailRequiredValueRanges  = tool.terrainDetailRequiredValueRanges
+		local terrainDetailProhibitValueRanges  = tool.obj:getAITerrainDetailProhibitedRange()
+		local fruitRequirements = tool.obj:getAIFruitRequirements()
+		local useDensityHeightMap, useWindrowFruitType = tool.obj:getAIFruitExtraRequirements()
+		local fruitProhibitions = tool.fruitProhibitions
+		
+		if not useDensityHeightMap then
+			if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 21 then 
+				vehicle.aiveAIAreaLog = 21
+				print( "AutoSteeringEngine.getAIAreaOfVehicle FS17 I" ) 
+			end 
+			return AutoSteeringEngine.getAIFruitAreaOldSchool( lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType )
+		else
+			if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 22 then 
+				vehicle.aiveAIAreaLog = 22
+				print( "AutoSteeringEngine.getAIAreaOfVehicle FS17 II" ) 
+			end 
+			return AutoSteeringEngine.getAIDensityHeightArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
+		end
 	
+	elseif AIImplement.getFieldCropsQuery == nil then 
+	--1.3
 		local terrainDetailRequiredValueRanges  = tool.terrainDetailRequiredValueRanges
 		local terrainDetailProhibitValueRanges  = tool.obj:getAITerrainDetailProhibitedRange()
 		local fruitRequirements = tool.obj:getAIFruitRequirements()
@@ -3847,13 +3864,13 @@ function AutoSteeringEngine.getAIAreaOfVehicle2( vehicle, toolIndex, lx1,lz1,lx2
 				vehicle.aiveAIAreaLog = 11
 				print( "AutoSteeringEngine.getAIAreaOfVehicle v1.3 I" ) 
 			end 
-			return AutoSteeringEngine.getAIFruitArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
+			return AIVehicleUtil.getAIFruitArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
 		else
 			if vehicle.aiveAIAreaLog == nil or vehicle.aiveAIAreaLog ~= 12 then 
 				vehicle.aiveAIAreaLog = 12
 				print( "AutoSteeringEngine.getAIAreaOfVehicle v1.3 II" ) 
 			end 
-			return AutoSteeringEngine.getAIDensityHeightArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
+			return AIVehicleUtil.getAIDensityHeightArea(lx1,lz1,lx2,lz2,lx3,lz3, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowFruitType)
 		end
 	else
 	-- 1.4
@@ -3880,71 +3897,78 @@ function AutoSteeringEngine.getAIAreaOfVehicle2( vehicle, toolIndex, lx1,lz1,lx2
 end
 
 
-function AutoSteeringEngine.getAIFruitArea(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowed)
-	local query = g_currentMission.fieldCropsQuery
-	for _, fruitRequirement in pairs(fruitRequirements) do
-		if fruitRequirement.fruitType ~= FruitType.UNKNOWN then
-			local ids = g_currentMission.fruits[fruitRequirement.fruitType]
-			if ids ~= nil and ids.id ~= 0 then
-				if useWindrowed then
-					return 0, 1
-				end
-				local desc = g_fruitTypeManager:getFruitTypeByIndex(fruitRequirement.fruitType)
-				query:addRequiredCropType(ids.id, fruitRequirement.minGrowthState+1, fruitRequirement.maxGrowthState+1, desc.startStateChannel, desc.numStateChannels, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels)
-			end
-		end
-	end
-	for _, fruitProhibition in pairs(fruitProhibitions) do
-		if fruitProhibition.fruitType ~= FruitType.UNKNOWN then
-			local ids = g_currentMission.fruits[fruitProhibition.fruitType]
-			if ids ~= nil and ids.id ~= 0 then
-				local desc = g_fruitTypeManager:getFruitTypeByIndex(fruitProhibition.fruitType)
-				query:addProhibitedCropType(ids.id, fruitProhibition.minGrowthState+1, fruitProhibition.maxGrowthState+1, desc.startStateChannel, desc.numStateChannels, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels)
-			end
-		end
-	end
-	for _,valueRange in pairs(terrainDetailRequiredValueRanges) do
-		query:addRequiredGroundValue(valueRange[1], valueRange[2], valueRange[3], valueRange[4])
-	end
-	for _,valueRange in pairs(terrainDetailProhibitValueRanges) do
-		query:addProhibitedGroundValue(valueRange[1], valueRange[2], valueRange[3], valueRange[4])
-	end
+function AutoSteeringEngine.getAIFruitAreaOldSchool( startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowed )
+
+	local area = 0;
+	local totalArea = 0;
+	local detailId = g_currentMission.terrainDetailId;
 	local x,z, widthX,widthZ, heightX,heightZ = MathUtil.getXZWidthAndHeight(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ)
-	return query:getParallelogram(x,z, widthX,widthZ, heightX,heightZ, true)
-end
-
-
-function AutoSteeringEngine.getAIDensityHeightArea(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowed)
-	-- first check if we are on a field
-	local data = g_currentMission.densityMapModifiers.getAIDensityHeightArea
-	local modifier = data.modifier
-	local filter = data.filter
-	modifier:setParallelogramWorldCoords(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, "ppp")
-	filter:setValueCompareParams("greater", 0)
-	local _, detailArea, _ = modifier:executeGet(filter)
-	if detailArea == 0 then
-		return 0, 0
-	end
-	local retArea, retTotalArea = 0, 0
-	for _, fruitRequirement in pairs(fruitRequirements) do
-		if fruitRequirement.fruitType ~= FruitType.UNKNOWN then
-			local fillType
-			if useWindrowed then
-				fillType = g_fruitTypeManager:getWindrowFillTypeIndexByFruitTypeIndex(fruitRequirement.fruitType)
-			else
-				fillType = g_fruitTypeManager:getFruitTypeIndexByFillTypeIndex(fruitRequirement.fruitType)
-			end
-			local _, area, totalArea = DensityMapHeightUtil.getFillLevelAtArea(fillType, startWorldX,startWorldZ, widthWorldX,widthWorldZ, heightWorldX,heightWorldZ)
-			retArea, retTotalArea = retArea+area, totalArea
+	
+	if AutoSteeringEngine.tableGetN(terrainDetailRequiredValueRanges) > 0 then
+		for _,terrainDetailRequiredValueRange in pairs(terrainDetailRequiredValueRanges) do
+			setDensityCompareParams(detailId, "between", terrainDetailRequiredValueRange[1], terrainDetailRequiredValueRange[2]);
+			local _,requiredArea,totalRequiredArea = getDensityParallelogram(detailId, x, z, widthX, widthZ, heightX, heightZ, terrainDetailRequiredValueRange[3], terrainDetailRequiredValueRange[4]);
+			area = math.max(area, requiredArea);
+			totalArea = math.max(totalArea, totalRequiredArea);
+			setDensityCompareParams(detailId, "greater", -1);
 		end
 	end
-	return retArea, retTotalArea
-end
 
+	if AutoSteeringEngine.tableGetN(fruitRequirements) > 0 then 
+		for _,fruitRequirement in pairs(fruitRequirements) do 
+			local ids = g_currentMission.fruits[fruitRequirement.fruitType];
+			if ids ~= nil and ids.id ~= 0 then
+				local id = ids.id;
+				if useWindrowed then
+					return 0, 1;
+				end
 
+				setDensityCompareParams(id, "between", fruitRequirement.minGrowthState+1, fruitRequirement.maxGrowthState+1);
+				-- valid only on terrain layer
+				local _,requiredArea,totalRequiredArea = getDensityMaskedParallelogram(id, x, z, widthX, widthZ, heightX, heightZ, 0, g_currentMission.numFruitStateChannels, detailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels);
+				setDensityCompareParams(id, "greater", -1);
 
+				area = math.max(area, requiredArea);
+				totalArea = math.max(totalArea, totalRequiredArea);
+			end
+		end
+	end 
 
+	if area > 0 then
 
+		local maxNegativeArea = 0;
+	
+		if AutoSteeringEngine.tableGetN(fruitProhibitions) > 0 then 
+			for _,fruitProhibition in pairs(fruitProhibitions) do 
+				local ids = g_currentMission.fruits[fruitProhibition.fruitType];
+				if ids ~= nil and ids.id ~= 0 then
+					setDensityMaskParams(detailId, "between", fruitProhibition.minGrowthState+1, fruitProhibition.maxGrowthState+1); -- only fruit outside the given range is allowed
+					local _,prohibitedArea,totalProhibitedArea = getDensityMaskedParallelogram(detailId, x, z, widthX, widthZ, heightX, heightZ, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, ids.id, 0, g_currentMission.numFruitStateChannels);
+					setDensityMaskParams(detailId, "greater", 0);
+					maxNegativeArea = math.max(maxNegativeArea, prohibitedArea);
+					totalArea = math.max(totalArea, totalProhibitedArea);
+				end
+			end
+		end
+
+		if AutoSteeringEngine.tableGetN(terrainDetailProhibitValueRanges) > 0 then
+			for _,terrainDetailProhibitValueRange in pairs(terrainDetailProhibitValueRanges) do
+				setDensityMaskParams(detailId, "between", terrainDetailProhibitValueRange[1], terrainDetailProhibitValueRange[2]);
+				local _,prohibitArea,totalProhibitedArea = getDensityMaskedParallelogram(detailId, x, z, widthX, widthZ, heightX, heightZ, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, detailId, terrainDetailProhibitValueRange[3], terrainDetailProhibitValueRange[4]);
+				setDensityMaskParams(detailId, "greater", -1);
+				maxNegativeArea = math.max(maxNegativeArea, prohibitArea);
+				totalArea = math.max(totalArea, totalProhibitedArea);
+			end
+		end
+		
+		area = area - maxNegativeArea;
+
+	end
+
+	area = math.max(0, area);
+
+	return area, totalArea;
+end 
 
 ------------------------------------------------------------------------
 -- steering2ChainAngle

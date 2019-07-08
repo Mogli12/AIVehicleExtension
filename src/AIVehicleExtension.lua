@@ -1885,14 +1885,13 @@ function AIVehicleExtension.calculateDistances( self )
 	self.acDimensions.distance		 = 99
 	self.acDimensions.toolDistance = 99
 	
-	local wb = self.acDimensions.wheelBase
-	local ms = self.acDimensions.maxSteeringAngle
 	local rd = false 
 	if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving then
 		rd = true 
 	end 
 	
-	AutoSteeringEngine.checkChain( self, self.acRefNode, wb, ms, self.acParameters.widthOffset, self.acParameters.turnOffset, rd, 
+	AutoSteeringEngine.checkChain( self, self.acRefNode, self.acDimensions.wheelBase, self.acDimensions.maxSteeringAngle, self.acDimensions.radius,
+																 self.acParameters.widthOffset, self.acParameters.turnOffset, rd, 
 																 self.acParameters.useAIFieldFct, self.acParameters.precision )
 
 	self.acDimensions.distance, self.acDimensions.toolDistance, self.acDimensions.zBack, self.acDimensions.frontToBack, self.acDimensions.radius75 

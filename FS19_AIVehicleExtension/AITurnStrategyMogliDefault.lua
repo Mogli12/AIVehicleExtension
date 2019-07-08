@@ -1427,12 +1427,22 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 		if veh.acParameters.leftAreaActive then x = -x end
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );
-		local dx       = 0.5 * ( x - turn75.radius - turn75.radiusT )
+	--local dx       = 0.5 * ( x - turn75.radius - turn75.radiusT )
+		local d2 = 4 * turn75.radius * turn75.radius - x * x 
+		local dx = 0
+		if d2 > 0 then 
+			dx = - math.sqrt( d2 )
+		end 
 	
-		local toolAngle = AutoSteeringEngine.getToolAngle( veh )
+	--local toolAngle = AutoSteeringEngine.getToolAngle( veh )
+	--
+	--angle  = nil;		
+	--angle2 = math.min( math.max( -toolAngle, -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle );
+		angle  = math.rad( turnAngle )
 		
-		angle  = nil;		
-		angle2 = math.min( math.max( -toolAngle, -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle );
+		veh:acDebugPrint( string.format("T70: x: %0.3fm z: %0.3fm td: %0.3fm dx: %0.3fm (%0.3fm %0.1f° %0.3fm %0.3fm)",
+																		x, z, veh.acDimensions.toolDistance, dx, 
+																		veh.acDimensions.radius, turnAngle, turn75.radius, turn75.radiusT ) )		
 
 		if z > dist + dx + stoppingDist then
 		-- add extra stoppingDist to be very sure
