@@ -1765,26 +1765,22 @@ function AIVehicleExtension.calculateDimensions( self )
 		r = math.deg( r ) 
 	end 
 	self.acDimensions.maxSteeringAngle = math.rad( math.min( r, 60 ) )
-	self.acDimensions.radius           = AIVEUtils.getNoNil( self.maxTurningRadius, 6.25 )
+	self.acDimensions.radius           = AIVEUtils.getNoNil( self.maxTurningRadius, 6 ) * 1.2
+
 --max rotation is for the inner radius
-	local d = math.min( 1.25, self.acDimensions.radius )
---self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
-	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * ( self.acDimensions.radius - d )
-	if self.acDimensions.radius > 0 then 
-		self.acDimensions.maxSteeringAngle = math.atan2( self.acDimensions.wheelBase, self.acDimensions.radius )
+	local d = 1.25
+	local wheel = self.spec_wheels.wheels[self.maxTurningRadiusWheel] 
+	if wheel ~= nil then
+		local diffX, _, diffZ = localToLocal(wheel.node, self.spec_wheels.steeringCenterNode, wheel.positionX, wheel.positionY, wheel.positionZ)
+		d = math.abs( diffX )
 	end 
+	self.acDimensions.radius           = math.max( 0, self.acDimensions.radius - d )					
+	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
+
 	self.acDimensions.artAxisR         = 0
 	self.acDimensions.artAxisX         = 0
 	self.acDimensions.artAxisZ         = 0
 	
-	local wheel = self.spec_wheels.wheels[self.maxTurningRadiusWheel] 
-	if wheel ~= nil then
-		local diffX, _, diffZ = localToLocal(wheel.node, self.spec_wheels.steeringCenterNode, wheel.positionX, wheel.positionY, wheel.positionZ)
-		self.acDimensions.radius         = self.acDimensions.radius - math.abs( diffX )
-	else
-		self.acDimensions.radius         = self.acDimensions.radius - 1.25
-	end
-				
 	self.acDimensions.wheelParents = {}
 
 	for _,wheel in pairs(self.spec_wheels.wheels) do
@@ -2654,7 +2650,7 @@ function AIVehicleExtension:newGetCanStartAIVehicle( superFunc, ... )
 			and self.acParameters ~= nil
 			and self.acParameters.enabled then 
 		if self.aiveChain == nil or self.aiveHas == nil then 
-			AIVehicleExtension.checkState( self )
+			AIVehicleExtension.checkState( self, false, true )
 			if self.aiveChain == nil or self.aiveHas == nil then 
 				return false 
 			end 
