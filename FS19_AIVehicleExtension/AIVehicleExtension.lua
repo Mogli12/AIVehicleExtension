@@ -1777,11 +1777,6 @@ function AIVehicleExtension.calculateDimensions( self )
 	self.acDimensions.radius           = math.max( 0, self.acDimensions.radius - d )					
 	self.acDimensions.wheelBase        = math.tan( self.acDimensions.maxSteeringAngle ) * self.acDimensions.radius
 
--- keep maxSteeringAngle as is to have some reserve
---if self.acDimensions.radius > 0 then 
---	self.acDimensions.maxSteeringAngle = math.atan2( self.acDimensions.wheelBase, self.acDimensions.radius )
---end 
-
 	self.acDimensions.artAxisR         = 0
 	self.acDimensions.artAxisX         = 0
 	self.acDimensions.artAxisZ         = 0
