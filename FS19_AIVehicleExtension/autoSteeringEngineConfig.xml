@@ -1,7 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <AIVEGlobals>
-		<oldFruitArea type="bool" value="false"/>
-
     <aiSteering type="float" value="1.000000" />
     <aiSteeringD type="float" value="-1.000000" />
     <artSteering type="float" value="1.000000" />
@@ -84,17 +82,17 @@
 
 		<maxDtSumT  value="50"/>  <!-- 10 fps => 100 ms -->
 		
-		<maxDtSumP0N value="115"/>   
-		<maxDtSumP1N value="1000"/>   
-		<maxDtProdN  type="float" value="0"/> <!-- 0.22 meter (dt * lastSpeed) -->
+		<maxDtSumP0N value="60"/>   
+		<maxDtSumP1N value="2000"/>   
+		<maxDistSqN  type="float" value="1"/> <!-- 1 m ^2 -->
 		
-		<maxDtSumP0L value="350"/>   
-		<maxDtSumP1L value="3000"/>   
-		<maxDtProdL  type="float" value="0"/> <!-- 0.22 meter (dt * lastSpeed) -->
+		<maxDtSumP0L value="160"/>   
+		<maxDtSumP1L value="4000"/>   
+		<maxDistSqL  type="float" value="9"/> <!-- 3 m ^2 -->
 		
-		<maxDtSumP0H value="10"/>   
-		<maxDtSumP1H value="100"/>   
-		<maxDtProdH  type="float" value="0"/> <!-- 0.11 meter (dt * lastSpeed) -->
+		<maxDtSumP0H value="0"/>   
+		<maxDtSumP1H value="500"/>   
+		<maxDistSqH  type="float" value="0.09"/> <!-- 0.3 m ^2 -->
 		
 		<maxTurnCheck type="float" value="15"/>		
 		<maxToolAngle type="degree" value="65" />
