@@ -2645,32 +2645,32 @@ function AIVehicleExtension:newGetCanStartAIVehicle( superFunc, ... )
 	
 	self.isReverseDriving = backup
 	
-	if      res[1]
-			and AIVEGlobals.devFeatures <= 0
-			and self.acParameters ~= nil
-			and self.acParameters.enabled then 
-		if self.aiveChain == nil or self.aiveHas == nil then 
-			AIVehicleExtension.checkState( self, false, true )
-			if self.aiveChain == nil or self.aiveHas == nil then 
-				return false 
-			end 
-		end 
-		if self.aiveHas.noDHM then 
-			for _,obj in pairs( g_currentMission.nodeToObject ) do 
-				if obj.aiveIsStarted and type( obj.aiveHas ) == "table" then 
-					if not ( obj.aiveHas.noDHM ) then 
-					elseif self.aiveHas.combine       ~= obj.aiveHas.combine       
-							or self.aiveHas.plow          ~= obj.aiveHas.plow          
-							or self.aiveHas.cultivator    ~= obj.aiveHas.cultivator    
-							or self.aiveHas.sowingMachine ~= obj.aiveHas.sowingMachine 
-							or self.aiveHas.sprayer       ~= obj.aiveHas.sprayer       
-							or self.aiveHas.mower         ~= obj.aiveHas.mower then 
-						return false 
-					end 
-				end 
-			end 
-		end 
-	end 
+--if      res[1]
+--		and AIVEGlobals.devFeatures <= 0
+--		and self.acParameters ~= nil
+--		and self.acParameters.enabled then 
+--	if self.aiveChain == nil or self.aiveHas == nil then 
+--		AIVehicleExtension.checkState( self, false, true )
+--		if self.aiveChain == nil or self.aiveHas == nil then 
+--			return false 
+--		end 
+--	end 
+--	if self.aiveHas.noDHM then 
+--		for _,obj in pairs( g_currentMission.nodeToObject ) do 
+--			if obj.aiveIsStarted and type( obj.aiveHas ) == "table" then 
+--				if not ( obj.aiveHas.noDHM ) then 
+--				elseif self.aiveHas.combine       ~= obj.aiveHas.combine       
+--						or self.aiveHas.plow          ~= obj.aiveHas.plow          
+--						or self.aiveHas.cultivator    ~= obj.aiveHas.cultivator    
+--						or self.aiveHas.sowingMachine ~= obj.aiveHas.sowingMachine 
+--						or self.aiveHas.sprayer       ~= obj.aiveHas.sprayer       
+--						or self.aiveHas.mower         ~= obj.aiveHas.mower then 
+--					return false 
+--				end 
+--			end 
+--		end 
+--	end 
+--end 
 	
 	return unpack( res )
 end
@@ -2939,3 +2939,126 @@ function AIVehicleExtension:onAIEnd()
 	self.aiveSetCrabSteeringState = nil
 	self.aiveSetCrabSteeringEnd   = nil 
 end 
+
+
+
+
+
+
+
+
+function AIVehicleExtension:newOnAIVehicleUpdateTick( superFunc, dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected )
+	if not ( self.aiveIsStarted ) then 
+		return superFunc( self, dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected )
+	end 
+	
+	local spec = self.spec_aiVehicle
+	self:clearAIDebugTexts()
+	self:clearAIDebugLines()
+	if self.isServer then
+		if self:getIsAIActive() then
+			local difficultyMultiplier = g_currentMission.missionInfo.buyPriceMultiplier;
+			local price = -dt * difficultyMultiplier * spec.pricePerMS
+			-- If field was not owned, it is a mission. Increase the price for balancing.
+			if self.getLastTouchedFarmlandFarmId ~= nil and self:getLastTouchedFarmlandFarmId() == 0 then
+				price = price * MissionManager.AI_PRICE_MULTIPLIER
+			end
+			g_currentMission:addMoney(price, spec.startedFarmId, MoneyType.AI, true)
+			if spec.driveStrategies ~= nil and #spec.driveStrategies > 0 then
+				local vX,vY,vZ = getWorldTranslation(self:getAIVehicleSteeringNode())
+				local tX, tZ, moveForwards, maxSpeedStra, maxSpeed, distanceToStop
+				for i=1,#spec.driveStrategies do
+					local driveStrategy = spec.driveStrategies[i]
+					tX, tZ, moveForwards, maxSpeedStra, distanceToStop = driveStrategy:getDriveData(dt, vX,vY,vZ)
+					maxSpeed = math.min(maxSpeedStra or math.huge, maxSpeed or math.huge)
+					if tX ~= nil or not self:getIsAIActive() then
+						break
+					end
+				end
+				if tX == nil then
+					if self:getIsAIActive() then -- check if AI is still active, because it might have been kicked by a strategy
+						self:stopAIVehicle(AIVehicle.STOP_REASON_REGULAR)
+					end
+				end
+				if not self:getIsAIActive() then
+					return
+				end
+				local acceleration = 1.0
+				local minimumSpeed = 5
+				local lookAheadDistance = 5
+				local distSpeed = math.max(minimumSpeed, maxSpeed * math.min(1, distanceToStop/lookAheadDistance))
+				local speedLimit, _ = self:getSpeedLimit()
+				maxSpeed = math.min(maxSpeed, distSpeed, speedLimit)
+				maxSpeed = math.min(maxSpeed, self:getCruiseControlMaxSpeed())
+				local isAllowedToDrive = maxSpeed ~= 0
+				local pX, _, pZ = worldToLocal(self:getAIVehicleSteeringNode(), tX,vY,tZ)
+				if not moveForwards and self.spec_articulatedAxis ~= nil then
+					if self.spec_articulatedAxis.aiRevereserNode ~= nil then
+						pX, _, pZ = worldToLocal(self.spec_articulatedAxis.aiRevereserNode, tX,vY,tZ)
+					end
+				end
+				if not moveForwards and self:getAIVehicleReverserNode() ~= nil then
+					pX, _, pZ = worldToLocal(self:getAIVehicleReverserNode(), tX,vY,tZ)
+				end
+				AIVehicleUtil.driveToPoint(self, dt, acceleration, isAllowedToDrive, moveForwards, pX, pZ, maxSpeed)
+				spec.lastAllowedToDrive = isAllowedToDrive
+				-- worst case check: did not move but should have moved
+				if isAllowedToDrive and self:getLastSpeed() < 0.5 then
+					spec.didNotMoveTimer = spec.didNotMoveTimer - dt
+				else
+					spec.didNotMoveTimer = spec.didNotMoveTimeout
+				end
+				if spec.didNotMoveTimer < 0 then
+					self:stopAIVehicle(AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT)
+				end
+			end
+			if #spec.taskList > 0 then
+				for i, task in pairs(spec.taskList) do
+					self:addAIDebugText(string.format("AI TASK: %d - %s", i, task.getFunc))
+					if task.getObject ~= nil then
+						if task.getObject[task.getFunc](task.getObject, unpack(task.getParams)) then
+							task.setObject[task.setFunc](task.setObject, unpack(task.setParams))
+							spec.taskList[i] = nil
+						end
+					else
+						task.setObject[task.setFunc](task.setObject, unpack(task.setParams))
+						spec.taskList[i] = nil
+					end
+				end
+			end
+			self:raiseAIEvent("onAIActive", "onAIImplementActive")
+		else
+			if spec.aiTrafficCollisionRemoveDelay > 0 then
+				spec.aiTrafficCollisionRemoveDelay = spec.aiTrafficCollisionRemoveDelay - dt
+				if spec.aiTrafficCollisionRemoveDelay <= 0 then
+					if spec.aiTrafficCollision ~= nil then
+						if entityExists(spec.aiTrafficCollision) then
+							delete(spec.aiTrafficCollision)
+						end
+					end
+					spec.aiTrafficCollisionRemoveDelay = 0
+				end
+			end
+		end
+	end
+	if self.isClient then
+		local actionEvent = spec.actionEvents[InputAction.TOGGLE_AI]
+		if actionEvent ~= nil then
+			local showAction = false
+			if self:getIsActiveForInput(true, true) then
+				-- if ai is active we always display the dismiss helper action
+				showAction = self:getCanStartAIVehicle() or self:getIsAIActive()
+				if showAction then
+					if self:getIsAIActive() then
+						g_inputBinding:setActionEventText(actionEvent.actionEventId, g_i18n:getText("action_dismissEmployee"))
+					else
+						g_inputBinding:setActionEventText(actionEvent.actionEventId, g_i18n:getText("action_hireEmployee"))
+					end
+				end
+			end
+			g_inputBinding:setActionEventActive(actionEvent.actionEventId, showAction)
+		end
+	end
+end
+
+AIVehicle.onUpdateTick = Utils.overwrittenFunction( AIVehicle.onUpdateTick, AIVehicleExtension.newOnAIVehicleUpdateTick )

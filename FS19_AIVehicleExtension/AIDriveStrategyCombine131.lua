@@ -14,6 +14,7 @@ function AIDriveStrategyCombine131:new(customMt)
 	self.slowDownStartSpeed = 20
 	self.forageHarvesterFoundTimer = 0	
 	self.allowedToDriveTimer = 0 
+	self.blockedReason = 0
 	return self
 end
 
@@ -48,6 +49,9 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 	local allowedToDrive = true
 	local waitForStraw = false
 	local maxSpeed = math.huge
+	
+	local blockedReason = 0
+	
 	for _, combine in pairs(self.combines) do
 		if not combine:getIsThreshingAllowed() then
 			self.vehicle:stopAIVehicle(AIVehicle.STOP_REASON_REGULAR)
@@ -92,9 +96,9 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 					local targetObject, _ = combine:getDischargeTargetObject(dischargeNode)
 					allowedToDrive = trailerInTrigger and targetObject ~= nil
 					if not trailerInTrigger then
-						self:addDebugText("COMBINE -> Waiting for trailer enter the trigger")
+						blockedReason = 1
 					elseif trailerInTrigger and targetObject == nil then
-						self:addDebugText("COMBINE -> Waiting for pipe hitting the trailer")
+						blockedReason = 2
 					end
 				end
 			else
@@ -164,21 +168,42 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 				if trailerInTrigger and not self.wasEmpty then 
 					if self.vehicle.acParameters.waitForPipe then 
 						allowedToDrive = false
-						self:addDebugText("COMBINE -> Waiting for trailer to unload")
+						blockedReason = 3 
 					elseif isTurning and combine:getCanDischargeToObject(dischargeNode) then 
 						allowedToDrive = false 
-						self:addDebugText("COMBINE -> Unload to trailer on headland")
+						blockedReason = 4
 					end 
 				end
 				local freeFillLevel = capacity - fillLevel
 			--if freeFillLevel < self.slowDownFillLevel then
 			--	-- we want to drive at least 2 km/h to avoid combine stops too early
 			--	maxSpeed = 2 + (freeFillLevel / self.slowDownFillLevel) * self.slowDownStartSpeed
-			--	self:addDebugText(string.format("COMBINE -> Slow down because nearly full: %.2f", maxSpeed))
+			--	blockedReason = 5
 			--end
 			end
 		end
 	end 
+	
+	if not allowedToDrive and blockedReason == 0 then 
+		blockedReason = 6 
+	end 
+	
+	if self.blockedReason ~= blockedReason then 
+		self.blockedReason = blockedReason 
+		if     blockedReason == 1 then 
+			self:addDebugText("COMBINE -> Waiting for trailer enter the trigger")
+		elseif blockedReason == 2 then 
+			self:addDebugText("COMBINE -> Waiting for pipe hitting the trailer")
+		elseif blockedReason == 3 then 
+			self:addDebugText("COMBINE -> Waiting for trailer to unload")
+		elseif blockedReason == 4 then 
+			self:addDebugText("COMBINE -> Unload to trailer on headland")
+		elseif blockedReason == 5 then 
+			self:addDebugText(string.format("COMBINE -> Slow down because nearly full: %.2f", maxSpeed))
+		elseif blockedReason == 6 then 
+			self:addDebugText("COMBINE is not allowed to drive")
+		end
+	end
 	
 	if not allowedToDrive then
 		local refNode = self.vehicle:getAIVehicleDirectionNode()
@@ -194,7 +219,6 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 			self.restartPoint2 = ( wx - self.restartPointX  )^2 + ( wz - self.restartPointZ  )^2
 		end 
 	--self.allowedToDriveTimer = 2000
-		self:addDebugText("COMBINE is not allowed to drive")
 		return 0, 1, true, 0, math.huge
 	end 
 	
@@ -212,7 +236,7 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 		local dts       = math.max( 1 - l1, self.restartPoint2 + 1 - l2 )
 		if dts > 0 then 
 		-- closer than 1 meter to the 1st stop point or closer than 1 meter plus distance between stop points 
-			self:addDebugText("Reverse")
+		--self:addDebugText("Reverse")
 			return self.restartDirX, self.restartDirZ, self.vehicle.acParameters.inverted, 7, dts
 		end 
 		
