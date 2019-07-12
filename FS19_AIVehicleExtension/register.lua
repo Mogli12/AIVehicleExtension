@@ -95,9 +95,9 @@ end;
 
 function AIVehicleExtensionRegister:update(dt)
 	if      AIVehicleExtension.aiUpdateLowFrequencyDelay           ~= nil 
-			and AIVehicleExtension.aiUpdateLowFrequencyDelay           ~= 2 
+			and AIVehicleExtension.aiUpdateLowFrequencyDelay           ~= AIVehicleExtension.extendedFrequencyDelay 
 			and AIVehicleExtension.numberOfExtendedWorkers             <= 0
-			and AIVehicle.aiUpdateLowFrequencyDelay                    == 2 then 
+			and AIVehicle.aiUpdateLowFrequencyDelay                    == AIVehicleExtension.extendedFrequencyDelay then 
 		AIVehicle.aiUpdateLowFrequencyDelay = AIVehicleExtension.aiUpdateLowFrequencyDelay
 	end 
 end;

@@ -120,7 +120,7 @@
 		<useFBB123   type="bool" value="true"/>
 		<FBB123disq1 type="float" value="0.04" /> 0,2m ^2
 		<FBB123disq2 type="float" value="0.25" /> 0,5m ^2
-		<angleBuffer type="bool" value="false"/>
+		<angleBuffer type="bool" value="true"/>
 		<minTraceLen value="5"/>
 		<offTracking type="float" value="1.0" />
 		

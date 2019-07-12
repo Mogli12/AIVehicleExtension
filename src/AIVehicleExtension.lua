@@ -1080,6 +1080,7 @@ end
 
 AIVehicleExtension.activeExtendedWorkers   = {}
 AIVehicleExtension.numberOfExtendedWorkers = 0
+AIVehicleExtension.extendedFrequencyDelay  = 1
 function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected )
 
 	if self.aiveIsStarted and not ( self.spec_aiVehicle.isActive ) then 
@@ -1108,11 +1109,11 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 		end
 	end
 
-	if self.aiveIsStarted and AIVehicle.aiUpdateLowFrequencyDelay ~= 2  then 
+	if self.aiveIsStarted and AIVehicle.aiUpdateLowFrequencyDelay ~= AIVehicleExtension.extendedFrequencyDelay then 
 		if AIVehicleExtension.aiUpdateLowFrequencyDelay == nil then 
 			AIVehicleExtension.aiUpdateLowFrequencyDelay = AIVehicle.aiUpdateLowFrequencyDelay
 		end 
-		AIVehicle.aiUpdateLowFrequencyDelay = 2 
+		AIVehicle.aiUpdateLowFrequencyDelay = AIVehicleExtension.extendedFrequencyDelay 
 	end 
 
 	if      self.acParameters ~= nil
