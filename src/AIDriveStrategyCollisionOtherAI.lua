@@ -58,8 +58,12 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 
 	if triggerId ~= nil and self.vehicle.acCollidingVehicles[triggerId] ~= nil then
 		for otherAI,bool in pairs(self.vehicle.acCollidingVehicles[triggerId]) do
-		--if bool and otherAI.spec_aiVehicle.isActive then
-			if bool and otherAI.spec_aiVehicle.isActive and ( otherAI.ad == nil or otherAI.ad.isActive == false ) then 
+			if      bool 
+					and otherAI.spec_aiVehicle.isActive 
+					-- don't brake for AutoDrive and Courseplay
+					and ( otherAI.ad == nil or not ( otherAI.ad.isActive  ) )
+					and ( otherAI.cp == nil or not ( otherAI.cp.isDriving ) )
+					then 
 				local blocked   = true
 				
 				if      g_currentMission.time < self.collisionTime + 2000 then
