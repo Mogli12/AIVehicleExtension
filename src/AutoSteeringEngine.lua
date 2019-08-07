@@ -826,6 +826,37 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 	if AutoSteeringEngine.skipIfNotServer( vehicle ) then
 		return 
 	end
+	
+	------------------------------------------------------------------------
+	-- only straight, no detection
+	if      vehicle.acParameters     ~= nil
+			and vehicle.aiDriveDirection ~= nil 
+			and vehicle.aiDriveTarget    ~= nil
+			and vehicle.acParameters.upNDown 
+			and vehicle.acParameters.straight then 
+	
+		if inField then 
+			vehicle.aiveChain.inField = true	
+			AutoSteeringEngine.processIsAtEnd( vehicle )	
+		else 
+			vehicle.aiveChain.inField = false 
+			vehicle.aiveChain.isAtEnd = false 
+		end 
+		
+		vehicle.aiveChain.fullSpeed = not vehicle.aiveChain.isAtEnd
+		
+		local detected = AutoSteeringEngine.hasFruits( vehicle ) or AutoSteeringEngine.hasFruitsInFront( vehicle )
+		local wx,wy,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
+		local pX, pZ   = MathUtil.projectOnLine(wx, wz, vehicle.aiDriveTarget[1], vehicle.aiDriveTarget[2], vehicle.aiDriveDirection[1], vehicle.aiDriveDirection[2])
+		
+		wx = pX + vehicle.aiDriveDirection[1] * vehicle.maxTurningRadius
+		wz = pZ + vehicle.aiDriveDirection[2] * vehicle.maxTurningRadius
+
+		vehicle.aiveChain.lastWorldTarget = { wx, wy, wz }
+
+		return detected, AutoSteeringEngine.getSteeringAngleFromWorldTarget( vehicle, wx, wy, wz ), 0, wx, wy, wz, 5
+	end 
+	------------------------------------------------------------------------
 
 	AutoSteeringEngine.initWorldToDensity( vehicle )
 
@@ -5525,8 +5556,6 @@ function AutoSteeringEngine.initSteering( vehicle )
 			vehicle.aiveChain.nodes[i].isField = false
 		end	
 	end	
-	
-	vehicle.aiveChain.buffer = {}
 end
 
 ------------------------------------------------------------------------
@@ -6379,9 +6408,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 				end
 			end
 			
-			vehicle.aiveChain.trace.a = vehicle.aiveChain.trace.a + bestR
-			vehicle.aiveChain.buffer = {}
-			
+			vehicle.aiveChain.trace.a = vehicle.aiveChain.trace.a + bestR			
 			
 			if      vehicle.aiveChain.refNode          ~= nil
 					and vehicle.aiveChain.trace            ~= nil
@@ -6570,7 +6597,6 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 					vehicle.aiveChain.trace.ox = vehicle.aiveChain.trace.ox + dzx * doShiftZ
 					vehicle.aiveChain.trace.cz = vehicle.aiveChain.trace.cz + dzz * doShiftZ
 					vehicle.aiveChain.trace.oz = vehicle.aiveChain.trace.oz + dzz * doShiftZ
-					vehicle.aiveChain.buffer = {}
 					
 					if AIVEGlobals.showTrace > 0 and vehicle.isEntered then			
 						print(string.format("shiftZ: %1.2fm => area: %d / total: %d",doShiftZ,area,total))
@@ -6682,10 +6708,8 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 			
 			if     bestQ > 0 then
 				vehicle.aiveChain.trace.a = vehicle.aiveChain.trace.a + factor * math.rad( 90 )
-				vehicle.aiveChain.buffer = {}
 			elseif bestQ < worstQ then			
 				vehicle.aiveChain.trace.a = vehicle.aiveChain.trace.a + bestR
-				vehicle.aiveChain.buffer = {}
 			end
 
 			if AIVEGlobals.showTrace > 0 and vehicle.isEntered then			
@@ -6771,30 +6795,20 @@ end
 -- getTurnAngle
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getTurnAngle( vehicle )
-	if vehicle.aiveChain.buffer == nil then
-		vehicle.aiveChain.buffer = {}
-	elseif vehicle.aiveChain.buffer.getTurnAngle ~= nil then
-		return vehicle.aiveChain.buffer.getTurnAngle
-	end
-
 	if     vehicle.aiveChain.refNode == nil
 			or vehicle.aiveChain.trace   == nil then
-		vehicle.aiveChain.buffer.getTurnAngle = 0
 		return 0
 	end
 	if vehicle.aiveChain.trace.a == nil then
 		local i = AutoSteeringEngine.getFirstTraceIndex( vehicle )
 		if i == nil then
-			vehicle.aiveChain.buffer.getTurnAngle = 0
 			return 0
 		end
 		if i == vehicle.aiveChain.trace.traceIndex then
-			vehicle.aiveChain.buffer.getTurnAngle = 0
 			return 0
 		end
 		local l = AutoSteeringEngine.getTraceLength( vehicle )
 		if l < 2 then
-			vehicle.aiveChain.buffer.getTurnAngle = 0
 			return 0
 		end
 
@@ -6811,7 +6825,6 @@ function AutoSteeringEngine.getTurnAngle( vehicle )
 	
 	local angle = AutoSteeringEngine.normalizeAngle( AIVEUtils.getYRotationFromDirection(x,z) - vehicle.aiveChain.trace.a )	
 
-	vehicle.aiveChain.buffer.getTurnAngle = angle
 	return angle
 end	
 
@@ -8463,6 +8476,10 @@ end
 -- setToolsAreLowered
 ------------------------------------------------------------------------
 function AutoSteeringEngine.setToolsAreLowered( vehicle, isLowered, immediate, objectFilter )
+	if not ( vehicle.aiveChain ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then
+		return
+	end
+
 	local doItNow = false
 	if immediate then 
 		doItNow = true

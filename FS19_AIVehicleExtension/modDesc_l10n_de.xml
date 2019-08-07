@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <l10n>
 	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
 	<description><![CDATA[Auto Traktor]]></description>
@@ -33,6 +33,7 @@
 		<text name="AIVE_COLLISION_BACK"           text="Kollision hinten"/>
 		<text name="AIVE_UTURN_ON"                 text="auf/ab"/>
 		<text name="AIVE_UTURN_OFF"                text="Kreisfahrt"/>
+		<text name="AIVE_UTURN_ON2"                text="Gerade wie normaler Helfer"/>
 		<text name="AIVE_REVERSE_ON"               text="Wendemodus [rückwärts]"/>
 		<text name="AIVE_REVERSE_OFF"              text="Wendemodus [vorwärts]"/>
 		<text name="AIVE_INVERTED"                 text="Rückfahreinrichtung"/>

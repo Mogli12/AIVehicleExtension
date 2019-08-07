@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <l10n>
 	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
 	<description><![CDATA[Auto Tractor]]></description>
 
 	<texts>
 		<!-- AI Vehicle helpPanel text -->
-		<text name="AIVE_SETTINGS"                 text="Helper settings"/>
-		<text name="AIVE_ENABLED"                  text="Alternative helper"/>
+		<text name="AIVE_SETTINGS"                 text="Worker settings"/>
+		<text name="AIVE_ENABLED"                  text="Alternative worker"/>
 		<text name="AIVE_START"                    text="AI Vehicle on"/>
 		<text name="AIVE_STOP"                     text="AI Vehicle off"/>
 		<text name="AIVE_WORKWIDTH"                text="work width:"/>
@@ -31,8 +31,9 @@
 		<!-- AI Vehicle inputbinding text -->
 		<text name="AIVE_COLLISION_OTHER"          text="front collision"/>
 		<text name="AIVE_COLLISION_BACK"           text="back collision"/>
-		<text name="AIVE_UTURN_ON"                 text="AI Vehicle mode [up/down]"/>
-		<text name="AIVE_UTURN_OFF"                text="AI Vehicle mode [circle]"/>
+		<text name="AIVE_UTURN_ON"                 text="up/down"/>
+		<text name="AIVE_UTURN_OFF"                text="circle"/>
+		<text name="AIVE_UTURN_ON2"                text="straight like normal worker"/>
 		<text name="AIVE_REVERSE_ON"               text="turn mode [reverse]"/>
 		<text name="AIVE_REVERSE_OFF"              text="turn mode [driving]"/>
 		<text name="AIVE_INVERTED"                 text="change direction"/> <!-- is this correct translation? -->

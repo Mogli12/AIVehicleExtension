@@ -39,7 +39,24 @@ end
 
 function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	self.mogliText = "AIDriveStrategyMogli"
+	
 	AIDriveStrategyMogli:superClass().setAIVehicle(self, vehicle)
+	--# set AI direction acccording to current orientation
+	local dx,_,dz = localDirectionToWorld(self.vehicle:getAIVehicleDirectionNode(), 0, 0, 1)
+	if g_currentMission.snapAIDirection then
+		local snapAngle = self.vehicle:getDirectionSnapAngle()
+		snapAngle = math.max(snapAngle, math.pi/(g_currentMission.terrainDetailAngleMaxValue+1))
+		local angleRad = MathUtil.getYRotationFromDirection(dx, dz)
+		angleRad = math.floor(angleRad / snapAngle + 0.5) * snapAngle
+		dx, dz = MathUtil.getDirectionFromYRotation(angleRad)
+	else
+		local length = MathUtil.vector2Length(dx,dz)
+		dx = dx / length
+		dz = dz / length
+	end
+	self.vehicle.aiDriveDirection = {dx, dz}
+	local x,_,z = getWorldTranslation(self.vehicle:getAIVehicleDirectionNode())
+	self.vehicle.aiDriveTarget = {x, z}
 	
 --==============================================================				
 --==============================================================					
@@ -340,7 +357,6 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 --	self:addDebugText("driving: "..tostring(self.search))
 --end
 
-	
 	if self.search == nil then
 		veh.acTurnStage = 0
 	else
@@ -639,13 +655,18 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		local ta = straightAbsAngle
 		
 	--if noReverseIndex <= 0 and veh.acDimensions.zBack < 0 then
-	--	ta = 0 --math.min( 0.2 * veh.acDimensions.maxSteeringAngle, straightAbsAngle )
+	--	ta = 0 
 	--end
+	--print( AutoSteeringEngine.degToString( turnAngle )..", "..AutoSteeringEngine.radToString( ta )..", "..AutoSteeringEngine.radToString( absAngle ))
 		
 		if detected then
-			angle = math.max( absAngle, ta )
+			if absAngle < ta - 0.01 then 
+				angle = ta 
+			end 
 		else
-			angle = ta
+			if math.abs( ta - absAngle ) > 0.01 then 
+				angle = ta
+			end 
 		end
 	elseif  detected then
 	-- everything is ok
@@ -755,7 +776,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		elseif self.aiveTurnTimer < 0 then 
 			doTurn = true
 			turn2Outside = false
-			if AutoSteeringEngine.getTraceLength(veh) < AIVEGlobals.minTraceLen and veh.acParameters.upNDown then		
+			if veh.acParameters.straight then 
+				uTurn = true 
+				veh.acClearTraceAfterTurn = true
+			elseif AutoSteeringEngine.getTraceLength(veh) < AIVEGlobals.minTraceLen and veh.acParameters.upNDown then		
 				uTurn = false
 				veh.acClearTraceAfterTurn = false
 			else
@@ -769,6 +793,17 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			AutoSteeringEngine.initTurnVector( veh, uTurn, turn2Outside )
 
 			if not turn2Outside then 
+				if veh.aiveChain ~= nil and veh.aiveChain.trace ~= nil and veh.aiveChain.trace.isUTurn ~= nil then 
+					veh.aiDriveTarget = { veh.aiveChain.trace.ux, veh.aiveChain.trace.uz }
+				end 
+				
+			--if uTurn then 
+					veh.aiDriveDirection[1] = - veh.aiDriveDirection[1]
+					veh.aiDriveDirection[2] = - veh.aiDriveDirection[2]
+			--elseif veh.acParameters.leftAreaActive then 
+			--else 
+			--end 
+				
 			--local dist	= math.floor( 4 * math.max( 10, veh.acDimensions.distance ) )
 			--local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( veh )
 			--local stop	= true

@@ -64,6 +64,7 @@ end
 AIVehicleExtension.saveAttributesMapping = { 
 		enabled         = { xml = "acDefaultOn",	 tp = "B", default = true  }, --always = true },
 		upNDown				  = { xml = "acUTurn",			 tp = "B", default = false }, --always = true },
+		straight			  = { xml = "acStraight",		 tp = "B", default = false }, --always = true },
 		rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false }, --always = true },
 		headland				= { xml = "acHeadland",		 tp = "B", default = false },
 		collision			  = { xml = "acCollision",	 tp = "B", default = false },
@@ -222,11 +223,11 @@ function AIVehicleExtension:initMogliHud()
 
 	AIVEHud.addButton(self, "dds/ai_combine.dds",     "dds/auto_combine.dds",  AIVehicleExtension.onEnable,      AIVehicleExtension.evalEnable,     1,1, "AIVE_STOP", "AIVE_START", nil, AIVehicleExtension.getEnableImage )
 	AIVEHud.addButton(self, "dds/active_right.dds",   "dds/active_left.dds",   AIVehicleExtension.setAreaLeft,   AIVehicleExtension.evalAreaLeft,   2,1, "AIVE_ACTIVESIDERIGHT", "AIVE_ACTIVESIDELEFT" )
-	AIVEHud.addButton(self, "dds/no_uturn2.dds",      "dds/uturn.dds",         AIVehicleExtension.setUTurn,      AIVehicleExtension.evalUTurn,      3,1, "AIVE_UTURN_OFF", "AIVE_UTURN_ON") 
-	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.setHeadland,   nil,                               4,1, "AIVE_HEADLAND", "AIVE_HEADLAND", AIVehicleExtension.getHeadlandText, AIVehicleExtension.getHeadlandImage )
-	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.setTurnMode,   nil,                               5,1, "AIVE_TURN_MODE", "AIVE_TURN_MODE", AIVehicleExtension.getTurnModeText, AIVehicleExtension.getTurnModeImage )
-	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onSteerPause,  nil,                               6,1, "AIVE_PAUSE_OFF", "AIVE_PAUSE_ON", AIVehicleExtension.getSteerPauseText, AIVehicleExtension.getSteerPauseImage )
-	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaiseNext,   nil,                               7,1, "AIVE_STEER_ON", "AIVE_STEER_OFF", AIVehicleExtension.getRaiseNextText, AIVehicleExtension.getRaiseNextImage )
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.setUTurn,      nil,                               3,1, "AIVE_SETTINGS", "AIVE_SETTINGS", AIVehicleExtension.getUTurnText, AIVehicleExtension.getUTurnImage ) 
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.setHeadland,   nil,                               4,1, "AIVE_SETTINGS", "AIVE_SETTINGS", AIVehicleExtension.getHeadlandText, AIVehicleExtension.getHeadlandImage )
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.setTurnMode,   nil,                               5,1, "AIVE_SETTINGS", "AIVE_SETTINGS", AIVehicleExtension.getTurnModeText, AIVehicleExtension.getTurnModeImage )
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onSteerPause,  nil,                               6,1, "AIVE_SETTINGS", "AIVE_SETTINGS", AIVehicleExtension.getSteerPauseText, AIVehicleExtension.getSteerPauseImage )
+	AIVEHud.addButton(self, nil,                      nil,                     AIVehicleExtension.onRaiseNext,   nil,                               7,1, "AIVE_SETTINGS", "AIVE_SETTINGS", AIVehicleExtension.getRaiseNextText, AIVehicleExtension.getRaiseNextImage )
 	AIVEHud.addButton(self, "dds/setings.dds",        nil,                     AIVehicleExtension.onAIVEScreen,  nil,                               8,1, "AIVE_SETTINGS", "AIVE_SETTINGS" )
 
 
@@ -319,6 +320,10 @@ function AIVehicleExtension:onAIVEScreen()
 	
 	self.aiveUI = {}
 	
+	self.aiveUI.upNDown  = { AIVEHud.getText("AIVE_UTURN_OFF"),
+													 AIVEHud.getText("AIVE_UTURN_ON"),
+													 AIVEHud.getText("AIVE_UTURN_ON2") }
+	
 	local st, bt = " (-)", " (+)"
 	local sbtt   = false
 	if self.aiveIsStarted or ( self.acTurnStage ~= nil and self.acTurnStage >= 198 ) then
@@ -332,7 +337,7 @@ function AIVehicleExtension:onAIVEScreen()
 		st = string.format(" (%5.2fm)",s)
 		bt = string.format(" (%5.2fm)",b)
 	end
-	
+
 	self.aiveUI.headland = { AIVEHud.getText("AIVE_HEADLAND_ON"),
 													 AIVEHud.getText("AIVE_HEADLAND")..st,
 													 AIVEHud.getText("AIVE_HEADLAND")..bt }
@@ -408,6 +413,34 @@ function AIVehicleExtension:aiveUISetheadland( value )
 			self.acParameters.bigHeadland = true 
 		else 
 			self.acParameters.bigHeadland = false 
+		end 
+	end 
+end 
+
+function AIVehicleExtension:aiveUIGetupNDown()
+	if self.acParameters == nil then 
+		return 0 
+	end 
+	if     not self.acParameters.upNDown then 
+		return 1 
+	elseif not self.acParameters.straight then 
+		return 2 
+	end 
+	return 3 
+end 
+function AIVehicleExtension:aiveUISetupNDown( value )
+	if self.acParameters == nil then 
+		return 
+	end 
+	if value <= 1 then 
+		self.acParameters.upNDown  = false 
+		self.acParameters.straight = false 
+	else
+		self.acParameters.upNDown  = true  
+		if value >= 3 then 	
+			self.acParameters.straight = true 
+		else 
+			self.acParameters.straight = false 
 		end 
 	end 
 end 
@@ -611,12 +644,39 @@ function AIVehicleExtension.showGui(self,on)
 	end
 end
 
-function AIVehicleExtension:evalUTurn()
-	return not self.acParameters.upNDown
+function AIVehicleExtension:setUTurn(enabled)
+	if not self.acParameters.upNDown then 
+		self.acParameters.upNDown  = true 
+		self.acParameters.straight = false 
+	elseif not self.acParameters.straight then 
+		self.acParameters.upNDown  = true   
+		self.acParameters.straight = true  
+	else 
+		self.acParameters.upNDown  = false  
+		self.acParameters.straight = false 
+	end
 end
 
-function AIVehicleExtension:setUTurn(enabled)
-	self.acParameters.upNDown = enabled
+function AIVehicleExtension:getUTurnImage()
+	if not self.acParameters.upNDown then 
+		return "dds/no_uturn2.dds"
+	elseif not self.acParameters.straight then 
+		return "dds/uturn.dds"
+	else 
+		return "dds/no_uturn.dds"
+	end
+	return "empty.dds"
+end
+
+function AIVehicleExtension:getUTurnText()
+	if not self.acParameters.upNDown then 
+		return AIVEHud.getText("AIVE_UTURN_OFF")
+	elseif not self.acParameters.straight then 
+		return AIVEHud.getText("AIVE_UTURN_ON")
+	else 
+		return AIVEHud.getText("AIVE_UTURN_ON2")
+	end
+	return ""
 end
 
 function AIVehicleExtension:evalAreaLeft()
@@ -1020,7 +1080,16 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 	elseif actionName == "AIVE_STEER" then
 		AIVehicleExtension.onAutoSteer(self, not ( self.aiveAutoSteer ))
 	elseif actionName == "AIVE_UTURN_ON_OFF" then
-		self.acParameters.upNDown = not self.acParameters.upNDown
+		if     not self.acParameters.upNDown then 
+			self.acParameters.upNDown  = true 
+			self.acParameters.straight = false 
+		elseif not self.acParameters.straight then 
+			self.acParameters.upNDown  = true 
+			self.acParameters.straight = true
+		else 
+			self.acParameters.upNDown  = false  
+			self.acParameters.straight = false 
+		end 
 		AIVehicleExtension.sendParameters(self)
 	elseif actionName == "AIVE_STEERING" then
 		self.acParameters.noSteering = not self.acParameters.noSteering
@@ -1543,12 +1612,14 @@ function AIVehicleExtension:checkState( force, clientOnly )
 	local s = AutoSteeringEngine.getSpecialToolSettings( self )
 	
 	if s.rightOnly then
-		self.acParameters.upNDown				 = false
+		self.acParameters.upNDown				  = false
+		self.acParameters.straight			  = false
 		self.acParameters.leftAreaActive	= true
 		self.acParameters.rightAreaActive = false
 	end
 	if s.leftOnly then
-		self.acParameters.upNDown				 = false
+		self.acParameters.upNDown				  = false
+		self.acParameters.straight			  = false
 		self.acParameters.leftAreaActive	= false
 		self.acParameters.rightAreaActive = true
 	end
@@ -1589,6 +1660,8 @@ end
 function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axisSide, doHandbrake, dt )
 
 	if self.isServer and self.aiveAutoSteer then 	
+		AIVehicleExtension.checkState( self )
+		
 		local doit = true  
 		if self.acTurnStage ~= 199 then
 			self.acTurnStage = 198
