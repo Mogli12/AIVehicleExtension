@@ -10,15 +10,15 @@
 		<text name="AIVE_START"                    text="Альтернативный помощник [ВКЛ]"/>
 		<text name="AIVE_STOP"                     text="Альтернативный помощник [ВЫКЛ]"/>
 		<text name="AIVE_WORKWIDTH"                text="Рабочая ширина:"/>
-		<text name="AIVE_ACTIVESIDE"               text="Рабочая сторона:"/>
+		<text name="AIVE_ACTIVESIDE"               text="Рабочая сторона"/>
 		<text name="AIVE_ACTIVESIDELEFT"           text="Левая"/>
 		<text name="AIVE_ACTIVESIDERIGHT"          text="Правая"/>
 
 		<text name="AIVE_UTURN_ON_OFF"             text="Изменить режим AIVehicle"/>
-		<text name="AIVE_STEERING"                 text="Ручное управление"/>
-		<text name="AIVE_NOSTEERING"               text="Подавление рулевого управления"/>
-		<text name="AIVE_STEERING_ON"              text="Ручное управление [ВКЛ]"/>
-		<text name="AIVE_STEERING_OFF"             text="Ручное управление [ВЫКЛ]"/>
+		<text name="AIVE_STEERING"                 text="Ручное руление"/>
+		<text name="AIVE_NOSTEERING"               text="Перехват руления"/>
+		<text name="AIVE_STEERING_ON"              text="Ручное руление [ВКЛ]"/>
+		<text name="AIVE_STEERING_OFF"             text="Ручное руление [ВЫКЛ]"/>
 		<text name="AIVE_CONTINUE"                 text="Продолжить"/>
 		<text name="AIVE_RAISE"                    text="Поднять/Опустить всё оборудование"/>
 
@@ -26,13 +26,15 @@
 		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="Удерживать дистанцию"/>
 		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="Не удерживать дистанцию"/>
 		<!-- AI Vehicle help text -->
-		<text name="AIVE_TEXTHELPPANELOFF"         text="Скрыть подсказки AIVehicle по F1"/>
-		<text name="AIVE_TEXTHELPPANELON"          text="Показать подсказки AIVehicle по F1"/>
+		<text name="AIVE_TEXTHELPPANELOFF"         text="Скрыть подсказки AIVehicle"/>
+		<text name="AIVE_TEXTHELPPANELON"          text="Показать подсказки AIVehicle"/>
 		<!-- AI Vehicle inputbinding text -->
 		<text name="AIVE_COLLISION_OTHER"          text="Столкновение спереди"/>
 		<text name="AIVE_COLLISION_BACK"           text="Столкновение сзади"/>
-		<text name="AIVE_UTURN_ON"                 text="Режим AIVehicle [челночный]"/>
-		<text name="AIVE_UTURN_OFF"                text="Режим AIVehicle [по периметру]"/>
+		<text name="AIVE_UTURN_TYPE"               text="Тип движения по полю"/>
+		<text name="AIVE_UTURN_ON"                 text="челночный"/>
+		<text name="AIVE_UTURN_OFF"                text="по периметру"/>
+		<text name="AIVE_UTURN_ON2"                text="как обычный помощник"/>
 		<text name="AIVE_REVERSE_ON"               text="Режим разворота [реверс]"/>
 		<text name="AIVE_REVERSE_OFF"              text="Режим разворота [вперёд]"/>
 		<text name="AIVE_INVERTED"                 text="Режим AIVehicle [челночный]"/>
@@ -48,16 +50,17 @@
 		<text name="AIVE_CP_OFF"                   text="Режим courseplay [ВКЛ]"/>
 		<text name="AIVE_STEER_ON"                 text="Автоподруливание [ВЫКЛ]"/>
 		<text name="AIVE_STEER_OFF"                text="Автоподруливание [ВКЛ]"/>
-		<text name="AIVE_HEADLAND_ON"              text="Разворот. полоса [ВЫКЛ]"/>
-		<text name="AIVE_HEADLAND_OFF"             text="Разворот. полоса [ВКЛ]"/>
+		<text name="AIVE_HEADLAND_ON"              text="Разворотная полоса [ВЫКЛ]"/>
+		<text name="AIVE_HEADLAND_OFF"             text="Разворотная полоса [ВКЛ]"/>
 		<text name="AIVE_FRONT_PACKER_ON"          text="Передний культиватор [ВКЛ]"/>
 		<text name="AIVE_FRONT_PACKER_OFF"         text="Передний культиватор [ВЫКЛ]"/>
 		<text name="AIVE_COLLISION_ON"             text="Проверка коллизий"/>
 		<text name="AIVE_COLLISION_OFF"            text="Проверка коллизий"/>
 		<text name="AIVE_HIRE_ON"                  text="Не расходовать семена"/>
 		<text name="AIVE_HIRE_OFF"                 text="Расходовать семена"/>
-		<text name="AIVE_HEADLAND"                 text="Разворотн.полоса"/>
+		<text name="AIVE_HEADLAND"                 text="Разворотная полоса"/>
 		<text name="AIVE_TURN_MODE"                text="Тип манёвра разворота"/>
+		<text name="AIVE_TURN_MODE_"               text="Тип манёвра разворота"/>
 		<text name="AIVE_TURN_MODE_O"              text="Грушевидный разворот"/>
 		<text name="AIVE_TURN_MODE_A"              text="Разворот с кривой"/>
 		<text name="AIVE_TURN_MODE_Y"              text="Реверс с кривой (для комбайна)"/>
