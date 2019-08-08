@@ -340,9 +340,9 @@ function AIVehicleExtension:onAIVEScreen()
 		bt = string.format(" (%5.2fm)",b)
 	end
 
-	self.aiveUI.headland = { AIVEHud.getText("AIVE_HEADLAND_ON"),
-													 AIVEHud.getText("AIVE_HEADLAND")..st,
-													 AIVEHud.getText("AIVE_HEADLAND")..bt }
+	self.aiveUI.headland = { AIVEHud.getText("OFF"),
+													 AIVEHud.getText(" ")..st,
+													 AIVEHud.getText(" ")..bt }
 	self.aiveUI.rightAreaActive = { AIVEHud.getText("AIVE_ACTIVESIDELEFT"),  AIVEHud.getText("AIVE_ACTIVESIDERIGHT") }
 	self.aiveUI.turnModeIndex = {}
 	if type( self.acTurnModes ) == "table" then 
