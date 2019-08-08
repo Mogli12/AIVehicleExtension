@@ -132,6 +132,8 @@ function AIVehicleExtension.registerEventListeners(vehicleType)
 											"onPreUpdate", 
 											"onUpdate", 
 											"onDraw",
+											"onLeaveVehicle",
+											"onEnterVehicle",
 											"onReadStream", 
 											"onWriteStream", 
 											"onReadUpdateStream",
@@ -252,18 +254,18 @@ function AIVehicleExtension:onDraw()
 end
 
 ------------------------------------------------------------------------
--- onLeave
+-- onLeaveVehicle
 ------------------------------------------------------------------------
-function AIVehicleExtension:onLeave()
+function AIVehicleExtension:onLeaveVehicle()
 	if self.atMogliInitDone then
 		AIVEHud.onLeave(self)
 	end
 end
 
 ------------------------------------------------------------------------
--- onEnter
+-- onEnterVehicle
 ------------------------------------------------------------------------
-function AIVehicleExtension:onEnter()
+function AIVehicleExtension:onEnterVehicle()
 	if self.atMogliInitDone then
 		AIVEHud.onEnter(self)
 	end
@@ -1296,6 +1298,16 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 				self.acChopperWithCourseplay = false 
 			end
 			
+			if self.acParameters.straight then 
+				if not ( self.acIsStraight ) then 
+					AIVehicleExtension.setAIDirection( self )
+				end 
+				
+				self.acIsStraight = true  
+			else 
+				self.acIsStraight = false 
+			end 
+			
 		elseif self.aiveAutoSteer then
 			self.stopMotorOnLeave = false
 			self.deactivateOnLeave = false
@@ -1379,53 +1391,22 @@ end
 ------------------------------------------------------------------------
 -- AIVehicleExtension.shiftAIMarker
 ------------------------------------------------------------------------
-function AIVehicleExtension:shiftAIMarker()
-	
-	local h = 0
-	
-	if			self.spec_aiVehicle.isActive 
-			and self.turnStage		 == 0 
-			and self.acParameters ~= nil 
-			and self.acParameters.headland 
-			and not ( self.aiveIsStarted ) then 
-		if self.acDimensions == nil then
-			AIVehicleExtension.calculateDimensions( self )
-		end
-		local d, t, z, f, r = AutoSteeringEngine.checkTools( self )
-		h = math.max( 0, math.max( 0, t-z ) + math.max( 0, -t-self.acDimensions.zOffset ) + AIVehicleExtension.calculateHeadland( "T", d, z, t, f, 
-																				self.acDimensions.radius, r, self.acDimensions.wheelBase, self.acParameters.bigHeadland, 
-																				AutoSteeringEngine.getNoReverseIndex( self ) ) + self.acParameters.turnOffset )
-	end 
-	
-	if math.abs( h ) < 0.01 and self.atShiftedMarker == nil then
-		return 
+function AIVehicleExtension:setAIDirection()
+	local dx,_,dz = localDirectionToWorld(self:getAIVehicleDirectionNode(), 0, 0, 1)
+	if g_currentMission.snapAIDirection then
+		local snapAngle = self:getDirectionSnapAngle()
+		snapAngle = math.max(snapAngle, math.pi/(g_currentMission.terrainDetailAngleMaxValue+1))
+		local angleRad = MathUtil.getYRotationFromDirection(dx, dz)
+		angleRad = math.floor(angleRad / snapAngle + 0.5) * snapAngle
+		dx, dz = MathUtil.getDirectionFromYRotation(angleRad)
+	else
+		local length = MathUtil.vector2Length(dx,dz)
+		dx = dx / length
+		dz = dz / length
 	end
-
-	if self.atShiftedMarker == nil then
-	--print("creating shifted marker")
-		self.atLastMarkerShift = 0
-		self.atShiftedMarker	 = {}
-		for _,marker in pairs( {"aiCurrentLeftMarker", "aiCurrentRightMarker", "aiCurrentBackMarker"} ) do
-			self.atShiftedMarker[marker] = createTransformGroup( "shifted_"..marker )
-		end
-	end
-	
-	for _,marker in pairs( {"aiCurrentLeftMarker", "aiCurrentRightMarker", "aiCurrentBackMarker"} ) do 						
-		if self[marker] == nil then
-		--print("unlink marker "..marker)
-			link( self.aiVehicleDirectionNode, self.atShiftedMarker[marker] )
-		elseif self[marker] ~= self.atShiftedMarker[marker] then
-		--print("linking marker "..marker)
-			link( self[marker], self.atShiftedMarker[marker] )
-			self[marker] = self.atShiftedMarker[marker] 
-			setTranslation( self.atShiftedMarker[marker], 0, 0, h )
-		elseif math.abs( self.atLastMarkerShift - h ) > 0.01 then 
-		--print("shifting marker "..marker)
-			setTranslation( self.atShiftedMarker[marker], 0, 0, h )
-		end
-	end
-		
-	self.atLastMarkerShift = h
+	self.aiDriveDirection = {dx, dz}
+	local x,_,z = getWorldTranslation(self:getAIVehicleDirectionNode())
+	self.aiDriveTarget = {x, z}
 end 
 
 ------------------------------------------------------------------------
@@ -1660,6 +1641,7 @@ end
 function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axisSide, doHandbrake, dt )
 
 	if self.isServer and self.aiveAutoSteer then 	
+		self.acParameters.straight = false 
 		AIVehicleExtension.checkState( self )
 		
 		local doit = true  

@@ -41,23 +41,6 @@ function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	self.mogliText = "AIDriveStrategyMogli"
 	
 	AIDriveStrategyMogli:superClass().setAIVehicle(self, vehicle)
-	--# set AI direction acccording to current orientation
-	local dx,_,dz = localDirectionToWorld(self.vehicle:getAIVehicleDirectionNode(), 0, 0, 1)
-	if g_currentMission.snapAIDirection then
-		local snapAngle = self.vehicle:getDirectionSnapAngle()
-		snapAngle = math.max(snapAngle, math.pi/(g_currentMission.terrainDetailAngleMaxValue+1))
-		local angleRad = MathUtil.getYRotationFromDirection(dx, dz)
-		angleRad = math.floor(angleRad / snapAngle + 0.5) * snapAngle
-		dx, dz = MathUtil.getDirectionFromYRotation(angleRad)
-	else
-		local length = MathUtil.vector2Length(dx,dz)
-		dx = dx / length
-		dz = dz / length
-	end
-	self.vehicle.aiDriveDirection = {dx, dz}
-	local x,_,z = getWorldTranslation(self.vehicle:getAIVehicleDirectionNode())
-	self.vehicle.aiDriveTarget = {x, z}
-	
 --==============================================================				
 --==============================================================					
 	AutoSteeringEngine.saveDirection( vehicle )
@@ -516,10 +499,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	end
 	
 	local isInField = false
-	if self.search == nil then
+	if self.search == nil or veh.acParameters.straight then
 		isInField = true
---elseif fruitsAll then
---	isInField = true
 	end
 	
 	local straightAbsAngle = math.min( math.max( math.rad( 0.5 * turnAngle ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
@@ -797,12 +778,8 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 					veh.aiDriveTarget = { veh.aiveChain.trace.ux, veh.aiveChain.trace.uz }
 				end 
 				
-			--if uTurn then 
-					veh.aiDriveDirection[1] = - veh.aiDriveDirection[1]
-					veh.aiDriveDirection[2] = - veh.aiDriveDirection[2]
-			--elseif veh.acParameters.leftAreaActive then 
-			--else 
-			--end 
+				veh.aiDriveDirection[1] = - veh.aiDriveDirection[1]
+				veh.aiDriveDirection[2] = - veh.aiDriveDirection[2]
 				
 			--local dist	= math.floor( 4 * math.max( 10, veh.acDimensions.distance ) )
 			--local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( veh )
