@@ -2560,8 +2560,10 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 	
 	local yt = AutoSteeringEngine.getWorldYRotation( taJoints[1].nodeTrailer )
 	
+	local maxToolAngle = AIVEGlobals.maxToolAngle
+	
 	local maxWorldRatio = 0.75 / AutoSteeringEngine.tableGetN( taJoints  )
-	local ratio  = AIVEUtils.clamp( 3 * AutoSteeringEngine.normalizeAngle( yv - yt ) / AIVEGlobals.maxToolAngle, -maxWorldRatio, maxWorldRatio )
+	local ratio  = AIVEUtils.clamp( AutoSteeringEngine.normalizeAngle( yv - yt ) / maxToolAngle, -maxWorldRatio, maxWorldRatio )
 	local target = ratio
 
 	self:acDebugPrint( AutoSteeringEngine.radToString( yv ) .." - " ..AutoSteeringEngine.radToString( yt ) .." => "..string.format("ratio: %5.3f", ratio) )
@@ -2571,7 +2573,7 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 		sumTargetFactors = sumTargetFactors + joint.targetFactor
 	end
 	
-	local maxToolDegrees = AIVEGlobals.maxToolAngle / sumTargetFactors
+	local maxToolDegrees = maxToolAngle / sumTargetFactors
 	for _,joint in pairs( taJoints ) do
 		target    = joint.targetFactor * ratio
 		degree    = AutoSteeringEngine.getRelativeYRotation( joint.nodeVehicle, joint.nodeTrailer )
@@ -2585,6 +2587,10 @@ function AIVehicleExtension:getStraighBackwardsAngle2( turnAngle, iTarget )
 		angle     = AIVEUtils.clamp( degree / maxToolDegrees, -1, 1 )	
 		ratio     = AIVEUtils.clamp( target + 1.5 * ( angle - ratio ), -1, 1 )
 	end
+	
+	if AutoSteeringEngine.hasArticulatedAxis( self, true, true ) then 
+		ratio = AIVEUtils.clamp( ratio, -0.5, 0.5 )
+	end 
 	
 	angle = ratio * self.acDimensions.maxSteeringAngle
 	

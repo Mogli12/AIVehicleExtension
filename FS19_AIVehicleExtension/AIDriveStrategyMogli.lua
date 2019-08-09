@@ -601,7 +601,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			AIVehicleExtension.stopCoursePlayMode2( veh, true )
 		end
 		
-		if not fruitsDetected then 
+		if      not fruitsDetected	
+				and not ( veh.acParameters.upNDown and veh.acParameters.headland and veh.acParameters.bigHeadland ) then 
+		-- raise as early as possible but not with bigHeadland
 			detected = false 
 		end 
 	else

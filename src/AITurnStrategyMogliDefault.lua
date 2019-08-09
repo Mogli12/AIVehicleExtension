@@ -336,6 +336,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 
 		if noReverseIndex > 0 and veh_acTurn2Outside and angle ~= nil then			
 			angle = AIVehicleExtension.getStraighBackwardsAngle( veh, turnAngle - AIVEUtils.clamp( math.deg( angle ), -5, 5 ) )
+		  smoothAngle = 1
 		end
 						
 --==============================================================				
@@ -392,6 +393,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		--angle  = nil;
 		--angle2 = math.min( math.max( toolAngle, -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle );
 			angle = AIVehicleExtension.getStraighBackwardsAngle( veh, turnAngle - AIVEUtils.clamp( math.deg( angle ), -5, 5 ) )
+			smoothAngle = 1
 		end
 						
 		if     ( detected and dist2 > 9 )
@@ -620,6 +622,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			target = -93
 		end
 		angle  = AIVehicleExtension.getStraighBackwardsAngle( veh, target )
+		smoothAngle = 1
 		if self.aiveTurnTimer < 0 then
 			turnData.stage   = turnData.stage + 1;					
 			self.aiveTurnTimer     = veh.acDeltaTimeoutStop;
@@ -636,6 +639,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			target = -93
 		end
 		angle  = AIVehicleExtension.getStraighBackwardsAngle( veh, target )
+		smoothAngle = 1
 		
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 		if veh.acParameters.leftAreaActive then x = -x end
@@ -892,6 +896,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	--local toolAngle = AutoSteeringEngine.getToolAngle( veh );
 	--angle2 = math.min( math.max( toolAngle, -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle );
 		angle  = AIVehicleExtension.getStraighBackwardsAngle( veh, 50 )
+		smoothAngle = 1
 		
 		local _,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh );
 		
@@ -1699,6 +1704,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		--local toolAngle = AutoSteeringEngine.getToolAngle( veh );
 		--angle2 = math.min( math.max( toolAngle, -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle );
 		angle  = AIVehicleExtension.getStraighBackwardsAngle( veh, 0 )
+		smoothAngle = 1
 
 		local _,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh );
 		
@@ -2021,6 +2027,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		end
 		
 		angle  = AIVehicleExtension.getStraighBackwardsAngle( veh, target )
+		smoothAngle = 1
 		
 		veh:acDebugPrint( "T97: "..AutoSteeringEngine.degToString( turnAngle ).." "..AutoSteeringEngine.radToString( ta ).." "..AutoSteeringEngine.radToString( a2 ).." "..AutoSteeringEngine.degToString( target ).." "..string.format("%2.3fm %2.3fm / %2.3fm", x, z, -veh.acDimensions.toolDistance) )
 		
@@ -2277,6 +2284,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			inactive = true
 			moveForwards = false
 			angle        = AIVehicleExtension.getStraighBackwardsAngle( veh, targetT )
+			smoothAngle  = 1
 			
 			if     math.abs( targetZ ) > 30 then
 				turnData.stage   = turnData.stage + 2
@@ -2298,6 +2306,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 			inactive = true
 			moveForwards      = false
 			angle             = AIVehicleExtension.getStraighBackwardsAngle( veh, targetT )
+			smoothAngle       = 1
 			detected,_,border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 			if border > 0 then
 				self.aiveTurnTimer   = veh.acDeltaTimeoutRun;

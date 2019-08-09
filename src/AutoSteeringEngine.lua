@@ -3060,9 +3060,9 @@ function AutoSteeringEngine.getTurnMode( vehicle )
 				revUTurn   = false
 				smallUTurn = false
 
-				if AutoSteeringEngine.hasArticulatedAxis( vehicle ) and AIVEGlobals.devFeatures <=0 then
-					revStraight= false 
-				end
+			--if AutoSteeringEngine.hasArticulatedAxis( vehicle ) and AIVEGlobals.devFeatures <=0 then
+			--	revStraight= false 
+			--end
 				
 --			elseif  vehicle.aiveChain.tools[i].isSprayer then
 --				revUTurn   = false
@@ -8981,8 +8981,7 @@ function AutoSteeringEngine.getTaJoints2( vehicle, implement, refNode, zOffset )
 		local a = AutoSteeringEngine.getRelativeYRotation( v, n )
 		table.insert( taJoints, index,
 									{ nodeVehicle    = n,
-									  otherDirection = ( math.abs( a ) > 0.75 * math.pi ),
-									--nodeTrailer    = trailer.spec_attachable.attacherJoint.rootNode, 
+										otherDirection = ( math.abs( a ) > 0.75 * math.pi ),
 										nodeTrailer    = AIVEUtils.getNoNil( trailer.steeringAxleNode, trailer.components[1].node ),
 										targetFactor   = 1 } )
 	end
