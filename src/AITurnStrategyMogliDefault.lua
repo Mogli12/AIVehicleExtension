@@ -688,8 +688,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		angle = nil
 		angle2, onTrack, tX, tZ = AutoSteeringEngine.navigateToSavePoint( veh, 1 )
 
-	--veh:acDebugPrint("T"..tostring(turnData.stage)
-		print("T"..tostring(turnData.stage)
+		veh:acDebugPrint("T"..tostring(turnData.stage)
 									..": "..tostring(turnAngle)
 									..": "..string.format("%3d%%",turnProgress*100)
 									..", "..tostring(onTrack)
