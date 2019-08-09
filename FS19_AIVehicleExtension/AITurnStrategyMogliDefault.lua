@@ -674,8 +674,12 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 --==============================================================				
 -- turn 90°
 	elseif turnData.stage == 27 or turnData.stage == 74  then
-		turnProgress = 0.91
-	
+		if turnAngle > -120 then 
+			turnProgress = AIVEUtils.clamp( 0.3 + 0.20/40*( -turnAngle - 80 ), 0.3, 0.5 )
+		else 
+			turnProgress = AIVEUtils.clamp( 0.5 + 0.41/40*( -turnAngle -120 ), 0.5, 0.91 )
+		end 
+		
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 				
 		noLower = false
@@ -684,8 +688,10 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		angle = nil
 		angle2, onTrack, tX, tZ = AutoSteeringEngine.navigateToSavePoint( veh, 1 )
 
-		veh:acDebugPrint("T"..tostring(turnData.stage)
+	--veh:acDebugPrint("T"..tostring(turnData.stage)
+		print("T"..tostring(turnData.stage)
 									..": "..tostring(turnAngle)
+									..": "..string.format("%3d%%",turnProgress*100)
 									..", "..tostring(onTrack)
 									..", "..tostring(veh.acParameters.leftAreaActive)
 									..", "..AutoSteeringEngine.radToString(angle2))

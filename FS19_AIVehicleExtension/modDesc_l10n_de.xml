@@ -31,6 +31,7 @@
 		<!-- AI Vehicle inputbinding text -->
 		<text name="AIVE_COLLISION_OTHER"          text="Kollision vorne"/>
 		<text name="AIVE_COLLISION_BACK"           text="Kollision hinten"/>
+		<text name="AIVE_UTURN_TYPE"               text="AI Vehicle Modus"/>
 		<text name="AIVE_UTURN_ON"                 text="auf/ab"/>
 		<text name="AIVE_UTURN_OFF"                text="Kreisfahrt"/>
 		<text name="AIVE_UTURN_ON2"                text="Gerade wie normaler Helfer"/>

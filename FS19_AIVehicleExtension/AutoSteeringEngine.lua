@@ -828,11 +828,28 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 		return 
 	end
 	
+	AutoSteeringEngine.initWorldToDensity( vehicle )
+
+	if vehicle.aiveChain.toolParams == nil or table.getn( vehicle.aiveChain.toolParams ) < 1 then
+		return false, 0,0
+	end
+	
+	AutoSteeringEngine.initSteering( vehicle )	
+	
+	if vehicle.aiveChain.width <= 0 then
+		print("Empty width!")
+		return false, 0,0
+	end
+	
 	------------------------------------------------------------------------
 	-- only straight, no detection
 	if      vehicle.acParameters     ~= nil
 			and vehicle.acParameters.upNDown 
 			and vehicle.acParameters.straight then 
+		vehicle.aiveChain.collectCbr = nil
+		vehicle.aiveChain.cbr	       = nil
+		vehicle.aiveChain.pcl        = nil
+		vehicle.aiveProcessChainInfo = "straight"
 
 		AutoSteeringEngine.syncRootNode( vehicle )
 		
@@ -897,19 +914,6 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 	end 
 	------------------------------------------------------------------------
 
-	AutoSteeringEngine.initWorldToDensity( vehicle )
-
-	if vehicle.aiveChain.toolParams == nil or table.getn( vehicle.aiveChain.toolParams ) < 1 then
-		return false, 0,0
-	end
-	
-	AutoSteeringEngine.initSteering( vehicle )	
-	
-	if vehicle.aiveChain.width <= 0 then
-		print("Empty width!")
-		return false, 0,0
-	end
-	
 	local indexMax    = AutoSteeringEngine.getChainIndexMax( vehicle )
 	local chainBorder
 	
@@ -1110,13 +1114,13 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 				j2 = j3
 			end
 			
-			if AIVEGlobals.chainDivideP2 <= 0 then
+		--if AIVEGlobals.chainDivideP2 <= 0 then
 				vehicle.aiveChain.fullSpeed = true
-			elseif targetSteering == nil and vehicle.aiveChain.lastBest ~= nil then
-				vehicle.aiveChain.fullSpeed = true
-			else
-				vehicle.aiveChain.fullSpeed = false
-			end
+		--elseif targetSteering == nil and vehicle.aiveChain.lastBest ~= nil then
+		--	vehicle.aiveChain.fullSpeed = true
+		--else
+		--	vehicle.aiveChain.fullSpeed = false
+		--end
 			
 			local pmf, pmt = 1,2
 		--if bi0 <= 0 and bo0 <= 0 then 
@@ -1164,11 +1168,11 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 					end
 					
 					if math.abs( a0 - a ) > delta3 + 1e-6 then
-					--if best.border <= 0 then
-					--	break
-					--end
+						if best.border <= 0 then
+							break
+						end
 						vehicle.aiveProcessChainInfo = vehicle.aiveProcessChainInfo..string.format("P2.1: %6.4f, %6.4f, %d\n", a0, a, best.border)
-						vehicle.aiveChain.fullSpeed = false
+					--vehicle.aiveChain.fullSpeed = false
 						delta3 = 3
 					end
 					
@@ -1217,12 +1221,12 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 				vehicle.aiveChain.fullSpeed = false
 			end
 			
-			if vehicle.aiveChain.fullSpeed then
-				if vehicle.aiveChain.valid == nil then
---print("No full speed V")
-					vehicle.aiveChain.fullSpeed = false
-				end
-			end
+--			if vehicle.aiveChain.fullSpeed then
+--				if vehicle.aiveChain.valid == nil then
+----print("No full speed V")
+--					vehicle.aiveChain.fullSpeed = false
+--				end
+--			end
 
 			if      vehicle.aiveChain.fixAttacher
 					and turnAngle              > 0				
@@ -6568,6 +6572,7 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 			local xw0,zw0,xw1,zw1,xw2,zw2 
 			local dist = AIVEUtils.clamp( AutoSteeringEngine.getTraceLength( vehicle ), AIVEGlobals.ignoreDist + 3, AIVEGlobals.maxTurnCheck )
 			local f = offsetOutside * 0.025 * math.abs( vehicle.aiveChain.width )
+			local found = false  
 
 			for i = -40,40 do
 				xw0 = vehicle.aiveChain.trace.ox + f * i * dxx
@@ -6589,33 +6594,37 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 					vehicle.aiveChain.trace.itv1 = { AutoSteeringEngine.getParallelogram( xw1, zw1, xw2, zw2, offsetOutside ) }
 				end
 				
-				if not AutoSteeringEngine.hasFruitsSimple( vehicle, xw1, zw1, xw2, zw2, offsetOutside ) then			
+				if AutoSteeringEngine.hasFruitsSimple( vehicle, xw1, zw1, xw2, zw2, offsetOutside ) then		
+					found = true  
+				else 
 					break
 				end
 			end	
 			
-			if AIVEGlobals.showTrace > 0 and vehicle.isEntered then
-				vehicle.aiveChain.trace.itv2 = { AutoSteeringEngine.getParallelogram( xw1, zw1, xw2, zw2, offsetOutside ) }
-			end
-			
-			f = offsetOutside * vehicle.aiveChain.offsetStd
-			xw0 = xw0 + f * dxx
-			zw0 = zw0 + f * dzx
-			
-			local dx1,_,dz1 = localDirectionToWorld( vehicle.aiveChain.headlandNode, vehicle.aiveChain.trace.ux - xw0, 0, vehicle.aiveChain.trace.uz - zw0 )
-			local dx2,_,dz2 = localDirectionToWorld( vehicle.aiveChain.headlandNode, xw0 - vehicle.aiveChain.trace.ox, 0, zw0 - vehicle.aiveChain.trace.oz )
-			
-			AIVehicleExtension.debugPrint(string.format("%3.2fm %3.2fm / %3.2fm %3.2fm => %3.2fm %3.2fm (%d)", 
-						vehicle.aiveChain.trace.ox,
-						vehicle.aiveChain.trace.oz,
-						dx1,
-						dz1,
-						dx2,
-						dz2,
-						offsetOutside ) )
-						
-			vehicle.aiveChain.trace.ux = vehicle.aiveChain.trace.ux + xw0 - vehicle.aiveChain.trace.ox
-			vehicle.aiveChain.trace.uz = vehicle.aiveChain.trace.uz + zw0 - vehicle.aiveChain.trace.oz
+			if found then 
+				if AIVEGlobals.showTrace > 0 and vehicle.isEntered then
+					vehicle.aiveChain.trace.itv2 = { AutoSteeringEngine.getParallelogram( xw1, zw1, xw2, zw2, offsetOutside ) }
+				end
+				
+				f = offsetOutside * vehicle.aiveChain.offsetStd
+				xw0 = xw0 + f * dxx
+				zw0 = zw0 + f * dzx
+				
+				local dx1,_,dz1 = localDirectionToWorld( vehicle.aiveChain.headlandNode, vehicle.aiveChain.trace.ux - xw0, 0, vehicle.aiveChain.trace.uz - zw0 )
+				local dx2,_,dz2 = localDirectionToWorld( vehicle.aiveChain.headlandNode, xw0 - vehicle.aiveChain.trace.ox, 0, zw0 - vehicle.aiveChain.trace.oz )
+				
+				AIVehicleExtension.debugPrint(string.format("%3.2fm %3.2fm / %3.2fm %3.2fm => %3.2fm %3.2fm (%d)", 
+							vehicle.aiveChain.trace.ox,
+							vehicle.aiveChain.trace.oz,
+							dx1,
+							dz1,
+							dx2,
+							dz2,
+							offsetOutside ) )
+							
+				vehicle.aiveChain.trace.ux = vehicle.aiveChain.trace.ux + xw0 - vehicle.aiveChain.trace.ox
+				vehicle.aiveChain.trace.uz = vehicle.aiveChain.trace.uz + zw0 - vehicle.aiveChain.trace.oz
+			end 
 			
 			if vehicle.aiveChain.headland >= 1 then
 				vehicle.aiveChain.respectStartNode = true

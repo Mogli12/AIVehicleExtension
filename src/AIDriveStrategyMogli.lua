@@ -41,7 +41,7 @@ function AIDriveStrategyMogli:setAIVehicle(vehicle)
 	self.mogliText = "AIDriveStrategyMogli"
 	
 	AIDriveStrategyMogli:superClass().setAIVehicle(self, vehicle)
---==============================================================				
+--==============================================================			
 --==============================================================					
 	AutoSteeringEngine.saveDirection( vehicle )
 
@@ -600,7 +600,10 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		if veh.acTurnMode == "7" and veh.acChopperWithCourseplay then
 			AIVehicleExtension.stopCoursePlayMode2( veh, true )
 		end
-			
+		
+		if not fruitsDetected then 
+			detected = false 
+		end 
 	else
 		veh.acMinDistanceToStop = math.max( 1, veh.acDimensions.toolDistance - veh.acDimensions.zBack ) + AIVEGlobals.fruitsInFront
 		if self.search ~= nil then

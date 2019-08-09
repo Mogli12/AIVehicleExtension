@@ -142,6 +142,7 @@ function AIVehicleExtension.registerEventListeners(vehicleType)
 											"onRegisterActionEvents",
 											"onStateChange",
 											"onPreDelete",
+											"onAIStart",
 											"onAIEnd",
 											"onAITurnProgress"} ) do
 		SpecializationUtil.registerEventListener(vehicleType, n, AIVehicleExtension)
@@ -336,13 +337,11 @@ function AIVehicleExtension:onAIVEScreen()
 	
 	if sbtt then
 		local s, b = AIVehicleExtension.getHeadlandSmallBig( self )
-		st = string.format(" (%5.2fm)",s)
-		bt = string.format(" (%5.2fm)",b)
+		st = string.format("%5.2fm",s)
+		bt = string.format("%5.2fm",b)
 	end
 
-	self.aiveUI.headland = { AIVEHud.getText("OFF"),
-													 AIVEHud.getText(" ")..st,
-													 AIVEHud.getText(" ")..bt }
+	self.aiveUI.headland = { "0.0m", st, bt }
 	self.aiveUI.rightAreaActive = { AIVEHud.getText("AIVE_ACTIVESIDELEFT"),  AIVEHud.getText("AIVE_ACTIVESIDERIGHT") }
 	self.aiveUI.turnModeIndex = {}
 	if type( self.acTurnModes ) == "table" then 
@@ -1392,7 +1391,7 @@ end
 -- AIVehicleExtension.shiftAIMarker
 ------------------------------------------------------------------------
 function AIVehicleExtension:setAIDirection()
-	local dx,_,dz = localDirectionToWorld(self:getAIVehicleDirectionNode(), 0, 0, 1)
+	local dx,_,dz = localDirectionToWorld(self.acRefNode, 0, 0, 1)
 	if g_currentMission.snapAIDirection then
 		local snapAngle = self:getDirectionSnapAngle()
 		snapAngle = math.max(snapAngle, math.pi/(g_currentMission.terrainDetailAngleMaxValue+1))
@@ -1405,8 +1404,82 @@ function AIVehicleExtension:setAIDirection()
 		dz = dz / length
 	end
 	self.aiDriveDirection = {dx, dz}
-	local x,_,z = getWorldTranslation(self:getAIVehicleDirectionNode())
+	local x,_,z = getWorldTranslation(self.acRefNode)
 	self.aiDriveTarget = {x, z}
+	
+	if self.isServer then 
+		AIVehicleExtension.checkState( self )
+		if self.aiveChain.toolCount > 0 then 
+			local dir
+			if self.acParameters.leftAreaActivethen then 
+				dir = -1 
+			else 
+				dir = 1
+			end 
+			local dir2 = 0
+			
+			local best,prev = nil, nil
+			for i=0,24 do 
+				local d = i * dir2 * dir * 0.125
+				local x = self.aiveChain.activeX + d
+				
+				local sx
+				local sz
+				local hasField1 = true  
+				local hasFruit  = false 
+				for z=0,30 do 
+					z1 = z + 1
+					sx = self.aiDriveTarget[1] + x * self.aiDriveDirection[2] + ( math.max( 0, self.aiveChain.maxZ ) + z ) * self.aiDriveDirection[1]
+				  sz = self.aiDriveTarget[2] - x * self.aiDriveDirection[1] + ( math.max( 0, self.aiveChain.maxZ ) + z ) * self.aiDriveDirection[2]
+					if AutoSteeringEngine.checkField( self, sx,sz ) then
+						break 
+					end 
+				end 
+				for z=1,100 do 
+					local wx = sx + z * self.aiDriveDirection[1]
+					local wz = sz + z * self.aiDriveDirection[2]
+					if AutoSteeringEngine.checkField( self, wx,wz ) then 
+						hasField1 = true  
+						if AutoSteeringEngine.hasFruitsSimple( self, sx, sz, wx, dz, dir ) then 
+							hasFruit = true 
+							AIVehicleExtension.debugPrint( self, "Fruits at "..tostring(i)..", "..tostring(dir2)..", "..tostring(z1).." .. "..tostring(z))
+							break 
+						end 
+					elseif hasField1 then 
+						hasField1 = false 
+					else 
+						AIVehicleExtension.debugPrint( self, "EOF at "..tostring(i)..", "..tostring(dir2)..", "..tostring(z1).." .. "..tostring(z))
+						break 
+					end 
+				end 
+				if i == 0 then 
+					if hasFruit then 
+						dir2 = 1 
+					else 
+						dir2 = -1 
+					end 
+				elseif dir2 < 0 then  
+					if hasFruit then 
+						AIVehicleExtension.debugPrint( self,  "Exit at "..tostring(i).." / "..tostring(dir2).." / "..tostring(prev))
+						best = prev 
+						break 
+					end 
+				else 
+					if not hasFruit then 
+						AIVehicleExtension.debugPrint( self,  "Exit at "..tostring(i).." / "..tostring(dir2).." / "..tostring(prev))
+						best = d 
+						break 
+					end 
+				end 
+				prev = d
+			end 
+			
+			if best ~= nil then 
+				local x,_,z = localToWorld(self.acRefNode, best, 0, 0 )
+				self.aiDriveTarget = {x, z}
+			end 
+		end 
+	end 
 end 
 
 ------------------------------------------------------------------------
@@ -1414,7 +1487,7 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:resetAIMarker()
 	if self.atShiftedMarker ~= nil then 
-	--print("resetting shifted marker")
+	--AIVehicleExtension.debugPrint( self, "resetting shifted marker")
 		self.atLastMarkerShift = 0
 		for _,marker in pairs( {"aiCurrentLeftMarker", "aiCurrentRightMarker", "aiCurrentBackMarker"} ) do 						
 			setTranslation( self.atShiftedMarker[marker], 0, 0, 0 )
@@ -1880,9 +1953,7 @@ function AIVehicleExtension.calculateDimensions( self )
 		end
 	end
 	
-	if AIVEGlobals.devFeatures > 0 then
-		print(string.format("wb: %0.3fm, r: %0.3fm, z: %0.3fm", self.acDimensions.wheelBase, self.acDimensions.radius, self.acDimensions.acRefNodeZ ))
-	end
+	AIVehicleExtension.debugPrint( self, string.format("wb: %0.3fm, r: %0.3fm, z: %0.3fm", self.acDimensions.wheelBase, self.acDimensions.radius, self.acDimensions.acRefNodeZ ))
 	
 end
 
@@ -2010,7 +2081,7 @@ function AIVehicleExtension.calculateDistances( self )
 	--	self.acShowDistOnce = self.acShowDistOnce + 1
 	--end
 	--if self.acShowDistOnce <= 30 then
-	--	print(string.format("max( %0.3f , 1.5 ) + max( - %0.3f, 0 ) + max( %0.3f - %0.3f, 1 ) + %0.3f = %0.3f", self.acDimensions.distance, zBack, self.acDimensions.toolDistance, zBack, self.acDimensions.radius, self.acDimensions.headlandDist ) )
+	--	AIVehicleExtension.debugPrint( self, string.format("max( %0.3f , 1.5 ) + max( - %0.3f, 0 ) + max( %0.3f - %0.3f, 1 ) + %0.3f = %0.3f", self.acDimensions.distance, zBack, self.acDimensions.toolDistance, zBack, self.acDimensions.radius, self.acDimensions.headlandDist ) )
 	--end
 	
 	if self.acParameters.turnOffset ~= nil then
@@ -2978,6 +3049,17 @@ function AIVehicleExtension:onAITurnProgress( progress, left )
 					o:setCrabSteering(state)
 				end 
 			end 
+		end 
+	end 
+end 
+
+function AIVehicleExtension:onAIStart()
+	if self.isServer and self.acParameters ~= nil then 
+		if self.acParameters.enabled and self.acParameters.straight then 
+			AIVehicleExtension.setAIDirection( self )
+			self.acIsStraight = true  
+		else 
+			self.acIsStraight = false 
 		end 
 	end 
 end 
