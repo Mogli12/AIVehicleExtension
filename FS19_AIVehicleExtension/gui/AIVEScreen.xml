@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
 	<GuiElement type="empty" profile="newLayer" />
 	<GuiElement type="bitmap" profile="yesNoDialogBg" size="1660px 908px">
@@ -28,13 +28,13 @@
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="upNDown" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_UTURN_ON" 
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="upNDown" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_UTURN_TYPE" 
 										onCreate="onCreateSubElement" onCreateArgs="list"
 										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="13" focusChangeTop="32" focusChangeBottom="23">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
-					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_UTURN_ON"/>
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_UTURN_TYPE"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 
