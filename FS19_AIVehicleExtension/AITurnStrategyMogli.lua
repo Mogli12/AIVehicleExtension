@@ -120,6 +120,13 @@ function AITurnStrategyMogli:raiseOrLower( moveForwards, noLower )
 end
 
 --============================================================================================================================
+-- getTurnProgress
+--============================================================================================================================
+function AITurnStrategyMogli:getTurnProgress( value, progressMapping )
+	return AIVEUtils.interpolate( value, progressMapping )
+end 
+
+--============================================================================================================================
 -- getNextStage
 --============================================================================================================================
 function AITurnStrategyMogli:getNextStage( dt, vX,vY,vZ, turnData, stageId )

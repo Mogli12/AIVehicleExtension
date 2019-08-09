@@ -217,64 +217,122 @@ function AIVEUtils.getYRotationFromDirection(dx, dz)
     return math.atan2(dx, dz);
 end;	
 
-AIVEUtils.quot2RadData = {{ time=-22.9037655484312, v=-3.05432619099008 },
-													{ time=-7.59575411272514, v=-2.87979326579064 },
-													{ time=-4.51070850366206, v=-2.70526034059121 },
-													{ time=-3.17159480236321, v=-2.53072741539178 },
-													{ time=-2.41421356237309, v=-2.35619449019234 },
-													{ time=-1.92098212697117, v=-2.18166156499291 },
-													{ time=-1.56968557711749, v=-2.00712863979348 },
-													{ time=-1.30322537284121, v=-1.83259571459405 },
-													{ time=-1.09130850106927, v=-1.65806278939461 },
-													{ time=-0.916331174017423, v=-1.48352986419518 },
-													{ time=-0.76732698797896, v=-1.30899693899575 },
-													{ time=-0.637070260807493, v=-1.13446401379631 },
-													{ time=-0.520567050551746, v=-0.959931088596881 },
-													{ time=-0.414213562373095, v=-0.785398163397448 },
-													{ time=-0.315298788878984, v=-0.610865238198015 },
-													{ time=-0.22169466264294, v=-0.436332312998582 },
-													{ time=-0.131652497587396, v=-0.261799387799149 },
-													{ time=-0.0436609429085119, v=-0.0872664625997165 },
-													{ time=0.0436609429085119, v=0.0872664625997165 },
-													{ time=0.131652497587396, v=0.261799387799149 },
-													{ time=0.22169466264294, v=0.436332312998582 },
-													{ time=0.315298788878984, v=0.610865238198015 },
-													{ time=0.414213562373095, v=0.785398163397448 },
-													{ time=0.520567050551746, v=0.959931088596881 },
-													{ time=0.637070260807493, v=1.13446401379631 },
-													{ time=0.76732698797896, v=1.30899693899575 },
-													{ time=0.916331174017423, v=1.48352986419518 },
-													{ time=1.09130850106927, v=1.65806278939461 },
-													{ time=1.30322537284121, v=1.83259571459405 },
-													{ time=1.56968557711749, v=2.00712863979348 },
-													{ time=1.92098212697117, v=2.18166156499291 },
-													{ time=2.41421356237309, v=2.35619449019234 },
-													{ time=3.17159480236321, v=2.53072741539178 },
-													{ time=4.51070850366206, v=2.70526034059121 },
-													{ time=7.59575411272514, v=2.87979326579064 },
-													{ time=22.9037655484312, v=3.05432619099008 }}
-
-function AIVEUtils.quot2Rad( q )
-	local n = table.getn( AIVEUtils.quot2RadData )
-	if q <= AIVEUtils.quot2RadData[1].time then
-		return AIVEUtils.quot2RadData[1].v 
+function AIVEUtils.interpolate( value, map )
+	if type( map ) ~= "table" then 
+		print("Error 1 calculating turn progess")
+		return 0.5
 	end 
-	if q >= AIVEUtils.quot2RadData[n].time then
-		return AIVEUtils.quot2RadData[n].v 
+	if #map < 1 then 
+		print("Error 2 calculating turn progess")
+		return 0.5 
 	end 
 	
-	local t0 = AIVEUtils.quot2RadData[1].time
-	local v0 = AIVEUtils.quot2RadData[1].v 
-	for i,data in pairs( AIVEUtils.quot2RadData ) do 
-		if data.time >= q then 
-			local t1 = AIVEUtils.quot2RadData[i].time
-			local v1 = AIVEUtils.quot2RadData[i].v 
-			
-			return v0 + ( v1 - v0 ) * ( q - t0 ) / ( t1 - t0 )
+	if #map < 2 then 
+		return map[1].progress
+	else
+		local p1 = map[1]
+		local p2 = map[#map]
+		
+		if type( p1 ) ~= "table" or #p1 ~= 2 then 
+			print("Error 3 calculating turn progess")
 		end 
-		t0 = AIVEUtils.quot2RadData[i].time
-		v0 = AIVEUtils.quot2RadData[i].v 
+		if type( p2 ) ~= "table" or #p2 ~= 2 then 
+			print("Error 4 calculating turn progess")
+		end 
+		
+		if     math.abs( p1[1] - p2[1] ) < 0.001 then 
+			return p1[2]
+		elseif p1[1] < p2[1] then 
+			if     value < p1[1] then 
+				return p1[2] 
+			elseif value > p2[1] then 
+				return p2[2] 
+			end 
+		else 
+			if     value > p1[1] then 
+				return p1[2] 
+			elseif value < p2[1] then 
+				return p2[2] 
+			end 
+		end
 	end 
+	
+	local v1, v2, r1, r2 = nil,nil,nil,nil
+	
+	for i=2,#map do
+		local p1 = map[i-1]
+		local p2 = map[i]
+
+		if type( p2 ) ~= "table" or #p2 ~= 2 then 
+			print("Error 5 calculating turn progess")
+		end 
+		
+		if     p1[1] <= value and value <= p2[1] then
+			v1 = p1[1]
+			v2 = p2[1] 
+			r1 = p1[2] 
+			r2 = p2[2]
+			break 
+		elseif p1[1] >= value and value >= p2[1] then 
+			v1 = p2[1]
+			v2 = p1[1] 
+			r1 = p2[2] 
+			r2 = p1[2]
+			break 
+		end 
+	end 
+	
+	if v1 == nil or v2 == nil or r1 == nil or r2 == nil then 
+		print("Error 6 calculating turn progess")
+		return 0.5 
+	end 
+	
+	if v2 - v1 < 0.001 then 
+		return p1 
+	end 
+	
+	return r1 + ( r2 - r1 ) * ( value - v1 ) / ( v2 - v1 )
+end
+
+AIVEUtils.quot2RadData = {{ -22.9037655484312,  -3.05432619099008 },
+													{ -7.59575411272514,  -2.87979326579064 },
+													{ -4.51070850366206,  -2.70526034059121 },
+													{ -3.17159480236321,  -2.53072741539178 },
+													{ -2.41421356237309,  -2.35619449019234 },
+													{ -1.92098212697117,  -2.18166156499291 },
+													{ -1.56968557711749,  -2.00712863979348 },
+													{ -1.30322537284121,  -1.83259571459405 },
+													{ -1.09130850106927,  -1.65806278939461 },
+													{ -0.916331174017423, -1.48352986419518 },
+													{ -0.76732698797896,  -1.30899693899575 },
+													{ -0.637070260807493, -1.13446401379631 },
+													{ -0.520567050551746, -0.959931088596881 },
+													{ -0.414213562373095, -0.785398163397448 },
+													{ -0.315298788878984, -0.610865238198015 },
+													{ -0.22169466264294,  -0.436332312998582 },
+													{ -0.131652497587396, -0.261799387799149 },
+													{ -0.0436609429085119,-0.0872664625997165 },
+													{ 0.0436609429085119, 0.0872664625997165 },
+													{ 0.131652497587396,  0.261799387799149 },
+													{ 0.22169466264294,   0.436332312998582 },
+													{ 0.315298788878984,  0.610865238198015 },
+													{ 0.414213562373095,  0.785398163397448 },
+													{ 0.520567050551746,  0.959931088596881 },
+													{ 0.637070260807493,  1.13446401379631 },
+													{ 0.76732698797896,   1.30899693899575 },
+													{ 0.916331174017423,  1.48352986419518 },
+													{ 1.09130850106927,   1.65806278939461 },
+													{ 1.30322537284121,   1.83259571459405 },
+													{ 1.56968557711749,   2.00712863979348 },
+													{ 1.92098212697117,   2.18166156499291 },
+													{ 2.41421356237309,   2.35619449019234 },
+													{ 3.17159480236321,   2.53072741539178 },
+													{ 4.51070850366206,   2.70526034059121 },
+													{ 7.59575411272514,   2.87979326579064 },
+													{ 22.9037655484312,   3.05432619099008 }}
+
+function AIVEUtils.quot2Rad( q )
+	return AIVEUtils.interpolate( q, AIVEUtils.quot2RadData )
 end 
 
 function AIVEDrawDebugPoint( vehicle, x, y, z, r, g, b, s, c )
@@ -2977,7 +3035,7 @@ function AutoSteeringEngine.getTurnMode( vehicle )
 	local noHire     = false
 	
 	if AutoSteeringEngine.hasArticulatedAxis( vehicle, false, true ) then 
-		revUTurn   = false
+		revUTurn   = false 
 		smallUTurn = false
 	end 
 	
@@ -3002,7 +3060,7 @@ function AutoSteeringEngine.getTurnMode( vehicle )
 				revUTurn   = false
 				smallUTurn = false
 
-				if AutoSteeringEngine.hasArticulatedAxis( vehicle ) then
+				if AutoSteeringEngine.hasArticulatedAxis( vehicle ) and AIVEGlobals.devFeatures <=0 then
 					revStraight= false 
 				end
 				
@@ -3036,19 +3094,20 @@ function AutoSteeringEngine.getToolAngle( vehicle )
 	end
 
 	local maxAngle = 0
+	local refNode  = vehicle.aiveChain.refNode
 	
 	for i,tool in pairs( vehicle.aiveChain.tools ) do
 		local toolAngle = 0
 		if tool.aiForceTurnNoBackward then
 			if tool.checkZRotation then
-				local zAngle = AutoSteeringEngine.getRelativeZRotation( vehicle.aiveChain.refNode, tool.steeringAxleNode )
+				local zAngle = AutoSteeringEngine.getRelativeZRotation( refNode, tool.steeringAxleNode )
 				if math.abs( zAngle ) > 0.025 then
 					local rx2, ry2, rz2 = getRotation( tool.steeringAxleNode )
 					setRotation( tool.steeringAxleNode, rx2, ry2, rz2 -zAngle )
 				end
 			end
 			
-			toolAngle = AutoSteeringEngine.getRelativeYRotation( vehicle.aiveChain.refNode, tool.steeringAxleNode )	
+			toolAngle = AutoSteeringEngine.getRelativeYRotation( refNode, tool.steeringAxleNode )	
 			
 			if tool.offsetZRotation ~= nil then
 				toolAngle = toolAngle + tool.offsetZRotation
@@ -3235,14 +3294,23 @@ function AutoSteeringEngine.getWorldTargetFromSteeringAngle( vehicle, angle, mov
 			or vehicle.aiveChain.refNode      == nil then
 		return 
 	end
-
-	local invR = vehicle.aiveChain.invWheelBase * math.tan( AIVEUtils.clamp( angle, -vehicle.aiveChain.maxSteering, vehicle.aiveChain.maxSteering ) )	
-	local l    = math.max( 1, 0.2 * vehicle.aiveChain.radius ) -- math.min( 5, vehicle.aiveChain.radius )
-	local rot  = 2 * math.asin( invR * 0.5 * l )
-	local lz   = l * math.cos( rot )
-	local lx   = l * math.sin( rot )
-	tX,_,tZ = localToWorld( vehicle.aiveChain.refNode, lx, 0, lz )
-
+	
+	local lx, lz = 0, 1
+	
+	local refNode = vehicle.aiveChain.refNode -- vehicle:getAIVehicleDirectionNode()
+	
+	if math.abs( angle ) > 0.001 then 
+		local invR = vehicle.aiveChain.invWheelBase * math.tan( AIVEUtils.clamp( angle, -vehicle.aiveChain.maxSteering, vehicle.aiveChain.maxSteering ) )	
+		local l    = math.min( 5, vehicle.aiveChain.radius ) -- math.max( 1, 0.2 * vehicle.aiveChain.radius )
+		local rot  = 2 * math.asin( invR * 0.5 * l )
+		lz = l * math.cos( rot )
+		lx = l * math.sin( rot )
+	end 
+	
+	tX,_,tZ = localToWorld( refNode, lx, 0, lz )
+	
+	local a2 = AutoSteeringEngine.getSteeringAngleFromWorldTarget( vehicle, tX, nil, tZ )
+	
 	return tX, tZ
 end
 
@@ -3264,7 +3332,9 @@ function AutoSteeringEngine.getSteeringAngleFromWorldTarget( vehicle, tX, tY, tZ
 		y = tY
 	end
 	
-	local lx,_,lz = worldToLocal( vehicle.aiveChain.refNode, tX, y, tZ )
+	local refNode = vehicle.aiveChain.refNode -- vehicle:getAIVehicleDirectionNode()
+		
+	local lx,_,lz = worldToLocal( refNode, tX, y, tZ )
 	local l       = AIVEUtils.vector2Length( lx, lz )
 	
 	if l < 1e-3 then 
@@ -6929,8 +6999,9 @@ end
 -- getTurnAngle
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getTurnAngle( vehicle )
-	if     vehicle.aiveChain.refNode == nil
-			or vehicle.aiveChain.trace   == nil then
+	local refNode = vehicle:getAIVehicleDirectionNode() -- vehicle.aiveChain.refNode
+
+	if refNode == nil or vehicle.aiveChain.trace   == nil then
 		return 0
 	end
 	if vehicle.aiveChain.trace.a == nil then
@@ -8788,6 +8859,24 @@ function AutoSteeringEngine.tableGetN( tab )
 end	
 
 --***************************************************************
+-- countWheelsWithGroundContact
+--***************************************************************
+function AutoSteeringEngine.countWheelsWithGroundContact( vehicle )
+	
+	if vehicle == nil or vehicle.spec_wheels or type( vehicle.spec_wheels.wheels ~= "table" ) then 
+		return 0 
+	end 
+
+	local i = 0
+	for _,wheel in pairs( vehicle.spec_wheels.wheels ) do 
+		if wheel.hasGroundContact then 
+			i = i + 1 
+		end 
+	end 
+	return i 
+end 
+
+--***************************************************************
 -- getTaJoints1
 --***************************************************************
 function AutoSteeringEngine.getTaJoints1( vehicle, refNode, zOffset )
@@ -8796,11 +8885,18 @@ function AutoSteeringEngine.getTaJoints1( vehicle, refNode, zOffset )
 		return
 	end
 	
+--if vehicle.aiveChain ~= nil and vehicle.aiveChain.noReverseIndex ~= nil and vehicle.aiveChain.noReverseIndex == 0 then
+--	return
+--end
+
 	local taJoints
 	
 	for _,implement in pairs( vehicle.spec_attacherJoints.attachedImplements ) do
 		if      implement.object ~= nil 
 				and implement.object.steeringAxleNode ~= nil 
+				and ( implement.object.spec_aiImplement == nil 
+					 or implement.object.spec_aiImplement.blockTurnBackward 
+					 or not ( implement.object.spec_aiImplement.allowTurnBackward ) )
 				and ( AutoSteeringEngine.tableGetN( implement.object.spec_wheels.wheels ) > 0
 					 or AutoSteeringEngine.tableGetN( implement.object.spec_attacherJoints.attachedImplements ) > 0 ) 
 				and AutoSteeringEngine.getRelativeZTranslation( refNode, implement.object.steeringAxleNode ) < zOffset then
@@ -8878,12 +8974,16 @@ function AutoSteeringEngine.getTaJoints2( vehicle, implement, refNode, zOffset )
 			and implement.jointRotLimit[2] ~= nil
 			and implement.jointRotLimit[2] >  math.rad( 0.1 ) then
 		local n = vehicle.spec_attacherJoints.attacherJoints[implement.jointDescIndex].rootNode
+		local v = AIVEUtils.getNoNil( vehicle.steeringAxleNode, vehicle.components[1].node )
 		if vehicle.aiveChain ~= nil and vehicle.aiveChain.refNode ~= nil then 
-			n = vehicle.aiveChain.refNode
+			v = vehicle.aiveChain.refNode
 		end 
+		local a = AutoSteeringEngine.getRelativeYRotation( v, n )
 		table.insert( taJoints, index,
 									{ nodeVehicle    = n,
-										nodeTrailer    = trailer.spec_attachable.attacherJoint.rootNode, 
+									  otherDirection = ( math.abs( a ) > 0.75 * math.pi ),
+									--nodeTrailer    = trailer.spec_attachable.attacherJoint.rootNode, 
+										nodeTrailer    = AIVEUtils.getNoNil( trailer.steeringAxleNode, trailer.components[1].node ),
 										targetFactor   = 1 } )
 	end
 	

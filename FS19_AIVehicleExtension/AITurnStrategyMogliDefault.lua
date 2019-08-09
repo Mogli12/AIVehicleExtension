@@ -652,7 +652,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 --==============================================================				
 -- wait
 	elseif turnData.stage == 26 then
-		turnProgress = 0.8
+		turnProgress = 0.6
 	
 		local onTrack    = false
 		angle2, onTrack, tX, tZ  = AutoSteeringEngine.navigateToSavePoint( veh, 1 )
@@ -674,11 +674,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 --==============================================================				
 -- turn 90°
 	elseif turnData.stage == 27 or turnData.stage == 74  then
-		if turnAngle > -120 then 
-			turnProgress = AIVEUtils.clamp( 0.3 + 0.20/40*( -turnAngle - 80 ), 0.3, 0.5 )
-		else 
-			turnProgress = AIVEUtils.clamp( 0.5 + 0.41/40*( -turnAngle -120 ), 0.5, 0.91 )
-		end 
+		turnProgress = self:getTurnProgress( turnAngle, {{ -80, 0.6 }, { -140, 0.9}, { -160, 0.98 }} )
 		
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 				
@@ -690,7 +686,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 
 		veh:acDebugPrint("T"..tostring(turnData.stage)
 									..": "..tostring(turnAngle)
-									..": "..string.format("%3d%%",turnProgress*100)
+									..", "..string.format("%3d%%",turnProgress*100)
 									..", "..tostring(onTrack)
 									..", "..tostring(veh.acParameters.leftAreaActive)
 									..", "..AutoSteeringEngine.radToString(angle2))
@@ -1508,11 +1504,11 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 --==============================================================				
 -- now turn 90°
 	elseif turnData.stage == 73 then	
-		turnProgress = 0.3
+		turnProgress = self:getTurnProgress( turnAngle, {{ 0, 0.3 }, { -80, 0.6}} )
 	
 		angle = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 		
-		veh:acDebugPrint("T73: "..AutoSteeringEngine.radToString(angle))
+		veh:acDebugPrint("T73: "..AutoSteeringEngine.radToString(angle)..string.format(" %3d%%", turnProgress*100))
 		
 		if turnAngle < angleOffset-90 then		
 			angle2, onTrack, tX, tZ  = AutoSteeringEngine.navigateToSavePoint( veh, 1 )					
