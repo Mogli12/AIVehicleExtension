@@ -31,6 +31,7 @@
 		<!-- AI Vehicle inputbinding text -->
 		<text name="AIVE_COLLISION_OTHER"          text="front collision"/>
 		<text name="AIVE_COLLISION_BACK"           text="back collision"/>
+		<text name="AIVE_UTURN_TYPE"               text="AI Vehicle mode"/>
 		<text name="AIVE_UTURN_ON"                 text="up/down"/>
 		<text name="AIVE_UTURN_OFF"                text="circle"/>
 		<text name="AIVE_UTURN_ON2"                text="straight like normal worker"/>
