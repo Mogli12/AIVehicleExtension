@@ -441,8 +441,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		noLower  = true
 		
 		veh:acDebugPrint("T"..tostring(turnData.stage)..": "..AutoSteeringEngine.degToString(turnAngle))
-		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );			
-		angle = turn75.alpha
+		angle = AIVehicleExtension.getMaxAngleWithTool( veh, false )
 		
 		AutoSteeringEngine.ensureToolIsLowered( veh, false )
 		if turnAngle < angleOffsetStrict - 90 then
@@ -458,10 +457,9 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, false );
 		veh:acDebugPrint("T"..tostring(turnData.stage)..": "..AutoSteeringEngine.degToString(turnAngle)..", "..AutoSteeringEngine.posToString(x)..", "..AutoSteeringEngine.posToString(z))
-		angle = veh.acDimensions.maxSteeringAngle
 		
 		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );			
-		angle = turn75.alpha
+		angle = AIVehicleExtension.getMaxAngleWithTool( veh, false, true )
 		if math.abs( x ) < turn75.radius + veh.acDimensions.toolDistance then
 			angle = 0
 		else
@@ -476,8 +474,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		noLower  = true
 		
 		veh:acDebugPrint("T"..tostring(turnData.stage)..": "..AutoSteeringEngine.degToString(turnAngle))		
-		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );			
-		angle = turn75.alpha
+		angle = AIVehicleExtension.getMaxAngleWithTool( veh, false, true )
 		
 		if turnAngle > 0 then
 			turnData.stage = turnData.stage + 1
@@ -485,36 +482,66 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 --==============================================================						
 	elseif turnData.stage == 14 then
-		turnProgress = 0.99
+		turnProgress = 0.8
 	
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, false );
 		veh:acDebugPrint("T"..tostring(turnData.stage)..": "..AutoSteeringEngine.degToString(turnAngle)..", "..AutoSteeringEngine.posToString(x)..", "..AutoSteeringEngine.posToString(z))
 		
 		inactive = true
 		noLower  = false
+		
+		if fruitsDetected then			
+			turnData.stage   = -1;					
+			self.aiveTurnTimer     = veh.acDeltaTimeoutStart;
+		elseif turnAngle < 120 then 
+			turnData.stage = turnData.stage + 1
+		else
+			angle = AIVehicleExtension.getMaxAngleWithTool( veh, false, true )
+		end
+		
+--==============================================================						
+	elseif turnData.stage == 15 then
+		turnProgress = 0.99
+
+		local toolAngle = AutoSteeringEngine.getToolAngle( veh );	
+		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, false );
+		if not veh.acParameters.leftAreaActive then
+			toolAngle = -toolAngle
+			x         = -x
+		end
+		
+		veh:acDebugPrint("T"..tostring(turnData.stage)..": "..AutoSteeringEngine.degToString(turnAngle)..": "..AutoSteeringEngine.radToString(toolAngle)..", "..AutoSteeringEngine.posToString(x)..", "..AutoSteeringEngine.posToString(z))
+		
+		inactive = true
+		noLower  = false
 	
-		if turnAngle < 90 + angleOffset then -- math.deg( veh.acDimensions.maxSteeringAngle ) then
+	--if      turnAngle < 90 + angleOffset
+	--		and ( fruitsDetected 
+	--			 or math.abs( toolAngle ) < AIVEGlobals.maxToolAngle2 
+	--			 or x < 3 + veh.acDimensions.toolDistance ) then 
+		if     turnAngle + math.deg( toolAngle ) < 120 + angleOffset 
+				or x < AIVEGlobals.lowerAdvance + stoppingDist + veh.acDimensions.toolDistance then 
 			detected, angle2, border = AutoSteeringEngine.processChain( veh, false, nil, nil, "M" )
 		else
 			detected = false
 			border   = 1
 		end
-		
+
 		if fruitsDetected then			
 			turnData.stage   = -1;					
 			self.aiveTurnTimer     = veh.acDeltaTimeoutStart;
-		elseif detected or border <= 0 then
-			angle = nil
-			if self.aiveTurnTimer < 0 then
-				turnData.stage = -1
-			end
-		elseif z < 0.1 then
-			turnData.stage   = -1;					
-			self.aiveTurnTimer    = veh.acDeltaTimeoutStart;
-		else
-			angle = veh.acDimensions.maxSteeringAngle * math.min( 1, veh.acDimensions.radius * ( 1 - math.cos(math.rad(turnAngle - 90)) ) / z )
-		end
-	
+		elseif detected and border <= 0 then 
+			veh:acDebugPrint("detected")
+		else 
+			angle2, onTrack, tX, tZ  = AutoSteeringEngine.navigateToSavePoint( veh, 4 )			
+			if onTrack then 
+				veh:acDebugPrint("on track")
+			else 
+				veh:acDebugPrint("fall back")
+				angle2, tX, tZ = nil, nil, nil 
+				angle = veh.acDimensions.maxSteeringAngle * math.min( 1, veh.acDimensions.radius * ( 1 - math.cos(math.rad(turnAngle - 90)) ) / z )
+			end 
+		end 
 --==============================================================				
 --==============================================================				
 -- the new U-turn with reverse

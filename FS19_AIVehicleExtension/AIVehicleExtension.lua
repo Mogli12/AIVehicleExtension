@@ -2368,7 +2368,7 @@ end
 ------------------------------------------------------------------------
 -- AIVehicleExtension:getMaxAngleWithTool
 ------------------------------------------------------------------------
-function AIVehicleExtension:getMaxAngleWithTool( outside )
+function AIVehicleExtension:getMaxAngleWithTool( outside, wide )
 	
 	if AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then
 		if outside then
@@ -2385,17 +2385,41 @@ function AIVehicleExtension:getMaxAngleWithTool( outside )
 	end
 	
 	local maxToolAngle = AutoSteeringEngine.getMaxToolAngle( self )
+	local maxAngle     = self.acDimensions.maxSteeringAngle
+	local extremeTA    = math.pi * 0.5
+	local extremeAngle = -self.acDimensions.maxSteeringAngle
+	local targetAngle  = turn75.alpha
+	local midAngle     = math.min(1.1*targetAngle,maxAngle)
+
+	if wide then 
+		maxAngle         = turn75.alpha
+	end 	
+	if outside then 
+		maxToolAngle = -maxToolAngle 
+		maxAngle     = -maxAngle 
+		extremeTA    = -extremeTA
+		extremeAngle = -extremeAngle
+		targetAngle  = -targetAngle 
+		midAngle     = -midAngle
+	end 
 	
-	local f = 1
-	if AutoSteeringEngine.hasArticulatedAxis( self ) then
-		f = 0.5
-	end
+	angle = AIVEUtils.interpolate( toolAngle,{{ 0,                maxAngle },
+																						{ 0.8*maxToolAngle, midAngle },
+																						{ 0.97*maxToolAngle,targetAngle },
+																						{ 1.03*maxToolAngle,0.5*targetAngle },
+																						{ 1.1*maxToolAngle, 0 },
+																						{	extremeTA,        extremeAngle }} )
 	
-	if outside then
-		angle = AIVEUtils.clamp( -turn75.alpha + f * ( -toolAngle - maxToolAngle ), -self.acDimensions.maxSteeringAngle, 0 )
-	else                                                                                                   
-		angle = AIVEUtils.clamp(  turn75.alpha - f * (  toolAngle - maxToolAngle ), 0, self.acDimensions.maxSteeringAngle )
-	end
+--local f = 2
+--if AutoSteeringEngine.hasArticulatedAxis( self ) then
+--	f = 1
+--end
+--
+--if outside then
+--	angle = AIVEUtils.clamp( -turn75.alpha + f * ( -toolAngle - maxToolAngle ), -self.acDimensions.maxSteeringAngle, 0 )
+--else                                                                                                   
+--	angle = AIVEUtils.clamp(  turn75.alpha - f * (  toolAngle - maxToolAngle ), 0, self.acDimensions.maxSteeringAngle )
+--end
 	
 	if AIVEGlobals.devFeatures > 0 then -- and math.abs( toolAngle ) >= maxToolAngle - 0.01745 then
 		self:acDebugPrint( string.format("Tool angle: ts: %d a: %0.1f° mt: %0.1f° ms: %0.1f° to: %0.1f°", self.acTurnStage, math.deg(angle), math.deg(maxToolAngle), math.deg(self.acDimensions.maxSteeringAngle), math.deg(toolAngle) ) )
