@@ -31,8 +31,10 @@
 		<!-- AI Vehicle inputbinding text -->
 		<text name="AIVE_COLLISION_OTHER"          text="Collisioni anteriori"/>
 		<text name="AIVE_COLLISION_BACK"           text="Collisioni posteriori"/>
+		<text name="AIVE_UTURN_TYPE"               text="Modalità veicolo AI"/>
 		<text name="AIVE_UTURN_ON"                 text="Su/giù"/>
 		<text name="AIVE_UTURN_OFF"                text="Circolare"/>
+		<text name="AIVE_UTURN_ON2"                text="dritto come un normale lavoratore"/>
 		<text name="AIVE_REVERSE_ON"               text="Modalità svolta [all'indietro]"/>
 		<text name="AIVE_REVERSE_OFF"              text="Modalità svolta [in avanti]"/>
 		<text name="AIVE_INVERTED"                 text="In retromarcia"/>
@@ -58,6 +60,7 @@
 		<text name="AIVE_HIRE_OFF"                 text="Uso dei semi [attivo]"/>
 		<text name="AIVE_HEADLAND"                 text="Testata del campo"/>
 		<text name="AIVE_TURN_MODE"                text="Modalità della manovra di svolta"/>
+		<text name="AIVE_TURN_MODE_"               text=""/>		
 		<text name="AIVE_TURN_MODE_O"              text="Svolta in forma di O"/>
 		<text name="AIVE_TURN_MODE_A"              text="Inversione con svolta"/>
 		<text name="AIVE_TURN_MODE_Y"              text="Inversione con svolta (Trebbia)"/>
@@ -76,6 +79,10 @@
 		<text name="AIVE_USE_AI_FIELD"             text="Rileva campo corrente"/>
 		<text name="AIVE_FIELD_W"                  text="Rilevazione campo in corso"/>
 		<text name="AIVE_FIELD_E"                  text="Rilevazione campo fallita"/>
+		<text name="AIVE_PRECISION"                text="Precisione del veicolo AI"/>
+		<text name="AIVE_PRECISION_0"              text="Bassa"/>
+		<text name="AIVE_PRECISION_1"              text="Normale"/>
+		<text name="AIVE_PRECISION_2"              text="Alta"/>
 
 		<text name="input_AIVE_HELPPANEL"          text="Aiutante alternativo: Mostra/nascondi HUD"/>
 		<text name="input_AIVE_STEER"              text="Aiutante alternativo: Sterzo automatico"/>
