@@ -163,7 +163,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	veh.aiRescueTimer = veh.aiRescueTimer - dt;
 	
 	if veh.aiRescueTimer < 0 then
-		veh:stopAIVehicle(AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT)
+		veh:stopAIVehicle(AIVehicle.STOP_REASON_UNKOWN)
 		return
 	end
 	if AutoSteeringEngine.getTurnDistanceSq( veh ) > AIVEGlobals.aiRescueDistSq then
@@ -489,11 +489,14 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		
 		inactive = true
 		noLower  = false
+		local turn75 = AutoSteeringEngine.getMaxSteeringAngle75( veh );			
 		
 		if fruitsDetected then			
 			turnData.stage   = -1;					
 			self.aiveTurnTimer     = veh.acDeltaTimeoutStart;
 		elseif turnAngle < 120 then 
+			turnData.stage = turnData.stage + 1
+		elseif math.abs( z ) < turn75.radius then 
 			turnData.stage = turnData.stage + 1
 		else
 			angle = AIVehicleExtension.getMaxAngleWithTool( veh, false, true )

@@ -400,11 +400,41 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 	
 	local fruitsDetected, fruitsAll = AutoSteeringEngine.hasFruits( veh )
 	
+	if fruitsDetected and self.search ~= nil and self.searchStartPos == nil then 
+		self.searchStartPos = { vX,vY,vZ }
+	end 
+	
+	local slowFactorLowering = 1
+
 	if      allowedToDrive
 			and ( fruitsDetected or ( self.search == nil and AIVEGlobals.raiseNoFruits <= 0 ) )
 			and not ( AutoSteeringEngine.getIsAIReadyForWork( veh ) and veh:getCanAIVehicleContinueWork() ) then
-		allowedToDrive = false
-	end
+		local fruitsDistSq = 0
+		local maxDistSq    = ( AIVEGlobals.ignoreDist + AIVEGlobals.fruitsAdvance )^2
+		if self.searchStartPos ~= nil then 
+			fruitsDistSq = AIVEUtils.vector2LengthSq( self.searchStartPos[1]-vX, self.searchStartPos[3]-vZ ) 
+			if self.search == nil and fruitsDistSq >= maxDistSq then 
+				fruitsDistSq = 0
+				self.searchStartPos = nil 
+			end 
+		end 
+		
+	--if self.searchStartPos ~= nil then 
+	--	print(string.format("Start position: (%6.2f, %6.2f), distance: %6.2f",
+	--											self.searchStartPos[1],
+	--											self.searchStartPos[3],
+	--											math.sqrt( fruitsDistSq ) ) )
+  --end 
+	
+		-- ignore fruits at the very beginning
+		if self.searchStartPos == nil or fruitsDistSq >= maxDistSq then 
+			allowedToDrive     = false
+		elseif fruitsDistSq > 0 and maxDistSq > 0 then 
+			slowFactorLowering = AIVEUtils.clamp( 1 - math.sqrt( fruitsDistSq / maxDistSq ), 0, 1 )
+		end
+	elseif self.searchStartPos ~= nil then 
+		self.searchStartPos = nil 
+	end 
 	
 	local speedLevel = 4
 	if self.search == nil then
@@ -614,7 +644,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			distanceToStop = math.max( veh.acMinDistanceToStop, dist )
 		end
 	end		
-		
+	
 	if not ( detected or isAtEnd ) then
 		speedLevel = 4
 	end
@@ -936,7 +966,7 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 			end
 			AutoSteeringEngine.ensureToolIsLowered( veh, true )	
 			self.search            = nil
-			self.aiveTurnTimer		       = veh.acDeltaTimeoutNoTurn;
+			self.aiveTurnTimer		 = veh.acDeltaTimeoutNoTurn;
 			veh.acTurnOutsideTimer = math.max( self.aiveTurnTimer, veh.acDeltaTimeoutNoTurn );
 			veh.aiRescueTimer	     = veh.acDeltaTimeoutStop;
 		end		
@@ -1042,13 +1072,18 @@ function AIDriveStrategyMogli:getDriveData(dt, vX2,vY2,vZ2)
 		useReduceSpeed = true
 	end
 	
+	if slowFactorLowering < 1 then 
+		slowFactor     = math.min( slowFactor, slowFactorLowering )
+		useReduceSpeed = true
+		speedLevel     = 4
+	end
+
+	
 	maxSpeed = AutoSteeringEngine.getMaxSpeed( veh, dt, 1, true, true, speedLevel, useReduceSpeed, slowFactor )
 			
-	if self.search == nil then
-		if distanceToStop < 5 or maxSpeed < 8 then
-			veh:acDebugPrint("Slow...: "..tostring(speedLevel).."; "..tostring(useReduceSpeed).."; "..tostring(distanceToStop).."; "..tostring(dist).."; "..tostring(slowFactor).."; "..tostring(border).."; "..tostring(detected).."; "..tostring(maxSpeed))
-		end
-	end
+--if self.search == nil and ( distanceToStop < 5 or maxSpeed < 8 ) then
+--	veh:acDebugPrint("Slow...: "..tostring(speedLevel).."; "..tostring(useReduceSpeed).."; "..tostring(distanceToStop).."; "..tostring(dist).."; "..tostring(slowFactor).."; "..tostring(border).."; "..tostring(detected).."; "..tostring(maxSpeed))
+--end
 	
 	if math.abs( veh.acAxisSide ) > 0.1 then
 		AIVehicleExtension.setStatus( veh, 2 )

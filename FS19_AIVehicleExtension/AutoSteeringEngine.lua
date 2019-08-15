@@ -899,6 +899,25 @@ function AutoSteeringEngine.processChain( vehicle, inField, targetSteering, insi
 		return false, 0,0
 	end
 	
+	-- previous run was alread at end 
+	if inField and vehicle.aiveChain.isAtEnd and AutoSteeringEngine.hasNoFruitsAtAll( vehicle ) then 
+	-- verify that were are really at the end 
+		AutoSteeringEngine.processIsAtEnd( vehicle )	
+
+		if vehicle.aiveChain.isAtEnd then 
+			vehicle.aiveChain.collectCbr = nil
+			vehicle.aiveChain.cbr	       = nil
+			vehicle.aiveChain.pcl        = nil
+			vehicle.aiveProcessChainInfo = "found nothing at all"
+			vehicle.aiveChain.fullSpeed = false 
+			vehicle.acIamDetecting      = false
+			
+			AutoSteeringEngine.syncRootNode( vehicle )
+			
+			return false, 0, 0, 0, 0, 0, 0
+		end 
+	end 
+	
 	------------------------------------------------------------------------
 	-- only straight, no detection
 	if      vehicle.acParameters     ~= nil
@@ -2765,8 +2784,8 @@ function AutoSteeringEngine.hasFruits( vehicle, checkLowerAdvance )
 	end
 	vehicle.aiveFruitAreas[1] = {}
 	
-	if      vehicle.aiveChain      ~= nil 
-			and vehicle.aiveChain.leftActive   ~= nil 
+	if      vehicle.aiveChain            ~= nil 
+			and vehicle.aiveChain.leftActive ~= nil 
 			and vehicle.aiveChain.toolCount  ~= nil 
 			and vehicle.aiveChain.toolCount  >= 1 
 			and vehicle.aiveChain.toolParams ~= nil 
@@ -2978,6 +2997,153 @@ function AutoSteeringEngine.hasFruits( vehicle, checkLowerAdvance )
 	end
 	
 	return fruitsDetected, fruitsAll
+end
+
+------------------------------------------------------------------------
+-- hasNoFruitsAtAll
+------------------------------------------------------------------------
+function AutoSteeringEngine.hasNoFruitsAtAll( vehicle )
+
+	if AutoSteeringEngine.skipIfNotServer( vehicle ) then return true end
+		
+	if AIVEGlobals.useFBB123 > 0 then
+		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
+		local fbbd = AIVEGlobals.FBB123disq1
+		if vehicle.aiveChain.inField then
+			fbbd = AIVEGlobals.FBB123disq2
+		end
+		if      vehicle.aiveChain.fbb4   ~= nil 
+				and vehicle.aiveChain.fbb4.x ~= nil 
+				and vehicle.aiveChain.fbb4.z ~= nil 
+				and AIVEUtils.vector2LengthSq( vehicle.aiveChain.fbb4.x - wx, vehicle.aiveChain.fbb4.z - wz ) < fbbd then
+			return vehicle.aiveChain.fbb4.d 
+		end
+	end
+			
+	if     AutoSteeringEngine.hasCollision( vehicle )
+			or AutoSteeringEngine.isBeforeStartNode( vehicle ) then
+
+		vehicle.aiveChain.fbb4 = { x=wx, z=wz, d=true }
+		return true
+	end
+	
+	if vehicle.aiveFruitAreas == nil then
+		vehicle.aiveFruitAreas = {}
+	end
+	vehicle.aiveFruitAreas[4] = {}
+	
+	local noFruitsDetected = false 
+	
+	if      vehicle.aiveChain            ~= nil 
+			and vehicle.aiveChain.leftActive ~= nil 
+			and vehicle.aiveChain.toolCount  ~= nil 
+			and vehicle.aiveChain.toolCount  >= 1 
+			and vehicle.aiveChain.toolParams ~= nil 
+			and vehicle.aiveChain.toolCount  == table.getn( vehicle.aiveChain.toolParams ) then
+		for i = 1,vehicle.aiveChain.toolCount do	
+			local toolParam = vehicle.aiveChain.toolParams[i]
+			local tool      = vehicle.aiveChain.tools[toolParam.i]
+			if not ( tool.ignoreAI ) then 
+				local gotFruits = false
+				local gotField  = false
+				local back      = AIVEGlobals.ignoreDist	
+				local front     = math.max( back, 0 ) + AIVEGlobals.fruitsInFront
+
+				local dx,dz
+				if tool.steeringAxleNode == nil then
+					dx,_,dz = localDirectionToWorld( vehicle.aiveChain.refNode, 0, 0, 1 )
+				elseif tool.invert then
+					dx,_,dz = localDirectionToWorld( tool.steeringAxleNode, 0, 0, -1 )
+				else
+					dx,_,dz = localDirectionToWorld( tool.steeringAxleNode, 0, 0, 1 )
+				end
+
+				local ofs, idx
+				if vehicle.aiveChain.leftActive	then
+					ofs = -3 
+					idx = toolParam.nodeLeft 
+				else
+					ofs = 3 
+					idx = toolParam.nodeRight
+				end
+			
+				local xw1,y,zw1 = AutoSteeringEngine.toolLocalToWorld( vehicle, toolParam.i, idx, ofs, back )
+				local xw2,y,zw2 = AutoSteeringEngine.toolLocalToWorld( vehicle, toolParam.i, idx, ofs, front )
+				
+				local w = 3 + toolParam.width + 3
+				if vehicle.aiveChain.leftActive then
+					w = -w
+				end
+				
+				local lx1,lz1,lx2,lz2,lx3,lz3,lx4,lz4
+				dist = front - back
+				repeat 
+					xw2 = xw1 + dist * dx
+					zw2 = zw1 + dist * dz
+					lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( xw1,zw1,xw2,zw2, w, true )
+					lx4 = lx3 + lx2 - lx1
+					lz4 = lz3 + lz2 - lz1
+					
+					dist = dist - 0.5
+				until dist < 0.5
+						or ( vehicle.aiveChain.headland >= 1
+						 and ( AutoSteeringEngine.isChainPointOnField( vehicle, lx3, lz3 )
+								or AutoSteeringEngine.isChainPointOnField( vehicle, lx4, lz4 )
+								or AutoSteeringEngine.isChainPointOnField( vehicle, 0.5 * ( lx3 + lx4), 0.5 * ( lz3 + lz4 ) ) ) )
+						or ( vehicle.aiveChain.headland < 1
+						 and ( AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
+								or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
+								or AutoSteeringEngine.checkField( vehicle, 0.5 * ( lx3 + lx4), 0.5 * ( lz3 + lz4 ) ) ) )
+
+				local lx5 = 0.25 * ( lx1 + lx2 + lx3 + lx4 )
+				local lz5 = 0.25 * ( lz1 + lz2 + lz3 + lz4 )
+				
+				if dist < front - back - 0.6 then
+					dist = dist + 0.5
+				end
+				
+				if vehicle.aiveChain.headland < 1 then
+					if     AutoSteeringEngine.checkField( vehicle, lx1, lz1 )
+							or AutoSteeringEngine.checkField( vehicle, lx2, lz2 )
+							or AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
+							or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
+							or AutoSteeringEngine.checkField( vehicle, lx5, lz5 ) then
+						gotField = true
+						if AutoSteeringEngine.getFruitArea( vehicle, xw1,zw1,xw2,zw2, w, toolParam.i, true ) > 0 then
+							gotFruits = true
+						end			
+					end			
+				else
+					if     AutoSteeringEngine.isChainPointOnField( vehicle, lx1, lz1 )
+							or AutoSteeringEngine.isChainPointOnField( vehicle, lx2, lz2 )
+							or AutoSteeringEngine.isChainPointOnField( vehicle, lx3, lz3 )
+							or AutoSteeringEngine.isChainPointOnField( vehicle, lx4, lz4 )
+							or AutoSteeringEngine.isChainPointOnField( vehicle, lx5, lz5 ) then
+						gotField = true
+						if AutoSteeringEngine.getFruitArea( vehicle, xw1,zw1,xw2,zw2, w, toolParam.i, true ) > 0 then
+							gotFruits = true
+						end			
+					end			
+				end			
+				
+				table.insert( vehicle.aiveFruitAreas[4], { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits } )
+
+				if gotFruits then
+					noFruitsDetected = false 				
+					break 
+				elseif gotField then 
+					noFruitsDetected = true 
+				end 
+			end 
+		end
+	end
+	
+	if AIVEGlobals.useFBB123 > 0 then
+		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
+		vehicle.aiveChain.fbb4 = { x=wx, z=wz, d=noFruitsDetected }
+	end
+	
+	return noFruitsDetected
 end
 
 ------------------------------------------------------------------------
@@ -3385,11 +3551,11 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
 	local wantedSpeed = AutoSteeringEngine.getWantedSpeed( vehicle, speedLevel )
   if useReduceSpeed then
     acc           = acc * slowMaxRpmFactor
-		if speedLevel ~= 2 then
+		if speedLevel == 2 or speedLevel == 4 then
+			wantedSpeed = wantedSpeed * slowMaxRpmFactor
+		else 
 			w2          = AutoSteeringEngine.getWantedSpeed( vehicle, 2 )
 			wantedSpeed = math.min( wantedSpeed, w2 * slowMaxRpmFactor )
-		else
-			wantedSpeed = wantedSpeed * slowMaxRpmFactor
 		end
   end
 	

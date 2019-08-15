@@ -169,7 +169,7 @@ function AIVehicleExtension:onLoad(saveGame)
 	
 	self.acDeltaTimeoutWait	  = 1600
 	self.acDeltaTimeoutRun		= 80
-	self.acDeltaTimeoutStop	  = 20000
+	self.acDeltaTimeoutStop	  = 30000
 	self.acDeltaTimeoutStart	= 6000
 	self.acDeltaTimeoutNoTurn = 2 * self.acDeltaTimeoutWait --math.max(AIVEUtils.getNoNil( self.waitForTurnTimeout , 2000 ), 1000 )
 	self.acRecalculateDt			= 0
