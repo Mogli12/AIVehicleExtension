@@ -7996,6 +7996,10 @@ function AutoSteeringEngine.checkAllowedToDrive( vehicle, checkFillLevel, checkF
 	
 	local allowedToDrive = true
 	
+	if vehicle.aiveMaxCollisionSpeed ~= nil and vehicle.aiveMaxCollisionSpeed < 2 then
+		allowedToDrive = false 
+	end 
+	
 --for i,tool in pairs(vehicle.aiveChain.tools) do
 --	local self = tool.obj
 --	local curCapa, maxCapa = 0, 0
