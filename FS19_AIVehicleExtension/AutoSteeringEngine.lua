@@ -7813,7 +7813,10 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 	end
 	
 	local implement 
-	local oav object:getAttacherVehicle()
+	local oav = nil
+	if type( object.getAttacherVehicle ) == "function" then 
+		oav = object:getAttacherVehicle()
+	end 
 	if oav ~= nil and oav.spec_attacherJoints ~= nil and oav.spec_attacherJoints.attachedImplements ~= nil then
 		for _,impl in pairs( oav.spec_attacherJoints.attachedImplements ) do
 			if impl.object == object then
@@ -7885,8 +7888,11 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 				and refNode == object.spec_attachable.attacherJoint.node 
 				and implement ~= nil then
 			local jointDesc = object:getAttacherVehicle().spec_attacherJoints.attachedImplements[implement.jointDescIndex]
-			rotMax = math.max(jointDesc.upperRotLimit[2], jointDesc.lowerRotLimit[2]) * object.spec_attachable.attacherJoint.lowerRotLimitScale[2]
-		else
+			if jointDesc ~= nil then 
+				rotMax = math.max(jointDesc.upperRotLimit[2], jointDesc.lowerRotLimit[2]) * object.spec_attachable.attacherJoint.lowerRotLimitScale[2]
+			end 
+		end 
+		if rotMax == nil then 
 			for _,compJoint in pairs(object.componentJoints) do
 				if refNode == compJoint.jointNode then
 					rotMax = compJoint.rotLimit[2]

@@ -3048,6 +3048,7 @@ function AIVehicleExtension:onAITurnProgress( progress, left )
 	if      self.acParameters       ~= nil
 			and self.acParameters.enabled
 			and self.aiveSetCrabSteeringState
+			and progress ~= nil 
 			and progress > 0.05 then 
 		local target = progress > 0.95
 		
