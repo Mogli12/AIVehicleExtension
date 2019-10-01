@@ -70,7 +70,7 @@ AIVehicleExtension.saveAttributesMapping = {
 		collision			  = { xml = "acCollision",	 tp = "B", default = false },
 		inverted				= { xml = "acInverted",		 tp = "B", default = false },
 		isHired				  = { xml = "acIsHired",		 tp = "B", default = false },
-		bigHeadland		  = { xml = "acBigHeadland", tp = "B", default = true },
+		bigHeadland		  = { xml = "acBigHeadland", tp = "B", default = true  },
 		turnModeIndex	  = { xml = "acTurnMode",		 tp = "I", default = 1 },
 		turnModeIndexC	= { xml = "acTurnModeC",	 tp = "I", default = 1 },
 		widthOffset		  = { xml = "acWidthOffset", tp = "F", default = 0 },
@@ -79,8 +79,8 @@ AIVehicleExtension.saveAttributesMapping = {
 		precision		    = { xml = "acPrecision",   tp = "I", default = 1 },
 		noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
 		useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
-		waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true },
-		showTrace 			= { xml = "acShowTrace",   tp = "B", default = true } }																															
+		waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true  },
+		showTrace 			= { xml = "acShowTrace",   tp = "B", default = false } }																															
 AIVehicleExtension.turnStageNoNext = { -4, -3, -2, -1, 0, 21, 22, 23, 198, 199 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { 
 	--{ 4, -1 },
@@ -1750,25 +1750,32 @@ function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axi
 			if self.acTurnStage == 199 then
 				inField     = true
 				angleFactor = self.acParameters.angleFactor
-				nilAngle    = "L"
+			--nilAngle    = "L"
 				
-				if	   self.turnTimer < 0 
-						or AutoSteeringEngine.getIsAtEnd( self ) then
-					target = math.min( math.max( 0.5 * AutoSteeringEngine.getTurnAngle(self), -self.acDimensions.maxSteeringAngle ), self.acDimensions.maxSteeringAngle )
-					if AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then
-						target = math.max( target, 0 )
-					end
-					if not self.acParameters.leftAreaActive then
-						target = -target
-					end
-				end
+			--if	   self.turnTimer < 0 
+			--		or AutoSteeringEngine.getIsAtEnd( self ) then
+			--	target = math.min( math.max( 0.5 * AutoSteeringEngine.getTurnAngle(self), -self.acDimensions.maxSteeringAngle ), self.acDimensions.maxSteeringAngle )
+			--	if AutoSteeringEngine.getNoReverseIndex( self ) <= 0 then
+			--		target = math.max( target, 0 )
+			--	end
+			--	if not self.acParameters.leftAreaActive then
+			--		target = -target
+			--	end
+			--end
 			else
 				inField     = false
 				angleFactor = 1
-				nilAngle    = "M"
+			--nilAngle    = "M"
 			end
-
-			local detected, angle, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( self, inField, target, angleFactor, nilAngle )	
+			
+			local detected, angle, border, tX, _, tZ, dist
+			
+			if fruitsAdvance then 
+				detected, angle, border, tX, _, tZ, dist = AutoSteeringEngine.processChain( self, inField, target, angleFactor, nilAngle )	
+			else 
+				detected, angle, border, tX, _, tZ, dist = false, 0, 0, 0, 0 
+			end 
+			
 		--==============================================================						
 				
 			self.turnTimer = self.turnTimer - dt

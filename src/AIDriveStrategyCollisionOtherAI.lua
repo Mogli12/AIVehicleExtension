@@ -123,7 +123,7 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 						or self.vehicle.aiveCollisionDistance  > d2 then
 					self.vehicle.aiveCollisionDistance = d2
 				end
-				if dX > self.vehicle.acDimensions.distance + 1 or dZ > 20 then 
+				if dX > self.vehicle.acDimensions.distance + 1 or dZ > 30 then 
 				--print(string.format("Not blocked: %5.2fm,  %5.2fm", dX, dZ))
 					blocked = false 
 				end 

@@ -343,11 +343,18 @@ function AIVEDrawDebugPoint( vehicle, x, y, z, r, g, b, s, c )
 		AIVehicleExtension.printCallstack()
 		return 
 	end 
-	local sx,sy,sz = project(x,y,z)
-	setTextColor(r,g,b,s) 
-	if 1 > sz and sz > 0 then 
-		renderText(sx, sy, getCorrectTextSize(0.02) * sz, Utils.getNoNil( c, "O") )
+	if vehicle.aiveDirection == nil then 
+		return 
 	end 
+--local sx,sy,sz = project(x,y,z)
+--setTextColor(r,g,b,s) 
+--if 0 < sz and sz <= 1 and 0 <= sx and sx <= 1 and 0 <= sy and sy <= 1 then 
+--	renderText(sx, sy, getCorrectTextSize(0.05) * sz, Utils.getNoNil( c, "O") )
+--end 
+	setTextAlignment( RenderText.ALIGN_CENTER ) 
+	setTextVerticalAlignment( RenderText.VERTICAL_ALIGN_MIDDLE )
+	setTextColor(r,g,b,s) 
+	renderText3D( x,y+0.5,z, vehicle.aiveDirection[1],vehicle.aiveDirection[2],vehicle.aiveDirection[3], 0.2, Utils.getNoNil( c, "O") )
 end 
 function AIVEDrawDebugLine( vehicle, x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
 	if     vehicle == nil
@@ -358,12 +365,22 @@ function AIVEDrawDebugLine( vehicle, x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
 		AIVehicleExtension.printCallstack()
 		return 
 	end 
+	if vehicle.aiveDirection == nil then 
+		return 
+	end 
 	local l = AIVEUtils.vector3Length(x1-x2,y1-y2,z1-z2)
 	local s = math.floor( l * 10 )
 	local t = 1
 	if s > 1 then 
 		t = 1 / s 
 	end 
+	
+	setTextAlignment( RenderText.ALIGN_CENTER ) 
+	setTextVerticalAlignment( RenderText.VERTICAL_ALIGN_MIDDLE )
+
+	local ax = vehicle.aiveDirection[1] -- math.atan2( z2-z1, y2-y1 )
+	local ay = vehicle.aiveDirection[2] -- math.atan2( x2-x1, z2-z1 )
+	local az = vehicle.aiveDirection[3] -- math.atan2( y2-y1, x2-x1 )		
 		
 	for i=0,s do 
 		local x = x1 + i * t * ( x2 - x1 )
@@ -372,7 +389,8 @@ function AIVEDrawDebugLine( vehicle, x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
 		local r = r1 + i * t * ( r2 - r1 )
 		local g = g1 + i * t * ( g2 - g1 )
 		local b = b1 + i * t * ( b2 - b1 )
-		AIVEDrawDebugPoint( vehicle, x, y, z, r, g, b, 1, "." )
+		setTextColor(r,g,b,s) 	
+		renderText3D( x,y,z, ax,ay,az, 0.2, "." )
 	end 
 --vehicle:addAIDebugLine({x1,y1,z1}, {x2,y2,z2}, {r1,g1,b1})
 end 
@@ -444,7 +462,7 @@ AIVEStatus.border   = 4
 
 
 function AutoSteeringEngine.hasArticulatedAxis( vehicle, useCurrentState, whileTurning )
-	if     vehicle == nil or vehicle.spec_articulatedAxis == nil then 
+	if     vehicle == nil or vehicle.spec_articulatedAxis == nil or vehicle.spec_wheels == nil then 
 		return false 
 	elseif vehicle.spec_articulatedAxis.componentJoint == nil
 			or vehicle.spec_articulatedAxis.rotationNode   == nil 
@@ -452,6 +470,22 @@ function AutoSteeringEngine.hasArticulatedAxis( vehicle, useCurrentState, whileT
 			or vehicle.spec_articulatedAxis.rotSpeed       == nil then
 		return false 
 	end
+	
+	local firstNode  = nil 
+	local singleNode = true
+	for _,wheel in pairs(vehicle.spec_wheels.wheels) do
+		local node = getParent( wheel.driveNode )
+		if firstNode == nil then 
+			firstNode = node 
+		elseif firstNode ~= node then 
+			singleNode = false 
+			break
+		end 
+	end 
+	if singleNode then 
+		return false 
+	end 
+	
 	if whileTurning then 
 		return true 
 	end 
@@ -3626,6 +3660,8 @@ function AutoSteeringEngine.drawMarker( vehicle )
 	if vehicle.debugRendering then
 		AutoSteeringEngine.displayDebugInfo( vehicle )
 	end
+
+  vehicle.aiveDirection = { getWorldRotation( vehicle.aiveChain.refNode ) }
 
 	if vehicle.aiveChain.headland > 0 and vehicle.aiveChain.width ~= nil then		
 		AutoSteeringEngine.rotateHeadlandNode( vehicle )
