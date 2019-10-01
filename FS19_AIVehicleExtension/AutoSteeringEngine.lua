@@ -7930,7 +7930,7 @@ function AutoSteeringEngine.getToolRadius( vehicle, dirNode, object, groundConta
 		end 
 		if rotMax == nil then 
 			for _,compJoint in pairs(object.componentJoints) do
-				if refNode == compJoint.jointNode then
+				if refNode == compJoint.jointNode and type( compJoint.rotLimit ) == "table" and compJoint.rotLimit[2] ~= nil then 
 					rotMax = compJoint.rotLimit[2]
 					break
 				end
