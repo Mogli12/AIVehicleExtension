@@ -606,7 +606,7 @@ function AutoSteeringEngine.processChainSetAngle( vehicle, a, indexStart, indexM
 			vehicle.aiveChain.angleBuffer = {}
 		end
 		local id = string.format("%d,%d,%8g",indexMax,indexStart,a)
-		if vehicle.aiveChain.angleBuffer[id] == nil then
+		if vehicle.aiveChain.angleBuffer[id] == nil or AutoSteeringEngine.tableGetN( vehicle.aiveChain.angleBuffer[id] ) <= vehicle.aiveChain.chainMax then 
 			AutoSteeringEngine.applyRotation( vehicle )
 			vehicle.aiveChain.angleBuffer[id] = {}
 			for j=1,vehicle.aiveChain.chainMax+1 do
@@ -5794,6 +5794,12 @@ function AutoSteeringEngine.initSteering( vehicle )
 	local mi = vehicle.aiveChain.minAngle 
 	local ma = vehicle.aiveChain.maxAngle
 
+	local check = { vehicle.aiveChain.fixAttacher,
+									vehicle.aiveChain.chainMax,
+									vehicle.aiveChain.minZ,
+									vehicle.aiveChain.minAngle,
+									vehicle.aiveChain.maxAngle }
+
 	if vehicle.aiveChain.toolParams == nil or table.getn( vehicle.aiveChain.toolParams ) < 1 then
 		vehicle.aiveChain.minAngle  = -vehicle.aiveChain.maxSteering
 		vehicle.aiveChain.maxAngle  = vehicle.aiveChain.maxSteering
@@ -5924,6 +5930,16 @@ function AutoSteeringEngine.initSteering( vehicle )
 		end
 	end
 	vehicle.aiveChain.chainMax = table.getn( vehicle.aiveChain.nodes ) - 1
+	
+	if      vehicle.aiveChain.angleBuffer ~= nil 
+			and ( check[1] == nil or check[1] ~= vehicle.aiveChain.fixAttacher )
+			and ( check[2] == nil or check[2] ~= vehicle.aiveChain.chainMax    )
+			and ( check[3] == nil or math.abs( check[3] - vehicle.aiveChain.minZ     ) > 1e-3 ) 
+			and ( check[4] == nil or math.abs( check[4] - vehicle.aiveChain.minAngle ) > 1e-3 )
+			and ( check[5] == nil or math.abs( check[5] - vehicle.aiveChain.maxAngle ) > 1e-3 ) 
+			then 
+		vehicle.aiveChain.angleBuffer = nil
+	end 
 	
 	AutoSteeringEngine.checkFieldIsValid( vehicle )	
 	
