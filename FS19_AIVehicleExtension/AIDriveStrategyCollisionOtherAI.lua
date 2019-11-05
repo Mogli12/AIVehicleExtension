@@ -50,7 +50,9 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 	local triggerId 
 	if     self.vehicle.acParameters == nil 
 			or self.vehicle.acParameters.upNDown 
+			or not self.vehicle.acParameters.collision 
 			or self.vehicle.acCollidingVehicles == nil then
+		return nil, nil, nil, nil, nil			
 	elseif self.vehicle.acParameters.rightAreaActive then
 		triggerId = self.vehicle.acOtherCombineCollisionTriggerR
 	else
@@ -95,7 +97,7 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 			
 			if      g_currentMission.time < self.collisionTime + 2000 then
 			
-			--print("AIDriveStrategyCollisionOtherAI :: STOP due to collision 1")
+				self:addDebugText("AIDriveStrategyCollisionOtherAI :: STOP due to collision 1")
 				return tX, tZ, true, 0, math.huge
 				
 			elseif  otherAI.acRefNode         ~= nil
@@ -124,13 +126,13 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 					self.vehicle.aiveCollisionDistance = d2
 				end
 				if dX > self.vehicle.acDimensions.distance + 1 or dZ > 30 then 
-				--print(string.format("Not blocked: %5.2fm,  %5.2fm", dX, dZ))
+					self:addDebugText(string.format("Not blocked: %5.2fm,  %5.2fm", dX, dZ))
 					blocked = false 
 				end 
 			end
 			
 			if blocked then
-			--print("AIDriveStrategyCollisionOtherAI : STOP due to collision 2")
+				self:addDebugText("AIDriveStrategyCollisionOtherAI : STOP due to collision 2")
 
 				self.collisionTime = g_currentMission.time 
 
@@ -150,7 +152,7 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 		self.vehicle:setBeaconLightsVisibility(false, false)
 	end
 
---self:addDebugText("AIDriveStrategyCollisionOtherAI :: no collision ")
+	self:addDebugText("AIDriveStrategyCollisionOtherAI :: no collision ")
 	return nil, nil, nil, nil, nil
 end
 

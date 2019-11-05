@@ -62,12 +62,12 @@ function AIVehicleExtension:aiveAddDebugText( s )
 end
 
 AIVehicleExtension.saveAttributesMapping = { 
-		enabled         = { xml = "acDefaultOn",	 tp = "B", default = true  }, --always = true },
-		upNDown				  = { xml = "acUTurn",			 tp = "B", default = false }, --always = true },
-		straight			  = { xml = "acStraight",		 tp = "B", default = false }, --always = true },
-		rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false }, --always = true },
+		enabled         = { xml = "acDefaultOn",	 tp = "B", default = true  },
+		upNDown				  = { xml = "acUTurn",			 tp = "B", default = false },
+		straight			  = { xml = "acStraight",		 tp = "B", default = false },
+		rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false },
 		headland				= { xml = "acHeadland",		 tp = "B", default = false },
-		collision			  = { xml = "acCollision",	 tp = "B", default = false },
+		collision			  = { xml = "acCollision",	 tp = "B", default = true },
 		inverted				= { xml = "acInverted",		 tp = "B", default = false },
 		isHired				  = { xml = "acIsHired",		 tp = "B", default = false },
 		bigHeadland		  = { xml = "acBigHeadland", tp = "B", default = true  },
@@ -189,16 +189,11 @@ function AIVehicleExtension:onLoad(saveGame)
 	self.acRefNode = createTransformGroup( "acNewRefNode" )
 	link( tempNode, self.acRefNode )
 
-	if AIVEGlobals.otherAIColli > 0 then
-		self.acI3D = getChild(g_i3DManager:loadSharedI3DFile("AutoCombine.i3d", AtDirectory),"AutoCombine")	
-	--self.acBackTrafficCollisionTrigger   = getChild(self.acI3D,"backCollisionTrigger")
-		self.acOtherCombineCollisionTriggerL = getChild(self.acI3D,"otherCombColliTriggerL")
-		self.acOtherCombineCollisionTriggerR = getChild(self.acI3D,"otherCombColliTriggerR")
-		link(self.acRefNode,self.acI3D)
-		
-		self.acCollidingVehicles = nil
-		self.onOtherAICollisionTrigger = AIVehicleExtension.onOtherAICollisionTrigger
-	end
+	self.acOtherCombineCollisionTriggerL = 0
+	self.acOtherCombineCollisionTriggerR = 0
+	self.onOtherAICollisionTrigger = AIVehicleExtension.onOtherAICollisionTrigger
+	
+	AIVehicleExtension.addCollisionTriggers( self )
 	
 	self.acChopperWithCourseplay = false 
 end
@@ -273,14 +268,86 @@ function AIVehicleExtension:onEnterVehicle()
 end
 
 ------------------------------------------------------------------------
+-- addCollisionTriggers
+------------------------------------------------------------------------
+function AIVehicleExtension:addCollisionTriggers()
+	if not ( self.isServer ) then 
+		return 
+	end 
+	if self.acI3D == nil then 
+		AIVehicleExtension.debugPrint( self, "loading collision I3D..." )
+		AIVehicleExtension.removeCollisionTriggers( self )
+		self.acI3D = getChild(g_i3DManager:loadSharedI3DFile("AutoCombine.i3d", AtDirectory),"AutoCombine")	
+	--self.acBackTrafficCollisionTrigger   = getChild(self.acI3D,"backCollisionTrigger")
+		self.acOtherCombineCollisionTriggerL = getChild(self.acI3D,"otherCombColliTriggerL")
+		self.acOtherCombineCollisionTriggerR = getChild(self.acI3D,"otherCombColliTriggerR")
+		link(self.acRefNode,self.acI3D)
+		AIVehicleExtension.disableCollisionTriggers( self, true )
+	end 
+	if self.acCollidingVehicles == nil then 				
+		self.acCollidingVehicles = {}
+		if self.acOtherCombineCollisionTriggerR ~= 0 then
+			AIVehicleExtension.debugPrint( self, "adding right trigger..." )
+			local triggerID = self.acOtherCombineCollisionTriggerR
+			self.acCollidingVehicles[triggerID] = {}
+			addTrigger( triggerID, "onOtherAICollisionTrigger", self )
+		end
+		if self.acOtherCombineCollisionTriggerL ~= 0 then
+			AIVehicleExtension.debugPrint( self, "adding left trigger..." )
+			local triggerID = self.acOtherCombineCollisionTriggerL
+			self.acCollidingVehicles[triggerID] = {}
+			addTrigger( triggerID, "onOtherAICollisionTrigger", self )
+		end
+	end 
+end 
+
+------------------------------------------------------------------------
+-- removeCollisionTriggers
+------------------------------------------------------------------------
+function AIVehicleExtension:removeCollisionTriggers()
+	if self.acOtherCombineCollisionTriggerL ~= 0 then 
+		AIVehicleExtension.debugPrint( self, "removing left trigger..." )
+		removeTrigger( self.acOtherCombineCollisionTriggerL )
+	end 
+	if self.acOtherCombineCollisionTriggerR ~= 0 then 
+		AIVehicleExtension.debugPrint( self, "removing right trigger..." )
+		removeTrigger( self.acOtherCombineCollisionTriggerR )
+	end 
+	if self.acI3D ~= nil then 
+		AIVehicleExtension.debugPrint( self, "deleting collision I3D..." )
+		AutoSteeringEngine.deleteNode( self.acI3D )
+	end
+	self.acI3D = nil 
+	self.acOtherCombineCollisionTriggerL = 0 
+	self.acOtherCombineCollisionTriggerR = 0 
+	self.acCollidingVehicles = nil
+end 
+
+------------------------------------------------------------------------
+-- enableCollisionTriggers
+------------------------------------------------------------------------
+function AIVehicleExtension:enableCollisionTriggers()
+	if not ( self.aiveCollisionTriggersEnabled ) then 
+		setTranslation( self.acI3D, 0, 0, 0 )
+		self.aiveCollisionTriggersEnabled = true 
+	end 
+end 
+
+------------------------------------------------------------------------
+-- disableCollisionTriggers
+------------------------------------------------------------------------
+function AIVehicleExtension:disableCollisionTriggers( noUnlink )
+	if noUnlink or self.aiveCollisionTriggersEnabled == nil or self.aiveCollisionTriggersEnabled then 
+		setTranslation( self.acI3D, 1000000, 1000000, 1000000 )
+		self.aiveCollisionTriggersEnabled = false 
+	end 
+end 
+
+------------------------------------------------------------------------
 -- delete
 ------------------------------------------------------------------------
 function AIVehicleExtension:onPreDelete()
-	if AIVEGlobals.otherAIColli > 0 then
-	--removeTrigger( self.acBackTrafficCollisionTrigger   )
-		removeTrigger( self.acOtherCombineCollisionTriggerL )
-		removeTrigger( self.acOtherCombineCollisionTriggerR )
-	end
+	AIVehicleExtension.removeCollisionTriggers( self )
 	
 	if self.atMogliInitDone then
 		AIVEHud.delete(self)
@@ -1204,23 +1271,20 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 	if atDump and self:getIsActiveForInput(false) then
 		AIVehicleExtension.acDump2(self)
 	end
+
 	
 	if self.isServer then		
 -- in MP on server only 
 
-		if AIVEGlobals.otherAIColli > 0 and self.acCollidingVehicles == nil then
-			self.acCollidingVehicles = {}
-			if self.acOtherCombineCollisionTriggerR ~= 0 then
-				local triggerID = self.acOtherCombineCollisionTriggerR
-				self.acCollidingVehicles[triggerID] = {}
-				addTrigger( triggerID, "onOtherAICollisionTrigger", self )
-			end
-			if self.acOtherCombineCollisionTriggerL ~= 0 then
-				local triggerID = self.acOtherCombineCollisionTriggerL
-				self.acCollidingVehicles[triggerID] = {}
-				addTrigger( triggerID, "onOtherAICollisionTrigger", self )
-			end
-		end
+		if      AIVEGlobals.otherAIColli > 0
+				and self.aiveIsStarted
+				and self.acParameters ~= nil
+				and self.acParameters.collision
+				and not self.acParameters.upNDown then 
+			AIVehicleExtension.enableCollisionTriggers( self )
+		else
+			AIVehicleExtension.disableCollisionTriggers( self )
+		end 
 	
 		if      ( self.aiveIsStarted or self.aiveAutoSteer )
 				and self.acDimensions              ~= nil
@@ -2850,7 +2914,8 @@ AIVehicle.getCanStartAIVehicle = Utils.overwrittenFunction( AIVehicle.getCanStar
 -- onOtherAICollisionTrigger
 ------------------------------------------------------------------------
 function AIVehicleExtension:onOtherAICollisionTrigger(triggerId, otherId, onEnter, onLeave, onStay, otherShapeId)
---print(" HIT @:"..self.configFileName.."   IN   "..getName(triggerId).."   BY   "..getName(otherId)..", "..getName(otherShapeId))
+--print(" HIT @:"..self.configFileName.." in "..getName(triggerId).." by "..getName(otherId)..", "..getName(otherShapeId)..": "..
+--			tostring(onEnter)..", "..tostring(onLeave)..", "..tostring(onLeave))
 
 	if self.acCollidingVehicles == nil or self.acCollidingVehicles[triggerId] == nil then 
 		return
