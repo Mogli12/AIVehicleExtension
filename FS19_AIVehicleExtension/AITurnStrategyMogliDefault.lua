@@ -163,11 +163,11 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	veh.aiRescueTimer = veh.aiRescueTimer - dt;
 	
 	if veh.aiRescueTimer < 0 then
-		veh:stopAIVehicle(AIVehicle.STOP_REASON_UNKOWN)
+		veh:stopAIVehicle(AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT)
 		return
 	end
 	if AutoSteeringEngine.getTurnDistanceSq( veh ) > AIVEGlobals.aiRescueDistSq then
-		veh:stopAIVehicle(AIVehicle.STOP_REASON_UNKOWN)
+		veh:stopAIVehicle(AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT)
 		return
 	end
 		

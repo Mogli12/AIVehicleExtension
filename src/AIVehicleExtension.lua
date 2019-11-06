@@ -3184,4 +3184,20 @@ function AIVehicleExtension:onAIEnd()
 	end 	
 	self.aiveSetCrabSteeringState = nil
 	self.aiveSetCrabSteeringEnd   = nil 
+	if      AIVEGlobals.devFeatures > 0
+			and self.acParameters       ~= nil
+			and self.acParameters.enabled then 
+		AIVehicleExtension.printCallstack()
+	end 	
 end 
+
+function AIVehicleExtension:afterCutterOnEndWorkAreaProcessing(dt, hasProcessed)
+	local spec = self.spec_cutter
+	local rootVehicle = self:getRootVehicle()
+	if rootVehicle.aiveIsStarted and spec.aiNoValidGroundTimer ~= nil and spec.aiNoValidGroundTimer > 0 then 
+		spec.aiNoValidGroundTimer = 0
+	end 
+end 
+
+Cutter.onEndWorkAreaProcessing = Utils.appendedFunction( Cutter.onEndWorkAreaProcessing, AIVehicleExtension.afterCutterOnEndWorkAreaProcessing )
+
