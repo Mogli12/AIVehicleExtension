@@ -5,10 +5,10 @@
 
 	<texts>
 		<!-- AI Vehicle helpPanel text -->
-		<text name="AIVE_SETTINGS"                 text="Ustawienia pomocnika"/>
-		<text name="AIVE_ENABLED"                  text="Alternatywny pomocnik"/>
-		<text name="AIVE_START"                    text="Alternatywny pomocnik [wł.]"/>
-		<text name="AIVE_STOP"                     text="Alternatywny pomocnik [wył.]"/>
+		<text name="AIVE_SETTINGS"                 text="Ustawienia AIVE"/>
+		<text name="AIVE_ENABLED"                  text="AIVE"/>
+		<text name="AIVE_START"                    text="AIVE [wł.]"/>
+		<text name="AIVE_STOP"                     text="AIVE [wył.]"/>
 		<text name="AIVE_WORKWIDTH"                text="Szerokość robocza:"/>
 		<text name="AIVE_ACTIVESIDE"               text="Aktywna strona"/>
 		<text name="AIVE_ACTIVESIDELEFT"           text="lewa"/>
@@ -26,8 +26,8 @@
 		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="utrzymywanie odległości jest WŁ."/>
 		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="utrzymywanie odległości jest WYŁ."/>
 		<!-- AI Vehicle help text -->
-		<text name="AIVE_TEXTHELPPANELOFF"         text="ukryj informacje Alternatywnego pomocnika"/>
-		<text name="AIVE_TEXTHELPPANELON"          text="pokaż informacje Alternatywnego pomocnika"/>
+		<text name="AIVE_TEXTHELPPANELOFF"         text="ukryj informacje AIVE"/>
+		<text name="AIVE_TEXTHELPPANELON"          text="pokaż informacje AIVE"/>
 		<!-- AI Vehicle inputbinding text -->
 		<text name="AIVE_COLLISION_OTHER"          text="przednia kolizja"/>
 		<text name="AIVE_COLLISION_BACK"           text="tylna kolizja"/>
@@ -84,14 +84,14 @@
 		<text name="AIVE_PRECISION_1"              text="normalna"/>
 		<text name="AIVE_PRECISION_2"              text="wysoka"/>
 
-		<text name="input_AIVE_HELPPANEL"          text="Alternatywny pomocnik: Pokaż/ukryj HUD"/>
-		<text name="input_AIVE_STEER"              text="Alternatywny pomocnik: Sterowanie automatyczne"/>
-		<text name="input_AIVE_SWAP_SIDE"          text="Alternatywny pomocnik: Zamiana aktywnej strony"/>
-		<text name="input_AIVE_ENABLE"             text="Alternatywny pomocnik: Zmiana pracownika"/>
-		<text name="input_AIVE_UTURN_ON_OFF"       text="Alternatywny pomocnik: Jazda na około wł./wył."/>
-		<text name="input_AIVE_STEERING"           text="Alternatywny pomocnik: Sterowanie ręczne"/>
-		<text name="input_AIVE_RAISE"              text="Alternatywny pomocnik: Podnieś/opuść wszystkie maszyny"/>
-		<text name="input_AIVE_START_AIVE"         text="Alternatywny pomocnik: Ustawienia"/>
-		<text name="input_AIVE_NEXT_WORKER"        text="Alternatywny pomocnik: Przejdź do następnego pracownika"/>
+		<text name="input_AIVE_HELPPANEL"          text="AIVE: Pokaż/ukryj panel"/>
+		<text name="input_AIVE_STEER"              text="AIVE: Sterowanie automatyczne"/>
+		<text name="input_AIVE_SWAP_SIDE"          text="AIVE: Zamiana aktywnej strony"/>
+		<text name="input_AIVE_ENABLE"             text="AIVE: Zmiana pracownika"/>
+		<text name="input_AIVE_UTURN_ON_OFF"       text="AIVE: Jazda na około wł./wył."/>
+		<text name="input_AIVE_STEERING"           text="AIVE: Sterowanie ręczne"/>
+		<text name="input_AIVE_RAISE"              text="AIVE: Podnieś/opuść wszystkie maszyny"/>
+		<text name="input_AIVE_START_AIVE"         text="AIVE: Ustawienia"/>
+		<text name="input_AIVE_NEXT_WORKER"        text="AIVE: Przejdź do następnego pracownika"/>
 	</texts>
 </l10n>
