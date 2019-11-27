@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="41">
 	<author>Mogli</author>
-	<version>0.0.6.4</version>
+	<version>0.0.6.5</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v0.0.6.4</en>
-			<de>AI Vehicle Extension v0.0.6.4</de>
-										<cs>车辆助手 v0.0.6.4</cs>
+			<en>AI Vehicle Extension v0.0.6.5</en>
+			<de>AI Vehicle Extension v0.0.6.5</de>
+										<cs>车辆助手 v0.0.6.5</cs>
 		</text>
 	</l10n>
 	<title>
@@ -29,8 +29,8 @@ Many thanks to Gonimy-Vetrom for the nice reworked icons and to all other contri
 
 Here are the most important input bindings:
 * H: Start or stop the hired worker
-* Left shift + H: Open the settings dialog
-* Left control + H: Open the head up display
+* Left control + H: Open the settings dialog
+* Left shift + H: Open the head up display
 * Left alt. + H: Toggle automatic steering
 * Left alt. + V: Raise or lower all tools
 * Left alt. + 5: Toggle circular mode
@@ -49,8 +49,8 @@ Vielen Dank an Gonimy-Vetrom für die schönen, überarbeiteten Ikonen und an al
 
 Hier ist die Tastaturbelegung:
 * H: Helfer einstellen oder entlassen
-* Left shift + H: Einstellungsdialog öffnen
-* Left control + H: AI Vehicle-Info öffnen
+* Left control + H: Einstellungsdialog öffnen
+* Left shift + H: AI Vehicle-Info öffnen
 * Left alt. + H: Automatische Lenkung
 * Left alt. + V: Alle Geräte heben oder senken
 * Left alt. + 5: AI Vehicle-Modus wechseln
@@ -67,8 +67,8 @@ Su campi rettangolari con un sacco di spazio libero attorno si può utilizzare l
 
 Qui ci sono le più importanti associazioni di tasti:
 * H: avviare o arrestare l'aiutante
-* SHIFT SINISTRO + H: Aprire la finestra delle impostazioni
-* CONTROL SINISTRO + H: Aprire il display
+* CONTROL SINISTRO + H: Aprire la finestra delle impostazioni
+* SHIFT SINISTRO + H: Aprire il display
 * Alt. + H: Sterzo automatico
 * Alt. + V: Sollevare o abbassare tutti gli attrezzi
 * Alt. + 5: Cambia modalità di lavoro
@@ -85,8 +85,8 @@ Pour les parcelles bien rectangulaires et dégagées, il vaut mieux avoir recour
 
 Voici les principaux raccourcis clavier :
 * H: Engager ou renvoyer un ouvrier
-* shift gauche + H: Ouvrir la fenêtre des paramètres
-* ctrl gauche + H: Afficher le panneau d'information
+* ctrl gauche + H: Ouvrir la fenêtre des paramètres
+* shift gauche + H: Afficher le panneau d'information
 * alt gauche + H: Direction automatique
 * alt gauche + V: Lever ou baisser tous les outils
 * alt gauche + 5: Changer de mode (circulaire/Aller-retour)
@@ -103,8 +103,8 @@ AIVehicleExtension это альтернативный наемный работ
 
 Основные клавиши управления:
 * H: Начать или остановить работу наемного работника
-* Left Shift + H: Открыть диалог настроек
-* Left Ctrl + H: Открыть панель управления
+* Left Ctrl + H: Открыть диалог настроек
+* Left Shift + H: Открыть панель управления
 * Left Alt + H: Вкл/Выкл автоматическое руление
 * Left Alt + V: Поднять или опустить всё оборудование
 * Left Alt + 5: Переключить в круговой режим работы
@@ -125,8 +125,8 @@ Na perfekcyjnie prostokątnych polach z dużą ilością wolnego miejsca wokół
 
 Poniżej znajduje się lista najbardziej użytecznych skrótów klawiszowych:
 * H: Uruchomienie lub zatrzymanie pracownika
-* Lewy Shift + H: Okno ustawień
-* Lewy Ctrl + H: Panel sterowania
+* Lewy Ctrl + H: Okno ustawień
+* Lewy Shift + H: Panel sterowania
 * Lewy Alt + H: Przełączenie na automatyczne sterownie
 * Lewy Alt + V: Podniesienie lub opuszczenie wszystkich maszyn
 * Lewy Alt + 5: Przełączenie w tryb na około
@@ -154,11 +154,10 @@ AIVehicleExtension - Polskie tłumaczenie Dzi4d3k
 		<action name="AIVE_STEERING"     category="VEHICLE"/>
 		<action name="AIVE_RAISE"        category="VEHICLE"/>
 		<action name="AIVE_START_AIVE"   category="VEHICLE"/>
-		<!-- <action name="AIVE_NEXT_WORKER"  category="VEHICLE"/> -->
 	</actions>
 
 	<inputBinding>
-		<actionBinding action="AIVE_HELPPANEL">
+		<actionBinding action="AIVE_START_AIVE">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_h"   axisComponent="+" inputComponent="+" index="1"/>
 		</actionBinding>
 		<actionBinding action="AIVE_STEER">
@@ -179,12 +178,9 @@ AIVehicleExtension - Polskie tłumaczenie Dzi4d3k
 		<actionBinding action="AIVE_RAISE">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_v"    axisComponent="+" inputComponent="+" index="1"/>
 		</actionBinding>
-		<actionBinding action="AIVE_START_AIVE">
+		<actionBinding action="AIVE_HELPPANEL">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_h"  axisComponent="+" inputComponent="+" index="1"/>
 		</actionBinding>
-		<!-- <actionBinding action="AIVE_NEXT_WORKER">
-			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_tab" axisComponent="+" inputComponent="+" index="1"/>
-		</actionBinding> -->
 	</inputBinding>
 
 </modDesc>
