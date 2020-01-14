@@ -4405,32 +4405,40 @@ end
 
 function AutoSteeringEngine.getAIFruitAreaOldSchool(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, terrainDetailRequiredValueRanges, terrainDetailProhibitValueRanges, fruitRequirements, fruitProhibitions, useWindrowed)
 	local query = g_currentMission.fieldCropsQuery
-	for _, fruitRequirement in pairs(fruitRequirements) do
-		if fruitRequirement.fruitType ~= FruitType.UNKNOWN then
-			local ids = g_currentMission.fruits[fruitRequirement.fruitType]
-			if ids ~= nil and ids.id ~= 0 then
-				if useWindrowed then
-					return 0, 1
+	if type( fruitRequirements ) == "table" then 
+		for _, fruitRequirement in pairs( fruitRequirements ) do
+			if fruitRequirement.fruitType ~= FruitType.UNKNOWN then
+				local ids = g_currentMission.fruits[fruitRequirement.fruitType]
+				if ids ~= nil and ids.id ~= 0 then
+					if useWindrowed then
+						return 0, 1
+					end
+					local desc = g_fruitTypeManager:getFruitTypeByIndex(fruitRequirement.fruitType)
+					query:addRequiredCropType(ids.id, fruitRequirement.minGrowthState+1, fruitRequirement.maxGrowthState+1, desc.startStateChannel, desc.numStateChannels, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels)
 				end
-				local desc = g_fruitTypeManager:getFruitTypeByIndex(fruitRequirement.fruitType)
-				query:addRequiredCropType(ids.id, fruitRequirement.minGrowthState+1, fruitRequirement.maxGrowthState+1, desc.startStateChannel, desc.numStateChannels, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels)
 			end
 		end
 	end
-	for _, fruitProhibition in pairs(fruitProhibitions) do
-		if fruitProhibition.fruitType ~= FruitType.UNKNOWN then
-			local ids = g_currentMission.fruits[fruitProhibition.fruitType]
-			if ids ~= nil and ids.id ~= 0 then
-				local desc = g_fruitTypeManager:getFruitTypeByIndex(fruitProhibition.fruitType)
-				query:addProhibitedCropType(ids.id, fruitProhibition.minGrowthState+1, fruitProhibition.maxGrowthState+1, desc.startStateChannel, desc.numStateChannels, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels)
+	if type( fruitProhibitions ) == "table" then 
+		for _, fruitProhibition in pairs( fruitProhibitions ) do
+			if fruitProhibition.fruitType ~= FruitType.UNKNOWN then
+				local ids = g_currentMission.fruits[fruitProhibition.fruitType]
+				if ids ~= nil and ids.id ~= 0 then
+					local desc = g_fruitTypeManager:getFruitTypeByIndex(fruitProhibition.fruitType)
+					query:addProhibitedCropType(ids.id, fruitProhibition.minGrowthState+1, fruitProhibition.maxGrowthState+1, desc.startStateChannel, desc.numStateChannels, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels)
+				end
 			end
 		end
 	end
-	for _,valueRange in pairs(terrainDetailRequiredValueRanges) do
-		query:addRequiredGroundValue(valueRange[1], valueRange[2], valueRange[3], valueRange[4])
+	if type( terrainDetailRequiredValueRanges ) == "table" then 
+		for _,valueRange in pairs(terrainDetailRequiredValueRanges) do
+			query:addRequiredGroundValue(valueRange[1], valueRange[2], valueRange[3], valueRange[4])
+		end
 	end
-	for _,valueRange in pairs(terrainDetailProhibitValueRanges) do
-		query:addProhibitedGroundValue(valueRange[1], valueRange[2], valueRange[3], valueRange[4])
+	if type( terrainDetailProhibitValueRanges ) == "table" then 
+		for _,valueRange in pairs(terrainDetailProhibitValueRanges) do
+			query:addProhibitedGroundValue(valueRange[1], valueRange[2], valueRange[3], valueRange[4])
+		end
 	end
 	local x,z, widthX,widthZ, heightX,heightZ = MathUtil.getXZWidthAndHeight(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ)
 	return query:getParallelogram(x,z, widthX,widthZ, heightX,heightZ, true)
