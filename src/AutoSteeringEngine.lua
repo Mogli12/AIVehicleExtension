@@ -365,22 +365,27 @@ function AIVEDrawDebugLine( vehicle, x1,y1,z1, r1,g1,b1, x2,y2,z2, r2,g2,b2 )
 		AIVehicleExtension.printCallstack()
 		return 
 	end 
-	if vehicle.aiveDirection == nil then 
-		return 
-	end 
+	
 	local l = AIVEUtils.vector3Length(x1-x2,y1-y2,z1-z2)
 	local s = math.floor( l * 10 )
 	local t = 1
 	if s > 1 then 
 		t = 1 / s 
 	end 
-	
+
 	setTextAlignment( RenderText.ALIGN_CENTER ) 
 	setTextVerticalAlignment( RenderText.VERTICAL_ALIGN_MIDDLE )
 
-	local ax = vehicle.aiveDirection[1] -- math.atan2( z2-z1, y2-y1 )
-	local ay = vehicle.aiveDirection[2] -- math.atan2( x2-x1, z2-z1 )
-	local az = vehicle.aiveDirection[3] -- math.atan2( y2-y1, x2-x1 )		
+	local ax, ay, az 
+	if vehicle.aiveDirection == nil then 	
+		ax = math.atan2( z2-z1, y2-y1 )
+		ay = math.atan2( x2-x1, z2-z1 )
+		az = math.atan2( y2-y1, x2-x1 )		
+	else
+		ax = vehicle.aiveDirection[1]
+		ay = vehicle.aiveDirection[2]
+		az = vehicle.aiveDirection[3]
+	end
 		
 	for i=0,s do 
 		local x = x1 + i * t * ( x2 - x1 )
@@ -2031,15 +2036,32 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then	
 		local fruitProhibitions = nil
+		local hasCultivator     = nil 
+		local hasPlow           = nil
 		for i=1,vehicle.aiveChain.toolCount do
 			if not vehicle.aiveChain.tools[i].ignoreAI and vehicle.aiveChain.tools[i].isSowingMachine then
 				fruitProhibitions = vehicle.aiveChain.tools[i].obj:getAIFruitProhibitions()
+			end 
+			if not vehicle.aiveChain.tools[i].ignoreAI and vehicle.aiveChain.tools[i].isCultivator then
+				if not vehicle.aiveChain.tools[i].hasFruits then
+					hasCultivator = false 
+				elseif hasCultivator == nil then 
+					hasCultivator = true 
+				end
+			end 
+			if not vehicle.aiveChain.tools[i].ignoreAI and vehicle.aiveChain.tools[i].isPlow then
+				if not vehicle.aiveChain.tools[i].hasFruits then
+					hasPlow = false 
+				elseif hasPlow == nil then 
+					hasPlow = true 
+				end
 			end 
 		end 
 		
 		local xa = {}
 		local xo = {}
 		for i=1,vehicle.aiveChain.toolCount do
+			vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = false 
 		
 			local skip      = false
 			local skipOther = false
@@ -2053,23 +2075,29 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 					skip    = true 
 				end 
 				
+				vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = false 
+				
 				local terrainDetailRequiredValueRanges      = vehicle.aiveChain.tools[i].obj:getAITerrainDetailRequiredRange()
 				vehicle.aiveChain.tools[i].terrainDetailRequiredValueRanges = {}
 				for _,r in pairs(terrainDetailRequiredValueRanges) do 
-					if      vehicle.aiveHas.plow
+					if      hasPlow
 							and r[1] == g_currentMission.plowValue then 
 					-- ignore 
-					elseif  vehicle.aiveHas.cultivator 
+						vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = true
+					elseif  hasCultivator 
 							and r[1] == g_currentMission.cultivatorValue then 
 					-- ignore 
+						vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = true
 					else 
 						table.insert( vehicle.aiveChain.tools[i].terrainDetailRequiredValueRanges, r ) 
 						skip = false 
 					end 
 				end 
+
 				
 				if ( vehicle.aiveHas.plow or vehicle.aiveHas.cultivator ) and fruitProhibitions ~= nil then 
 					vehicle.aiveChain.tools[i].fruitProhibitions = fruitProhibitions
+					vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = true
 				else 
 					vehicle.aiveChain.tools[i].fruitProhibitions = vehicle.aiveChain.tools[i].obj:getAIFruitProhibitions()
 				end 
@@ -2485,13 +2513,13 @@ function AutoSteeringEngine.hasLeftFruits( vehicle )
 	if      vehicle.aiveChain      ~= nil 
 			and vehicle.aiveChain.leftActive   ~= nil 
 			and vehicle.aiveChain.toolCount  ~= nil 
-			and vehicle.aiveChain.toolCount  >= 1 
+			and vehicle.aiveChain.toolCount  == 1 
 			and vehicle.aiveChain.toolParams ~= nil 
 			and vehicle.aiveChain.toolCount  == table.getn( vehicle.aiveChain.toolParams ) then
 		for i = 1,vehicle.aiveChain.toolCount do	
 			local toolParam = vehicle.aiveChain.toolParams[i]
-			if not toolParam.skip then
-				local tool      = vehicle.aiveChain.tools[toolParam.i]				
+			local tool      = vehicle.aiveChain.tools[toolParam.i]				
+			if not toolParam.skip then		 
 			--local front     = math.min( toolParam.zReal, toolParam.zBack )
 				local front     = vehicle.aiveChain.minZ - 0.5
 				local back      = front - 2
@@ -2578,10 +2606,10 @@ function AutoSteeringEngine.hasLeftFruits( vehicle )
 		end
 	end
 	
---if AIVEGlobals.useFBB123 > 0 then
---	local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
---	vehicle.aiveChain.fbb3 = { x=wx, z=wz, d=fruitsDetected }
---end
+	if AIVEGlobals.useFBB123 > 0 then
+		local wx,_,wz = AutoSteeringEngine.getAiWorldPosition( vehicle )
+		vehicle.aiveChain.fbb3 = { x=wx, z=wz, d=fruitsDetected }
+	end
 	
 	return fruitsDetected
 end
@@ -2626,8 +2654,8 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle )
 	local dx9,_,dz9 = localDirectionToWorld( vehicle.aiveChain.headlandNode, math.sin( angle ), 0, math.cos( angle ) )
 	local dxd,_,dzd = localDirectionToWorld( vehicle.aiveChain.refNode, 0, 0, 1 )
 
-	if      vehicle.aiveChain      ~= nil 
-			and vehicle.aiveChain.leftActive   ~= nil 
+	if      vehicle.aiveChain            ~= nil 
+			and vehicle.aiveChain.leftActive ~= nil 
 			and vehicle.aiveChain.toolCount  ~= nil 
 			and vehicle.aiveChain.toolCount  >= 1 
 			and vehicle.aiveChain.toolParams ~= nil 
@@ -2636,114 +2664,89 @@ function AutoSteeringEngine.hasFruitsInFront( vehicle )
 			local toolParam = vehicle.aiveChain.toolParams[i]
 			local tool      = vehicle.aiveChain.tools[toolParam.i]		
 
-		--if not ( toolParam.skipOther and toolParam.skip ) then
 			if not ( toolParam.skip ) then
-				local gotFruits
-			--for j=1,2 do
-				do local j = 1
-					gotFruits = false
-					
-					local back, dxb, dzb, dxf, dzf 
-					
-					back = math.max( AIVEGlobals.fruitsInFront, vehicle.aiveChain.radius, vehicle.aiveChain.maxZ - toolParam.zReal + AIVEGlobals.fruitsAdvance )
-					if j== 1 then
-						if tool.aiForceTurnNoBackward then
-							back = back + 2 
-						end
-						dxb  = dxh
-						dzb  = dzh
-						dxf  = dx9
-						dzf  = dz9
-					else
-						back = back - 2
-						dxb  = dxd
-						dzb  = dzd
-						dxf  = dxd
-						dzf  = dzd
-					end
-					
-					local w = toolParam.width
-					
-					if vehicle.aiveChain.leftActive then
-						w = toolParam.x - vehicle.aiveChain.otherX
-					else
-						w = vehicle.aiveChain.otherX - toolParam.x 
-					end			
-					
-					local ofs, idx			
-					if vehicle.aiveChain.leftActive	then
-						ofs = -toolParam.offset 
-						idx = toolParam.nodeLeft 
-					else
-						ofs = toolParam.offset
-						idx = toolParam.nodeRight
-					end
-					
-					w = w + w
-					if vehicle.aiveChain.leftActive then
-						w = -w
-					end
-
-					local xw1,y,zw1 = AutoSteeringEngine.toolLocalToWorld( vehicle, toolParam.i, idx, ofs, 0 )
-					xw1 = xw1 + back * dxb
-					zw1 = zw1 + back * dzb
+				local gotFruits = false
 				
-					local lx1,lz1,lx2,lz2,lx3,lz3,lx4,lz4
-					local dist = 2
-					local xw2, zw2
-
-					repeat 
-						xw2 = xw1 + dist * dxf
-						zw2 = zw1 + dist * dzf
-						lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( xw1,zw1,xw2,zw2, w, true )
-						
-						if j == 1 and headlandDist ~= 0 then
-							lx1 = lx1 + headlandDist * dxh
-							lx2 = lx2 + headlandDist * dxh
-							lx3 = lx3 + headlandDist * dxh
-							lz1 = lz1 + headlandDist * dzh
-							lz2 = lz2 + headlandDist * dzh
-							lz3 = lz3 + headlandDist * dzh
-						end
-						lx4 = lx3 + lx2 - lx1
-						lz4 = lz3 + lz2 - lz1
-						
-						dist = dist - math.max( 0.5, dist * 0.2 )
-					until  dist < 0.5
-							or AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
-							or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
-							or AutoSteeringEngine.checkField( vehicle, 0.5 * ( lx3 + lx4 ), 0.5 * ( lz3 + lz4 ) ) 
-
-					local lx5 = 0.25 * ( lx1 + lx2 + lx3 + lx4 )
-					local lz5 = 0.25 * ( lz1 + lz2 + lz3 + lz4 )
-					
-					if     AutoSteeringEngine.checkField( vehicle, lx1, lz1 )
-							or AutoSteeringEngine.checkField( vehicle, lx2, lz2 )
-							or AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
-							or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
-							or AutoSteeringEngine.checkField( vehicle, lx5, lz5 ) then
-						if AutoSteeringEngine.getFruitArea( vehicle, xw1,zw1,xw2,zw2, w, toolParam.i, true ) > 0 then
-							gotFruits = true
-						end			
-					end			
-					
-					if j == 1 and headlandDist ~= 0 then
-					--table.insert( vehicle.aiveFruitAreas[2], { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits } )
-						lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( xw1,zw1,xw2,zw2, w, true )
-						lx4 = lx3 + lx2 - lx1
-						lz4 = lz3 + lz2 - lz1
-					end
-					table.insert( vehicle.aiveFruitAreas[2], { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits } )
-					
-					if not gotFruits then
-						break
-					end
+				local back, dxb, dzb, dxf, dzf 
+				
+				back = math.max( AIVEGlobals.fruitsInFront, vehicle.aiveChain.radius, vehicle.aiveChain.maxZ - toolParam.zReal + AIVEGlobals.fruitsAdvance )
+				if tool.aiForceTurnNoBackward then
+					back = back + 2 
 				end
+				dxb  = dxh
+				dzb  = dzh
+				dxf  = dx9
+				dzf  = dz9
+				
+				local w = toolParam.width
+				
+				if vehicle.aiveChain.leftActive then
+					w = toolParam.x - vehicle.aiveChain.otherX
+				else
+					w = vehicle.aiveChain.otherX - toolParam.x 
+				end			
+				
+				local ofs, idx			
+				if vehicle.aiveChain.leftActive	then
+					ofs = -toolParam.offset 
+					idx = toolParam.nodeLeft 
+				else
+					ofs = toolParam.offset
+					idx = toolParam.nodeRight
+				end
+				
+				w = w + w
+				if vehicle.aiveChain.leftActive then
+					w = -w
+				end
+
+				local xw1,y,zw1 = AutoSteeringEngine.toolLocalToWorld( vehicle, toolParam.i, idx, ofs, 0 )
+				xw1 = xw1 + back * dxb
+				zw1 = zw1 + back * dzb
 			
+				local lx1,lz1,lx2,lz2,lx3,lz3,lx4,lz4
+				local dist = 2
+				local xw2, zw2
+
+				repeat 
+					xw2 = xw1 + dist * dxf
+					zw2 = zw1 + dist * dzf
+					lx1,lz1,lx2,lz2,lx3,lz3 = AutoSteeringEngine.getParallelogram( xw1,zw1,xw2,zw2, w, true )
+					
+					if headlandDist ~= 0 then
+						lx1 = lx1 + headlandDist * dxh
+						lx2 = lx2 + headlandDist * dxh
+						lx3 = lx3 + headlandDist * dxh
+						lz1 = lz1 + headlandDist * dzh
+						lz2 = lz2 + headlandDist * dzh
+						lz3 = lz3 + headlandDist * dzh
+					end
+					lx4 = lx3 + lx2 - lx1
+					lz4 = lz3 + lz2 - lz1
+					
+					dist = dist - math.max( 0.5, dist * 0.2 )
+				until  dist < 0.5
+						or AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
+						or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
+						or AutoSteeringEngine.checkField( vehicle, 0.5 * ( lx3 + lx4 ), 0.5 * ( lz3 + lz4 ) ) 
+
+				local lx5 = 0.25 * ( lx1 + lx2 + lx3 + lx4 )
+				local lz5 = 0.25 * ( lz1 + lz2 + lz3 + lz4 )
+				
+				if     AutoSteeringEngine.checkField( vehicle, lx1, lz1 )
+						or AutoSteeringEngine.checkField( vehicle, lx2, lz2 )
+						or AutoSteeringEngine.checkField( vehicle, lx3, lz3 )
+						or AutoSteeringEngine.checkField( vehicle, lx4, lz4 )
+						or AutoSteeringEngine.checkField( vehicle, lx5, lz5 ) then
+					if AutoSteeringEngine.getFruitArea( vehicle, xw1,zw1,xw2,zw2, w, toolParam.i, true ) > 0 then
+						gotFruits = true
+					end			
+				end			
+				
+				table.insert( vehicle.aiveFruitAreas[2], { lx1, lz1, lx2, lz2, lx3, lz3, lx4, lz4, gotFruits } )
+		
 				if gotFruits then 
 					fruitsDetected = true
-			--else
-			--	fruitsDetected = false
 					break
 				end
 			end
@@ -3769,6 +3772,8 @@ function AutoSteeringEngine.drawLines( vehicle )
 
  	if not vehicle.isServer then return end
 	
+  vehicle.aiveDirection = { getWorldRotation( vehicle.aiveChain.refNode ) }
+
 	if vehicle.debugRendering then
 		AutoSteeringEngine.displayDebugInfo( vehicle )
 	end
@@ -4357,7 +4362,7 @@ function AutoSteeringEngine.getAIAreaOfVehicle2( vehicle, toolIndex, lx1,lz1,lx2
 	
 	if     AIImplement.getFieldCropsQuery == nil 
 			or AIVEGlobals.oldAIArea >= 2
-			or ( AIVEGlobals.oldAIArea >= 1 and vehicle.aiveChain.toolCount > 1 ) then 
+			or ( AIVEGlobals.oldAIArea >= 1 and tool.isTerrainDetailRequiredModified ) then 
 	--1.3
 		local terrainDetailRequiredValueRanges  = tool.terrainDetailRequiredValueRanges
 		local terrainDetailProhibitValueRanges  = tool.obj:getAITerrainDetailProhibitedRange()
@@ -5239,6 +5244,23 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 						fi = false
 					end
 					
+					if      fi
+							and vehicle.aiveChain.toolCount > 1
+							and vehicle.aiveChain.nodes[i].distance < 5
+							and ( ( vehicle.aiveChain.tools[toolParam.i].isSowingMachine and ( vehicle.aiveHas.cultivator or vehicle.aiveHas.plow ) )
+								 or ( vehicle.aiveChain.tools[toolParam.i].isCultivator and vehicle.aiveHas.plow ) )
+							then 
+						fi = false 
+					end 
+					
+					if      fi 
+							and AIVEGlobals.shiftFixZ > 0
+							and not vehicle.aiveChain.tools[toolParam.i].aiForceTurnNoBackward
+							and vehicle.aiveChain.nodes[i].distance < - toolParam.zReal 
+							then 
+						fi = false 
+					end 
+					
 					if fi then	
 						vehicle.aiveChain.nodes[i].tool[toolParam.i].t  = 0
 						
@@ -5696,9 +5718,9 @@ function AutoSteeringEngine.getSteeringParameterOfTool( vehicle, toolIndex, maxL
 	--	z1 = math.max( z1-2, zb )
 	--end
 
-		if AIVEGlobals.shiftFixZ > 0 then
-			z1 = math.abs( z1 )
-		end
+	--if AIVEGlobals.shiftFixZ > 0 then
+	--	z1 = math.abs( z1 )
+	--end
 		
 	--local r1 = math.sqrt( x1*x1 + z1*z1 )		
 	--r1       = ( 1 + AIVEGlobals.minMidDist ) * ( r1 + math.max( 0, -z1 ) )
@@ -7610,7 +7632,13 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	tool.ignoreAI                = ignore 
 	
 	
-	if tool.isSprayer and not ( object.spec_sprayer.allowsSpraying ) and spec.leftMarker == nil and spec.rightMarker == nil then
+	if      tool.isSprayer 
+			and ( tool.isPlow or tool.isCultivator or tool.isSowingMachine ) then 
+		tool.isSprayer = false 
+	end 
+	if      tool.isSprayer 
+			and not ( object.spec_sprayer.allowsSpraying ) 
+			and spec.leftMarker == nil and spec.rightMarker == nil then
 		return 0
 	end
 	

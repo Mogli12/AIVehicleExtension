@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <AIVEGlobals>
-		<oldAIArea value="1" /> <!-- 0: off, 1: multiple toos, 2:always old-->
+		<oldAIArea value="1" /> <!-- 0: off, 1: multiple tools, 2:always old-->
 
     <aiSteering type="float" value="1.000000" />
     <aiSteeringD type="float" value="-1.000000" />
@@ -55,7 +55,7 @@
     <chainBorder value="3" />
 		<chainStart  value="1" />
 		
-		<shiftFixZ type="bool" value="false" />
+		<shiftFixZ type="bool" value="true" />
 		<colliMask type="bool" value="true" />
 		<colliStep type="float" value="0.2" />
 		<ignoreDist type="float" value="1.5" />

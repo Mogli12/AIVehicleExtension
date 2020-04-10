@@ -152,7 +152,7 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 		self.vehicle:setBeaconLightsVisibility(false, false)
 	end
 
-	self:addDebugText("AIDriveStrategyCollisionOtherAI :: no collision ")
+--self:addDebugText("AIDriveStrategyCollisionOtherAI :: no collision ")
 	return nil, nil, nil, nil, nil
 end
 

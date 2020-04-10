@@ -5,11 +5,12 @@
 -- change log
 -- 1.00 initial version
 -- 1.07 FS19, title
+-- 1.08 textInput
 
 -- Usage:  source(Utils.getFilename("mogliScreen.lua", g_currentModDirectory));
 --         _G[g_currentModDirectory.."mogliScreen"].newClass( "AutoCombine", "acParameters" )
 
-local mogliScreenVersion   = 1.08
+local mogliScreenVersion   = 1.09
 local mogliScreenClass     = g_currentModName..".mogliScreen"
 
 if _G[mogliScreenClass] ~= nil and _G[mogliScreenClass].version ~= nil and _G[mogliScreenClass].version >= mogliScreenVersion then
@@ -190,6 +191,9 @@ else
 								i = value 
 							end
 							element:setState( i )
+						elseif element.typeName == "textInput" then 
+							local t = tostring( value )
+							element:setText( t )
 						end
 					end
 				end
@@ -250,6 +254,9 @@ else
 					--print("SET: "..tostring(name)..": '"..tostring(value).."'")
 						
 						setter( self.vehicle, value )
+					elseif element.typeName == "textInput" then 
+						local t = element:getText()
+						setter( self.vehicle, t )
 					end
 				end
 			end
@@ -364,6 +371,7 @@ else
 	-- onCreatePaging(element)
 	--********************************
 		function _newClass_:onCreatePaging(element)
+			if self.pageSelector == nil then return end 
 			local texts = {}
 			for _, page in pairs(element.pages) do
 				table.insert(texts, self:mogliScreenGetPageTitle(page))
@@ -392,6 +400,7 @@ else
 	-- updatePageState()
 	--********************************
 		function _newClass_:updatePageState()
+			if self.pageStateBox == nil or self.pageSelector == nil then return end 
 			for index, state in pairs(self.pageStateBox.elements) do
 				state.state = GuiOverlay.STATE_NORMAL
 				if index == self.pageSelector:getState() then
@@ -425,6 +434,8 @@ else
 	-- setPageStates()
 	--********************************
 		function _newClass_:setPageStates()
+			if self.pageStateBox == nil or self.pageSelector == nil then return end 
+		
 			for i=#self.pageStateBox.elements, 1, -1 do
 				self.pageStateBox.elements[i]:delete();
 			end
