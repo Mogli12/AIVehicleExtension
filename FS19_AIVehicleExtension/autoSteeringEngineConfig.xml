@@ -55,7 +55,7 @@
     <chainBorder value="3" />
 		<chainStart  value="1" />
 		
-		<shiftFixZ type="bool" value="true" />
+		<shiftFixZ type="bool" value="false" />
 		<colliMask type="bool" value="true" />
 		<colliStep type="float" value="0.2" />
 		<ignoreDist type="float" value="1.5" />
@@ -76,8 +76,10 @@
     <stepLog2 value="2" />
     <yieldCount value="2000" />
 		
-    <widthDec type="float" value="0.02"/>0.0011111 0.005 0.01
+    <widthDec type="float" value="0.005"/> 0.02 0.0011111 0.005 0.01
     <widthMaxDec type="float" value="9" />9 3
+    <ignoreFactor type="float" value="3" />
+		<ignoreBorder value="5"/>
 	
 		<limitOutside type="bool" value="true" />
 		<limitInside type="bool" value="true" />
@@ -113,7 +115,6 @@
 		
 		<borderBuffer type="bool" value="true" />
 		
-		<ignoreBorder value="3"/>
 		<minOffset   type="float" value="0.25" />
 		<minOffsetArt type="float" value="0.5" />
 		<testOutside type="float" value="1.5" />

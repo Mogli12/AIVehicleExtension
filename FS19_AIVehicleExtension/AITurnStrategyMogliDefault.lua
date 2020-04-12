@@ -1321,10 +1321,16 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		local x,z, allowedToDrive = AIVehicleExtension.getTurnVector( veh, true );
 		if not veh.acParameters.leftAreaActive then x = -x end
 		
-		if x > 0.25 and 0 > turnAngle and turnAngle > -180 then
-			local c = math.cos( math.rad( turnAngle + 180 ) )
-		--print(string.format("%7.4f  %7.4f",x/(1-c), veh.acDimensions.radius ) )
-			angle = -veh.acDimensions.maxSteeringAngle * math.min( 1, veh.acDimensions.radius * ( 1 - c ) / x )
+	--local t = veh.acDimensions.radius * ( 1- math.cos( math.rad( turnAngle + 180 ) ) )
+	--veh:acDebugPrint(string.format("T57: %7.4f  %7.4f  %7.4f",x, t, turnAngle ) )
+	--if -180 < turnAngle and turnAngle < 0 and x > veh.acDimensions.radius * ( 1 - c ) then
+	--	angle = -veh.acDimensions.maxSteeringAngle * t / x
+		if     -180 < turnAngle and turnAngle < 0 then 
+			local a = math.deg( math.acos( math.max( -1, math.min( 1, 1 - x / veh.acDimensions.radius ) ) ) )
+			local t = turnAngle + 180 
+			local d = math.max( 1, math.min( 20, t * 0.5 ) )
+			angle = math.max( -1, math.min( 0, ( a - t - 0.8*d ) / d ) ) * veh.acDimensions.maxSteeringAngle
+			veh:acDebugPrint(string.format("T57: %7.4f  %7.4f  %7.4f => %7.4f",x, a, t, math.deg( angle ) ) )
 		elseif turnAngle < 0 then
 			angle = -math.min( veh.acDimensions.maxSteeringAngle, 2 * math.rad( turnAngle + 180 ) )
 		else

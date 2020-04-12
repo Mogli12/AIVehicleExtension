@@ -6,11 +6,12 @@ local FieldBitmapTile = {}
 ------------------------------------------------------------------------
 -- getNewTile
 ------------------------------------------------------------------------
-function FieldBitmapTile.getNewTile( iX, iZ, iStepLog2, iRelX, iRelZ, iInvert )
+function FieldBitmapTile:new( iX, iZ, iStepLog2, iRelX, iRelZ, iInvert )
 
-	local relX, relZ, self;
-	
 	self = {};
+	setmetatable(self, { __metatable = FieldBitmapTile, __index = FieldBitmapTile } )
+	
+	local relX, relZ, self;
 	
 	if iRelX == nil then
 		relX = 0
@@ -54,29 +55,37 @@ function FieldBitmapTile.getNewTile( iX, iZ, iStepLog2, iRelX, iRelZ, iInvert )
 end
 
 ------------------------------------------------------------------------
+-- delete
+------------------------------------------------------------------------
+function FieldBitmapTile:delete()
+	self.bitmap  = nil 
+end 
+
+------------------------------------------------------------------------
 -- clone
 ------------------------------------------------------------------------
-function FieldBitmapTile.clone( template )
+function FieldBitmapTile:clone()
 
-	self = {};
+	clone = {};
+	setmetatable(clone, { __metatable = FieldBitmapTile, __index = FieldBitmapTile } )
 	
-	self.invert   = template.invert
-	self.sizeLog2 = template.sizeLog2 
-	self.sizeInt  = template.sizeInt  	
-	self.size     = template.size   
-	self.step     = template.step   
-	self.stepInv  = template.stepInv
-	self.startX   = template.startX 
-	self.startZ   = template.startZ 
-	self.endX     = template.endX   
-	self.endZ     = template.endZ   
+	clone.invert   = self.invert
+	clone.sizeLog2 = self.sizeLog2 
+	clone.sizeInt  = self.sizeInt  	
+	clone.size     = self.size   
+	clone.step     = self.step   
+	clone.stepInv  = self.stepInv
+	clone.startX   = self.startX 
+	clone.startZ   = self.startZ 
+	clone.endX     = self.endX   
+	clone.endZ     = self.endZ   
 
-	self.bitmap   = {}
-	for i,b in pairs(template.bitmap) do
-		self.bitmap[i] = b
+	clone.bitmap   = {}
+	for i,b in pairs(self.bitmap) do
+		clone.bitmap[i] = b
 	end
 	
-	return self
+	return clone
 end
 
 ------------------------------------------------------------------------
@@ -101,20 +110,19 @@ end
 -- getBitHelper
 ------------------------------------------------------------------------	
 
-function FieldBitmapTile.getBitHelper( bitmap, i )	
+local FieldBitmapTileGetBitHelperConstants = {}
+for b=31,0,-1 do
+	table.insert( FieldBitmapTileGetBitHelperConstants, { bit=b, value=2^b } )
+end
+
+local function FieldBitmapTileGetBitHelper( bitmap, i )	
 	if bitmap <= 0 then
 		return 0
 	elseif bit32 ~= nil then
 		return bit32.extract( bitmap, i, 1 ) > 0
 	else
-		if FieldBitmapTile.getBitHelperConstants == nil then
-			FieldBitmapTile.getBitHelperConstants = {}
-			for b=31,0,-1 do
-				table.insert( FieldBitmapTile.getBitHelperConstants, { bit=b, value=2^b } )
-			end
-		end
 		local v = bitmap
-		for _,h in pairs(FieldBitmapTile.getBitHelperConstants) do
+		for _,h in pairs(FieldBitmapTileGetBitHelperConstants) do
 			if v >= h.value then
 				if i > h.bit then
 					return 0
@@ -134,10 +142,10 @@ end
 -- getBit
 ------------------------------------------------------------------------	
 function FieldBitmapTile:getBit( x, z )
-	local i, j = FieldBitmapTile.getIndex( self, x, z )	
-	if not FieldBitmapTile.checkIndex( self, i, j ) then return false end
+	local i, j = self:getIndex( x, z )	
+	if not self:checkIndex( i, j ) then return false end
 	
-	local v = FieldBitmapTile.getBitHelper( self.bitmap[j], i )	
+	local v = FieldBitmapTileGetBitHelper( self.bitmap[j], i )	
 	--if bit32 ~= nil then
 	--	v = bit32.extract( self.bitmap[j], i, 1 )
 	--else
@@ -157,8 +165,8 @@ end
 -- setBit
 ------------------------------------------------------------------------
 function FieldBitmapTile:setBit( x, z, set )
-	local i, j = FieldBitmapTile.getIndex( self, x, z )
-	if not FieldBitmapTile.checkIndex( self, i, j ) then return false end
+	local i, j = self:getIndex( x, z )
+	if not self:checkIndex( i, j ) then return false end
 
 	if self.invert then
 		if set == nil or set == true then set = false else set = true end
@@ -168,14 +176,14 @@ function FieldBitmapTile:setBit( x, z, set )
 		if bit32 ~= nil then 
 			self.bitmap[j] = bit32.replace( self.bitmap[j], 1, i, 1 )
 	--elseif math.floor( self.bitmap[j] / 2^i ) % 2 < 1 then
-		elseif FieldBitmapTile.getBitHelper( self.bitmap[j], i ) < 1 then
+		elseif FieldBitmapTileGetBitHelper( self.bitmap[j], i ) < 1 then
 			self.bitmap[j] = self.bitmap[j] + 2^i
 		end
 	else
 		if bit32 ~= nil then 
 			self.bitmap[j] = bit32.replace( self.bitmap[j], 0, i, 1 )
 	--elseif math.floor( self.bitmap[j] / 2^i ) % 2 > 0 then
-		elseif FieldBitmapTile.getBitHelper( self.bitmap[j], i ) > 0 then
+		elseif FieldBitmapTileGetBitHelper( self.bitmap[j], i ) > 0 then
 			self.bitmap[j] = self.bitmap[j] - 2^i
 		end
 	end
@@ -186,18 +194,19 @@ end
 ------------------------------------------------------------------------
 -- FieldBitmap
 ------------------------------------------------------------------------
-FieldBitmap = {}
+FieldBitmapObj = {}
 
 ------------------------------------------------------------------------
 -- create
 ------------------------------------------------------------------------
-function FieldBitmap.create( iStepLog2, tiles, bufferSize )
+function FieldBitmapObj:new( iStepLog2, tiles, bufferSize )
 	local s = 5 - Utils.getNoNil( iStepLog2, 2 )
 
 	local self = { tiles    = {}, 
 								 stepLog2 = s, 
 								 factor1  = 2^s, 
 								 factor2  = 2^(-s) }
+	setmetatable(self, { __metatable = FieldBitmapObj, __index = FieldBitmapObj } )
 								 
 	if bufferSize ~= nil and bufferSize > 0 then
 		self.buffer   = {}
@@ -209,28 +218,52 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 		for i,t1 in pairs(tiles) do
 			self.tiles[i] = {}
 			for j,t2 in pairs(t1) do
-				self.tiles[i][j] = FieldBitmapTile.clone( t2 )
+				self.tiles[i][j] = t2:clone()
 			end
 		end	
 	end
+	
+	return self 
+end 
+
+------------------------------------------------------------------------
+-- delete
+------------------------------------------------------------------------
+	function FieldBitmapObj:delete( )
+		for _,t1 in pairs(self.tiles) do
+			for _,t2 in pairs(t1) do
+				t2:delete()
+				t2 = nil 
+			end 
+			t1 = nil 
+		end 
+		self.tiles  = nil
+		self.buffer = nil 
+	end
+	
 ------------------------------------------------------------------------
 -- clone
 ------------------------------------------------------------------------
-	local clone = function( )
-		return FieldBitmap.create( 5 - self.stepLog2, self.tiles )
+	function FieldBitmapObj:clone( )
+		return FieldBitmapObj:new( 5 - self.stepLog2, self.tiles )
 	end
 	
 ------------------------------------------------------------------------
 -- getTile
 ------------------------------------------------------------------------
-	local getTile = function( x, z )
+	function FieldBitmapObj:getTile( x, z )
 		return math.floor( self.factor2 * x ), math.floor( self.factor2 * z )
 	end
 	
 ------------------------------------------------------------------------
 -- setBit
 ------------------------------------------------------------------------	
-	local setBit = function( x, z, set )
+	function FieldBitmapObj:setBit( x, z, set )
+		if self.buffer ~= nil then
+			self.buffer   = {}
+			self.index    = 0
+		end
+	
 		local i, j = getTile( x, z )
 		if self.tiles[i] == nil then
 			if set ~= nil and set ~= true then return end
@@ -238,47 +271,37 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 		end
 		if self.tiles[i][j] == nil then
 			if set ~= nil and set ~= true then return end
-			self.tiles[i][j] = FieldBitmapTile.getNewTile( self.factor1 * i, self.factor1 * j, 5 - self.stepLog2 )
+			self.tiles[i][j] = FieldBitmapTile:new( self.factor1 * i, self.factor1 * j, 5 - self.stepLog2 )
 		end
-		FieldBitmapTile.setBit( self.tiles[i][j], x, z, set )
+		self.tiles[i][j]:setBit( x, z, set )
 	end
 	
 ------------------------------------------------------------------------
 -- getBit
 ------------------------------------------------------------------------
-	local getBit = function( x, z )
-		local i, j = getTile( x, z )
-		if self.tiles[i] == nil then return false end
-		if self.tiles[i][j] == nil then return false end
-		return FieldBitmapTile.getBit( self.tiles[i][j], x, z )
-	end
-	
-------------------------------------------------------------------------
--- getBit
-------------------------------------------------------------------------
-	local getBitB = function( x, z )
+	function FieldBitmapObj:getBit( x, z )
 		local i, j = getTile( x, z )
 		if self.tiles[i] == nil then return false end
 		if self.tiles[i][j] == nil then return false end
 		
-		if self.buffer ~= nil then
-			for i,b in pairs( self.buffer ) do
-				if b.x-0.01 < x and x < b.x+0.01 and b.z-0.01 < z and z < b.z+0.01 then
-					return b.b
-				end
+		if self.buffer == nil then
+			return self.tiles[i][j]:getBit( x, z )
+		end 
+		
+		for i,b in pairs( self.buffer ) do
+			if b.x-0.01 < x and x < b.x+0.01 and b.z-0.01 < z and z < b.z+0.01 then
+				return b.b
 			end
 		end
+	
+		local b = self.tiles[i][j]:getBit( x, z )
 		
-		local b = FieldBitmapTile.getBit( self.tiles[i][j], x, z )
-		
-		if self.buffer ~= nil then
-			if self.index >= self.bSize then
-				self.index = 1
-			else
-				self.index = self.index + 1
-			end	
-			self.buffer[self.index] = { x=x, z=z, b=b }
-		end
+		if self.index >= self.bSize then
+			self.index = 1
+		else
+			self.index = self.index + 1
+		end	
+		self.buffer[self.index] = { x=x, z=z, b=b }
 		
 		return b
 	end
@@ -286,7 +309,7 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 ------------------------------------------------------------------------
 -- getPoints
 ------------------------------------------------------------------------
-	local getPoints = function( )
+	function FieldBitmapObj:getPoints( )
 		points = {}
 		for _,t1 in pairs(self.tiles) do
 			for _,t2 in pairs(t1) do
@@ -327,7 +350,7 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 ------------------------------------------------------------------------
 -- tileExists
 ------------------------------------------------------------------------
-	local tileExists = function( x, z )
+	function FieldBitmapObj:tileExists( x, z )
 		local i, j = getTile( x, z )
 		if self.tiles[i] == nil then return false end
 		if self.tiles[i][j] == nil then return false end
@@ -337,7 +360,7 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 ------------------------------------------------------------------------
 -- getTileDimensions
 ------------------------------------------------------------------------
-	local getTileDimensions = function( x, z )
+	function FieldBitmapObj:getTileDimensions( x, z )
 		local i, j = getTile( x, z )
 		local startX = self.factor1 * i
 		local startZ = self.factor1 * j
@@ -348,19 +371,19 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 ------------------------------------------------------------------------
 -- createOneTile
 ------------------------------------------------------------------------
-	local createOneTile = function( x, z )
+	function FieldBitmapObj:createOneTile( x, z )
 		local i, j = getTile( x, z )
 		
 		if self.tiles[i] == nil then
 			self.tiles[i] = {}
 		end
-		self.tiles[i][j] = FieldBitmapTile.getNewTile( self.factor1 * i, self.factor1 * j, 5 - self.stepLog2, nil, nil, true )
+		self.tiles[i][j] = FieldBitmapTile:new( self.factor1 * i, self.factor1 * j, 5 - self.stepLog2, nil, nil, true )
 	end
 	
 ------------------------------------------------------------------------
 -- getPoint
 ------------------------------------------------------------------------
-	local getPoint = function( iX, iZ )
+	function FieldBitmapObj:getPoint( iX, iZ )
 		f1 = 2^(self.stepLog2 - 5)
 		f2 = 2^(5 - self.stepLog2)
 		local x = f1 * math.floor( f2 * iX + 0.5 )
@@ -371,7 +394,7 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 ------------------------------------------------------------------------
 -- getAreaTotalCount
 ------------------------------------------------------------------------
-	local getAreaTotalCount = function( startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ )
+	function FieldBitmapObj:getAreaTotalCount( startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ )
 		local area  = 0
 		local total = 0
 	
@@ -424,7 +447,7 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 										
 						if FieldBitmap.checkPointInParallelogram( x, z, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ ) then
 							total = total + 1
-							if t2 ~= nil and FieldBitmapTile.getBit( t2, x, z ) then
+							if t2 ~= nil and t2:getBit( x, z ) then
 								area = area + 1
 							end
 						end
@@ -439,7 +462,7 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 ------------------------------------------------------------------------
 -- cutArea
 ------------------------------------------------------------------------
-	local cutArea = function( startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ )
+	function FieldBitmapObj:cutArea( startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ )
 		local minX = startWorldX
 		local maxX = startWorldX
 		local minZ = startWorldZ
@@ -483,7 +506,7 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 							x = i * stepInv + startX
 											
 							if FieldBitmap.checkPointInParallelogram( x, z, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ ) then
-								FieldBitmapTile.setBit( t2, x, z, 0 )
+								t2:setBit( x, z, 0 )
 							end
 						end
 					end
@@ -493,23 +516,11 @@ function FieldBitmap.create( iStepLog2, tiles, bufferSize )
 		
 		return area, total 
 	end
-	
-	local getBitFct = getBit 
-	if self.buffer ~= nil then
-		getBitFct = getBitB
-	end
-		
-	return { setBit            = setBit, 
-					 getBit            = getBitFct, 
-					 getPoints         = getPoints,
-					 tileExists        = tileExists, 
-					 getTileDimensions = getTileDimensions,
-					 createOneTile     = createOneTile,
-					 getPoint          = getPoint,
-					 getAreaTotalCount = getAreaTotalCount,
-					 cutArea           = cutArea,
-					 clone             = clone }
-end
+
+------------------------------------------------------------------------
+-- FieldBitmap
+------------------------------------------------------------------------
+FieldBitmap = {}
 
 ------------------------------------------------------------------------
 -- prepareIsField
@@ -649,8 +660,8 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 		return nil, 0
 	end
 
-	field = FieldBitmap.create( iStepLog2 )
-	done  = FieldBitmap.create( iStepLog2 )
+	field = FieldBitmapObj:new( iStepLog2 )
+	done  = FieldBitmapObj:new( iStepLog2 )
 	
 	local x = f1 * math.floor( f2 * iX + 0.5 )
 	local z = f1 * math.floor( f2 * iZ + 0.5 )
@@ -660,7 +671,7 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 	local cur, nxt = 1,2
 	lists[1] = { { x, z } }
 	
-	done.setBit( x, z )
+	done:setBit( x, z )
 	
 	local cycle = 0
 	local count = 0
@@ -682,7 +693,7 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 			
 			x, z = unpack( p )
 			skip = false
-			if not done.getBit( x, z ) then
+			if not done:getBit( x, z ) then
 				print("ERROR: FieldBitmap error code 11")
 			end
 			
@@ -718,7 +729,7 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 					print("ERROR: FieldBitmap error code 8")
 				elseif done == nil then
 					print("ERROR: FieldBitmap error code 9")
-				elseif not done.getBit( x, z ) then
+				elseif not done:getBit( x, z ) then
 					print("ERROR: FieldBitmap error code 10")
 				end
 				count = 1
@@ -726,42 +737,42 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 			--print(string.format("B %6d: %5d, %f", g_currentMission.time, count, sqrm*fo1*fo1*0.0001 ))				
 			end
 			
-			if not field.tileExists( x, z ) then
-				x1, z1, l1 = field.getTileDimensions( x, z )
+			if not field:tileExists( x, z ) then
+				x1, z1, l1 = field:getTileDimensions( x, z )
 				a, t = iAreaTotalFunction( FieldBitmap.getParallelogram( x1, z1, l1, fo3 ) )
 				if     a == 0 then
 					skip = true
-					done.createOneTile( x, z )
+					done:createOneTile( x, z )
 				elseif a == t then
 					skip = true
-					done.createOneTile( x, z )
-					field.createOneTile( x, z )
+					done:createOneTile( x, z )
+					field:createOneTile( x, z )
 					sqrm = sqrm + 1024
 
 					x = x1
 					z = z1
 
-					x1 = x-f1; z1 = z;    if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-					x1 = x+l1; z1 = z;    if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-					x1 = x;    z1 = z-f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-					x1 = x;    z1 = z+l1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-					x1 = x-f1; z1 = z-f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-					x1 = x+l1; z1 = z-f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-					x1 = x-f1; z1 = z+l1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-					x1 = x+l1; z1 = z+l1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+					x1 = x-f1; z1 = z;    if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+					x1 = x+l1; z1 = z;    if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+					x1 = x;    z1 = z-f1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+					x1 = x;    z1 = z+l1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+					x1 = x-f1; z1 = z-f1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+					x1 = x+l1; z1 = z-f1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+					x1 = x-f1; z1 = z+l1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+					x1 = x+l1; z1 = z+l1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
 				end
 			end
 
 			if not skip and iAreaTotalFunction( FieldBitmap.getParallelogram( x, z, fo1, fo3 ) ) > 0 then
-				field.setBit( x, z )
-				x1 = x-f1; z1 = z;    if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-				x1 = x+f1; z1 = z;    if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-				x1 = x;    z1 = z-f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-				x1 = x;    z1 = z+f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-				x1 = x-f1; z1 = z-f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-				x1 = x+f1; z1 = z-f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-				x1 = x-f1; z1 = z+f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
-				x1 = x+f1; z1 = z+f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+				field:setBit( x, z )
+				x1 = x-f1; z1 = z;    if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+				x1 = x+f1; z1 = z;    if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+				x1 = x;    z1 = z-f1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+				x1 = x;    z1 = z+f1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+				x1 = x-f1; z1 = z-f1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+				x1 = x+f1; z1 = z-f1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+				x1 = x-f1; z1 = z+f1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
+				x1 = x+f1; z1 = z+f1; if not done:getBit( x1, z1 ) then done:setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
 				sqrm = sqrm + 1
 			end
 		end
@@ -777,6 +788,8 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 		iCleanupFunction( )
 	end
 	
+	done:delete()
+	
 	return field, sqrm*fo1*fo1*0.0001
 end
 
@@ -787,7 +800,7 @@ end
 local function unitTest1( )
 	print("------------------------------------------------------------------------")
 	
-	local tileTest = FieldBitmapTile.getNewTile( 10, 5, 2, nil, nil, true )
+	local tileTest = FieldBitmapTile:new( 10, 5, 2, nil, nil, true )
 	
 	print(tostring( tileTest.size ))
 	print(tostring( tileTest.sizeInt ))
@@ -797,31 +810,31 @@ local function unitTest1( )
 	print(tostring( tileTest.endX ))
 	print(tostring( tileTest.endZ ))
   
-	FieldBitmapTile.setBit( tileTest, 17.75, 12.75, false )
-	print(tostring( FieldBitmapTile.getBit( tileTest, 17.75, 12.75 ) ))
-	FieldBitmapTile.setBit( tileTest, 18, 13, false )
-	print(tostring( FieldBitmapTile.getBit( tileTest, 18, 13 ) ))
+	tileTest:setBit( 17.75, 12.75, false )
+	print(tostring( tileTest:getBit( 17.75, 12.75 ) ))
+	tileTest:setBit( 18, 13, false )
+	print(tostring( tileTest:getBit( 18, 13 ) ))
 	
-	FieldBitmapTile.setBit( tileTest, 10, 5, false )
-	print(tostring( FieldBitmapTile.getBit( tileTest, 10, 5 ) ))
-	FieldBitmapTile.setBit( tileTest, 9.75, 4.75, false )
-	print(tostring( FieldBitmapTile.getBit( tileTest, 9.75, 4.75 ) ))
+	tileTest:setBit( 10, 5, false )
+	print(tostring( tileTest:getBit( 10, 5 ) ))
+	tileTest:setBit( 9.75, 4.75, false )
+	print(tostring( tileTest:getBit( 9.75, 4.75 ) ))
 	
-	print(tostring( FieldBitmapTile.getBit( tileTest, 11, 11 ) ))
-	FieldBitmapTile.setBit( tileTest, 11, 11, false )
+	print(tostring( tileTest:getBit( 11, 11 ) ))
+	tileTest:setBit( 11, 11, false )
   
 	print("------------------------------------------------------------------------")
 	
 	for i=-3,3 do for j=-3,3 do
 		local x = 11 + tileTest.stepInv * i
 		local z = 11 + tileTest.stepInv * j
-		print(tostring(x).." "..tostring(z).." "..tostring( FieldBitmapTile.getBit( tileTest, x, z ) ))
+		print(tostring(x).." "..tostring(z).." "..tostring( tileTest:getBit( x, z ) ))
 	end end
   
 	print("------------------------------------------------------------------------")
   
-	FieldBitmapTile.setBit( tileTest, 11, 11, true )
-	print(tostring( FieldBitmapTile.getBit( tileTest, 11, 11 ) ))
+	tileTest:setBit( 11, 11, true )
+	print(tostring( tileTest:getBit( 11, 11 ) ))
 	
 	print("------------------------------------------------------------------------")
 end
@@ -830,54 +843,54 @@ local function unitTest2( )
 	print("------------------------------------------------------------------------")
 	
 	local x0,z0 = -134.750, 12.750
-	local map = FieldBitmap.create( )
+	local map = FieldBitmapObj:new( )
 	local stepInv = 2 ^ (-2)
 	
 	
-	map.setBit( x0, z0 )
+	map:setBit( x0, z0 )
 	for i=-3,3 do for j=-3,3 do
 		local x = x0 + stepInv * i
 		local z = z0 + stepInv * j
-		print(tostring(x).." "..tostring(z).." "..tostring( map.getBit( x, z ) ))
+		print(tostring(x).." "..tostring(z).." "..tostring( map:getBit( x, z ) ))
 	end end
 
-	local map2 = FieldBitmap.create( )
-	print(tostring( map.getBit( x0, z0 ) ))
-	print(tostring( map2.getBit( x0, z0 ) ))
+	local map2 = FieldBitmapObj:new( )
+	print(tostring( map:getBit( x0, z0 ) ))
+	print(tostring( map2:getBit( x0, z0 ) ))
 
-	map.setBit( x0, z0, false )
-	print(tostring( map.getBit( x0, z0 ) ))
-	print(tostring( map2.getBit( x0, z0 ) ))
+	map:setBit( x0, z0, false )
+	print(tostring( map:getBit( x0, z0 ) ))
+	print(tostring( map2:getBit( x0, z0 ) ))
 
-	map2.setBit( x0, z0 )
-	print(tostring( map.getBit( x0, z0 ) ))
-	print(tostring( map2.getBit( x0, z0 ) ))
+	map2:setBit( x0, z0 )
+	print(tostring( map:getBit( x0, z0 ) ))
+	print(tostring( map2:getBit( x0, z0 ) ))
 
 	print("------------------------------------------------------------------------")
 	
 	print("------------------------------------------------------------------------")
 	
 	local x0,z0 = -134.750, 12.750
-	local map = FieldBitmap.create( 3 )
+	local map = FieldBitmapObj:new( 3 )
 	
-	map.setBit( x0, z0 )
+	map:setBit( x0, z0 )
 	for i=-3,3 do for j=-3,3 do
 		local x = x0 + stepInv * i
 		local z = z0 + stepInv * j
-		print(tostring(x).." "..tostring(z).." "..tostring( map.getBit( x, z ) ))
+		print(tostring(x).." "..tostring(z).." "..tostring( map:getBit( x, z ) ))
 	end end
 
-	local map2 = FieldBitmap.create( 3 )
-	print(tostring( map.getBit( x0, z0 ) ))
-	print(tostring( map2.getBit( x0, z0 ) ))
+	local map2 = FieldBitmapObj:new( 3 )
+	print(tostring( map:getBit( x0, z0 ) ))
+	print(tostring( map2:getBit( x0, z0 ) ))
 
-	map.setBit( x0, z0, false )
-	print(tostring( map.getBit( x0, z0 ) ))
-	print(tostring( map2.getBit( x0, z0 ) ))
+	map:setBit( x0, z0, false )
+	print(tostring( map:getBit( x0, z0 ) ))
+	print(tostring( map2:getBit( x0, z0 ) ))
 
-	map2.setBit( x0, z0 )
-	print(tostring( map.getBit( x0, z0 ) ))
-	print(tostring( map2.getBit( x0, z0 ) ))
+	map2:setBit( x0, z0 )
+	print(tostring( map:getBit( x0, z0 ) ))
+	print(tostring( map2:getBit( x0, z0 ) ))
 
 	print("------------------------------------------------------------------------")
 end

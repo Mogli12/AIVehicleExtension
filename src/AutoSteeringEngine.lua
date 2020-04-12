@@ -19,6 +19,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.chainDivideP3 = 0
 	AIVEGlobals.widthDec     = 0
 	AIVEGlobals.widthMaxDec  = 0
+	AIVEGlobals.ignoreFactor = 0
 	AIVEGlobals.angleStep    = 0
 	AIVEGlobals.angleStepInc = 0
 	AIVEGlobals.angleStepDec = 0
@@ -4174,7 +4175,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 	
 	if AIVEGlobals.showChannels > 0 then
 		if vehicle.aiveTestMap == nil and vehicle.aiveCurrentField ~= nil then
-			vehicle.aiveTestMap = vehicle.aiveCurrentField.getPoints()
+			vehicle.aiveTestMap = vehicle.aiveCurrentField:getPoints()
 			if vehicle.aiveTestMap ~= nil then
 				print(string.format("points: %i",table.getn(vehicle.aiveTestMap)))
 			end
@@ -4653,7 +4654,7 @@ function AutoSteeringEngine.invalidateField( vehicle, force )
 	--if not ( vehicle.aiveFieldIsInvalid ) then print("invalidating field") end
 	vehicle.aiveFieldIsInvalid = true
 	if force then
-		vehicle.aiveCurrentField = nil		
+		if vehicle.aiveCurrentField ~=  nil then vehicle.aiveCurrentField:delete() vehicle.aiveCurrentField = nil end		
 	end
 	if vehicle.aiveChain ~= nil then
 		vehicle.aiveChain.lastBestAngle  = nil
@@ -4742,12 +4743,12 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 		vehicle.aiveCurrentFieldCS = 'dead'
 	
 		if vehicle.aiveCurrentField ~= nil then
-			if vehicle.aiveCurrentField.getBit( x1, z1 ) then
+			if vehicle.aiveCurrentField:getBit( x1, z1 ) then
 				vehicle.aiveFieldIsInvalid = false			
 			else
 				checkFunction, areaTotalFunction = AutoSteeringEngine.getCheckFunction( vehicle )
 				if AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction ) then
-					vehicle.aiveCurrentField = nil	
+					if vehicle.aiveCurrentField ~=  nil then vehicle.aiveCurrentField:delete() vehicle.aiveCurrentField = nil end
 				end
 			end
 		end
@@ -4811,6 +4812,7 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 						vehicle.aiveCurrentFieldCS = 'dead'
 					end
 				end
+					
 			end
 		elseif  vehicle.aiveCurrentFieldCS ~= 'dead' 
 				and vehicle.aiveCurrentFieldCt < g_currentMission.time then
@@ -4839,6 +4841,7 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 				vehicle.aiveCurrentFieldCo = nil
 			elseif vehicle.aiveCurrentField ~= nil then
 				print("ups")
+				vehicle.aiveCurrentField:delete()
 				vehicle.aiveCurrentField = nil
 			end
 		end
@@ -4856,7 +4859,7 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 			return AutoSteeringEngine.checkFieldNoBuffer( x, z, FieldBitmap.isFieldFast ) 
 		end 
 	else
-		return vehicle.aiveCurrentField.getBit( x, z )
+		return vehicle.aiveCurrentField:getBit( x, z )
 	end
 end
 
@@ -5412,6 +5415,19 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 			if b <= 0 then
 				ll = vehicle.aiveChain.nodes[i+1].distance
 			end
+			
+			if AIVEGlobals.ignoreFactor > 0 then 
+				local f = AIVEGlobals.ignoreFactor
+				local d = AIVEGlobals.ignoreFactor * AIVEGlobals.ignoreFactor
+				local l = d - toolParam.z
+				if 10 * l < d then 
+					f = f * 0.1
+				elseif l < d then 
+					f = f * l / d
+				end 
+				bi = bi * f 
+				ti = ti * f 
+			end 
 			
 			if fi then
 				b  = b  + bi
@@ -7517,7 +7533,7 @@ function AutoSteeringEngine.deleteChain( vehicle )
 	end
 	
 	vehicle.aiveChain = nil
-	vehicle.aiveCurrentField = nil		
+	if vehicle.aiveCurrentField ~=  nil then vehicle.aiveCurrentField:delete() vehicle.aiveCurrentField = nil end 
 	
 end
 

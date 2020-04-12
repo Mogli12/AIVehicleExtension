@@ -23,6 +23,7 @@ _G[g_currentModName..".mogliHud"].newClass( "AIVEHud", "atHud" )
 source(Utils.getFilename("AIVEEvents.lua", g_currentModDirectory))
 ------------------------------------------------------------------------
 source(Utils.getFilename("FieldBitmap.lua", g_currentModDirectory))
+--source(Utils.getFilename("FieldScanner.lua", g_currentModDirectory))
 source(Utils.getFilename("AIAnimCurve.lua", g_currentModDirectory))
 source(Utils.getFilename("AutoSteeringEngine.lua", g_currentModDirectory))
 source(Utils.getFilename("AIDriveStrategyMogli.lua", g_currentModDirectory))
