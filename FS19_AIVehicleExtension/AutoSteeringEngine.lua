@@ -2036,29 +2036,6 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 	
 	
 	if ( vehicle.aiveChain ~= nil and vehicle.aiveChain.leftActive ~= nil and vehicle.aiveChain.toolCount ~= nil and vehicle.aiveChain.toolCount >= 1 ) then	
-		local fruitProhibitions = nil
-		local hasCultivator     = nil 
-		local hasPlow           = nil
-		for i=1,vehicle.aiveChain.toolCount do
-			if not vehicle.aiveChain.tools[i].ignoreAI and vehicle.aiveChain.tools[i].isSowingMachine then
-				fruitProhibitions = vehicle.aiveChain.tools[i].obj:getAIFruitProhibitions()
-			end 
-			if not vehicle.aiveChain.tools[i].ignoreAI and vehicle.aiveChain.tools[i].isCultivator then
-				if not vehicle.aiveChain.tools[i].hasFruits then
-					hasCultivator = false 
-				elseif hasCultivator == nil then 
-					hasCultivator = true 
-				end
-			end 
-			if not vehicle.aiveChain.tools[i].ignoreAI and vehicle.aiveChain.tools[i].isPlow then
-				if not vehicle.aiveChain.tools[i].hasFruits then
-					hasPlow = false 
-				elseif hasPlow == nil then 
-					hasPlow = true 
-				end
-			end 
-		end 
-		
 		local xa = {}
 		local xo = {}
 		for i=1,vehicle.aiveChain.toolCount do
@@ -2069,39 +2046,15 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 			if vehicle.aiveChain.tools[i].ignoreAI then
 				skip      = true
 				skipOther = true
-			elseif vehicle.aiveChain.toolCount > 1 then 	
-				if     vehicle.aiveChain.tools[i].isPlow
-						or vehicle.aiveChain.tools[i].isCultivator
-						or vehicle.aiveChain.tools[i].isSowingMachine then 
-					skip    = true 
-				end 
-				
-				vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = false 
-				
-				local terrainDetailRequiredValueRanges      = vehicle.aiveChain.tools[i].obj:getAITerrainDetailRequiredRange()
-				vehicle.aiveChain.tools[i].terrainDetailRequiredValueRanges = {}
-				for _,r in pairs(terrainDetailRequiredValueRanges) do 
-					if      hasPlow
-							and r[1] == g_currentMission.plowValue then 
-					-- ignore 
-						vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = true
-					elseif  hasCultivator 
-							and r[1] == g_currentMission.cultivatorValue then 
-					-- ignore 
-						vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = true
-					else 
-						table.insert( vehicle.aiveChain.tools[i].terrainDetailRequiredValueRanges, r ) 
-						skip = false 
-					end 
-				end 
-
-				
-				if ( vehicle.aiveHas.plow or vehicle.aiveHas.cultivator ) and fruitProhibitions ~= nil then 
-					vehicle.aiveChain.tools[i].fruitProhibitions = fruitProhibitions
-					vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = true
-				else 
-					vehicle.aiveChain.tools[i].fruitProhibitions = vehicle.aiveChain.tools[i].obj:getAIFruitProhibitions()
-				end 
+			elseif not vehicle.aiveChain.tools[i].isAIImplement and vehicle.aiveHas.aiImplement then 
+				skip      = true
+				skipOther = true
+			elseif vehicle.aiveChain.tools[i].isCultivator and vehicle.aiveHas.sowingMachine then  
+				skip      = true
+				skipOther = true
+			elseif vehicle.aiveChain.tools[i].isSprayer    and ( vehicle.aiveHas.sowingMachine or vehicle.aiveHas.cultivator ) then  
+				skip      = true
+				skipOther = true
 			else 
 				vehicle.aiveChain.tools[i].terrainDetailRequiredValueRanges = vehicle.aiveChain.tools[i].obj:getAITerrainDetailRequiredRange()
 				vehicle.aiveChain.tools[i].fruitProhibitions                = vehicle.aiveChain.tools[i].obj:getAIFruitProhibitions()
@@ -2122,6 +2075,7 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 									--or ( vehicle.aiveChain.tools[i].specialType ~= nil and vehicle.aiveChain.tools[i].specialType ~= "" ) 
 									 )
 								and not ( vehicle.aiveChain.tools[j].ignoreAI )
+								and vehicle.aiveChain.tools[j].isAIImplement
 								and vehicle.aiveChain.tools[i].isCombine       == vehicle.aiveChain.tools[j].isCombine      
 								and vehicle.aiveChain.tools[i].isPlow          == vehicle.aiveChain.tools[j].isPlow       
 								and vehicle.aiveChain.tools[i].isCultivator    == vehicle.aiveChain.tools[j].isCultivator   
@@ -2183,14 +2137,6 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 			tp.skipOther = skipOther
 			vehicle.aiveChain.toolParams[i] = tp
 		end
-		
-		--for i=1,vehicle.aiveChain.toolCount do
-		--	if not ( vehicle.aiveChain.tools[i].aiForceTurnNoBackward ) and not ( vehicle.aiveChain.toolParams[i].skip ) then 
-		--		local tp = AutoSteeringEngine.getSteeringParameterOfTool( vehicle, i, maxLooking, widthOffset, 0 )
-		--		tp.skip = false 
-		--		vehicle.aiveChain.toolParams[table.getn(vehicle.aiveChain.toolParams)+1] = tp
-		--	end 
-		--end 
 	end	
 	
 --vehicle.aiveChain.cbr    = nil
@@ -4260,6 +4206,7 @@ end
 -- getAIAreaOfVehicle
 ------------------------------------------------------------------------
 function AutoSteeringEngine.getAIAreaOfVehicle1( vehicle, toolIndex, lx1,lz1,lx2,lz2,lx3,lz3, bypassBuffer )
+
 	local a, t = AutoSteeringEngine.getAIAreaOfVehicle2( vehicle, toolIndex, lx1,lz1,lx2,lz2,lx3,lz3, bypassBuffer )
 
 --if a <= 0 then 
@@ -5419,7 +5366,10 @@ function AutoSteeringEngine.getChainBorder( vehicle, i1, i2, toolParam, detectWi
 			if AIVEGlobals.ignoreFactor > 0 then 
 				local f = AIVEGlobals.ignoreFactor
 				local d = AIVEGlobals.ignoreFactor * AIVEGlobals.ignoreFactor
-				local l = d - toolParam.z
+				local l = vehicle.aiveChain.nodes[i].distance
+			--if toolParam.z < 0 then 
+			--	l = l - toolParam.z
+			--end 
 				if 10 * l < d then 
 					f = f * 0.1
 				elseif l < d then 
@@ -6388,135 +6338,136 @@ function AutoSteeringEngine.saveDirection( vehicle, cumulate, isOutside, detecte
 	local turnZu = vehicle.aiveChain.minZ
 	local turnXc = vehicle.aiveChain.otherX
 		
-	for i,tp in pairs(vehicle.aiveChain.toolParams) do	
-		local tpb
-		if vehicle.aiveChain.trace.tpBuffer[i] == nil then
-			vehicle.aiveChain.trace.tpBuffer[i] = { xA = tp.x, 
-			                                        xO = tp.xOther, 
-																							zR = tp.zReal }
-			tpb = vehicle.aiveChain.trace.tpBuffer[i]
-		else
-			tpb = vehicle.aiveChain.trace.tpBuffer[i]
-			tpb.xA = tpb.xA + 0.05 * ( tp.x      - tpb.xA )
-			tpb.xO = tpb.xO + 0.05 * ( tp.xOther - tpb.xO )
-			tpb.zR = tpb.zR + 0.05 * ( tp.zReal  - tpb.zR )
-		end
-		
-		local oxr,_,ozr = localToWorld( vehicle.aiveChain.refNode, tpb.xO, 0 , tpb.zR )
-		
-		local ofs, idx, dir
-		ofs = tp.offset + tp.offsetStd + 0.25
-		dir = math.max( 0.5, math.min( 3, 0.5 * tp.width ) )
-		if vehicle.aiveChain.leftActive	then
-			idx = tp.nodeRight
-			dir = -dir
-		else
-			ofs = -ofs
-			idx = tp.nodeLeft 
-		end
-		
-		local ox,_,oz = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 2 )
-		
-		if      not ( tp.skipOther ) 
-				and ( saveTurnPoint == nil or saveTurnPoint == true )
-				and ( ( ( vehicle.aiveChain.headland >= 1
-					  and AutoSteeringEngine.isChainPointOnField( vehicle, ox, oz ) )
-				   or ( vehicle.aiveChain.headland < 1
-					  and AutoSteeringEngine.checkField( vehicle, ox, oz ) ) ) ) then
-						
-			local stp = false
-			if saveTurnPoint then
-				stp = true
-			elseif AutoSteeringEngine.checkField( vehicle, ox,oz ) then
-				local refNode = vehicle.aiveChain.refNode
-				local ex,_,ez = localDirectionToWorld( refNode, 0, 0, -2 )
-				local bx = ox + ex
-				local bz = oz + ez
-				ex,_,ez = localDirectionToWorld( refNode, dir, 0, 0 )
-				local dx = bx + ex
-				local dz = bz + ez
-				local a,t = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tp.i, bx,bz,dx,dz,ox,oz, true )
-				if a > 0 then
-					if vehicle.aiveChain.collectCbr then
-						if vehicle.aiveChain.cbr == nil then vehicle.aiveChain.cbr = {} end
-						table.insert( vehicle.aiveChain.cbr, { bx,bz,dx,dz,ox,oz, a, t } )
-					end
-
-					stp = true
-					
-					
-					if  not ( vehicle.aiveChain.trace.foundNext ) 
-							and vehicle.aiveChain.inField 
-							and AutoSteeringEngine.hasFruits( vehicle ) then 
-
-						local ox,_,oz = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, -ofs-ofs, -1 )
-						
-						local ex,_,ez = localDirectionToWorld( refNode, 0, 0, -1 )
-						local bx = ox + ex
-						local bz = oz + ez
-						ex,_,ez = localDirectionToWorld( refNode, dir, 0, 0 )
-						local dx = bx + ex
-						local dz = bz + ez
-						if      AutoSteeringEngine.checkField( vehicle, ox,oz ) 
-								and AutoSteeringEngine.checkField( vehicle, bx,bz ) 
-								and AutoSteeringEngine.checkField( vehicle, dx,dz ) then 
-							local a,t = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tp.i, bx,bz,dx,dz,ox,oz, true )
-							if a > AIVEGlobals.ignoreBorder then
-								vehicle.aiveChain.trace.fn ={ bx,bz,dx,dz,ox,oz, a, t }
-								vehicle.aiveChain.trace.foundNext = true 
-							end 
-						end 
-					end				
-				end				
+	for i,tp in pairs(vehicle.aiveChain.toolParams) do
+		if not ( tp.skip and tp.skipOther ) then 
+			local tpb
+			if vehicle.aiveChain.trace.tpBuffer[i] == nil then
+				vehicle.aiveChain.trace.tpBuffer[i] = { xA = tp.x, 
+																								xO = tp.xOther, 
+																								zR = tp.zReal }
+				tpb = vehicle.aiveChain.trace.tpBuffer[i]
+			else
+				tpb = vehicle.aiveChain.trace.tpBuffer[i]
+				tpb.xA = tpb.xA + 0.05 * ( tp.x      - tpb.xA )
+				tpb.xO = tpb.xO + 0.05 * ( tp.xOther - tpb.xO )
+				tpb.zR = tpb.zR + 0.05 * ( tp.zReal  - tpb.zR )
 			end
 			
-			if stp then			
-				saveTurnPoint = true
-
-				vehicle.aiveChain.trace.ox = ox
-				vehicle.aiveChain.trace.oz = oz
-				local mx,_,mz = worldDirectionToLocal( vehicle.aiveChain.refNode, ox - oxr, 0, oz - ozr )
-
-				if not ( tp.skipOther ) then
-					local txu = tpb.xO 				
-					if AutoSteeringEngine.invertsMarkerOnTurn( vehicle, vehicle.aiveChain.tools[tp.i], not vehicle.aiveChain.leftActive ) then
-						txu = -tpb.xA
-					end
-					txu = tpb.xO + txu + mx
-					
-					if     turnXu == nil then
-						turnXu = txu 
-						turnZu = vehicle.aiveChain.minZ + mz
-					elseif vehicle.aiveChain.leftActive then
-						if turnXu > txu then
-							turnXu = txu 
-							turnZu = vehicle.aiveChain.minZ + mz
+			local oxr,_,ozr = localToWorld( vehicle.aiveChain.refNode, tpb.xO, 0 , tpb.zR )
+			
+			local ofs, idx, dir
+			ofs = tp.offset + tp.offsetStd + 0.25
+			dir = math.max( 0.5, math.min( 3, 0.5 * tp.width ) )
+			if vehicle.aiveChain.leftActive	then
+				idx = tp.nodeRight
+				dir = -dir
+			else
+				ofs = -ofs
+				idx = tp.nodeLeft 
+			end
+			
+			local ox,_,oz = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, ofs, 2 )
+			
+			if      ( saveTurnPoint == nil or saveTurnPoint == true )
+					and ( ( ( vehicle.aiveChain.headland >= 1
+							and AutoSteeringEngine.isChainPointOnField( vehicle, ox, oz ) )
+						 or ( vehicle.aiveChain.headland < 1
+							and AutoSteeringEngine.checkField( vehicle, ox, oz ) ) ) ) then
+							
+				local stp = false
+				if saveTurnPoint then
+					stp = true
+				elseif AutoSteeringEngine.checkField( vehicle, ox,oz ) then
+					local refNode = vehicle.aiveChain.refNode
+					local ex,_,ez = localDirectionToWorld( refNode, 0, 0, -2 )
+					local bx = ox + ex
+					local bz = oz + ez
+					ex,_,ez = localDirectionToWorld( refNode, dir, 0, 0 )
+					local dx = bx + ex
+					local dz = bz + ez
+					local a,t = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tp.i, bx,bz,dx,dz,ox,oz, true )
+					if a > 0 then
+						if vehicle.aiveChain.collectCbr then
+							if vehicle.aiveChain.cbr == nil then vehicle.aiveChain.cbr = {} end
+							table.insert( vehicle.aiveChain.cbr, { bx,bz,dx,dz,ox,oz, a, t } )
 						end
-					else
-						if turnXu < txu then
-							turnXu = txu 
-							turnZu = vehicle.aiveChain.minZ + mz
-						end
-					end
+
+						stp = true
+						
+						
+						if  not ( vehicle.aiveChain.trace.foundNext ) 
+								and vehicle.aiveChain.inField 
+								and AutoSteeringEngine.hasFruits( vehicle ) then 
+
+							local ox,_,oz = AutoSteeringEngine.toolLocalToWorld( vehicle, tp.i, idx, -ofs-ofs, -1 )
+							
+							local ex,_,ez = localDirectionToWorld( refNode, 0, 0, -1 )
+							local bx = ox + ex
+							local bz = oz + ez
+							ex,_,ez = localDirectionToWorld( refNode, dir, 0, 0 )
+							local dx = bx + ex
+							local dz = bz + ez
+							if      AutoSteeringEngine.checkField( vehicle, ox,oz ) 
+									and AutoSteeringEngine.checkField( vehicle, bx,bz ) 
+									and AutoSteeringEngine.checkField( vehicle, dx,dz ) then 
+								local a,t = AutoSteeringEngine.getAIAreaOfVehicle( vehicle, tp.i, bx,bz,dx,dz,ox,oz, true )
+								if a > AIVEGlobals.ignoreBorder then
+									vehicle.aiveChain.trace.fn ={ bx,bz,dx,dz,ox,oz, a, t }
+									vehicle.aiveChain.trace.foundNext = true 
+								end 
+							end 
+						end				
+					end				
 				end
 				
-				if not ( tp.skip ) then
-					local tzc = tpb.xA
-					if vehicle.aiveChain.leftActive then
-						tzc = -tzc
-					end						
-					tzc = tzc + tpb.zR + mz -- + 0.5
+				if stp then			
+					saveTurnPoint = true
+
+					vehicle.aiveChain.trace.ox = ox
+					vehicle.aiveChain.trace.oz = oz
+					local mx,_,mz = worldDirectionToLocal( vehicle.aiveChain.refNode, ox - oxr, 0, oz - ozr )
+
+					if not ( tp.skipOther ) then
+						local txu = tpb.xO 				
+						if AutoSteeringEngine.invertsMarkerOnTurn( vehicle, vehicle.aiveChain.tools[tp.i], not vehicle.aiveChain.leftActive ) then
+							txu = -tpb.xA
+						end
+						txu = tpb.xO + txu + mx
+						
+						if     turnXu == nil then
+							turnXu = txu 
+							turnZu = vehicle.aiveChain.minZ + mz
+						elseif vehicle.aiveChain.leftActive then
+							if turnXu > txu then
+								turnXu = txu 
+								turnZu = vehicle.aiveChain.minZ + mz
+							end
+						else
+							if turnXu < txu then
+								turnXu = txu 
+								turnZu = vehicle.aiveChain.minZ + mz
+							end
+						end
+					end
 					
-					if     turnZc == nil then
-						turnZc = tzc
-						turnXc = vehicle.aiveChain.otherX + mx
-					elseif turnZc > tzc then
-						turnZc = tzc
-						turnXc = vehicle.aiveChain.otherX + mx
+					if not ( tp.skip ) then
+						local tzc = tpb.xA
+						if vehicle.aiveChain.leftActive then
+							tzc = -tzc
+						end						
+						tzc = tzc + tpb.zR + mz -- + 0.5
+						
+						if     turnZc == nil then
+							turnZc = tzc
+							turnXc = vehicle.aiveChain.otherX + mx
+						elseif turnZc > tzc then
+							turnZc = tzc
+							turnXc = vehicle.aiveChain.otherX + mx
+						end
 					end
 				end
 			end
-		end
+		end 
 	end
 	
 	if saveTurnPoint then
@@ -6928,9 +6879,13 @@ function AutoSteeringEngine.initTurnVector( vehicle, uTurn, turn2Outside )
 					vehicle.aiveChain.trace.itv1 = { AutoSteeringEngine.getParallelogram( xw1, zw1, xw2, zw2, offsetOutside ) }
 				end
 				
-				if AutoSteeringEngine.hasFruitsSimple( vehicle, xw1, zw1, xw2, zw2, offsetOutside ) then		
-					found = true  
-				else 
+				found = false 
+				for _,tp in pairs( vehicle.aiveChain.toolParams ) do
+					if not tp.skip and AutoSteeringEngine.getFruitArea( vehicle, xw1,zw1,xw2,zw2, offsetOutside, tp.i, true ) > 0 then
+						found = true  
+					end 
+				end 
+				if not found then 
 					break
 				end
 			end	
@@ -7627,12 +7582,38 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 	tool.isCombine               = object.spec_combine ~= nil 
 	tool.hasWorkAreas            = object.spec_workArea ~= nil
 	tool.isTurnOnVehicle         = object.spec_turnOnVehicle ~= nil
-	tool.isPlow                  = object.spec_plow ~= nil
-	tool.isCultivator            = object.spec_cultivator ~= nil
-	tool.isSowingMachine         = object.spec_sowingMachine ~= nil
-	tool.isSprayer               = object.spec_sprayer ~= nil
-	tool.isMower                 = object.spec_mower ~= nil
 	tool.isFoldable              = object.spec_foldable ~= nil
+	tool.isAIImplement           = object.spec_aiImplement ~= nil
+	
+	if tool.hasWorkAreas then 
+		tool.isPlow                = false 
+		tool.isCultivator          = false 
+		tool.isSowingMachine       = false 
+		tool.isSprayer             = false 
+		for _,w in pairs( object.spec_workArea.workAreas ) do
+			if     w.functionName == nil then 
+			elseif w.functionName == "processPlowArea"          then tool.isPlow          = true 
+			elseif w.functionName == "processCultivatorArea"    then tool.isCultivator    = true 
+			elseif w.functionName == "processSowingMachineArea" then tool.isSowingMachine = true 
+			elseif w.functionName == "processSprayerArea"       then tool.isSprayer       = true 
+			elseif w.functionName == "processMowerArea"         then tool.isMower         = true 
+			end 
+		end 
+		if tool.isCultivator then 
+			tool.isSprayer     = false 
+		end 
+		if tool.isSowingMachine then 
+			tool.isCultivator = false
+			tool.isSprayer     = false 
+		end 
+	else 
+		tool.isPlow                = object.spec_plow ~= nil
+		tool.isCultivator          = object.spec_cultivator ~= nil
+		tool.isSowingMachine       = object.spec_sowingMachine ~= nil
+		tool.isSprayer             = object.spec_sprayer ~= nil
+		tool.isMower               = object.spec_mower ~= nil
+	end 
+	
 	tool.configFileName          = object.configFileName
 	tool.obj                     = object
 	tool.isAITool                = false
@@ -7782,9 +7763,9 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 						if t.doubleJoint then
 							tool.doubleJoint = true
 						end				
-						if ( t.isCultivator or t.isSowingMachine ) and tool.isSprayer then
-							tool.ignoreAI = true
-						end
+					--if ( t.isCultivator or t.isSowingMachine ) and tool.isSprayer then
+					--	tool.ignoreAI = true
+					--end
 						
 						break
 					end
@@ -7876,6 +7857,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		if tool.isSowingMachine then vehicle.aiveHas.sowingMachine = true end
 		if tool.isSprayer       then vehicle.aiveHas.sprayer       = true end
 		if tool.isMower         then vehicle.aiveHas.mower         = true end
+		if tool.isAIImplement   then vehicle.aiveHas.aiImplement   = true end
 	end
 	
   if tool.isFoldable      then vehicle.aiveHas.foldable      = true end                                                       
@@ -9342,3 +9324,76 @@ function AutoSteeringEngine.posToString( p )
 	end
 	return string.format("%6.3f",p)
 end
+
+function AutoSteeringEngine.SowingMachineProcessSowingMachineArea(self, superFunc, workArea, dt)
+	local vehicle = self:getRootVehicle()
+	local spec    = self.spec_sowingMachine
+
+	if      spec == nil or ( spec.useDirectPlanting and not ( spec.useDirectPlanting  )) then 
+	-- do nothing
+	elseif  vehicle              ~= nil
+			and vehicle.acParameters ~= nil
+			and vehicle.acParameters.enabled
+			and vehicle.aiveHas      ~= nil
+			and vehicle.aiveHas.cultivator then 
+		if not ( spec.useDirectPlanting ) then 
+			spec.aiveDirectPlanting = true 
+			spec.useDirectPlanting  = true 
+		end 
+	elseif spec.aiveDirectPlanting then 
+		spec.useDirectPlanting  = false 
+	end 
+	
+	return superFunc( self, workArea, dt)
+end
+SowingMachine.processSowingMachineArea = Utils.overwrittenFunction( SowingMachine.processSowingMachineArea, AutoSteeringEngine.SowingMachineProcessSowingMachineArea )
+
+function AutoSteeringEngine.SowingMachineUpdateAiParameters(self, superFunc)
+	local vehicle = self:getRootVehicle()
+	local spec    = self.spec_sowingMachine
+
+	if      spec == nil or ( spec.useDirectPlanting and not ( spec.useDirectPlanting  )) then 
+	-- do nothing
+	elseif  vehicle              ~= nil
+			and vehicle.acParameters ~= nil
+			and vehicle.acParameters.enabled
+			and vehicle.aiveHas      ~= nil
+			and vehicle.aiveHas.cultivator then 
+		if not ( spec.useDirectPlanting ) then 
+			spec.aiveDirectPlanting = true 
+			spec.useDirectPlanting  = true 
+		end 
+	elseif spec.aiveDirectPlanting then 
+		spec.useDirectPlanting  = false 
+	end 
+	
+	return superFunc( self )
+end 
+SowingMachine.updateAiParameters = Utils.overwrittenFunction( SowingMachine.updateAiParameters, AutoSteeringEngine.SowingMachineUpdateAiParameters )
+
+function AutoSteeringEngine.CultivatorProcessCultivatorArea(self, superFunc, workArea, dt)
+	local vehicle = self:getRootVehicle()
+	local spec = self.spec_cultivator
+
+	if      vehicle              ~= nil
+			and vehicle.acParameters ~= nil
+			and vehicle.acParameters.enabled
+			and vehicle.aiveHas      ~= nil
+			and vehicle.aiveHas.sowingMachine then 
+		
+		local xs,_,zs = getWorldTranslation(workArea.start)
+		local xw,_,zw = getWorldTranslation(workArea.width)
+		local xh,_,zh = getWorldTranslation(workArea.height)
+		
+		if spec.isSubsoiler then
+			FSDensityMapUtil.updateSubsoilerArea(xs,zs, xw,zw, xh,zh)
+		end
+		FSDensityMapUtil.eraseTireTrack(xs,zs, xw,zw, xh,zh)
+		spec.isWorking = self:getLastSpeed() > 0.5
+		
+		return 0, 0
+	end 
+	
+	return superFunc( self, workArea, dt)
+end 
+Cultivator.processCultivatorArea = Utils.overwrittenFunction( Cultivator.processCultivatorArea, AutoSteeringEngine.CultivatorProcessCultivatorArea )
