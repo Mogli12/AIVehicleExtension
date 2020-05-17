@@ -2039,6 +2039,18 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 		local xa = {}
 		local xo = {}
 		for i=1,vehicle.aiveChain.toolCount do
+			if vehicle.aiveChain.tools[i].obj.getAIMarkers ~= nil then 
+				local l,r,b,p = vehicle.aiveChain.tools[i].obj:getAIMarkers()
+				if      l ~= nil and l ~= 0 
+						and r ~= nil and r ~= 0
+						and b ~= nil and b ~= 0 then 
+					vehicle.aiveChain.tools[i].marker   = { l, r, b }
+					vehicle.aiveChain.tools[i].ignoreAI = false 
+				elseif not vehicle.aiveChain.tools[i].ignoreAI then 
+					vehicle.aiveChain.tools[i].marker   = {}
+					vehicle.aiveChain.tools[i].ignoreAI = true 
+				end 
+			end 
 			vehicle.aiveChain.tools[i].isTerrainDetailRequiredModified = false 
 		
 			local skip      = false
@@ -4121,7 +4133,7 @@ function AutoSteeringEngine.drawLines( vehicle )
 	
 	if AIVEGlobals.showChannels > 0 then
 		if vehicle.aiveTestMap == nil and vehicle.aiveCurrentField ~= nil then
-			vehicle.aiveTestMap = vehicle.aiveCurrentField:getPoints()
+			vehicle.aiveTestMap = vehicle.aiveCurrentField.getPoints()
 			if vehicle.aiveTestMap ~= nil then
 				print(string.format("points: %i",table.getn(vehicle.aiveTestMap)))
 			end
@@ -4601,7 +4613,7 @@ function AutoSteeringEngine.invalidateField( vehicle, force )
 	--if not ( vehicle.aiveFieldIsInvalid ) then print("invalidating field") end
 	vehicle.aiveFieldIsInvalid = true
 	if force then
-		if vehicle.aiveCurrentField ~=  nil then vehicle.aiveCurrentField:delete() vehicle.aiveCurrentField = nil end		
+		vehicle.aiveCurrentField = nil		
 	end
 	if vehicle.aiveChain ~= nil then
 		vehicle.aiveChain.lastBestAngle  = nil
@@ -4690,12 +4702,12 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 		vehicle.aiveCurrentFieldCS = 'dead'
 	
 		if vehicle.aiveCurrentField ~= nil then
-			if vehicle.aiveCurrentField:getBit( x1, z1 ) then
+			if vehicle.aiveCurrentField.getBit( x1, z1 ) then
 				vehicle.aiveFieldIsInvalid = false			
 			else
 				checkFunction, areaTotalFunction = AutoSteeringEngine.getCheckFunction( vehicle )
 				if AutoSteeringEngine.checkFieldNoBuffer( x1, z1, checkFunction ) then
-					if vehicle.aiveCurrentField ~=  nil then vehicle.aiveCurrentField:delete() vehicle.aiveCurrentField = nil end
+					vehicle.aiveCurrentField = nil	
 				end
 			end
 		end
@@ -4754,12 +4766,12 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 						vehicle.aiveCurrentFieldCS = coroutine.status( vehicle.aiveCurrentFieldCo )
 					else
 						message = tostring(vehicle.aiveCurrentField)
+print("Error in fieldBitmap.lua: "..tostring(message))						
 						vehicle.aiveCurrentField   = nil
 						vehicle.aiveCurrentFieldCo = nil
 						vehicle.aiveCurrentFieldCS = 'dead'
 					end
 				end
-					
 			end
 		elseif  vehicle.aiveCurrentFieldCS ~= 'dead' 
 				and vehicle.aiveCurrentFieldCt < g_currentMission.time then
@@ -4769,6 +4781,7 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 				vehicle.aiveCurrentFieldCS = coroutine.status( vehicle.aiveCurrentFieldCo )
 			else
 				message = tostring(vehicle.aiveCurrentField)
+print("Error in fieldBitmap.lua: "..tostring(message))						
 				vehicle.aiveCurrentField   = nil
 				vehicle.aiveCurrentFieldCo = nil
 				vehicle.aiveCurrentFieldCS = 'dead'
@@ -4788,7 +4801,6 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 				vehicle.aiveCurrentFieldCo = nil
 			elseif vehicle.aiveCurrentField ~= nil then
 				print("ups")
-				vehicle.aiveCurrentField:delete()
 				vehicle.aiveCurrentField = nil
 			end
 		end
@@ -4806,7 +4818,7 @@ function AutoSteeringEngine.checkField( vehicle, x, z )
 			return AutoSteeringEngine.checkFieldNoBuffer( x, z, FieldBitmap.isFieldFast ) 
 		end 
 	else
-		return vehicle.aiveCurrentField:getBit( x, z )
+		return vehicle.aiveCurrentField.getBit( x, z )
 	end
 end
 
@@ -7488,7 +7500,7 @@ function AutoSteeringEngine.deleteChain( vehicle )
 	end
 	
 	vehicle.aiveChain = nil
-	if vehicle.aiveCurrentField ~=  nil then vehicle.aiveCurrentField:delete() vehicle.aiveCurrentField = nil end 
+	vehicle.aiveCurrentField = nil	
 	
 end
 
@@ -9355,8 +9367,7 @@ function AutoSteeringEngine.SowingMachineUpdateAiParameters(self, superFunc)
 	if      spec == nil or ( spec.useDirectPlanting and not ( spec.useDirectPlanting  )) then 
 	-- do nothing
 	elseif  vehicle              ~= nil
-			and vehicle.acParameters ~= nil
-			and vehicle.acParameters.enabled
+			and vehicle.aiveIsStarted
 			and vehicle.aiveHas      ~= nil
 			and vehicle.aiveHas.cultivator then 
 		if not ( spec.useDirectPlanting ) then 
@@ -9376,8 +9387,7 @@ function AutoSteeringEngine.CultivatorProcessCultivatorArea(self, superFunc, wor
 	local spec = self.spec_cultivator
 
 	if      vehicle              ~= nil
-			and vehicle.acParameters ~= nil
-			and vehicle.acParameters.enabled
+			and vehicle.aiveIsStarted
 			and vehicle.aiveHas      ~= nil
 			and vehicle.aiveHas.sowingMachine then 
 		
