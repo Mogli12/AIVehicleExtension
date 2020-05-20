@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Tractor]]></description>
+
+	<texts>
+		<!-- AI Vehicle helpPanel text -->
+		<text name="AIVE_SETTINGS"                 text="Configurações do Funcionário"/>
+		<text name="AIVE_ENABLED"                  text="Funcionário alternativo"/>
+		<text name="AIVE_START"                    text="AI Vehicle ligado"/>
+		<text name="AIVE_STOP"                     text="AI Vehicle desligado"/>
+		<text name="AIVE_WORKWIDTH"                text="Largura de trabalho:"/>
+		<text name="AIVE_ACTIVESIDE"               text="Lado ativo"/>
+		<text name="AIVE_ACTIVESIDELEFT"           text="Esquerda"/>
+		<text name="AIVE_ACTIVESIDERIGHT"          text="Direita"/>
+
+		<text name="AIVE_UTURN_ON_OFF"             text="alterar o modo do AI Vehicle"/>
+		<text name="AIVE_STEERING"                 text="direção manual"/>
+		<text name="AIVE_NOSTEERING"               text="direção suprimida"/>
+		<text name="AIVE_STEERING_ON"              text="direção manual [ligada]"/>
+		<text name="AIVE_STEERING_OFF"             text="direção manual [desligada]"/>
+		<text name="AIVE_CONTINUE"                 text="contínua"/>
+		<text name="AIVE_RAISE"                    text="Todas as ferramentas levantam / abaixam"/>
+
+		<text name="AIVE_WAIT_FOR_PIPE"            text="aguarde durante a descarga"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="o detentor da distância está LIGADO"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="o detentor da distância está DESLIGADO"/>
+		<!-- AI Vehicle help text -->
+		<text name="AIVE_TEXTHELPPANELOFF"         text="Ocultar info do AI Vehicle"/>
+		<text name="AIVE_TEXTHELPPANELON"          text="Mostrar info do AI Vehicle"/>
+		<!-- AI Vehicle inputbinding text -->
+		<text name="AIVE_COLLISION_OTHER"          text="colisão frontal"/>
+		<text name="AIVE_COLLISION_BACK"           text="colisão traseira"/>
+		<text name="AIVE_UTURN_TYPE"               text="modo do AI Vehicle"/>
+		<text name="AIVE_UTURN_ON"                 text="cima/baixo"/>
+		<text name="AIVE_UTURN_OFF"                text="círculo"/>
+		<text name="AIVE_UTURN_ON2"                text="reto como o funcionário normal,"/>
+		<text name="AIVE_REVERSE_ON"               text="modo de rotação [reverso]"/>
+		<text name="AIVE_REVERSE_OFF"              text="modo de rotação [dirigindo]"/>
+		<text name="AIVE_INVERTED"                 text="mudar direção"/>
+		<text name="AIVE_INVERTED_ON"              text="modo de trabalho [reverso]"/>
+		<text name="AIVE_INVERTED_OFF"             text="modo de trabalho[normal]"/>
+		<text name="AIVE_WIDTH_OFFSET"             text="Distância do alinhamento"/>
+		<text name="AIVE_TURN_OFFSET"              text="alinhamento da curva"/>
+		<text name="AIVE_ANGLE_OFFSET"             text="ângulo da curva"/>
+		<text name="AIVE_SAFETY_FACTOR"            text="distância segura"/>
+		<text name="AIVE_ERROR"                    text="erro"/>
+		<text name="AIVE_NEXTTURNSTAGE"            text="vá para a próxima etapa de curva"/>
+		<text name="AIVE_CP_ON"                    text="modo courseplay [desligado]"/>
+		<text name="AIVE_CP_OFF"                   text="modo courseplay [ligado]"/>
+		<text name="AIVE_STEER_ON"                 text="auto direção [desligado]"/>
+		<text name="AIVE_STEER_OFF"                text="auto direção [ligado]"/>
+		<text name="AIVE_HEADLAND_ON"              text="cabeceira [desligado]"/>
+		<text name="AIVE_HEADLAND_OFF"             text="cabeceira [ligado]"/>
+		<text name="AIVE_FRONT_PACKER_ON"          text="empacotador frontal [ligado]"/>
+		<text name="AIVE_FRONT_PACKER_OFF"         text="empacotador frontal [desligado]"/>
+		<text name="AIVE_COLLISION_ON"             text="verificação de colisão [ligado]"/>
+		<text name="AIVE_COLLISION_OFF"            text="verificação de colisão [desligado]"/>
+		<text name="AIVE_HIRE_ON"                  text="uso de semente [desligado]"/>
+		<text name="AIVE_HIRE_OFF"                 text="uso de semente [ligado]"/>
+		<text name="AIVE_HEADLAND"                 text="cabeceira"/>
+		<text name="AIVE_TURN_MODE"                text="Modo de curva"/>
+		<text name="AIVE_TURN_MODE_"               text=""/>
+		<text name="AIVE_TURN_MODE_O"              text="Curva no formato O"/>
+		<text name="AIVE_TURN_MODE_A"              text="reverter com curva"/>
+		<text name="AIVE_TURN_MODE_Y"              text="reverter com curva (debulhador)"/>
+		<text name="AIVE_TURN_MODE_T"              text="reverter direto"/>
+		<text name="AIVE_TURN_MODE_C"              text="Curva no formato O"/>
+		<text name="AIVE_TURN_MODE_L"              text="reverter com curva"/>
+		<text name="AIVE_TURN_MODE_7"              text="reverter direto"/>
+		<text name="AIVE_TURN_MODE_K"              text="grande curva de 90°"/>
+		<text name="AIVE_TURN_MODE_8"              text="Curva no formato 8"/>
+		<text name="AIVE_PAUSE_ON"                 text="pausa [ligado]"/>
+		<text name="AIVE_PAUSE_OFF"                text="pausa [desligado]"/>
+		<text name="AIVE_STEER_RAISE"              text="levante todos os implementos"/>
+		<text name="AIVE_STEER_LOWER"              text="abaixe todos os implementos"/>
+		<text name="AIVE_TRACE"                    text="mostrar traço"/>
+		<text name="AIVE_MAGIC"                    text="campo de atualização"/>
+		<text name="AIVE_USE_AI_FIELD"             text="detectar apenas o campo conectado"/>
+		<text name="AIVE_FIELD_W"                  text="A detecção de campo está em execução"/>
+		<text name="AIVE_FIELD_E"                  text="Falha na detecção do campo"/>
+		<text name="AIVE_PRECISION"                text="Precisão do AI Vehicle"/>
+		<text name="AIVE_PRECISION_0"              text="baixa"/>
+		<text name="AIVE_PRECISION_1"              text="normal"/>
+		<text name="AIVE_PRECISION_2"              text="alta"/>
+
+		<text name = "input_AIVE_HELPPANEL" text = "AI alternativa: Mostrar / ocultar HUD" />
+		<text name = "input_AIVE_STEER" text = "AI alternativo: direção automática" />
+		<text name = "input_AIVE_SWAP_SIDE" text = "AI alternativo: alterar lado ativo" />
+		<nome do texto = "input_AIVE_ENABLE" text = "AI alternativa: alterar AI" />
+		<text name = "input_AIVE_UTURN_ON_OFF" text = "AI alternativo: Modo circular ativado / desativado" />
+		<text name = "input_AIVE_STEERING" text = "AI alternativo: direção manual" />
+		<text name = "input_AIVE_RAISE" text = "AI alternativa: aumentar / diminuir todas as ferramentas" />
+		<text name = "input_AIVE_START_AIVE" text = "AI alternativo: configurações" />
+		<text name = "input_AIVE_NEXT_WORKER" text = "AI alternativa: pule para o próximo funcionário" />
+	</texts>
+</l10n>
