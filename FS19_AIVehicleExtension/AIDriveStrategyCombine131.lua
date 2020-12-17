@@ -1,5 +1,5 @@
 AIDriveStrategyCombine131 = {}
-AIDriveStrategyCombine131.REVERSE_DISTANCE_AFTER_STOPPED = 0.25
+AIDriveStrategyCombine131.REVERSE_DISTANCE_AFTER_STOPPED = 1
 local AIDriveStrategyCombine131_mt = Class(AIDriveStrategyCombine131, AIDriveStrategy)
 
 function AIDriveStrategyCombine131:new(customMt)
@@ -217,7 +217,7 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 			self.restartPoint2 = 0
 			self.restartDirX,_,self.restartDirZ = localToWorld( refNode, 0, 0, 5 ) 
 		else 
-			self.restartPoint2 = ( wx - self.restartPointX  )^2 + ( wz - self.restartPointZ  )^2
+			self.restartPoint2 = ( wx - self.restartPointX  )^2 + ( wz - self.restartPointZ  )^2 
 		end 
 	--self.allowedToDriveTimer = 2000
 		return 0, 1, true, 0, math.huge
@@ -234,7 +234,7 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 		local wx, _, wz = getWorldTranslation( refNode )
 		local l1        = ( wx - self.restartPointX  )^2 + ( wz - self.restartPointZ  )^2
 		local l2        = ( wx - self.restartPointX2 )^2 + ( wz - self.restartPointZ2 )^2
-		local dts       = math.max(AIDriveStrategyCombine131.REVERSE_DISTANCE_AFTER_STOPPED - l1, AIDriveStrategyCombine131.REVERSE_DISTANCE_AFTER_STOPPED - self.restartPoint2 - l2)
+		local dts       = math.max( AIDriveStrategyCombine131.REVERSE_DISTANCE_AFTER_STOPPED - l1, AIDriveStrategyCombine131.REVERSE_DISTANCE_AFTER_STOPPED - self.restartPoint2 - l2 )
 		if dts > 0 then
 			-- closer than 'AIDriveStrategyCombine131.REVERSE_DISTANCE_AFTER_STOPPED' to the 1st stop point or closer than that plus distance between stop points
 			--self:addDebugText("Reverse")
