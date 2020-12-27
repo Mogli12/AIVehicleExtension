@@ -1,5 +1,5 @@
 AIDriveStrategyCombine131 = {}
-AIDriveStrategyCombine131.REVERSE_DISTANCE_AFTER_STOPPED = 1
+AIDriveStrategyCombine131.REVERSE_DISTANCE_AFTER_STOPPED = 0.25
 local AIDriveStrategyCombine131_mt = Class(AIDriveStrategyCombine131, AIDriveStrategy)
 
 function AIDriveStrategyCombine131:new(customMt)
@@ -50,8 +50,12 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 	local allowedToDrive = true
 	local waitForStraw = false
 	local maxSpeed = math.huge
+	local distanceToStop = nil 
 	
 	local blockedReason = 0
+
+	local refNode = self.vehicle:getAIVehicleDirectionNode()
+	local wx,_,wz = getWorldTranslation( refNode )
 	
 	for _, combine in pairs(self.combines) do
 		if not combine:getIsThreshingAllowed() then
@@ -175,12 +179,31 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 						blockedReason = 4
 					end 
 				end
+				
 				local freeFillLevel = capacity - fillLevel
-			--if freeFillLevel < self.slowDownFillLevel then
-			--	-- we want to drive at least 2 km/h to avoid combine stops too early
-			--	maxSpeed = 2 + (freeFillLevel / self.slowDownFillLevel) * self.slowDownStartSpeed
-			--	blockedReason = 5
-			--end
+			
+				if not allowedToDrive or isTurning or trailerInTrigger or capacity <= 0 then 
+					if self.lastPos ~= nil then
+						self.lastPos = nil
+					end
+				elseif self.lastPos == nil then 
+					self.lastPos = { wx, wz, fillLevel }
+				else
+					local r = fillLevel - self.lastPos[3]
+					
+					if ( self.lastPos[1] - wx ) ^ 2 + ( self.lastPos[2] - wz ) ^ 2 >= 1 then 
+						self.lastPos  = { wx, wz, fillLevel }
+						if self.fillRate == nil then 
+							self.fillRate = r 
+						else 
+							self.fillRate = self.fillRate + 0.02 * ( r - self.fillRate )
+						end 
+					end 
+					
+					if self.fillRate ~= nil and self.fillRate > 0 then 
+						distanceToStop = math.max( 0.05, freeFillLevel / self.fillRate - 1 )
+					end 
+				end 			
 			end
 		end
 	end 
@@ -207,8 +230,6 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 	end
 	
 	if not allowedToDrive then
-		local refNode = self.vehicle:getAIVehicleDirectionNode()
-		local wx,_,wz = getWorldTranslation( refNode )
 		self.restartPointX2 = wx 		
 		self.restartPointZ2 = wz
 		if self.restartPointX == nil then 
@@ -265,7 +286,7 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 --end
 	
 --self:addDebugText("COMBINE may drive")
-	return nil, nil, nil, maxSpeed, nil
+	return nil, nil, nil, maxSpeed, distanceToStop
 end
 
 function AIDriveStrategyCombine131:updateDriving(dt)
