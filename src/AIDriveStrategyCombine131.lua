@@ -109,6 +109,11 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 			else
 				-- combine harvesters
 				local pipeState = currentPipeTargetState
+				local pipePercent = 1
+				
+				if self.vehicle.spec_autodrive and self.vehicle.spec_autodrive.combinePipePercent and self.vehicle.acParameters.waitForPipe == false then
+					pipePercent = self.vehicle.spec_autodrive:combinePipePercent(combine)
+				end
 				if fillLevel > (0.8*capacity) then
 					if not self.beaconLightsActive then
 						self.vehicle:setAIMapHotspotBlinking(true)
@@ -146,7 +151,7 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 					self.wasEmpty = false
 				end
 								
-				if trailerInTrigger then
+				if trailerInTrigger or fillLevel > (pipePercent * capacity) then
 					pipeState = 2
 				end
 				if not trailerInTrigger then
@@ -154,7 +159,7 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 						self.wasCompletelyFull = false
 					end
 				end
-				if not trailerInTrigger and fillLevel < capacity then
+				if not trailerInTrigger and fillLevel < (pipePercent * capacity) then
 					pipeState = 1
 				end
 				if fillLevel < 0.1 then
