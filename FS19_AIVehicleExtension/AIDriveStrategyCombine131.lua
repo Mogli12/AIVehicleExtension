@@ -111,8 +111,8 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX,vY,vZ)
 				local pipeState = currentPipeTargetState
 				local pipePercent = 1
 				
-				if self.vehicle.spec_autodrive and self.vehicle.spec_autodrive.combinePipePercent and self.vehicle.acParameters.waitForPipe == false then
-					pipePercent = self.vehicle.spec_autodrive:combinePipePercent(combine)
+				if self.vehicle.spec_autodrive and self.vehicle.spec_autodrive.getCombineOpenPipePercent and self.vehicle.acParameters.waitForPipe == false then
+					pipePercent = self.vehicle.spec_autodrive:getCombineOpenPipePercent(combine)
 				end
 				if fillLevel > (0.8*capacity) then
 					if not self.beaconLightsActive then
