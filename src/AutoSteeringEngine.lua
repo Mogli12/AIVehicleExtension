@@ -9028,6 +9028,14 @@ function AutoSteeringEngine.ensureToolIsLowered( vehicle, isLowered, indexFilter
 		return
 	end
 		
+	if      vehicle.acParameters.turnLow
+			and not isLowered
+			and ( vehicle.acTurnMode == "C"
+				 or vehicle.acTurnMode == "8"
+				 or vehicle.acTurnMode == "O" ) then 
+		return 
+	end 
+		
 	for i=1,table.getn( vehicle.aiveChain.toolParams ) do
 		local doit = false
 		local tool = vehicle.aiveChain.tools[vehicle.aiveChain.toolParams[i].i]

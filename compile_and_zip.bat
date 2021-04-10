@@ -3,7 +3,7 @@ cd %modname%
 del /q *.lua
 del /q *.luc
 for %%I in (..\%srcdir%\*.lua) do call :loopbody "%%~fI"
-"C:\Program Files\WinRAR\winrar" A -r ..\%modname%.zip *.*
+tar -a -c -f ..\%modname%.zip *.*
 cd ..
 pause
 goto :EOF

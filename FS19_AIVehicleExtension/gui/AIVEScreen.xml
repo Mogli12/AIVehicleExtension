@@ -60,7 +60,7 @@
 
 				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="inverted" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_INVERTED"
 										onCreate="onCreateSubElement"
-										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="16" focusChangeTop="35" focusChangeBottom="101">										
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="16" focusChangeTop="35" focusChangeBottom="26">										
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
@@ -123,7 +123,7 @@
 
 				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="precision" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_PRECISION"
 										onCreate="onCreateSubElement" onCreateArgs="list0"
-										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="25" focusChangeTop="15" focusChangeBottom="35">
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="26" focusChangeTop="16" focusChangeBottom="36">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text"   profile="multiTextOptionText" />
@@ -176,11 +176,21 @@
 				
 				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="collision" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_COLLISION_ON"
 										onCreate="onCreateSubElement"
-										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="35" focusChangeTop="25" focusChangeBottom="101">
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="35" focusChangeTop="25" focusChangeBottom="16">
 					<GuiElement type="button" profile="multiTextOptionLeft" />
 					<GuiElement type="button" profile="multiTextOptionRight"/>
 					<GuiElement type="text" profile="multiTextOptionText" />
 					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_COLLISION_ON"/>
+					<GuiElement type="bitmap" profile="multiTextOptionBg" />
+				</GuiElement>
+				
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="turnLow" toolTipElementId="mogliToolTipBoxText" toolTipText="$mogli_AIVE_TURNLOW_ON"
+										onCreate="onCreateSubElement"
+										onFocus="mogliFocusToolTip" onLeave="mogliLeaveToolTip" focusId="36" focusChangeTop="26" focusChangeBottom="101">
+					<GuiElement type="button" profile="multiTextOptionLeft" />
+					<GuiElement type="button" profile="multiTextOptionRight"/>
+					<GuiElement type="text" profile="multiTextOptionText" />
+					<GuiElement type="text" profile="multiTextOptionTitle" text="$mogli_AIVE_TURNLOW_ON"/>
 					<GuiElement type="bitmap" profile="multiTextOptionBg" />
 				</GuiElement>
 		</GuiElement>

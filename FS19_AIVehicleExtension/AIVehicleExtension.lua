@@ -81,6 +81,7 @@ AIVehicleExtension.saveAttributesMapping = {
 		noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
 		useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
 		waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true  },
+		turnLow			    = { xml = "acTurnLow",     tp = "B", default = false },
 		showTrace 			= { xml = "acShowTrace",   tp = "B", default = false } }																															
 AIVehicleExtension.turnStageNoNext = { -4, -3, -2, -1, 0, 21, 22, 23, 198, 199 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { 

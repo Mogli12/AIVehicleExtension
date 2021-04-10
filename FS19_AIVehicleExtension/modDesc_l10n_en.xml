@@ -56,6 +56,8 @@
 		<text name="AIVE_FRONT_PACKER_OFF"         text="front packer [off]"/>
 		<text name="AIVE_COLLISION_ON"             text="collision check [on]"/>
 		<text name="AIVE_COLLISION_OFF"            text="collision check [off]"/>
+		<text name="AIVE_TURNLOW_ON"               text="tool lower during turn [on]"/>
+		<text name="AIVE_TURNLOW_OFF"              text="tool lower during turn [off]"/>
 		<text name="AIVE_HIRE_ON"                  text="seed usage [off]"/>
 		<text name="AIVE_HIRE_OFF"                 text="seed usage [on]"/>
 		<text name="AIVE_HEADLAND"                 text="headland"/>
