@@ -11,8 +11,8 @@
 		<text name="AIVE_STOP"                     text="Альтернативный помощник [ВЫКЛ]"/>
 		<text name="AIVE_WORKWIDTH"                text="Рабочая ширина:"/>
 		<text name="AIVE_ACTIVESIDE"               text="Рабочая сторона"/>
-		<text name="AIVE_ACTIVESIDELEFT"           text="Левая"/>
-		<text name="AIVE_ACTIVESIDERIGHT"          text="Правая"/>
+		<text name="AIVE_ACTIVESIDELEFT"           text="левая"/>
+		<text name="AIVE_ACTIVESIDERIGHT"          text="правая"/>
 
 		<text name="AIVE_UTURN_ON_OFF"             text="Изменить режим AIVehicle"/>
 		<text name="AIVE_STEERING"                 text="Ручное руление"/>
@@ -46,8 +46,8 @@
 		<text name="AIVE_SAFETY_FACTOR"            text="Безопасное расстояние"/>
 		<text name="AIVE_ERROR"                    text="ошибка"/>
 		<text name="AIVE_NEXTTURNSTAGE"            text="К следующему этапу"/>
-		<text name="AIVE_CP_ON"                    text="Режим courseplay [ВЫКЛ]"/>
-		<text name="AIVE_CP_OFF"                   text="Режим courseplay [ВКЛ]"/>
+		<text name="AIVE_CP_ON"                    text="Режим Courseplay [ВЫКЛ]"/>
+		<text name="AIVE_CP_OFF"                   text="Режим Courseplay [ВКЛ]"/>
 		<text name="AIVE_STEER_ON"                 text="Автоподруливание [ВЫКЛ]"/>
 		<text name="AIVE_STEER_OFF"                text="Автоподруливание [ВКЛ]"/>
 		<text name="AIVE_HEADLAND_ON"              text="Разворотная полоса [ВЫКЛ]"/>
@@ -56,6 +56,8 @@
 		<text name="AIVE_FRONT_PACKER_OFF"         text="Передний культиватор [ВЫКЛ]"/>
 		<text name="AIVE_COLLISION_ON"             text="Проверка коллизий"/>
 		<text name="AIVE_COLLISION_OFF"            text="Проверка коллизий"/>
+		<text name="AIVE_TURNLOW_ON"               text="Инструмент опущен во время разворота [ВКЛ]"/>
+		<text name="AIVE_TURNLOW_OFF"              text="Инструмент опущен во время разворота [ВЫКЛ]"/>
 		<text name="AIVE_HIRE_ON"                  text="Не расходовать семена"/>
 		<text name="AIVE_HIRE_OFF"                 text="Расходовать семена"/>
 		<text name="AIVE_HEADLAND"                 text="Разворотная полоса"/>
