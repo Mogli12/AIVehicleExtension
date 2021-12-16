@@ -113,7 +113,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 	AIVEGlobals.minSpeed      = 0
 	
 	local file
-	file = AIVECurrentModDir.."autoSteeringEngineConfig.xml"
+	file = AIVECurrentModDir.."aiVehicleExtension.xml"
 	if fileExists(file) then	
 	--print('AutoSteeringEngine: loading settings from "'..tostring(file)..'"')
 		AutoSteeringEngine.globalsLoad( file )	
@@ -121,7 +121,7 @@ function AutoSteeringEngine.globalsReset( createIfMissing )
 		print("ERROR: NO GLOBALS IN "..file)
 	end
 	
-	file = getUserProfileAppPath().. "modsSettings/FS19_AIVehicleExtension/autoSteeringEngineConfig.xml"
+	file = getUserProfileAppPath().. "modSettings/aiVehicleExtension.xml"
 	if fileExists(file) then	
 		print('AutoSteeringEngine: loading settings from "'..tostring(file)..'"')
 		AutoSteeringEngine.globalsLoad( file, true )	
@@ -834,6 +834,7 @@ function AutoSteeringEngine.getChainIndexMax( vehicle )
 	else 
 		indexMax   = math.min( vehicle.aiveChain.chainMax, vehicle.aiveChain.chainStep1 )
 	end
+	indexMax = math.max( indexMax, 1 )
 
 	while   indexMax < vehicle.aiveChain.chainMax
 			and vehicle.aiveChain.nodes[indexMax].distance < 2 + math.max( vehicle.aiveChain.width, vehicle.aiveChain.radius ) do
