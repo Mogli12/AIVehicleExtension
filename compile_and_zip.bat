@@ -10,7 +10,6 @@ goto :EOF
 
 :loopbody
 	echo %~n1
-	call c:\work\luapower-all-master\luajit -bg ..\%srcdir%\%~n1.lua c:\temp\%~n1.luc
 	copy /v /y ..\%srcdir%\%~n1.lua %~n1.lua
 	goto :EOF
 

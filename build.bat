@@ -1,4 +1,4 @@
 setlocal
-set modname=FS19_AIVehicleExtension
+set modname=FS22_AIVehicleExtension
 set srcdir=src
 call compile_and_zip.bat

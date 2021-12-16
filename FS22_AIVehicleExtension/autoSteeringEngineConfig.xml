@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<AIVEGlobals>
+		<oldAIArea value="1" /> <!-- 0: off, 1: multiple tools, 2:always old-->
+
+    <aiSteering type="float" value="1.000000" />
+    <aiSteeringD type="float" value="-1.000000" />
+    <artSteering type="float" value="1.000000" />
+    <artSteeringD type="float" value="1.000000" />
+    <!--angleSafety type="float" value="0.800000" /-->
+    <angleSafety type="float" value="0.8" />
+		
+		<zeroAngle  type="bool" value="true" />
+		
+    <angleStep    type="degree" value="0" />
+    <angleStepInc type="degree" value="45" /> <!-- 27° / 45° -->
+    <angleStepDec type="degree" value="0" /> <!-- 0.2 => reduce by 10° per 10m -->
+    <angleStepMax type="degree" value="60" />
+		<fixAngleStep type="bool" value="true"/>
+		
+    <chainDivideP1 value="8" />
+    <chainDivideP2 value="12" />
+    <chainDivideP3 value="8" />
+		<lastBestFactor value="1.0"/>
+		
+		<staticRoot type="bool" value="true" />
+		
+		<fruitBuffer value="2"/> <!-- 0 built in; 1 round x/z values; 2 buffer on -->		
+		<maxDtSumF  value="200"/>
+		<maxDtDistF type="float" value="0.308642" /> 10 km/h => 2.78 m/s => 0.278 m @ 10 fps; square = 0.077284 -->
+		
+    <!--                                            1 1 2 2 3 3 4 4-->
+    <!--                              1 2.5  4  6 8 2 7 2 7 2 7 2 7-->
+    <!--                              1  2   3  4 5 6 7 8 9 0 1 2 3 -->
+    <chainLen    type="vector" value="1 1.5 1.5 2 2 4 5 5 5 5 5 5 5"/> 
+		<chainStep0  value="3" /> <!-- initial part of the chain that always rotates    -->                           
+		<chainStep1  value="6"/>  <!-- steps to outside, can be smaller than chainStep2 -->
+		<chainStep2  value="99"/> <!-- steps to check, increased only if nothing found  -->
+	
+    <!--                                    1 1 1 2 2 3 4 4 5-->
+    <!--                              1 3 6 0 4 8 3 8 4 0 6 2-->
+    <!--                              1 2 3 4 5 6 7 8 9 0 1 2-->
+    <chain2Len   type="vector" value="1 2 3 4 4 4 5 5 6 6 6 6"/> 
+		<chain2Step0 value="3"/>
+		<chain2Step1 value="5"/>
+		<chain2Step2 value="9"/>
+
+    <!--                                  1 1 1 2 2 3 4 4 5-->
+    <!--                              3 6 0 4 8 3 8 4 0 6 2-->
+    <!--                              1 2 3 4 5 6 7 8 9 0 1-->
+    <chain3Len   type="vector" value="3 3 4 4 4 5 5 6 6 6 6"/> 
+		<chain3Step0 value="2"/>
+		<chain3Step1 value="2"/>
+		<chain3Step2 value="5"/>
+		
+    <chainBorder value="3" />
+		<chainStart  value="1" />
+		
+		<shiftFixZ type="bool" value="false" />
+		<colliMask type="bool" value="true" />
+		<colliStep type="float" value="0.2" />
+		<ignoreDist type="float" value="1.5" />
+    <maxLooking type="degree" value="30" />
+    <minLooking type="degree" value="2" />
+    <minLkgFactor type="float" value="0.15" />
+    <maxRotation type="degree" value="45" />
+    <maxRotationC type="degree" value="75" />
+    <maxRotationU type="degree" value="30" />
+		<maxRotationT type="degree" value="75" /> 
+		<maxRotationL type="float" value="3" /> 
+		<minRadius type="float" value="5.5" />
+    <minMidDist type="float" value="1.0" />
+    <reverseDir type="bool" value="false" />
+		
+		<chainIgnoreSq type="float" value="9" />
+		
+    <stepLog2 value="2" />
+    <yieldCount value="2000" />
+		
+    <widthDec type="float" value="0.005"/> 0.02 0.0011111 0.005 0.01
+    <widthMaxDec type="float" value="9" />9 3
+    <ignoreFactor type="float" value="3" />
+		<ignoreBorder value="5"/>
+	
+		<limitOutside type="bool" value="true" />
+		<limitInside type="bool" value="true" />
+
+		<maxDtSumT  value="50"/>  <!-- 10 fps => 100 ms -->
+		
+		<maxDtSumP0N value="60"/>   
+		<maxDtSumP1N value="2000"/>   
+		<maxDistSqN  type="float" value="1"/> <!-- 1 m ^2 -->
+		
+		<maxDtSumP0L value="160"/>   
+		<maxDtSumP1L value="4000"/>   
+		<maxDistSqL  type="float" value="9"/> <!-- 3 m ^2 -->
+		
+		<maxDtSumP0H value="0"/>   
+		<maxDtSumP1H value="500"/>   
+		<maxDistSqH  type="float" value="0.09"/> <!-- 0.3 m ^2 -->
+		
+		<maxTurnCheck type="float" value="15"/>		
+		<maxToolAngle type="degree" value="65" />
+		<maxToolAngle2 type="degree" value="9" />
+		<maxToolAngleF type="float" value="0.2" />
+		<maxToolAngleA type="degree" value="50" />
+		<enableAUTurn type="bool" value="true" />
+		<enableYUTurn type="bool" value="false" />
+		<enableKUTurn type="bool" value="false" />
+		<aiRescueDistSq type="float" value="2500" />
+		<raiseNoFruits type="bool" value="false" />
+		<fruitsAdvance type="float" value="2.0" />
+		<lowerAdvance type="float" value="4.0" />
+		<upperAdvance type="float" value="0.5" />
+		<fruitsInFront type="float" value="10" />
+		
+		<borderBuffer type="bool" value="true" />
+		
+		<minOffset   type="float" value="0.25" />
+		<minOffsetArt type="float" value="0.5" />
+		<testOutside type="float" value="1.5" />
+		<useFBB123   type="bool" value="true"/>
+		<FBB123disq1 type="float" value="0.04" /> 0,2m ^2
+		<FBB123disq2 type="float" value="0.25" /> 0,5m ^2
+		<angleBuffer type="bool" value="true"/>
+		<minTraceLen value="5"/>
+		<offTracking type="float" value="1.0" />
+		
+		<otherAIColli type="bool" value="true"/>
+		<tm7StopEarly type="bool" value="true"/>
+		
+		<minSpeed value="5"/>
+</AIVEGlobals>

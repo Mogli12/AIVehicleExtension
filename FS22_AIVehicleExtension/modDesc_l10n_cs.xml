@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[自动驾驶]]></description>
+
+	<texts>
+		<!-- AutoTractor helpPanel text -->
+		<text name="AIVE_SETTINGS"                 text="Helper settings"/> <!-- TODO: Translation -->
+		<text name="AIVE_ENABLED"                  text="Alternative helper"/> <!-- TODO: Translation -->
+		<text name="AIVE_START"                    text="自动驾驶开"/>
+		<text name="AIVE_STOP"                     text="自动驾驶关"/>
+		<text name="AIVE_WORKWIDTH"                text="工作面:"/>
+		<text name="AIVE_ACTIVESIDE"               text="Active side"/> <!-- TODO: Translation -->
+		<text name="AIVE_ACTIVESIDELEFT"           text="基准边: 左"/>
+		<text name="AIVE_ACTIVESIDERIGHT"          text="基准边: 右"/>
+
+		<text name="AIVE_UTURN_ON_OFF"             text="切换自动驾驶模式"/>
+		<text name="AIVE_STEERING"                 text="手动转向"/>
+		<text name="AIVE_NOSTEERING"               text="steering suppressed"/> <!-- TODO: Translation -->
+		<text name="AIVE_STEERING_ON"              text="手动转向 [开]"/>
+		<text name="AIVE_STEERING_OFF"             text="手动转向 [关]"/>
+		<text name="AIVE_CONTINUE"                 text="继续"/>
+		<text name="AIVE_RAISE"                    text="All tools lift/lower"/> <!-- TODO: Translation -->
+
+		<text name="AIVE_WAIT_FOR_PIPE"            text="卸载模式 [停车]"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="保持距离 开"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="保持距离 关"/>
+		<!-- AutoTractor help text -->
+		<text name="AIVE_TEXTHELPPANELOFF"         text="隐藏自动驾驶面板"/>
+		<text name="AIVE_TEXTHELPPANELON"          text="显示自动驾驶面板"/>
+		<!-- AutoTractor inputbinding text -->
+		<text name="AIVE_COLLISION_OTHER"          text="前碰撞"/>
+		<text name="AIVE_COLLISION_BACK"           text="后碰撞"/>
+		<text name="AIVE_UTURN_ON"                 text="自动驾驶 [up/down]"/>
+		<text name="AIVE_UTURN_OFF"                text="自动驾驶模式 [圆圈]"/>
+		<text name="AIVE_REVERSE_ON"               text="转向模式 [倒车]"/>
+		<text name="AIVE_REVERSE_OFF"              text="转向模式 [前进]"/>
+		<text name="AIVE_INVERTED"                 text="change direction"/> <!-- TODO: Translation -->
+		<text name="AIVE_INVERTED_ON"              text="工作模式 [倒车1]"/>
+		<text name="AIVE_INVERTED_OFF"             text="工作模式 [正常]"/>
+		<text name="AIVE_WIDTH_OFFSET"             text="横向调整"/>
+		<text name="AIVE_TURN_OFFSET"              text="转向调整"/>
+		<text name="AIVE_ANGLE_OFFSET"             text="转角"/>
+		<text name="AIVE_SAFETY_FACTOR"            text="安全距离"/>
+		<text name="AIVE_ERROR"                    text="错误"/>
+		<text name="AIVE_NEXTTURNSTAGE"            text="跳到下一个转弯"/>
+		<text name="AIVE_CP_ON"                    text="支持CP [关]"/>
+		<text name="AIVE_CP_OFF"                   text="支持CP [开]"/>
+		<text name="AIVE_STEER_ON"                 text="自动转向 [关]"/>
+		<text name="AIVE_STEER_OFF"                text="自动转向 [开]"/>
+		<text name="AIVE_HEADLAND_ON"              text="地块内转向 [关]"/>
+		<text name="AIVE_HEADLAND_OFF"             text="地块内转向 [开]"/>
+		<text name="AIVE_FRONT_PACKER_ON"          text="前方障碍 [开]"/>
+		<text name="AIVE_FRONT_PACKER_OFF"         text="前方障碍 [关]"/>
+		<text name="AIVE_COLLISION_ON"             text="障碍检查 [开]"/>
+		<text name="AIVE_COLLISION_OFF"            text="障碍检查 [关]"/>
+		<text name="AIVE_HIRE_ON"                  text="种子使用 [关]"/>
+		<text name="AIVE_HIRE_OFF"                 text="种子使用 [开]"/>
+		<text name="AIVE_HEADLAND"                 text="田间转向"/>
+		<text name="AIVE_TURN_MODE"                text="Turn modes"/> <!-- TODO: Translation -->
+		<text name="AIVE_TURN_MODE_O"              text="U型弯"/>
+		<text name="AIVE_TURN_MODE_A"              text="小U型弯"/>
+		<text name="AIVE_TURN_MODE_Y"              text="中U型弯"/>
+		<text name="AIVE_TURN_MODE_T"              text="大U型弯"/>
+		<text name="AIVE_TURN_MODE_C"              text="90°转弯"/>
+		<text name="AIVE_TURN_MODE_L"              text="小90°转弯"/>
+		<text name="AIVE_TURN_MODE_7"              text="straight revers"/> <!-- TODO: Translation -->
+		<text name="AIVE_TURN_MODE_K"              text="大90°转弯"/>
+		<text name="AIVE_TURN_MODE_8"              text="8字形弯"/>
+		<text name="AIVE_PAUSE_ON"                 text="暂停 [开]"/>
+		<text name="AIVE_PAUSE_OFF"                text="暂停 [关]"/>
+		<text name="AIVE_STEER_RAISE"              text="提升工具"/>
+		<text name="AIVE_STEER_LOWER"              text="降低工具"/>
+		<text name="AIVE_TRACE"                    text="显示辅助线"/>
+		<text name="AIVE_MAGIC"                    text="重置地块"/>
+		<text name="AIVE_USE_AI_FIELD"             text="detect connected field only"/> <!-- TODO: Translation -->
+		<text name="AIVE_FIELD_W"                  text="Field detection is running"/> <!-- TODO: Translation -->
+		<text name="AIVE_FIELD_E"                  text="Field detection failed"/> <!-- TODO: Translation -->
+
+		<text name="input_AIVE_HELPPANEL"          text="Alternative AI: Show/hide HUD"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_STEER"              text="Alternative AI: Automatic steering"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_SWAP_SIDE"          text="Alternative AI: Change active side"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_ENABLE"             text="Alternative AI: Change AI"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_UTURN_ON_OFF"       text="Alternative AI: Circular mode on/off"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_STEERING"           text="Alternative AI: Manual steering"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_RAISE"              text="Alternative AI: Raise/lower all tools"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_START_AIVE"         text="Alternative AI: Settings"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_NEXT_WORKER"        text="Alternative AI: Jump to next worker"/> <!-- TODO: Translation -->
+	</texts>
+</l10n>

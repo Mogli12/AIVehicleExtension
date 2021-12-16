@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Tractor]]></description>
+
+	<texts>
+		<!-- AI Vehicle helpPanel text -->
+		<text name="AIVE_SETTINGS"                 text="Helper settings"/> <!-- TODO: Translation -->
+		<text name="AIVE_ENABLED"                  text="Alternative helper"/> <!-- TODO: Translation -->
+		<text name="AIVE_START"                    text="AI Vehicle on"/> <!-- TODO: Translation -->
+		<text name="AIVE_STOP"                     text="AI Vehicle off"/> <!-- TODO: Translation -->
+		<text name="AIVE_WORKWIDTH"                text="Ancho Trabajo:"/>
+		<text name="AIVE_ACTIVESIDE"               text="Active side"/> <!-- TODO: Translation -->
+		<text name="AIVE_ACTIVESIDELEFT"           text="Cambiar Lado: Izq."/>
+		<text name="AIVE_ACTIVESIDERIGHT"          text="Cambiar Lado: Der."/>
+
+		<text name="AIVE_UTURN_ON_OFF"             text="AI Vehicle On/Off"/>
+		<text name="AIVE_STEERING"                 text="Dirección Manual"/>
+		<text name="AIVE_NOSTEERING"               text="steering suppressed"/>
+		<text name="AIVE_STEERING_ON"              text="Dirección Manual [ON]"/>
+		<text name="AIVE_STEERING_OFF"             text="Dirección Manual[OFF]"/>
+		<text name="AIVE_CONTINUE"                 text="Continuar"/>
+		<text name="AIVE_RAISE"                    text="All tools lift/lower"/>
+
+		<text name="AIVE_WAIT_FOR_PIPE"            text="Modo Descarga [En Pie]"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="Guardar Distancia ON"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="Guardar Distancia OFF"/>
+		<!-- AI Vehicle help text -->
+		<text name="AIVE_TEXTHELPPANELOFF"         text="Ocultar Info AI Vehicle"/>
+		<text name="AIVE_TEXTHELPPANELON"          text="Mostrar Info AI Vehicle"/>
+		<!-- AI Vehicle inputbinding text -->
+		<text name="AIVE_COLLISION_OTHER"          text="Colisión Delantera"/>
+		<text name="AIVE_COLLISION_BACK"           text="Colisión Trasera"/>
+		<text name="AIVE_UTURN_ON"                 text="AI Vehicle Modo [ZigZag]"/>
+		<text name="AIVE_UTURN_OFF"                text="AI Vehicle Modo [Circulos]"/>
+		<text name="AIVE_REVERSE_ON"               text="Modo Giro [Hacia atrás]"/>
+		<text name="AIVE_REVERSE_OFF"              text="Modo Giro [Conduciendo]"/>
+		<text name="AIVE_INVERTED"                 text="change direction"/> <!-- TODO: Translation -->
+		<text name="AIVE_INVERTED_ON"              text="Modo Trabajo [Hacia atrás]"/>
+		<text name="AIVE_INVERTED_OFF"             text="Modo Trabajo [Normal]"/>
+		<text name="AIVE_WIDTH_OFFSET"             text="Resetear Ancho"/>
+		<text name="AIVE_TURN_OFFSET"              text="Resetear Giro"/>
+		<text name="AIVE_ANGLE_OFFSET"             text="Resetear Ángulo"/>
+		<text name="AIVE_SAFETY_FACTOR"            text="Distancia Seguridad"/>
+		<text name="AIVE_ERROR"                    text="Error"/>
+		<text name="AIVE_NEXTTURNSTAGE"            text="Ir a siguiente pantalla giro"/>
+		<text name="AIVE_CP_ON"                    text="Modo Courseplay [Off]"/>
+		<text name="AIVE_CP_OFF"                   text="courseplay mode [On]"/>
+		<text name="AIVE_STEER_ON"                 text="Auto Dirección [Off]"/>
+		<text name="AIVE_STEER_OFF"                text="Auto Dirección [On]"/>
+		<text name="AIVE_HEADLAND_ON"              text="Cabecera [Off]"/>
+		<text name="AIVE_HEADLAND_OFF"             text="Cabecera [On]"/>
+		<text name="AIVE_FRONT_PACKER_ON"          text="Empacador Delantero [On]"/>
+		<text name="AIVE_FRONT_PACKER_OFF"         text="Empacador Delantero [Off]"/>
+		<text name="AIVE_COLLISION_ON"             text="Chequear Colisión [On]"/>
+		<text name="AIVE_COLLISION_OFF"            text="Chequear Colisión [Off]"/>
+		<text name="AIVE_HIRE_ON"                  text="Usar Semilla [Off]"/>
+		<text name="AIVE_HIRE_OFF"                 text="Usar Semilla [On]"/>
+		<text name="AIVE_HEADLAND"                 text="Cabecera"/>
+		<text name="AIVE_TURN_MODE"                text="Turn modes"/> <!-- TODO: Translation -->
+		<text name="AIVE_TURN_MODE_O"              text="Giro 180º sin retroceder"/>
+		<text name="AIVE_TURN_MODE_A"              text="Giro pequeño"/>
+		<text name="AIVE_TURN_MODE_Y"              text="Giro medio"/>
+		<text name="AIVE_TURN_MODE_T"              text="Giro grande"/>
+		<text name="AIVE_TURN_MODE_C"              text="Giro 90° sin retroceder"/>
+		<text name="AIVE_TURN_MODE_L"              text="Giro pequeño 90°"/>
+		<text name="AIVE_TURN_MODE_7"              text="straight revers"/> <!-- TODO: Translation -->
+		<text name="AIVE_TURN_MODE_K"              text="Giro grande 90°"/>
+		<text name="AIVE_TURN_MODE_8"              text="Giro 180º sin retroceder"/>
+		<text name="AIVE_PAUSE_ON"                 text="Pausa [On]"/>
+		<text name="AIVE_PAUSE_OFF"                text="Pausa [Off]"/>
+		<text name="AIVE_STEER_RAISE"              text="Levantar todos los implementos"/>
+		<text name="AIVE_STEER_LOWER"              text="Bajar todos los implementos"/>
+		<text name="AIVE_TRACE"                    text="Mostrar Rastro"/>
+		<text name="AIVE_MAGIC"                    text="Refrescar Campo"/>
+		<text name="AIVE_USE_AI_FIELD"             text="detect connected field only"/> <!-- TODO: Translation -->
+		<text name="AIVE_FIELD_W"                  text="Field detection is running"/> <!-- TODO: Translation -->
+		<text name="AIVE_FIELD_E"                  text="Field detection failed"/> <!-- TODO: Translation -->
+
+		<text name="input_AIVE_HELPPANEL"          text="Alternative AI: Show/hide HUD"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_STEER"              text="Alternative AI: Automatic steering"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_SWAP_SIDE"          text="Alternative AI: Change active side"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_ENABLE"             text="Alternative AI: Change AI"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_UTURN_ON_OFF"       text="Alternative AI: Circular mode on/off"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_STEERING"           text="Alternative AI: Manual steering"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_RAISE"              text="Alternative AI: Raise/lower all tools"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_START_AIVE"         text="Alternative AI: Settings"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_NEXT_WORKER"        text="Alternative AI: Jump to next worker"/> <!-- TODO: Translation -->
+	</texts>
+</l10n>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Traktor]]></description>
+
+	<texts>
+		<!-- AI Vehicle helpPanel text -->
+		<text name="AIVE_SETTINGS"                 text="Helper settings"/> <!-- TODO: Translation -->
+		<text name="AIVE_ENABLED"                  text="Alternative helper"/> <!-- TODO: Translation -->
+		<text name="AIVE_START"                    text="AI Vehicle pomocník"/>
+		<text name="AIVE_STOP"                     text="Normální pomocník"/>
+		<text name="AIVE_WORKWIDTH"                text="Pracovní šířka:"/>
+		<text name="AIVE_ACTIVESIDE"               text="Active side"/> <!-- TODO: Translation -->
+		<text name="AIVE_ACTIVESIDELEFT"           text="Aktivní strana: LEVÁ"/>
+		<text name="AIVE_ACTIVESIDERIGHT"          text="Aktivní strana: PRAVÁ"/>
+
+		<text name="AIVE_UTURN_ON_OFF"             text="Změna AI Vehicle módu"/>
+		<text name="AIVE_STEERING"                 text="Ruční řízení"/>
+		<text name="AIVE_NOSTEERING"               text="steering suppressed"/> <!-- TODO: Translation -->
+		<text name="AIVE_STEERING_ON"              text="Ruční řízení: ON"/>
+		<text name="AIVE_STEERING_OFF"             text="Ruční řízení: OFF"/>
+		<text name="AIVE_CONTINUE"                 text="Pokračovat"/>
+		<text name="AIVE_RAISE"                    text="Zvednout/položit veškeré vybavení"/>
+
+		<text name="AIVE_WAIT_FOR_PIPE"            text="Vysypávání: STÁNÍ"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="Bezpečná vzdálenost: ON"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="Bezpečná vzdálenost: OFF"/>
+		<!-- AI Vehicle help text -->
+		<text name="AIVE_TEXTHELPPANELOFF"         text="Skrýt AI Vehicle info"/>
+		<text name="AIVE_TEXTHELPPANELON"          text="Zobrazit AI Vehicle info"/>
+		<!-- AI Vehicle inputbinding text -->
+		<text name="AIVE_COLLISION_OTHER"          text="Kolize vpředu"/>
+		<text name="AIVE_COLLISION_BACK"           text="Kolize vzadu"/>
+		<text name="AIVE_UTURN_ON"                 text="AI Vehicle mód: ŘÁDKY"/>
+		<text name="AIVE_UTURN_OFF"                text="AI Vehicle mód: KRUH"/>
+		<text name="AIVE_REVERSE_ON"               text="Otáčení: COUVÁNÍ"/>
+		<text name="AIVE_REVERSE_OFF"              text="Otáčení: JÍZDA VPŘED"/>
+		<text name="AIVE_INVERTED"                 text="change direction"/>
+		<text name="AIVE_INVERTED_ON"              text="Pracovní režim: COUVÁNÍ"/>
+		<text name="AIVE_INVERTED_OFF"             text="Pracovní režim: JÍZDA VPŘED"/>
+		<text name="AIVE_WIDTH_OFFSET"             text="Šíře otáčení"/>
+		<text name="AIVE_TURN_OFFSET"              text="TURN_OFFSET"/> <!-- TODO: Translation -->
+		<text name="AIVE_ANGLE_OFFSET"             text="Úhel otáčení"/>
+		<text name="AIVE_SAFETY_FACTOR"            text="safety distance"/> <!-- TODO: Translation -->
+		<text name="AIVE_ERROR"                    text="Chyba"/>
+		<text name="AIVE_NEXTTURNSTAGE"            text="Jet na další bod otáčení"/>
+		<text name="AIVE_CP_ON"                    text="CoursePlay mód: OFF"/>
+		<text name="AIVE_CP_OFF"                   text="CoursePlay mód: ON"/>
+		<text name="AIVE_STEER_ON"                 text="Autom. řízení: OFF"/>
+		<text name="AIVE_STEER_OFF"                text="Autom. řízení: ON"/>
+		<text name="AIVE_HEADLAND_ON"              text="Úvrať: OFF"/>
+		<text name="AIVE_HEADLAND_OFF"             text="Úvrať: ON"/>
+		<text name="AIVE_FRONT_PACKER_ON"          text="Front Packer: ON"/> <!-- TODO: Translation -->
+		<text name="AIVE_FRONT_PACKER_OFF"         text="Front Packer: OFF"/> <!-- TODO: Translation -->
+		<text name="AIVE_COLLISION_ON"             text="Kontrola kolize: ON"/>
+		<text name="AIVE_COLLISION_OFF"            text="Kontrola kolize: OFF"/>
+		<text name="AIVE_HIRE_ON"                  text="Spotřeba osiva: ON"/>
+		<text name="AIVE_HIRE_OFF"                 text="Spotřeba osiva: OFF"/>
+		<text name="AIVE_HEADLAND"                 text="Úvrať"/>
+		<text name="AIVE_TURN_MODE"                text="Turn modes"/> <!-- TODO: Translation -->
+		<text name="AIVE_TURN_MODE_O"              text="Otočit o 180° bez couvání"/>
+		<text name="AIVE_TURN_MODE_A"              text="Malé otočení o 180°"/>
+		<text name="AIVE_TURN_MODE_Y"              text="Střední otočení o 180°"/>
+		<text name="AIVE_TURN_MODE_T"              text="Velké otočení o 180°"/>
+		<text name="AIVE_TURN_MODE_C"              text="Otočit o 90° bez couvání"/>
+		<text name="AIVE_TURN_MODE_L"              text="Malé otočení o 90°"/>
+		<text name="AIVE_TURN_MODE_7"              text="straight revers"/> <!-- TODO: Translation -->
+		<text name="AIVE_TURN_MODE_K"              text="Velké otočení o 90°"/>
+		<text name="AIVE_TURN_MODE_8"              text="Otočit o 180° bez couvání"/>
+		<text name="AIVE_PAUSE_ON"                 text="Pauza: ON"/>
+		<text name="AIVE_PAUSE_OFF"                text="Pauza: OFF"/>
+		<text name="AIVE_STEER_RAISE"              text="Zařízení: ZVEDNOUT/ON"/>
+		<text name="AIVE_STEER_LOWER"              text="Zařízení: POLOŽIT/OFF"/>
+		<text name="AIVE_TRACE"                    text="show trace"/> <!-- TODO: Translation -->
+		<text name="AIVE_MAGIC"                    text="refresh field"/> <!-- TODO: Translation -->
+		<text name="AIVE_USE_AI_FIELD"             text="detect connected field only"/> <!-- TODO: Translation -->
+		<text name="AIVE_FIELD_W"                  text="Field detection is running"/> <!-- TODO: Translation -->
+		<text name="AIVE_FIELD_E"                  text="Field detection failed"/> <!-- TODO: Translation -->
+
+		<text name="input_AIVE_HELPPANEL"          text="Alternative AI: Show/hide HUD"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_STEER"              text="Alternative AI: Automatic steering"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_SWAP_SIDE"          text="Alternative AI: Change active side"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_ENABLE"             text="Alternative AI: Change AI"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_UTURN_ON_OFF"       text="Alternative AI: Circular mode on/off"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_STEERING"           text="Alternative AI: Manual steering"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_RAISE"              text="Alternative AI: Raise/lower all tools"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_START_AIVE"         text="Alternative AI: Settings"/> <!-- TODO: Translation -->
+		<text name="input_AIVE_NEXT_WORKER"        text="Alternative AI: Jump to next worker"/> <!-- TODO: Translation -->
+	</texts>
+</l10n>

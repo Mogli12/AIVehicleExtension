@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+	<description><![CDATA[Auto Tractor - French traduction by Waylan, update by Iscarriah]]></description>
+
+	<texts>
+		<!-- AI Vehicle helpPanel text -->
+		<text name="AIVE_SETTINGS"                 text="Paramètres de l'ouvrier"/>
+		<text name="AIVE_ENABLED"                  text="Ouvrier alternatif"/>
+		<text name="AIVE_START"                    text="Ouvrier alternatif"/>
+		<text name="AIVE_STOP"                     text="Ouvrier standard"/>
+		<text name="AIVE_WORKWIDTH"                text="Largeur de travail:"/>
+		<text name="AIVE_ACTIVESIDE"               text="Côté actif"/>
+		<text name="AIVE_ACTIVESIDELEFT"           text="Gauche"/>
+		<text name="AIVE_ACTIVESIDERIGHT"          text="Droite"/>
+
+		<text name="AIVE_UTURN_ON_OFF"             text="Changer mode AI Vehicle"/>
+		<text name="AIVE_STEERING"                 text="Direction manuelle"/>
+		<text name="AIVE_NOSTEERING"               text="steering suppressed"/> <!-- TODO: Translation -->
+		<text name="AIVE_STEERING_ON"              text="Direction manuelle [ON]"/>
+		<text name="AIVE_STEERING_OFF"             text="Direction manuelle [OFF]"/>
+		<text name="AIVE_CONTINUE"                 text="Continuer"/>
+		<text name="AIVE_RAISE"                    text="Lever/baisser tous les outils"/>
+
+		<text name="AIVE_WAIT_FOR_PIPE"            text="S'arrêter pour décharger"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="Détecteur de collision ON"/>
+		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="Détecteur de collision OFF"/>
+		<!-- AI Vehicle help text -->
+		<text name="AIVE_TEXTHELPPANELOFF"         text="Masquer AI Vehicle-Info"/>
+		<text name="AIVE_TEXTHELPPANELON"          text="Afficher AI Vehicle-Info"/>
+		<!-- AI Vehicle inputbinding text -->
+		<text name="AIVE_COLLISION_OTHER"          text="Collision avant"/>
+		<text name="AIVE_COLLISION_BACK"           text="Collision arrière"/>
+		<text name="AIVE_UTURN_ON"                 text="Aller/retour"/>
+		<text name="AIVE_UTURN_OFF"                text="Mode circulaire"/>
+		<text name="AIVE_REVERSE_ON"               text="Virage [en arrière]"/>
+		<text name="AIVE_REVERSE_OFF"              text="Virage [en avant]"/>
+		<text name="AIVE_INVERTED"                 text="Poste de conduite inversé"/>
+		<text name="AIVE_INVERTED_ON"              text="Mode de travail [inversé]"/>
+		<text name="AIVE_INVERTED_OFF"             text="Mode de travail [normal]"/>
+		<text name="AIVE_WIDTH_OFFSET"             text="Décalage (largeur)"/>
+		<text name="AIVE_TURN_OFFSET"              text="Décalage (virage)"/>
+		<text name="AIVE_ANGLE_OFFSET"             text="Angle de direction"/>
+		<text name="AIVE_SAFETY_FACTOR"            text="Distance de sécurité"/>
+		<text name="AIVE_ERROR"                    text="Erreur"/>
+		<text name="AIVE_NEXTTURNSTAGE"            text="Aller à l'étape suivante"/>
+		<text name="AIVE_CP_ON"                    text="Mode Courseplay [OFF]"/>
+		<text name="AIVE_CP_OFF"                   text="Mode Courseplay [ON]"/>
+		<text name="AIVE_STEER_ON"                 text="Direction autom. [OFF]"/>
+		<text name="AIVE_STEER_OFF"                text="Direction autom. [ON]"/>
+		<text name="AIVE_HEADLAND_ON"              text="Fourrière [OFF]"/>
+		<text name="AIVE_HEADLAND_OFF"             text="Fourrière [ON]"/>
+		<text name="AIVE_FRONT_PACKER_ON"          text="Packer frontal [ON]"/>
+		<text name="AIVE_FRONT_PACKER_OFF"         text="Packer frontal [OFF]"/>
+		<text name="AIVE_COLLISION_ON"             text="Détection colision [ON]"/>
+		<text name="AIVE_COLLISION_OFF"            text="Détection collision [OFF]"/>
+		<text name="AIVE_HIRE_ON"                  text="Consommation semences [OFF]"/>
+		<text name="AIVE_HIRE_OFF"                 text="Consommation semences [ON]"/>
+		<text name="AIVE_HEADLAND"                 text="Fourrière"/>
+		<text name="AIVE_TURN_MODE"                text="Type de virage"/>
+		<text name="AIVE_TURN_MODE_O"              text="Virage en forme de O"/>
+		<text name="AIVE_TURN_MODE_A"              text="En arrière avec courbe"/>
+		<text name="AIVE_TURN_MODE_Y"              text="En arrière avec courbe (moissonneuse)"/>
+		<text name="AIVE_TURN_MODE_T"              text="En arrière en ligne droite"/>
+		<text name="AIVE_TURN_MODE_C"              text="Virage en forme de O"/>
+		<text name="AIVE_TURN_MODE_L"              text="En arrière avec courbe"/>
+		<text name="AIVE_TURN_MODE_7"              text="En arrière en ligne droite"/>
+		<text name="AIVE_TURN_MODE_K"              text="Grand virage à 90°"/>
+		<text name="AIVE_TURN_MODE_8"              text="Virage en forme de 8"/>
+		<text name="AIVE_PAUSE_ON"                 text="Continuer"/>
+		<text name="AIVE_PAUSE_OFF"                text="Pause"/>
+		<text name="AIVE_STEER_RAISE"              text="Lever/désactiver outil"/>
+		<text name="AIVE_STEER_LOWER"              text="Baisser/activer outil"/>
+		<text name="AIVE_TRACE"                    text="Afficher la trace"/>
+		<text name="AIVE_MAGIC"                    text="Redétecter le champ"/>
+		<text name="AIVE_USE_AI_FIELD"             text="Détecter champ connecté"/>
+		<text name="AIVE_FIELD_W"                  text="Field detection is running"/> <!-- TODO: Translation -->
+		<text name="AIVE_FIELD_E"                  text="Field detection failed"/> <!-- TODO: Translation -->
+
+		<text name="input_AIVE_HELPPANEL"          text="AlVE : Afficher/masquer HUD"/>
+		<text name="input_AIVE_STEER"              text="AIVE : Direction automatique"/>
+		<text name="input_AIVE_SWAP_SIDE"          text="AIVE : Changer de direction"/>
+		<text name="input_AIVE_ENABLE"             text="AIVE : Changer d'ouvrier"/>
+		<text name="input_AIVE_UTURN_ON_OFF"       text="AIVE : Mode circulaire ON/OFF"/>
+		<text name="input_AIVE_STEERING"           text="AIVE : Direction manuelle"/>
+		<text name="input_AIVE_RAISE"              text="AIVE : Lever/baisser tous les outils"/>
+		<text name="input_AIVE_START_AIVE"         text="AIVE : Paramètres ouvrier"/>
+		<text name="input_AIVE_NEXT_WORKER"        text="AIVE : Jump to next worker"/> <!-- TODO: Translation -->
+	</texts>
+</l10n>
