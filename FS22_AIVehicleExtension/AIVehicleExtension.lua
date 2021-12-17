@@ -61,8 +61,8 @@ end
 
 AIVehicleExtension.saveAttributesMapping = { 
 		enabled         = { xml = "acDefaultOn",	 tp = "B", default = true  },
-		upNDown				  = { xml = "acUTurn",			 tp = "B", default = false },
-		straight			  = { xml = "acStraight",		 tp = "B", default = false },
+		upNDown				  = { xml = "acUTurn",			 tp = "B", default = true },
+		straight			  = { xml = "acStraight",		 tp = "B", default = true },
 		rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false },
 		headland				= { xml = "acHeadland",		 tp = "B", default = false },
 		collision			  = { xml = "acCollision",	 tp = "B", default = true },
@@ -147,6 +147,22 @@ function AIVehicleExtension.registerEventListeners(vehicleType)
 		SpecializationUtil.registerEventListener(vehicleType, n, AIVehicleExtension)
 	end 
 end 
+
+function AIVehicleExtension.initSpecialization()
+	local schemaSavegame = Vehicle.xmlSchemaSavegame
+	if schemaSavegame then 
+		for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
+			if		 p.tp == "B" then
+				schemaSavegame:register( XMLValueType.BOOL, "vehicles.vehicle(?)." .. AIVehicleExtensionRegister.specName .. "#".. p.xml, "AIVehicleExtension: ".. p.xml)
+			elseif p.tp == "I" then
+				schemaSavegame:register( XMLValueType.INT, "vehicles.vehicle(?)." .. AIVehicleExtensionRegister.specName .. "#".. p.xml, "AIVehicleExtension: ".. p.xml)
+			else--if p.tp == "F" then
+				schemaSavegame:register( XMLValueType.FLOAT, "vehicles.vehicle(?)." .. AIVehicleExtensionRegister.specName .. "#".. p.xml, "AIVehicleExtension: ".. p.xml)
+			end 
+		end
+	end		
+end 
+
 ------------------------------------------------------------------------
 -- load
 ------------------------------------------------------------------------
@@ -1926,13 +1942,7 @@ Drivable.updateVehiclePhysics = Utils.overwrittenFunction( Drivable.updateVehicl
 function AIVehicleExtension:saveToXMLFile(xmlFile, key)
 	for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
 		if self.acParameters[n] ~= p.default or p.always then			
-			if		 p.tp == "B" then
-				setXMLBool(xmlFile, key.."#"..p.xml, self.acParameters[n])
-			elseif p.tp == "I" then
-				setXMLInt(xmlFile, key.."#"..p.xml, self.acParameters[n])
-			else--if p.tp == "F" then
-				setXMLFloat(xmlFile, key.."#"..p.xml, self.acParameters[n])
-			end
+			xmlFile:setValue(key .. "#" .. p.xml, self.acParameters[n])
 		end
 	end
 end
@@ -1941,26 +1951,16 @@ end
 -- loadFromAttributesAndNodes
 ------------------------------------------------------------------------
 function AIVehicleExtension:onPostLoad(savegame)
-	if false and savegame ~= nil then
-		local xmlFile = savegame.xmlFile
-		local key     = savegame.key.."."..AIVehicleExtensionRegister.specName
-
+	if savegame ~= nil then
 		for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-			if		 p.tp == "B" then
-				self.acParameters[n] = AIVEHud.getXmlBool( xmlFile, key.."#"..p.xml, self.acParameters[n])
-			elseif p.tp == "I" then
-				self.acParameters[n] = AIVEHud.getXmlInt(	xmlFile, key.."#"..p.xml, self.acParameters[n])
-			else--if p.tp == "F" then
-				self.acParameters[n] = AIVEHud.getXmlFloat(xmlFile, key.."#"..p.xml, self.acParameters[n])
-			end
+			local v = savegame.xmlFile:getValue(savegame.key .. "." .. AIVehicleExtensionRegister.specName .. "#" .. p.xml )
+			if v ~= nil then 
+				self.acParameters[n] = v 
+			end 
 		end		
 		
 		self.acParameters.leftAreaActive	= not self.acParameters.rightAreaActive
 		self.acDimensions								  = nil
-		
-	--if type( self.setIsReverseDriving ) == "function" and self.acParameters.inverted then
-	--	self:setIsReverseDriving( self.acParameters.inverted, false )
-	--end
 	end
 end
 

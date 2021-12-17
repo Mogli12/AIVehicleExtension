@@ -69,6 +69,8 @@ function AIVehicleExtensionRegister:loadMap(name)
 		end;
 		delete(l10nXmlFile);
 	end
+	
+	AIVehicleExtension.initSpecialization()
 end;
 
 function AIVehicleExtensionRegister:saveSavegame( savegame )
