@@ -3564,32 +3564,32 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
 			or ( acc < 0 and vehicle.acLastAcc > 0 ) then
 		vehicle.acLastAcc = 0
 		wantedSpeed       = 0
-		vehicle.acLastWantedSpeed = 0
+	--vehicle.acLastWantedSpeed = 0
 	else
 		vehicle.acLastAcc = vehicle.acLastAcc + AIVEUtils.clamp( acc - vehicle.acLastAcc, - dt * 0.0005, dt * 0.0005)
 	end
 	
 	local curSpeed = math.abs( vehicle.lastSpeed * 3600 )
-			
-	if     wantedSpeed < 1 then		
-		vehicle.acLastWantedSpeed = 2
-		return 0
-	elseif wantedSpeed < 6.5 and wantedSpeed < curSpeed then
-		vehicle.acLastWantedSpeed = wantedSpeed
-	elseif math.abs( wantedSpeed - curSpeed ) < 0.5 then
-		vehicle.acLastWantedSpeed = wantedSpeed
-	else
+	
+	if wantedSpeed < 1 then 
+		if vehicle.acLastWantedSpeed < 1 then 
+			vehicle.acLastWantedSpeed  = 0 
+		else 
+			vehicle.acLastWantedSpeed = math.max( 0, math.min( curSpeed * ( 1 - 0.002 * dt ), curSpeed - 0.002 * dt ) )
+		end 
+	else 
+				
 		if wantedSpeed < curSpeed then
 			vehicle.acLastWantedSpeed = math.min( vehicle.acLastWantedSpeed, curSpeed )
 		else
 			vehicle.acLastWantedSpeed = math.max( vehicle.acLastWantedSpeed, curSpeed )
 		end
-		if vehicle.acLastWantedSpeed < 2 then
+		if wantedSpeed > 1 and vehicle.acLastWantedSpeed < 2 then
 			vehicle.acLastWantedSpeed = 2
 		end
 	
 		vehicle.acLastWantedSpeed = vehicle.acLastWantedSpeed + AIVEUtils.clamp( wantedSpeed - vehicle.acLastWantedSpeed, -0.001 * dt, 0.001 * dt )
-	end
+	end 
 	
 	return vehicle.acLastWantedSpeed
  end

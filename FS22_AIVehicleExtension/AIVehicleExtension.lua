@@ -1095,8 +1095,7 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
                  ,"AIVE_UTURN_ON_OFF"   
                  ,"AIVE_STEERING"         
                  ,"AIVE_START_AIVE"
-                 ,"AXIS_MOVE_SIDE_VEHICLE"
-								 ,"TOGGLE_CRUISE_CONTROL" }
+ 								 ,"TOGGLE_CRUISE_CONTROL" }
 		elseif self.spec_aiFieldWorker.isActive then 
 		elseif self.aiveAutoSteer then 
 			actions = { "AIVE_HELPPANEL" 	  
@@ -1119,9 +1118,6 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
 		
 		for _,actionName in pairs( actions ) do
 			local pBool1, pBool2, pBool3, pBool4 = false, true, false, true 
-			if actionName == "AXIS_MOVE_SIDE_VEHICLE" then 
-				pBool1 = true 
-			end 
 			local _, eventName = self:addActionEvent(self.aiveActionEvents, InputAction[actionName], self, AIVehicleExtension.actionCallback, pBool1, pBool2, pBool3, pBool4);
 		end
 	end
@@ -1175,15 +1171,6 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 			AIVehicleExtension.sendParameters( self )
 		end
 		AIVehicleExtension.setImplMoveDownClient(self, not ( AIVehicleExtension.getIsLowered( self ) ), true)
-	elseif  actionName == "AXIS_MOVE_SIDE_VEHICLE" 
-			and self.aiveIsStarted 
-			and self.acParameters ~= nil 
-			and not self.acParameters.noSteering then 
-		if math.abs( keyStatus ) > 0.05 then 
-			self.acAxisSide = keyStatus
-		else 
-			self.acAxisSide = 0
-		end 
 	elseif  actionName == "TOGGLE_CRUISE_CONTROL" 
 			and self.aiveIsStarted then 
 		if self.speed2Level == nil or self.speed2Level > 0 then
@@ -1456,17 +1443,19 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:setAIDirection()
 	local dx,_,dz = localDirectionToWorld(self.acRefNode, 0, 0, 1)
---if g_currentMission.snapAIDirection then
---	local snapAngle = self:getDirectionSnapAngle()
---	snapAngle = math.max(snapAngle, math.pi/(g_currentMission.terrainDetailAngleMaxValue+1))
---	local angleRad = MathUtil.getYRotationFromDirection(dx, dz)
---	angleRad = math.floor(angleRad / snapAngle + 0.5) * snapAngle
---	dx, dz = MathUtil.getDirectionFromYRotation(angleRad)
---else
-		local length = MathUtil.vector2Length(dx,dz)
+	if g_currentMission.snapAIDirection then
+		local snapAngle = self:getDirectionSnapAngle()
+		local terrainAngle = math.pi / math.max(g_currentMission.fieldGroundSystem:getGroundAngleMaxValue() + 1, 8)
+		snapAngle = math.max(snapAngle, terrainAngle)
+		local angleRad = MathUtil.getYRotationFromDirection(dx, dz)
+		angleRad = math.floor(angleRad / snapAngle + 0.5) * snapAngle
+		dx, dz = MathUtil.getDirectionFromYRotation(angleRad)
+	else
+		local length = MathUtil.vector2Length(dx, dz)
 		dx = dx / length
 		dz = dz / length
---end
+	end
+
 	self.aiDriveDirection = {dx, dz}
 	local x,_,z = getWorldTranslation(self.acRefNode)
 	self.aiDriveTarget = {x, z}
@@ -1893,7 +1882,7 @@ function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axi
 				self.acAxisSideFactor = 0
 			elseif self.movingDirection < -1E-2 or not self.acImplementsMoveDown then	
 				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
-			elseif self:getIsEntered() and math.abs( self.acAxisSide ) > 0 then
+			elseif self:getIsEntered() and math.abs( self.spec_drivable.lastInputValues.axisSteer ) > 0 then
 				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
 			elseif border > 0 then 
 				self.acAxisSideFactor = math.min( self.acAxisSideFactor + 10 * dt, 1000 )
@@ -2296,7 +2285,6 @@ function AIVehicleExtension:onReadUpdateStream(streamId, timestamp, connection)
   if connection:getIsServer() then
 		if streamReadBool( streamId ) then
 			self.acTurnStage = streamReadUInt8( streamId ) - 10
-			self.acAxisSide  = streamReadInt8( streamId ) * 0.01
 		end
   end 
 end 
@@ -2306,7 +2294,6 @@ function AIVehicleExtension:onWriteUpdateStream(streamId, connection, dirtyMask)
 		if self.aiveIsStarted or self.aiveAutoSteer then
 			streamWriteBool(streamId, true )
 			streamWriteUInt8(streamId, AIVEUtils.clamp( 10 + self.acTurnStage, 0, 255 ) )
-			streamWriteInt8(streamId, math.floor( AIVEUtils.clamp( 0.5 + 100 * self.acAxisSide, -100, 100 ) ) )
 		else
 			streamWriteBool(streamId, false )
 		end
@@ -2851,8 +2838,8 @@ function AIVehicleExtension:afterUpdateAIDriveStrategies()
 			local driveStrategyMogli = nil
 			if     d:isa(AIDriveStrategyStraight) then
 				driveStrategyMogli = AIDriveStrategyMogli.new()
-			elseif d:isa(AIDriveStrategyCombine ) then 
-				driveStrategyMogli = AIDriveStrategyCombine131.new()
+		--elseif d:isa(AIDriveStrategyCombine ) then 
+		--	driveStrategyMogli = AIDriveStrategyCombine131.new()
 			end
 			if driveStrategyMogli ~= nil then
 				driveStrategyMogli:setAIVehicle(self)
