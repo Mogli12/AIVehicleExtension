@@ -2437,5 +2437,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		end
 	end
 	
+	veh:acDebugPrint( "-> T"..tostring(turnData.stage)..": "..tostring(tX)..", "..tostring(tZ)..", "..tostring(moveForwards)..", "..tostring(allowedToDrive)..", "..AutoSteeringEngine.radToString( angle2 ))
+	
 	return tX, tZ, moveForwards, allowedToDrive, distanceToStop, angle2, inactive, noLower
 end

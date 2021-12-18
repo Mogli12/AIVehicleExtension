@@ -2849,8 +2849,8 @@ function AIVehicleExtension:afterUpdateAIDriveStrategies()
 			local driveStrategyMogli = nil
 			if     d:isa(AIDriveStrategyStraight) then
 				driveStrategyMogli = AIDriveStrategyMogli.new()
-		--elseif d:isa(AIDriveStrategyCombine ) then 
-		--	driveStrategyMogli = AIDriveStrategyCombine131.new()
+			elseif d:isa(AIDriveStrategyCombine ) then 
+				driveStrategyMogli = AIDriveStrategyCombine131.new()
 			end
 			if driveStrategyMogli ~= nil then
 				driveStrategyMogli:setAIVehicle(self)

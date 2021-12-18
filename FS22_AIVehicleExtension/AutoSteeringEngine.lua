@@ -3575,12 +3575,12 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
 	
 	local curSpeed = math.abs( vehicle.lastSpeed * 3600 )
 	
-	if wantedSpeed < 1 then 
-		if vehicle.acLastWantedSpeed < 2 or math.abs( curSpeed ) < 2 then 
-			vehicle.acLastWantedSpeed  = 0 
-		else 
-			vehicle.acLastWantedSpeed = math.max( 0, curSpeed * ( 1 - 0.002 * dt ) )
+	if not allowedToDrive or wantedSpeed < 1 then 
+		vehicle.acLastWantedSpeed  = 2 
+		if math.abs( curSpeed ) > 2 then 
+			return math.max( 0, curSpeed * ( 1 - 0.002 * dt ) )
 		end 
+		return 0
 	else 
 				
 		if wantedSpeed < curSpeed then

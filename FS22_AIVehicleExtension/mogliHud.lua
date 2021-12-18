@@ -124,7 +124,7 @@ else
 				if type( hudBackground ) == "number" then
 					bg = hudBackground
 				end
-				self[_level0_].Overlay    = Overlay.new("dataS2/menu/blank.png", self[_level0_].PosX, self[_level0_].PosY, self[_level0_].Width, self[_level0_].Height);
+				self[_level0_].Overlay    = Overlay.new("dataS/menu/blank.png", self[_level0_].PosX, self[_level0_].PosY, self[_level0_].Width, self[_level0_].Height);
 				self[_level0_].Overlay:setColor(0,0,0,bg)
 			end
 			self[_level0_].GuiActive    = false;
