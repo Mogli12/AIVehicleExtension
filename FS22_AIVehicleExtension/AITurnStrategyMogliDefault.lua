@@ -78,7 +78,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 
 	AIVehicleExtension.checkState( veh )
 	if not AutoSteeringEngine.hasTools( veh ) then
-		veh:stopAIVehicle(AIVehicle.STOP_REASON_UNKOWN)
+		veh:stopCurrentAIJob(AIMessageErrorUnknown.new())
 		return;
 	end
 	
@@ -163,11 +163,11 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	veh.aiRescueTimer = veh.aiRescueTimer - dt;
 	
 	if veh.aiRescueTimer < 0 then
-		veh:stopAIVehicle(AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT)
+		veh:stopCurrentAIJob(AIMessageErrorBlockedByObject.new())
 		return
 	end
 	if AutoSteeringEngine.getTurnDistanceSq( veh ) > AIVEGlobals.aiRescueDistSq then
-		veh:stopAIVehicle(AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT)
+		veh:stopCurrentAIJob(AIMessageErrorBlockedByObject.new())
 		return
 	end
 		
@@ -181,7 +181,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 	local noReverseIndex = 0;
 	local angleOffset = 6;
 	local angleOffsetStrict = 3;
-	local stoppingDist = 0.5;
+	local stoppingDist = 1.0;
 	local smoothAngle = 0.1
 --==============================================================		
 --==============================================================		
@@ -1272,7 +1272,7 @@ function AITurnStrategyMogliDefault:getDriveDataDefault( dt, vX,vY,vZ, turnData 
 		angle = math.min( math.max( math.rad( turnAngle + 90 ), -veh.acDimensions.maxSteeringAngle ), veh.acDimensions.maxSteeringAngle )
 	--allowedToDrive = AIVehicleExtension.stopWaiting( veh, angle )			
 		
-		if x > 0 then
+		if x > stoppingDist then
 			angle                = veh.acDimensions.maxSteeringAngle;
 			veh.waitForTurnTime = veh.acDeltaTimeoutRun + g_currentMission.time
 			turnData.stage     = turnData.stage + 1;					

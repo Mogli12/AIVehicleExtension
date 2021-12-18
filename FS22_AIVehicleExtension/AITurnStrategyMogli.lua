@@ -155,7 +155,7 @@ function AITurnStrategyMogli:getDriveData(dt, vX,vY,vZ, turnData)
 
 	AIVehicleExtension.checkState( vehicle )
 	if not AutoSteeringEngine.hasTools( vehicle ) then
-		vehicle:stopAIVehicle(AIVehicle.STOP_REASON_UNKOWN)
+		vehicle:stopCurrentAIJob(AIMessageErrorUnknown.new())
 		return
 	end
 	
