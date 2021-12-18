@@ -2043,6 +2043,9 @@ function AutoSteeringEngine.initTools( vehicle, maxLooking, leftActive, widthOff
 			elseif not vehicle.aiveChain.tools[i].isAIImplement and vehicle.aiveHas.aiImplement then 
 				skip      = true
 				skipOther = true
+			elseif vehicle.aiveChain.tools[i].isRoller and vehicle.aiveHas.sowingMachine then  
+				skip      = true
+				skipOther = true
 			elseif vehicle.aiveChain.tools[i].isCultivator and vehicle.aiveHas.sowingMachine then  
 				skip      = true
 				skipOther = true
@@ -2953,6 +2956,7 @@ function AutoSteeringEngine.hasFruits( vehicle, checkLowerAdvance )
 					and not ( vehicle.aiveHas.combine )
 					and ( tool.isSowingMachine
 						 or tool.isCultivator
+						 or tool.isRoller
 						 or tool.isSprayer
 						 or tool.isMower 
 						 or tool.isTedder   
@@ -7556,6 +7560,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		tool.isCultivator          = false 
 		tool.isSowingMachine       = false 
 		tool.isSprayer             = false 
+		tool.isRoller              = flse 
 		for _,w in pairs( object.spec_workArea.workAreas ) do
 			if     w.functionName == nil then 
 			elseif w.functionName == "processPlowArea"          then tool.isPlow          = true 
@@ -7563,6 +7568,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 			elseif w.functionName == "processSowingMachineArea" then tool.isSowingMachine = true 
 			elseif w.functionName == "processSprayerArea"       then tool.isSprayer       = true 
 			elseif w.functionName == "processMowerArea"         then tool.isMower         = true 
+			elseif w.functionName == "processRollerArea"        then tool.isRoller        = true 
 			end 
 		end 
 		if tool.isCultivator then 
@@ -7819,6 +7825,7 @@ function AutoSteeringEngine.addTool( vehicle, implement, ignore )
 		if tool.isSowingMachine then vehicle.aiveHas.sowingMachine = true end
 		if tool.isSprayer       then vehicle.aiveHas.sprayer       = true end
 		if tool.isMower         then vehicle.aiveHas.mower         = true end
+		if tool.isRoller        then vehicle.aiveHas.roller        = true end
 		if tool.isAIImplement   then vehicle.aiveHas.aiImplement   = true end
 	end
 	

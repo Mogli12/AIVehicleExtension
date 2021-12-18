@@ -1187,6 +1187,15 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 			AIVehicleExtension.sendParameters( self )
 		end
 		AIVehicleExtension.setImplMoveDownClient(self, not ( AIVehicleExtension.getIsLowered( self ) ), true)
+	elseif  actionName == "AXIS_MOVE_SIDE_VEHICLE" 
+			and self.aiveIsStarted 
+			and self.acParameters ~= nil 
+			and not self.acParameters.noSteering then 
+		if math.abs( keyStatus ) > 0.05 then 
+			self.acAxisSide = keyStatus
+		else 
+			self.acAxisSide = 0
+		end 
 	elseif  actionName == "TOGGLE_CRUISE_CONTROL" 
 			and self.aiveIsStarted then 
 		if self.speed2Level == nil or self.speed2Level > 0 then
@@ -1808,7 +1817,7 @@ function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axi
 			
 		--==============================================================		
 			if fruitsAdvance and self.acImplementsMoveDown then
-				AutoSteeringEngine.getIsAIReadyForWork( self )
+			--AutoSteeringEngine.getIsAIReadyForWork( self )
 			end
 				
 			local vX,vY,vZ = getWorldTranslation( self.acRefNode )
@@ -1898,7 +1907,7 @@ function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axi
 				self.acAxisSideFactor = 0
 			elseif self.movingDirection < -1E-2 or not self.acImplementsMoveDown then	
 				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
-			elseif self:getIsEntered() and math.abs( self.spec_drivable.lastInputValues.axisSteer ) > 0 then
+			elseif self:getIsEntered() and math.abs( self.acAxisSide ) > 0 then
 				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
 			elseif border > 0 then 
 				self.acAxisSideFactor = math.min( self.acAxisSideFactor + 10 * dt, 1000 )
@@ -2285,6 +2294,7 @@ function AIVehicleExtension:onReadUpdateStream(streamId, timestamp, connection)
   if connection:getIsServer() then
 		if streamReadBool( streamId ) then
 			self.acTurnStage = streamReadUInt8( streamId ) - 10
+			self.acAxisSide  = streamReadInt8( streamId ) * 0.01
 		end
   end 
 end 
@@ -2294,6 +2304,7 @@ function AIVehicleExtension:onWriteUpdateStream(streamId, connection, dirtyMask)
 		if self.aiveIsStarted or self.aiveAutoSteer then
 			streamWriteBool(streamId, true )
 			streamWriteUInt8(streamId, AIVEUtils.clamp( 10 + self.acTurnStage, 0, 255 ) )
+			streamWriteInt8(streamId, math.floor( AIVEUtils.clamp( 0.5 + 100 * self.acAxisSide, -100, 100 ) ) )
 		else
 			streamWriteBool(streamId, false )
 		end
