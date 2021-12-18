@@ -4,12 +4,12 @@
 AIVEParametersEvent = {}
 AIVEParametersEvent_mt = Class(AIVEParametersEvent, Event)
 InitEventClass(AIVEParametersEvent, "AIVEParametersEvent")
-function AIVEParametersEvent:emptyNew()
+function AIVEParametersEvent.emptyNew()
   local self = Event.new(AIVEParametersEvent_mt)
   return self
 end
 function AIVEParametersEvent.new(object, parameters)
-  local self = AIVEParametersEvent:emptyNew()
+  local self = AIVEParametersEvent.emptyNew()
   self.object     = object;
   self.parameters = parameters;
   return self
@@ -36,12 +36,12 @@ end
 AIVENextTSEvent = {}
 AIVENextTSEvent_mt = Class(AIVENextTSEvent, Event)
 InitEventClass(AIVENextTSEvent, "AIVENextTSEvent")
-function AIVENextTSEvent:emptyNew()
+function AIVENextTSEvent.emptyNew()
   local self = Event.new(AIVENextTSEvent_mt)
   return self
 end
 function AIVENextTSEvent.new(object)
-  local self = AIVENextTSEvent:emptyNew()
+  local self = AIVENextTSEvent.emptyNew()
   self.object     = object;
   return self
 end
@@ -65,12 +65,12 @@ end
 AIVEPauseEvent = {}
 AIVEPauseEvent_mt = Class(AIVEPauseEvent, Event)
 InitEventClass(AIVEPauseEvent, "AIVEPauseEvent")
-function AIVEPauseEvent:emptyNew()
+function AIVEPauseEvent.emptyNew()
   local self = Event.new(AIVEPauseEvent_mt)
   return self
 end
 function AIVEPauseEvent.new(object,enabled)
-  local self = AIVEPauseEvent:emptyNew()
+  local self = AIVEPauseEvent.emptyNew()
   self.object     = object;
 	self.enabled    = enabled
   return self
@@ -179,12 +179,12 @@ end
 AIVEInt32Event = {}
 AIVEInt32Event_mt = Class(AIVEInt32Event, Event)
 InitEventClass(AIVEInt32Event, "AIVEInt32Event")
-function AIVEInt32Event:emptyNew()
+function AIVEInt32Event.emptyNew()
   local self = Event.new(AIVEInt32Event_mt)
   return self
 end
 function AIVEInt32Event.new(object,name,value)
-  local self = AIVEInt32Event:emptyNew()
+  local self = AIVEInt32Event.emptyNew()
   self.object = object
 	self.name   = name
 	self.value  = value
@@ -243,12 +243,12 @@ end
 AIVEWarningEvent = {}
 AIVEWarningEvent_mt = Class(AIVEWarningEvent, Event)
 InitEventClass(AIVEWarningEvent, "AIVEWarningEvent")
-function AIVEWarningEvent:emptyNew()
+function AIVEWarningEvent.emptyNew()
   local self = Event.new(AIVEWarningEvent_mt)
   return self
 end
 function AIVEWarningEvent.new(object,text,wait)
-  local self = AIVEWarningEvent:emptyNew()
+  local self = AIVEWarningEvent.emptyNew()
   self.object = object
 	self.text = text
 	self.wait = wait

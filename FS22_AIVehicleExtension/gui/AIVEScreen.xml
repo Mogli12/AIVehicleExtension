@@ -186,8 +186,7 @@
 			</GuiElement>
 
 			<GuiElement type="flowLayout" profile="buttonBoxDialog" id="buttonsPC" >
-				<GuiElement type="button" profile="buttonOK"   text="$l10n_button_ok"   onClick="onClickOk"   focusId="501" focusChangeTop="430" focusChangeBottom="502" />
-				<GuiElement type="button" profile="buttonBack" text="$l10n_button_back" onClick="onClickBack" focusId="502" focusChangeTop="501" focusChangeBottom="110" />
+				<GuiElement type="button" profile="buttonBack"   text="$l10n_button_back"   onClick="onClickOk"  id="backButton" />
 			</GuiElement>
 		</GuiElement>
 	</GuiElement>
