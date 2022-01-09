@@ -76,6 +76,8 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX, vY, vZ)
 	local allowedToDrive = true
 	local waitForStraw = false
 	local maxSpeed = math.huge
+	
+	self.vehicle.aiveCombineUnloading = nil 
 
 	for _, combine in pairs(self.combines) do
 		if combine.spec_pipe ~= nil then
@@ -159,6 +161,14 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX, vY, vZ)
 					self.notificationFullGrainTankShown = false
 				end
 
+				if     fillLevel < 0.1 then
+					self.wasEmpty = true
+				elseif fillLevel > 0.2 * capacity then
+					self.wasEmpty = false
+				elseif self.wasEmpty == nil then
+					self.wasEmpty = false
+				end
+
 				if trailerInTrigger then
 					pipeState = 2
 				end
@@ -195,11 +205,15 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX, vY, vZ)
 
 				allowedToDrive = fillLevel < capacity
 
-				if pipeState == 2 and self.wasCompletelyFull then
-					allowedToDrive = false
+				if pipeState == 2 and not self.wasEmpty then 
+					if self.vehicle.acParameters.waitForPipe then 
+						allowedToDrive = false
 
-					if VehicleDebug.state == VehicleDebug.DEBUG_AI then
-						self.vehicle:addAIDebugText("COMBINE -> Waiting for trailer to unload")
+						if VehicleDebug.state == VehicleDebug.DEBUG_AI then
+							self.vehicle:addAIDebugText("COMBINE -> Waiting for trailer to unload")
+						end
+					else 
+						self.vehicle.aiveCombineUnloading = true 
 					end
 				end
 
@@ -239,3 +253,13 @@ end
 
 function AIDriveStrategyCombine131:updateDriving(dt)
 end
+
+
+function AIDriveStrategyCombine131:getCollisionCheckActive( superFunc )
+-- warning => self is a AIDriveStrategyCollision
+	if self.vehicle.aiveCombineUnloading then 
+		return false 
+	end 
+	return superFunc( self )
+end 
+AIDriveStrategyCollision.getCollisionCheckActive = Utils.overwrittenFunction( AIDriveStrategyCollision.getCollisionCheckActive, AIDriveStrategyCombine131.getCollisionCheckActive )

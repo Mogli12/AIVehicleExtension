@@ -58,14 +58,14 @@
 					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_NOSTEERING"/>
 				</GuiElement-->
 
-				<!--GuiElement type="checkedOption" profile="multiTextOptionSettings" id="waitForPipe" onCreate="onCreateSubElement">										
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="waitForPipe" onCreate="onCreateSubElement">										
 					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
 					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>
 					<GuiElement type="text" profile="multiTextOptionSettingsText" />
 					<GuiElement type="text" profile="multiTextOptionSettingsTitle" text="$mogli_AIVE_WAIT_FOR_PIPE"/>
 					<GuiElement type="bitmap" profile="multiTextOptionSettingsBg" />
 					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_WAIT_FOR_PIPE" />
-				</GuiElement-->
+				</GuiElement>
 
 				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="inverted" onCreate="onCreateSubElement">										
 					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />

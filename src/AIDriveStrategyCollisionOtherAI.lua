@@ -2,7 +2,6 @@
 -- AIDriveStrategyCollisionOtherAI
 --  drive strategy to stop vehicle on collision (aiTrafficCollision trigger)
 --
--- Copyright (C) GIANTS Software GmbH, Confidential, All Rights Reserved.
 
 AIDriveStrategyCollisionOtherAI = {}
 local AIDriveStrategyCollisionOtherAI_mt = Class(AIDriveStrategyCollisionOtherAI, AIDriveStrategy)
@@ -76,7 +75,7 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 	if triggerId ~= nil and self.vehicle.acCollidingVehicles[triggerId] ~= nil then
 		for otherAI,bool in pairs(self.vehicle.acCollidingVehicles[triggerId]) do
 			if      bool 
-					and otherAI.spec_aiVehicle.isActive 
+					and otherAI:getIsFieldWorkActive()
 					-- don't brake for AutoDrive and Courseplay
 					and ( otherAI.ad == nil or not ( otherAI.ad.isActive  ) )
 					and ( otherAI.cp == nil or not ( otherAI.cp.isDriving ) )
@@ -136,24 +135,29 @@ function AIDriveStrategyCollisionOtherAI:getDriveData(dt, vX,vY,vZ)
 
 				self.collisionTime = g_currentMission.time 
 
-				if not self.stopNotificationShown then
-					self.stopNotificationShown = true
-					g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, string.format(g_i18n:getText(AIVehicle.REASON_TEXT_MAPPING[AIVehicle.STOP_REASON_BLOCKED_BY_OBJECT]), self.vehicle:getCurrentHelper().name))
-					self.vehicle:setBeaconLightsVisibility(true, false)
-				end
+				self:setHasCollision(true)
 
 				return tX, tZ, true, 0, math.huge
 			end
 		end 
 	end
 
-	if self.stopNotificationShown then
-		self.stopNotificationShown = false
-		self.vehicle:setBeaconLightsVisibility(false, false)
-	end
+	self:setHasCollision(false)
 
 --self:addDebugText("AIDriveStrategyCollisionOtherAI :: no collision ")
 	return nil, nil, nil, nil, nil
+end
+
+function AIDriveStrategyCollisionOtherAI:setHasCollision(state)
+	if state ~= self.lastHasCollision then
+		self.lastHasCollision = state
+
+		if g_server ~= nil then
+			g_server:broadcastEvent(AIVehicleIsBlockedEvent.new(self.vehicle, state), true, nil, self.vehicle)
+		end
+		
+		self.vehicle:setBeaconLightsVisibility(state, false)
+	end
 end
 
 function AIDriveStrategyCollisionOtherAI:updateDriving(dt)
