@@ -610,7 +610,7 @@ end
 --*****************************************************************
 
 function AIVehicleExtension:onRaiseNext()
-	if self.spec_aiFieldWorker.isActive then
+	if self:getIsFieldWorkActive() then
 		if self.aiveIsStarted then 
 			AIVehicleExtension.setNextTurnStage(self)
 		end
@@ -626,7 +626,7 @@ function AIVehicleExtension:onRaiseNext()
 end
 
 function AIVehicleExtension:getRaiseNextText()
-	if self.spec_aiFieldWorker.isActive then
+	if self:getIsFieldWorkActive() then
 		if not self.aiveIsStarted then 
 			return ""
 		else
@@ -650,7 +650,7 @@ function AIVehicleExtension:getRaiseNextText()
 end
 
 function AIVehicleExtension:getRaiseNextImage()
-	if self.spec_aiFieldWorker.isActive then
+	if self:getIsFieldWorkActive() then
 		if not self.aiveIsStarted then 
 			return "empty.dds"
 		else
@@ -674,7 +674,7 @@ function AIVehicleExtension:getRaiseNextImage()
 end
 
 function AIVehicleExtension:onSteerPause()
-	if self.spec_aiFieldWorker.isActive then
+	if self:getIsFieldWorkActive() then
 		if self.aiveIsStarted then 
 			self.acPause = not self.acPause
 		end
@@ -684,7 +684,7 @@ function AIVehicleExtension:onSteerPause()
 end
 
 function AIVehicleExtension:getSteerPauseText()
-	if self.spec_aiFieldWorker.isActive then
+	if self:getIsFieldWorkActive() then
 		if not self.aiveIsStarted then 
 			return ""
 		elseif self.acPause then
@@ -703,7 +703,7 @@ function AIVehicleExtension:getSteerPauseText()
 end
 
 function AIVehicleExtension:getSteerPauseImage()
-	if self.spec_aiFieldWorker.isActive then
+	if self:getIsFieldWorkActive() then
 		if not self.aiveIsStarted then 
 			return "empty.dds"
 		elseif self.acPause then
@@ -788,11 +788,11 @@ function AIVehicleExtension:setAreaRight(enabled)
 end
 
 function AIVehicleExtension:evalStart()
-	return not self.spec_aiFieldWorker.isActive or not self:getCanStartAIVehicle()
+	return not self:getIsFieldWorkActive() or not self:getCanStartAIVehicle()
 end
 
 function AIVehicleExtension:getStartImage()
-	if self.spec_aiFieldWorker.isActive then
+	if self:getIsFieldWorkActive() then
 		return "dds/on.dds"
 	elseif self:getCanStartAIVehicle() then
 		return "dds/off.dds"
@@ -801,7 +801,7 @@ function AIVehicleExtension:getStartImage()
 end
 
 function AIVehicleExtension:evalEnable()
-	if     self.spec_aiFieldWorker.isActive          then
+	if     self:getIsFieldWorkActive()          then
 		return not ( self.aiveIsStarted )
 	elseif self.acParameters.enabled then
 		return false
@@ -811,7 +811,7 @@ end
 
 function AIVehicleExtension:onEnable(enabled)
 	if self:getCanStartAIVehicle() then
-		if not ( self.spec_aiFieldWorker.isActive ) then
+		if not ( self:getIsFieldWorkActive() ) then
 			self.acParameters.enabled = enabled
 		end
 	end
@@ -850,7 +850,7 @@ function AIVehicleExtension:getTurnIndexComp( upNDown )
 end
 
 function AIVehicleExtension:evalTurnStage()
-	if self.spec_aiFieldWorker.isActive then
+	if self:getIsFieldWorkActive() then
 		if self.aiveIsStarted then
 			for _,ts in pairs( AIVehicleExtension.turnStageNoNext ) do
 				if self.acTurnStage == ts then
@@ -876,7 +876,7 @@ function AIVehicleExtension:evalPause()
 	if not self.aiveIsStarted then 
 		return true 
 	end 
-	if not self.spec_aiFieldWorker.isActive then
+	if not self:getIsFieldWorkActive() then
 		return true
 	end
 	if not self.acPause then
@@ -889,7 +889,7 @@ function AIVehicleExtension:setPause(enabled)
 	if not self.aiveIsStarted then 
 		return	
 	end 
-	if not self.spec_aiFieldWorker.isActive then
+	if not self:getIsFieldWorkActive() then
 		return 
 	end
 	
@@ -913,7 +913,7 @@ function AIVehicleExtension:getPauseImage()
 	if not self.aiveIsStarted then 
 		return "empty.dds"
 	end 
-	if not self.spec_aiFieldWorker.isActive then
+	if not self:getIsFieldWorkActive() then
 		return "empty.dds"
 	end
 	if not self.acPause then
@@ -923,11 +923,11 @@ function AIVehicleExtension:getPauseImage()
 end
 
 function AIVehicleExtension:evalAutoSteer()
-	return self.spec_aiFieldWorker.isActive or not ( self.aiveAutoSteer )
+	return self:getIsFieldWorkActive() or not ( self.aiveAutoSteer )
 end
 
 function AIVehicleExtension:onAutoSteer(enabled)
-	if self.spec_aiFieldWorker.isActive then
+	if self:getIsFieldWorkActive() then
 		if self.aiveAutoSteer then
 			AIVehicleExtension.setInt32Value( self, "autoSteer", 2 )
 		end
@@ -945,7 +945,7 @@ function AIVehicleExtension:onMagic(enabled)
 end
 
 function AIVehicleExtension:onRaiseImpl(enabled)
-	if		 self.spec_aiFieldWorker.isActive 
+	if		 self:getIsFieldWorkActive() 
 			or self.acParameters == nil then
 	-- do nothing
 	else
@@ -966,7 +966,7 @@ function AIVehicleExtension:evalRaiseImpl()
 end
 
 function AIVehicleExtension:getRaiseImplImage()
-	if		 self.spec_aiFieldWorker.isActive 
+	if		 self:getIsFieldWorkActive() 
 			or self.acParameters == nil then
 		return "empty.dds"
 	elseif AIVehicleExtension.getIsLowered( self ) == nil then
@@ -1111,8 +1111,8 @@ function AIVehicleExtension:onRegisterActionEvents(isSelected, isOnActiveVehicle
                  ,"AIVE_UTURN_ON_OFF"   
                  ,"AIVE_STEERING"         
                  ,"AIVE_START_AIVE"
- 								 ,"TOGGLE_CRUISE_CONTROL" }
-		elseif self.spec_aiFieldWorker.isActive then 
+ 								 ,"AIVE_PAUSE" }
+		elseif self:getIsFieldWorkActive() then 
 		elseif self.aiveAutoSteer then 
 			actions = { "AIVE_HELPPANEL" 	  
                  ,"AIVE_STEER"          
@@ -1196,7 +1196,7 @@ function AIVehicleExtension:actionCallback(actionName, keyStatus, arg4, arg5, ar
 		else 
 			self.acAxisSide = 0
 		end 
-	elseif  actionName == "TOGGLE_CRUISE_CONTROL" 
+	elseif  actionName == "AIVE_PAUSE" 
 			and self.aiveIsStarted then 
 		if self.speed2Level == nil or self.speed2Level > 0 then
 			AIVehicleExtension.setPause( self, true )
@@ -1236,7 +1236,7 @@ AIVehicleExtension.numberOfExtendedWorkers = 0
 AIVehicleExtension.extendedFrequencyDelay  = 1
 function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected )
 
-	if self.aiveIsStarted and not ( self.spec_aiFieldWorker.isActive ) then 
+	if self.aiveIsStarted and not ( self:getIsFieldWorkActive() ) then 
 		self.aiveIsStarted = false
 	end 
 	
@@ -1441,7 +1441,7 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 			and ( self.aiveIsStarted or self.aiveAutoSteer ) then			
 		if			AIVEGlobals.showTrace > 0 
 				and self.acDimensions ~= nil
-				and ( self.spec_aiFieldWorker.isActive or self.aiveAutoSteer ) then	
+				and ( self:getIsFieldWorkActive() or self.aiveAutoSteer ) then	
 			AutoSteeringEngine.drawLines( self )
 		else
 			AutoSteeringEngine.drawMarker( self )
@@ -2839,12 +2839,7 @@ function AIVehicleExtension:afterUpdateAIDriveStrategies()
 
 	local spec = self.spec_aiFieldWorker
 	
-	if self.acParameters == nil then
-		self.aiveIsStarted = false
-	elseif self.spec_aiFieldWorker.isActive and self.acParameters.enabled then
-		self.aiveIsStarted = true
-	end
-	if self.aiveIsStarted and spec.driveStrategies ~= nil and #spec.driveStrategies > 0 then
+	if self.acParameters.enabled and spec.driveStrategies ~= nil and #spec.driveStrategies > 0 then
 		for i,d in pairs( spec.driveStrategies ) do
 			local driveStrategyMogli = nil
 			if     d:isa(AIDriveStrategyStraight) then
@@ -3156,6 +3151,7 @@ end
 
 function AIVehicleExtension:onAIFieldWorkerStart()
 	if self.isServer and self.acParameters ~= nil then 
+		self.aiveIsStarted = self.acParameters.enabled
 		if self.acParameters.enabled and self.acParameters.straight then 
 			AIVehicleExtension.setAIDirection( self )
 			self.acIsStraight = true  

@@ -261,23 +261,14 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 		veh.acIsCPStopped = false
 		veh.isHirableBlocked = true		
 		AIVehicleExtension.setStatus( veh, 0 )
-		return vX2, vZ2, moveForwards, 0, 0
+		return vX, vZ, moveForwards, 0, 0
 	end
 	
 	if veh.acPause then
 		veh.isHirableBlocked = true		
 		AIVehicleExtension.setStatus( veh, 0 )
-		return vX2, vZ2, moveForwards, 0, 0
+		return vX, vZ, moveForwards, 0, 0
 	end
-		
---local vX, vY, vZ
---if veh.aiveChain == nil or veh.aiveChain.refNode == nil then
---	vX = vX2
---	vY = vY2
---	vZ = vZ2
---else
---	vX,vY,vZ = getWorldTranslation( veh.aiveChain.refNode )
---end
 
 --veh.acAiPos = { vX, vY, vZ }
 	AutoSteeringEngine.setAiWorldPosition( veh, vX, vY, vZ )

@@ -107,11 +107,11 @@ function FieldScanner:startScan( startX, startZ, yieldCount )
 				self:scanTile( xi - di, zi     , di )
 				self:scanTile( xi     , zi - di, di )
 				self:scanTile( xi - di, zi - di, di )
-			elseif xi % 2 > 0 then 
+			elseif i % 2 > 0 then 
 				self:scanTile( xi - di, zi     , di )
 				self:scanTile( xi     , zi + di, di )
 				self:scanTile( xi - di, zi + di, di )
-			elseif zi % 2 > 0 then 
+			elseif j % 2 > 0 then 
 				self:scanTile( xi + di, zi     , di )
 				self:scanTile( xi     , zi - di, di )
 				self:scanTile( xi + di, zi - di, di )
