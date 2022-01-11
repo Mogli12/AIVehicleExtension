@@ -93,6 +93,7 @@
 		<text name="input_AIVE_UTURN_ON_OFF"       text="Alternativer Helfer: Kreisfahrt ein/aus"/>
 		<text name="input_AIVE_STEERING"           text="Alternativer Helfer: Manueller Lenkeingriff"/>
 		<text name="input_AIVE_RAISE"              text="Alternativer Helfer: Alle Geräte heben/senken"/>
+		<text name="input_AIVE_PAUSE"              text="Alternativer Helfer: Pause"/>
 		<text name="input_AIVE_START_AIVE"         text="Alternativer Helfer: Helfereinstellungen"/>
 		<text name="input_AIVE_NEXT_WORKER"        text="Alternativer Helfer: Zum nächsten Helfer springen"/>
 	</texts>

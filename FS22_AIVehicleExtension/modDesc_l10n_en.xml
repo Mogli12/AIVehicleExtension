@@ -93,6 +93,7 @@
 		<text name="input_AIVE_UTURN_ON_OFF"       text="Alternative AI: Circular mode on/off"/>
 		<text name="input_AIVE_STEERING"           text="Alternative AI: Manual steering"/>
 		<text name="input_AIVE_RAISE"              text="Alternative AI: Raise/lower all tools"/>
+		<text name="input_AIVE_PAUSE"              text="Alternative AI: Pause"/>
 		<text name="input_AIVE_START_AIVE"         text="Alternative AI: Settings"/>
 		<text name="input_AIVE_NEXT_WORKER"        text="Alternative AI: Jump to next worker"/>
 	</texts>
