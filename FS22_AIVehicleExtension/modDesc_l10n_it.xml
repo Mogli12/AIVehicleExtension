@@ -91,6 +91,7 @@
 		<text name="input_AIVE_UTURN_ON_OFF"       text="Aiutante alternativo: Modalità circolare attiva/disattiva"/>
 		<text name="input_AIVE_STEERING"           text="Aiutante alternativo: Sterzo manuale"/>
 		<text name="input_AIVE_RAISE"              text="Aiutante alternativo: Solleva/abbassa tutti gli attrezzi"/>
+		<text name="input_AIVE_PAUSE"              text="Aiutante alterantivo: Pausa"/>
 		<text name="input_AIVE_START_AIVE"         text="Aiutante alternativo: Impostazioni"/>
 		<text name="input_AIVE_NEXT_WORKER"        text="Aiutante alternativo: Passa al prossimo operaio"/>
 	</texts>
