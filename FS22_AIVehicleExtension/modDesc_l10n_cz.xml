@@ -6,15 +6,15 @@
 	<texts>
 		<!-- AI Vehicle helpPanel text -->
 		<text name="AIVE_SETTINGS"                 text="Nastavení pomocníka"/>
-		<text name="AIVE_ENABLED"                  text="Alternativní pomocník"/>
-		<text name="AIVE_START"                    text="AI Vehicle pomocník"/>
+		<text name="AIVE_ENABLED"                  text="AIVE"/>
+		<text name="AIVE_START"                    text="AIVE pomocník"/>
 		<text name="AIVE_STOP"                     text="Normální pomocník"/>
 		<text name="AIVE_WORKWIDTH"                text="Pracovní šířka:"/>
 		<text name="AIVE_ACTIVESIDE"               text="Aktivní strana"/>
 		<text name="AIVE_ACTIVESIDELEFT"           text="Aktivní strana: LEVÁ"/>
 		<text name="AIVE_ACTIVESIDERIGHT"          text="Aktivní strana: PRAVÁ"/>
 
-		<text name="AIVE_UTURN_ON_OFF"             text="Změna AI Vehicle módu"/>
+		<text name="AIVE_UTURN_ON_OFF"             text="Změna AIVE módu"/>
 		<text name="AIVE_STEERING"                 text="Ruční řízení"/>
 		<text name="AIVE_NOSTEERING"               text="Řízení potlačeno"/>
 		<text name="AIVE_STEERING_ON"              text="Ruční řízení: Zap."/>
@@ -22,24 +22,26 @@
 		<text name="AIVE_CONTINUE"                 text="Pokračovat"/>
 		<text name="AIVE_RAISE"                    text="Zvednout/položit veškeré vybavení"/>
 
-		<text name="AIVE_WAIT_FOR_PIPE"            text="Vysypávání: STÁNÍ"/>
+		<text name="AIVE_WAIT_FOR_PIPE"            text="Zastavit při vysypávání"/>
 		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="Bezpečná vzdálenost: Zap."/>
 		<text name="AIVE_COLLISIONTRIGGERMODE_OFF" text="Bezpečná vzdálenost: Vyp."/>
 		<!-- AI Vehicle help text -->
-		<text name="AIVE_TEXTHELPPANELOFF"         text="Skrýt AI Vehicle info"/>
-		<text name="AIVE_TEXTHELPPANELON"          text="Zobrazit AI Vehicle info"/>
+		<text name="AIVE_TEXTHELPPANELOFF"         text="Skrýt AIVE info"/>
+		<text name="AIVE_TEXTHELPPANELON"          text="Zobrazit AIVE info"/>
 		<!-- AI Vehicle inputbinding text -->
 		<text name="AIVE_COLLISION_OTHER"          text="Kolize vpředu"/>
 		<text name="AIVE_COLLISION_BACK"           text="Kolize vzadu"/>
-		<text name="AIVE_UTURN_ON"                 text="AI Vehicle mód: ŘÁDKY"/>
-		<text name="AIVE_UTURN_OFF"                text="AI Vehicle mód: KRUH"/>
+		<text name="AIVE_UTURN_TYPE"               text="AIVE mód"/>		
+		<text name="AIVE_UTURN_ON"                 text="ŘÁDKY"/>
+		<text name="AIVE_UTURN_OFF"                text="KRUH"/>
+		<text name="AIVE_UTURN_ON2"                text="ROVNĚ"/>		
 		<text name="AIVE_REVERSE_ON"               text="Otáčení: COUVÁNÍ"/>
 		<text name="AIVE_REVERSE_OFF"              text="Otáčení: JÍZDA VPŘED"/>
-		<text name="AIVE_INVERTED"                 text="change direction"/>
+		<text name="AIVE_INVERTED"                 text="Změna směru"/>
 		<text name="AIVE_INVERTED_ON"              text="Pracovní režim: COUVÁNÍ"/>
 		<text name="AIVE_INVERTED_OFF"             text="Pracovní režim: JÍZDA VPŘED"/>
 		<text name="AIVE_WIDTH_OFFSET"             text="Šíře otáčení"/>
-		<text name="AIVE_TURN_OFFSET"              text="Offset otáčení"/>
+		<text name="AIVE_TURN_OFFSET"              text="Odsazení otáčení"/>
 		<text name="AIVE_ANGLE_OFFSET"             text="Úhel otáčení"/>
 		<text name="AIVE_SAFETY_FACTOR"            text="Bezpečná vzdálenost"/>
 		<text name="AIVE_ERROR"                    text="Chyba"/>
@@ -52,12 +54,15 @@
 		<text name="AIVE_HEADLAND_OFF"             text="Úvrať: Zap."/>
 		<text name="AIVE_FRONT_PACKER_ON"          text="Přední válec: Zap."/>
 		<text name="AIVE_FRONT_PACKER_OFF"         text="Přední válec: Vyp."/>
-		<text name="AIVE_COLLISION_ON"             text="Kontrola kolize: Zap."/>
-		<text name="AIVE_COLLISION_OFF"            text="Kontrola kolize: Vyp."/>
+		<text name="AIVE_COLLISION_ON"             text="Kontrola kolize"/>
+		<text name="AIVE_COLLISION_OFF"            text="Kontrola kolize"/>
+		<text name="AIVE_TURNLOW_ON"               text="Zvednout nástroj během otáčení"/>
+		<text name="AIVE_TURNLOW_OFF"              text="Zvednout nástroj během otáčení"/>		
 		<text name="AIVE_HIRE_ON"                  text="Spotřeba osiva: Zap."/>
 		<text name="AIVE_HIRE_OFF"                 text="Spotřeba osiva: Vyp."/>
-		<text name="AIVE_HEADLAND"                 text="Úvrať"/>
+		<text name="AIVE_HEADLAND"                 text="Souvrať"/>
 		<text name="AIVE_TURN_MODE"                text="Módy otáčení"/>
+		<text name="AIVE_TURN_MODE_"               text=""/>		
 		<text name="AIVE_TURN_MODE_O"              text="Otočit o 180° bez couvání"/>
 		<text name="AIVE_TURN_MODE_A"              text="Malé otočení o 180°"/>
 		<text name="AIVE_TURN_MODE_Y"              text="Střední otočení o 180°"/>
@@ -67,8 +72,8 @@
 		<text name="AIVE_TURN_MODE_7"              text="Rovné otáčení"/>
 		<text name="AIVE_TURN_MODE_K"              text="Velké otočení o 90°"/>
 		<text name="AIVE_TURN_MODE_8"              text="Otočit o 180° bez couvání"/>
-		<text name="AIVE_PAUSE_ON"                 text="Pauza: Zap."/>
-		<text name="AIVE_PAUSE_OFF"                text="Pauza: Vyp."/>
+		<text name="AIVE_PAUSE_ON"                 text="Pauza"/>
+		<text name="AIVE_PAUSE_OFF"                text="Pauza"/>
 		<text name="AIVE_STEER_RAISE"              text="Zařízení: ZVEDNOUT/Zap."/>
 		<text name="AIVE_STEER_LOWER"              text="Zařízení: POLOŽIT/Vyp."/>
 		<text name="AIVE_TRACE"                    text="Ukázat trasy"/>
@@ -76,15 +81,19 @@
 		<text name="AIVE_USE_AI_FIELD"             text="Detekovat pouze připojená pole"/>
 		<text name="AIVE_FIELD_W"                  text="Detekce pole běží"/>
 		<text name="AIVE_FIELD_E"                  text="Detekce pole se nezdařila"/>
+		<text name="AIVE_PRECISION"                text="Přesnost AI vozidla"/>
+		<text name="AIVE_PRECISION_0"              text="Malá"/>
+		<text name="AIVE_PRECISION_1"              text="Normální"/>
+		<text name="AIVE_PRECISION_2"              text="Vysoká"/>		
 
-		<text name="input_AIVE_HELPPANEL"          text="Alternativní AI: Ukaž/Skryj HUD"/>
-		<text name="input_AIVE_STEER"              text="Alternativní AI: Automatické řízení"/>
-		<text name="input_AIVE_SWAP_SIDE"          text="Alternativní AI: Změňit aktivní stranu"/>
-		<text name="input_AIVE_ENABLE"             text="Alternativní AI: Změňit AI"/>
-		<text name="input_AIVE_UTURN_ON_OFF"       text="Alternativní AI: Kruhový mód Zap./Vyp."/>
-		<text name="input_AIVE_STEERING"           text="Alternativní AI: Ruční řízení"/>
-		<text name="input_AIVE_RAISE"              text="Alternativní AI: Zvednout/Položit všechny nástroje"/>
-		<text name="input_AIVE_START_AIVE"         text="Alternativní AI: Nastavení"/>
-		<text name="input_AIVE_NEXT_WORKER"        text="Alternativní AI: Skok na dalšího pracovníka"/>
+		<text name="input_AIVE_HELPPANEL"          text="AIVE: Ukaž/Skryj HUD"/>
+		<text name="input_AIVE_STEER"              text="AIVE: Automatické řízení"/>
+		<text name="input_AIVE_SWAP_SIDE"          text="AIVE: Změňit aktivní stranu"/>
+		<text name="input_AIVE_ENABLE"             text="AIVE: Změňit AI"/>
+		<text name="input_AIVE_UTURN_ON_OFF"       text="AIVE: Kruhový mód Zap./Vyp."/>
+		<text name="input_AIVE_STEERING"           text="AIVE: Ruční řízení"/>
+		<text name="input_AIVE_RAISE"              text="AIVE: Zvednout/Položit všechny nástroje"/>
+		<text name="input_AIVE_START_AIVE"         text="AIVE: Nastavení"/>
+		<text name="input_AIVE_NEXT_WORKER"        text="AIVE: Skok na dalšího pracovníka"/>
 	</texts>
 </l10n>
