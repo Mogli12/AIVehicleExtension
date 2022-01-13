@@ -148,6 +148,11 @@ function AIVehicleExtension.registerEventListeners(vehicleType)
 	end 
 end 
 
+
+function AIVehicleExtension.registerOverwrittenFunctions(vehicleType)
+	SpecializationUtil.registerOverwrittenFunction(vehicleType, "getStartableAIJob", AIVehicleExtension.getStartableAIJob)
+end
+
 function AIVehicleExtension.initSpecialization()
 	local schemaSavegame = Vehicle.xmlSchemaSavegame
 	if schemaSavegame then 
@@ -386,6 +391,20 @@ end
 -- delete
 ------------------------------------------------------------------------
 function AIVehicleExtension:onDelete()
+end
+
+------------------------------------------------------------------------
+-- getStartableAIJob
+------------------------------------------------------------------------
+function AIVehicleExtension:getStartableAIJob(superFunc)
+	if self.acParameters ~= nil and self.isClient and self.getIsControlled ~= nil and self.getIsEntered ~= nil and self:getIsControlled() and self:getIsEntered() then 
+		print('Sending acParameters to server...')
+		for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
+			print( '  self.acParameters.'..tostring(n)..': "'..tostring(self.acParameters[n])..'"' )
+		end 
+		AIVehicleExtension.sendParameters(self)
+	end
+	return superFunc(self)
 end
 
 ------------------------------------------------------------------------
@@ -3151,6 +3170,11 @@ end
 
 function AIVehicleExtension:onAIFieldWorkerStart()
 	if self.isServer and self.acParameters ~= nil then 
+		print('Starting AIVE on server...')
+		for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
+			print( '  self.acParameters.'..tostring(n)..': "'..tostring(self.acParameters[n])..'"' )
+		end 
+		
 		self.aiveIsStarted = self.acParameters.enabled
 		if self.acParameters.enabled and self.acParameters.straight then 
 			AIVehicleExtension.setAIDirection( self )
@@ -3183,6 +3207,7 @@ function AIVehicleExtension:onAIFieldWorkerEnd()
 			and self.acParameters.enabled then 
 		AIVehicleExtension.printCallstack()
 	end 	
+	self.aiveIsStarted = false
 end 
 
 function AIVehicleExtension:afterCutterOnEndWorkAreaProcessing(dt, hasProcessed)
