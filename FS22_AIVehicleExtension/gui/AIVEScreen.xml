@@ -103,6 +103,15 @@
 					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_TURN_OFFSET"/>
 				</GuiElement>
 
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="maxCircles" onCreate="onCreateSubElement" onCreateArgs="list0">
+					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
+					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>
+					<GuiElement type="text"   profile="multiTextOptionSettingsText" />
+					<GuiElement type="text"   profile="multiTextOptionSettingsTitle" text="$mogli_AIVE_MAXCIRCLES"/>
+					<GuiElement type="bitmap" profile="multiTextOptionSettingsBg" />
+					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_MAXCIRCLES"/>
+				</GuiElement>
+
 				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="headland" onCreate="onCreateSubElement" onCreateArgs="list">
 					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
 					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>

@@ -4706,25 +4706,29 @@ function AutoSteeringEngine.checkFieldIsValid( vehicle )
 	
 				if AIVEGlobals.yieldCount < 1 then
 					if areaTotalFunction and areaTotalFunction ~= FieldBitmap.getAreaTotal then
-						vehicle.aiveCurrentField, hektar = FieldBitmap.createForFieldAtWorldPosition( x1, z1, stepLog2, 1, areaTotalFunction, nil, nil, 0 )
+						vehicle.aiveCurrentField, hektar, vehicle.aiveFieldCenterX, vehicle.aiveFieldCenterZ 
+								= FieldBitmap.createForFieldAtWorldPosition( x1, z1, stepLog2, 1, areaTotalFunction, nil, nil, 0 )
 					else
-						vehicle.aiveCurrentField, hektar = FieldBitmap.createForFieldAtWorldPositionSimple( x1, z1, stepLog2, 1, checkFunction )
+						vehicle.aiveCurrentField, hektar, vehicle.aiveFieldCenterX, vehicle.aiveFieldCenterZ
+								= FieldBitmap.createForFieldAtWorldPositionSimple( x1, z1, stepLog2, 1, checkFunction )
 					end
 					vehicle.aiveCurrentFieldCo = nil
 					vehicle.aiveCurrentFieldCS = 'dead'
 				else
 					if areaTotalFunction and areaTotalFunction ~= FieldBitmap.getAreaTotal then
 						vehicle.aiveCurrentFieldCo = coroutine.create( FieldBitmap.createForFieldAtWorldPosition )
-						status, vehicle.aiveCurrentField, hektar = coroutine.resume( vehicle.aiveCurrentFieldCo, x1, z1, stepLog2, 1, areaTotalFunction, nil, nil, AIVEGlobals.yieldCount )
+						status, vehicle.aiveCurrentField, hektar, vehicle.aiveFieldCenterX, vehicle.aiveFieldCenterZ
+								= coroutine.resume( vehicle.aiveCurrentFieldCo, x1, z1, stepLog2, 1, areaTotalFunction, nil, nil, AIVEGlobals.yieldCount )
 					else
 						vehicle.aiveCurrentFieldCo = coroutine.create( FieldBitmap.createForFieldAtWorldPositionSimple )
-						status, vehicle.aiveCurrentField, hektar = coroutine.resume( vehicle.aiveCurrentFieldCo, x1, z1, stepLog2, 1, checkFunction, AIVEGlobals.yieldCount )
+						status, vehicle.aiveCurrentField, hektar, vehicle.aiveFieldCenterX, vehicle.aiveFieldCenterZ
+								= coroutine.resume( vehicle.aiveCurrentFieldCo, x1, z1, stepLog2, 1, checkFunction, AIVEGlobals.yieldCount )
 					end
 					if status then
 						vehicle.aiveCurrentFieldCS = coroutine.status( vehicle.aiveCurrentFieldCo )
 					else
 						message = tostring(vehicle.aiveCurrentField)
-print("Error in fieldBitmap.lua: "..tostring(message))						
+						print("Error in fieldBitmap.lua: "..tostring(message))						
 						vehicle.aiveCurrentField   = nil
 						vehicle.aiveCurrentFieldCo = nil
 						vehicle.aiveCurrentFieldCS = 'dead'
@@ -4734,12 +4738,12 @@ print("Error in fieldBitmap.lua: "..tostring(message))
 		elseif  vehicle.aiveCurrentFieldCS ~= 'dead' 
 				and vehicle.aiveCurrentFieldCt < g_currentMission.time then
 			vehicle.aiveCurrentFieldCt = g_currentMission.time
-			status, vehicle.aiveCurrentField, hektar = coroutine.resume( vehicle.aiveCurrentFieldCo )				
+			status, vehicle.aiveCurrentField, hektar, vehicle.aiveFieldCenterX, vehicle.aiveFieldCenterZ = coroutine.resume( vehicle.aiveCurrentFieldCo )				
 			if status then
 				vehicle.aiveCurrentFieldCS = coroutine.status( vehicle.aiveCurrentFieldCo )
 			else
 				message = tostring(vehicle.aiveCurrentField)
-print("Error in fieldBitmap.lua: "..tostring(message))						
+				print("Error in fieldBitmap.lua: "..tostring(message))						
 				vehicle.aiveCurrentField   = nil
 				vehicle.aiveCurrentFieldCo = nil
 				vehicle.aiveCurrentFieldCS = 'dead'

@@ -665,6 +665,8 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 	local cycle = 0
 	local count = 0
 	local sqrm  = 0
+	local sumX  = 0
+	local sumZ  = 0
 	local skip  = false
 	local a,t
 
@@ -694,7 +696,7 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 				
 			--print(string.format("A %6d: %5d, %f", g_currentMission.time, count, sqrm*fo1*fo1*0.0001 ))
 				
-				coroutine.yield( nil, sqrm*fo1*fo1*0.0001 )
+				coroutine.yield( nil, sqrm*fo1*fo1*0.0001, sumX / math.max( 1, sqrm ), sumZ / math.max( 1, sqrm ) )
 				
 				if iPrepareFunction ~= nil then
 					iPrepareFunction( )	
@@ -737,6 +739,8 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 					done.createOneTile( x, z )
 					field.createOneTile( x, z )
 					sqrm = sqrm + 1024
+					sumX = sumX + 1024 * x + 512 * l1 
+					sumZ = sumZ + 1024 * z + 512 * l1 
 
 					x = x1
 					z = z1
@@ -763,6 +767,8 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 				x1 = x-f1; z1 = z+f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
 				x1 = x+f1; z1 = z+f1; if not done.getBit( x1, z1 ) then done.setBit( x1, z1 ) table.insert( lists[nxt], { x1, z1 } ) end
 				sqrm = sqrm + 1
+				sumX = sumX + x 
+				sumZ = sumZ + z 
 			end
 		end
 		
@@ -777,7 +783,12 @@ function FieldBitmap.createForFieldAtWorldPosition( iX, iZ, iStepLog2, iOverlap,
 		iCleanupFunction( )
 	end
 	
-	return field, sqrm*fo1*fo1*0.0001
+	if sqrm > 1 then 
+		sumX = sumX / sqrm 
+		sumZ = sumZ / sqrm 
+	end 
+	
+	return field, sqrm*fo1*fo1*0.0001, sumX, sumZ 
 end
 
 

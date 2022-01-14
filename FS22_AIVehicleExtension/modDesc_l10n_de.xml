@@ -21,6 +21,7 @@
 		<text name="AIVE_STEERING_OFF"             text="Manueller Lenkeingriff [aus]"/>
 		<text name="AIVE_CONTINUE"                 text="Weiter fahren"/>
 		<text name="AIVE_RAISE"                    text="Alle Geräte heben/senken"/>
+		<text name="AIVE_MAXCIRCLES"               text="Wechsel von Kreisfahrt zu auf/ab nach"/>
 
 		<text name="AIVE_WAIT_FOR_PIPE"            text="Zum Abtanken anhalten"/>
 		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="Abstandshalter ist AN "/>

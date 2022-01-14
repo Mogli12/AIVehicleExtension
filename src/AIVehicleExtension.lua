@@ -80,6 +80,11 @@ AIVehicleExtension.saveAttributesMapping = {
 			{ name="waitForPipe"		, xml = "acWaitForPipe",  valueType = XMLValueType.BOOL , default = true  },
 			{ name="turnLow"			  , xml = "acTurnLow",      valueType = XMLValueType.BOOL , default = false },
 			{ name="showTrace" 			, xml = "acShowTrace",    valueType = XMLValueType.BOOL , default = false },
+			{ name="maxCircles" 		, xml = "acMaxCircles",		valueType = XMLValueType.INT  , default = 0 }, 
+			{ name="circlesDone" 		, xml = "acCirclesDone",	valueType = XMLValueType.FLOAT, default = -1 }, 
+			{ name="startAngle"			, xml = "acStartAngle", 	valueType = XMLValueType.FLOAT, default = -4 },
+			{ name="fieldCenterX"		, xml = "acFieldCenterX", valueType = XMLValueType.FLOAT, default = 0 },
+			{ name="fieldCenterZ"		, xml = "acFieldCenterZ", valueType = XMLValueType.FLOAT, default = 0 },
 		}																															
 AIVehicleExtension.turnStageNoNext = { -4, -3, -2, -1, 0, 21, 22, 23, 198, 199 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { 
@@ -484,6 +489,7 @@ function AIVehicleExtension:onAIVEScreen()
 														AIVEHud.getText("AIVE_PRECISION_1"),
 														AIVEHud.getText("AIVE_PRECISION_2") }
 	
+	self.aiveUI.maxCircles = { "0", "1", "2", "3", "4", "5", "6",  }
 	
 	g_AIVEScreen:setVehicle( self )
 	g_gui:showGui( "AIVEScreen" )
@@ -1397,6 +1403,41 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 				self.acIsStraight = false 
 			end 
 			
+			if self.acParameters.maxCircles > 0 and not self.acParameters.upNDown and self.aiveCurrentField ~= nil then  
+				if -math.pi <= self.acParameters.startAngle and self.acParameters.startAngle <= math.pi then 
+					if not AutoSteeringEngine.checkField( self, self.acParameters.fieldCenterX, self.acParameters.fieldCenterZ ) then 
+						self.acParameters.startAngle  = -4
+						self.acParameters.circlesDone = -1
+					end 
+				end 
+				local wx,wy,wz = getWorldTranslation( self.acRefNode )
+				if self.acParameters.circlesDone < 0 then 
+					self.acParameters.fieldCenterX = self.aiveFieldCenterX
+					self.acParameters.fieldCenterZ = self.aiveFieldCenterZ
+					self.acParameters.startAngle   = math.atan2( wx - self.acParameters.fieldCenterX, wz - self.acParameters.fieldCenterZ )
+					self.acParameters.circlesDone  = 0
+				else  
+					local a = ( math.atan2( wx - self.acParameters.fieldCenterX, wz - self.acParameters.fieldCenterZ ) - self.acParameters.startAngle ) / ( math.pi + math.pi )
+					if self.acParameters.leftAreaActive then 
+						a = -a 
+					end
+					while a < self.acParameters.circlesDone - 0.5 do 
+						a = a + 1
+					end 
+					self.acParameters.circlesDone = a
+				end 
+				if self.acParameters.circlesDone > self.acParameters.maxCircles + 0.1 then 
+					print("AIVE did some circles: "..tostring(self.acParameters.circlesDone))
+					self.acParameters.upNDown      = true
+					self.acParameters.straight		 = false
+					self.acParameters.circlesDone  = -1
+					self.acParameters.startAngle	 = -4
+					self.acParameters.fieldCenterX = 0 
+					self.acParameters.fieldCenterZ = 0 
+					AIVehicleExtension.sendParameters(self)
+				end 
+			end 
+						
 		elseif self.aiveAutoSteer then
 			self.stopMotorOnLeave = false
 			self.deactivateOnLeave = false
@@ -1503,7 +1544,7 @@ function AIVehicleExtension:setAIDirection()
 		AIVehicleExtension.checkState( self )
 		if self.aiveChain.toolCount > 0 then 
 			local dir
-			if self.acParameters.leftAreaActivethen then 
+			if self.acParameters.leftAreaActive then 
 				dir = -1 
 			else 
 				dir = 1
@@ -3174,6 +3215,7 @@ end
 function AIVehicleExtension:onAIFieldWorkerStart()
 	if self.isServer and self.acParameters ~= nil then 
 		self.aiveIsStarted = self.acParameters.enabled
+		self.aiveStartVerfied = false 
 		if self.acParameters.enabled and self.acParameters.straight then 
 			AIVehicleExtension.setAIDirection( self )
 			self.acIsStraight = true  
