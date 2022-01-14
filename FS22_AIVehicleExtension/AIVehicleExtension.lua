@@ -60,26 +60,27 @@ function AIVehicleExtension:aiveAddDebugText( s )
 end
 
 AIVehicleExtension.saveAttributesMapping = { 
-		enabled         = { xml = "acDefaultOn",	 tp = "B", default = true  },
-		upNDown				  = { xml = "acUTurn",			 tp = "B", default = true },
-		straight			  = { xml = "acStraight",		 tp = "B", default = true },
-		rightAreaActive = { xml = "acAreaRight",	 tp = "B", default = false },
-		headland				= { xml = "acHeadland",		 tp = "B", default = false },
-		collision			  = { xml = "acCollision",	 tp = "B", default = true },
-		inverted				= { xml = "acInverted",		 tp = "B", default = false },
-		isHired				  = { xml = "acIsHired",		 tp = "B", default = false },
-		bigHeadland		  = { xml = "acBigHeadland", tp = "B", default = true  },
-		turnModeIndex	  = { xml = "acTurnMode",		 tp = "I", default = 1 },
-		turnModeIndexC	= { xml = "acTurnModeC",	 tp = "I", default = 1 },
-		widthOffset		  = { xml = "acWidthOffset", tp = "F", default = 0 },
-		turnOffset			= { xml = "acTurnOffset",	 tp = "F", default = 0 },
-		angleFactor		  = { xml = "acAngleFactorN",tp = "F", default = 0.5 },
-		precision		    = { xml = "acPrecision",   tp = "I", default = 1 },
-		noSteering			= { xml = "acNoSteering",	 tp = "B", default = false },
-		useAIFieldFct		= { xml = "acUseAIField",	 tp = "B", default = false },
-		waitForPipe			= { xml = "acWaitForPipe", tp = "B", default = true  },
-		turnLow			    = { xml = "acTurnLow",     tp = "B", default = false },
-		showTrace 			= { xml = "acShowTrace",   tp = "B", default = false } }																															
+			{ name="enabled"        , xml = "acDefaultOn",	  valueType = XMLValueType.BOOL , default = true  },
+			{ name="upNDown"				, xml = "acUTurn",			  valueType = XMLValueType.BOOL , default = true },
+			{ name="straight"       , xml = "acStraight",		  valueType = XMLValueType.BOOL , default = true },
+			{ name="rightAreaActive", xml = "acAreaRight",	  valueType = XMLValueType.BOOL , default = false },
+			{ name="headland"				, xml = "acHeadland",		  valueType = XMLValueType.BOOL , default = false },
+			{ name="collision"			, xml = "acCollision",	  valueType = XMLValueType.BOOL , default = true },
+			{ name="inverted"				, xml = "acInverted",		  valueType = XMLValueType.BOOL , default = false },
+			{ name="isHired"				, xml = "acIsHired",		  valueType = XMLValueType.BOOL , default = false },
+			{ name="bigHeadland"		, xml = "acBigHeadland",  valueType = XMLValueType.BOOL , default = true  },
+			{ name="turnModeIndex"	, xml = "acTurnMode",		  valueType = XMLValueType.INT  , default = 1 }, 
+			{ name="turnModeIndexC"	, xml = "acTurnModeC",	  valueType = XMLValueType.INT  , default = 1 }, 
+			{ name="widthOffset"		, xml = "acWidthOffset",  valueType = XMLValueType.FLOAT, default = 0 }, 
+			{ name="turnOffset"			, xml = "acTurnOffset",	  valueType = XMLValueType.FLOAT, default = 0 }, 
+			{ name="angleFactor"		, xml = "acAngleFactorN", valueType = XMLValueType.FLOAT, default = 0.5 },
+			{ name="precision"		  , xml = "acPrecision",    valueType = XMLValueType.INT  , default = 1 }, 
+			{ name="noSteering"			, xml = "acNoSteering",	  valueType = XMLValueType.BOOL , default = false },
+			{ name="useAIFieldFct"	, xml = "acUseAIField",	  valueType = XMLValueType.BOOL , default = false },
+			{ name="waitForPipe"		, xml = "acWaitForPipe",  valueType = XMLValueType.BOOL , default = true  },
+			{ name="turnLow"			  , xml = "acTurnLow",      valueType = XMLValueType.BOOL , default = false },
+			{ name="showTrace" 			, xml = "acShowTrace",    valueType = XMLValueType.BOOL , default = false },
+		}																															
 AIVehicleExtension.turnStageNoNext = { -4, -3, -2, -1, 0, 21, 22, 23, 198, 199 } --{ 0 }
 AIVehicleExtension.turnStageEnd	= { 
 	--{ 4, -1 },
@@ -156,14 +157,8 @@ end
 function AIVehicleExtension.initSpecialization()
 	local schemaSavegame = Vehicle.xmlSchemaSavegame
 	if schemaSavegame then 
-		for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-			if		 p.tp == "B" then
-				schemaSavegame:register( XMLValueType.BOOL, "vehicles.vehicle(?)." .. AIVehicleExtensionRegister.specName .. "#".. p.xml, "AIVehicleExtension: ".. p.xml)
-			elseif p.tp == "I" then
-				schemaSavegame:register( XMLValueType.INT, "vehicles.vehicle(?)." .. AIVehicleExtensionRegister.specName .. "#".. p.xml, "AIVehicleExtension: ".. p.xml)
-			else--if p.tp == "F" then
-				schemaSavegame:register( XMLValueType.FLOAT, "vehicles.vehicle(?)." .. AIVehicleExtensionRegister.specName .. "#".. p.xml, "AIVehicleExtension: ".. p.xml)
-			end 
+		for _,attr in pairs( AIVehicleExtension.saveAttributesMapping ) do
+			schemaSavegame:register( attr.valueType, "vehicles.vehicle(?)." .. AIVehicleExtensionRegister.specName .. "#".. attr.xml, "AIVehicleExtension: ".. attr.xml)
 		end
 	end		
 end 
@@ -399,8 +394,8 @@ end
 function AIVehicleExtension:getStartableAIJob(superFunc)
 	if self.acParameters ~= nil and self.isClient and self.getIsControlled ~= nil and self.getIsEntered ~= nil and self:getIsControlled() and self:getIsEntered() then 
 		print('Sending acParameters to server...')
-		for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-			print( '  self.acParameters.'..tostring(n)..': "'..tostring(self.acParameters[n])..'"' )
+		for _,attr in pairs( AIVehicleExtension.saveAttributesMapping ) do
+			print( '  self.acParameters.'..tostring(attr.name)..': "'..tostring(self.acParameters[attr.name])..'"' )
 		end 
 		AIVehicleExtension.sendParameters(self)
 	end
@@ -1968,9 +1963,9 @@ Drivable.updateVehiclePhysics = Utils.overwrittenFunction( Drivable.updateVehicl
 ------------------------------------------------------------------------
 
 function AIVehicleExtension:saveToXMLFile(xmlFile, key)
-	for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-		if self.acParameters[n] ~= p.default or p.always then			
-			xmlFile:setValue(key .. "#" .. p.xml, self.acParameters[n])
+	for _,attr in pairs( AIVehicleExtension.saveAttributesMapping ) do
+		if attr.always or self.acParameters[attr.name] ~= attr.default then			
+			xmlFile:setValue(key .. "#" .. attr.xml, self.acParameters[attr.name])
 		end
 	end
 end
@@ -1980,10 +1975,10 @@ end
 ------------------------------------------------------------------------
 function AIVehicleExtension:onPostLoad(savegame)
 	if savegame ~= nil then
-		for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-			local v = savegame.xmlFile:getValue(savegame.key .. "." .. AIVehicleExtensionRegister.specName .. "#" .. p.xml )
+		for _,attr in pairs( AIVehicleExtension.saveAttributesMapping ) do
+			local v = savegame.xmlFile:getValue(savegame.key .. "." .. AIVehicleExtensionRegister.specName .. "#" .. attr.xml )
 			if v ~= nil then 
-				self.acParameters[n] = v 
+				self.acParameters[attr.name] = v 
 			end 
 		end		
 		
@@ -2225,8 +2220,8 @@ end
 function AIVehicleExtension.getParameterDefaults()
 	parameters = {}
 
-	for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-		parameters[n] = p.default
+	for _,attr in pairs( AIVehicleExtension.saveAttributesMapping ) do
+		parameters[attr.name] = attr.default
 	end
 	parameters.leftAreaActive	= not parameters.rightAreaActive
 
@@ -2243,29 +2238,37 @@ function AIVehicleExtension:getParameters()
 end
 
 function AIVehicleExtension.readStreamHelper(streamId)
+	print('Receiving parameters...')
+
 	local parameters = {}
 	
-	for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-		if		 p.tp == "B" then
-			parameters[n] = streamReadBool(streamId)
-		elseif p.tp == "I" then
-			parameters[n] = streamReadInt8(streamId)
-		else--if p.tp == "F" then
-			parameters[n] = streamReadFloat32(streamId)
+	for _,attr in pairs( AIVehicleExtension.saveAttributesMapping ) do
+		if		 attr.valueType == XMLValueType.BOOL then
+			parameters[attr.name] = streamReadBool(streamId)
+		elseif attr.valueType == XMLValueType.INT then
+			parameters[attr.name] = streamReadInt8(streamId)
+		else--if attr.valueType == XMLValueType.FLOAT then
+			parameters[attr.name] = streamReadFloat32(streamId)
 		end
-	end
-	
+
+		print( '  self.acParameters.'..tostring(attr.name)..': "'..tostring(parameters[attr.name])..'"' )
+	end 
+		
 	return parameters
 end
 
 function AIVehicleExtension.writeStreamHelper(streamId, parameters)
-	for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-		if		 p.tp == "B" then
-			streamWriteBool(streamId, AIVEUtils.getNoNil( parameters[n], p.default ))
-		elseif p.tp == "I" then
-			streamWriteInt8(streamId, AIVEUtils.getNoNil( parameters[n], p.default ))
-		else--if p.tp == "F" then
-			streamWriteFloat32(streamId, AIVEUtils.getNoNil( parameters[n], p.default ))
+	print('Sending parameters...')
+	
+	for _,attr in pairs( AIVehicleExtension.saveAttributesMapping ) do
+		print( '  self.acParameters.'..tostring(attr.name)..': "'..tostring(parameters[attr.name])..'"' )
+
+		if		 attr.valueType == XMLValueType.BOOL then
+			streamWriteBool(streamId, AIVEUtils.getNoNil( parameters[attr.name], attr.default ))
+		elseif attr.valueType == XMLValueType.INT then
+			streamWriteInt8(streamId, AIVEUtils.getNoNil( parameters[attr.name], attr.default ))
+		else--if attr.valueType == XMLValueType.FLOAT then
+			streamWriteFloat32(streamId, AIVEUtils.getNoNil( parameters[attr.name], attr.default ))
 		end
 	end
 end
@@ -2294,8 +2297,8 @@ function AIVehicleExtension:setParameters(parameters)
 	end
 	
 	self.acParameters = {}
-	for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-		self.acParameters[n] = AIVEUtils.getNoNil( parameters[n], p.default )
+	for _,attr in pairs( AIVehicleExtension.saveAttributesMapping ) do
+		self.acParameters[attr.name] = AIVEUtils.getNoNil( parameters[attr.name], attr.default )
 	end
 
 	self.acParameters.leftAreaActive	= not self.acParameters.rightAreaActive
@@ -3170,11 +3173,6 @@ end
 
 function AIVehicleExtension:onAIFieldWorkerStart()
 	if self.isServer and self.acParameters ~= nil then 
-		print('Starting AIVE on server...')
-		for n,p in pairs( AIVehicleExtension.saveAttributesMapping ) do
-			print( '  self.acParameters.'..tostring(n)..': "'..tostring(self.acParameters[n])..'"' )
-		end 
-		
 		self.aiveIsStarted = self.acParameters.enabled
 		if self.acParameters.enabled and self.acParameters.straight then 
 			AIVehicleExtension.setAIDirection( self )
