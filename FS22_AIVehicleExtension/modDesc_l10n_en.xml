@@ -21,6 +21,8 @@
 		<text name="AIVE_STEERING_OFF"             text="manual steering [off]"/>
 		<text name="AIVE_CONTINUE"                 text="continue"/>
 		<text name="AIVE_RAISE"                    text="All tools lift/lower"/>
+		<text name="AIVE_MAXCIRCLES"               text="Swtich from circular to up/down after"/>
+		<text name="AIVE_NOSPRAYER"                text="Suppress fertilizer of sowing machine"/>
 
 		<text name="AIVE_WAIT_FOR_PIPE"            text="wait during unload"/>
 		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="distance keeper is ON"/>
@@ -61,7 +63,8 @@
 		<text name="AIVE_HIRE_ON"                  text="seed usage [off]"/>
 		<text name="AIVE_HIRE_OFF"                 text="seed usage [on]"/>
 		<text name="AIVE_HEADLAND"                 text="headland"/>
-		<text name="AIVE_TURN_MODE"                text="Turn modes"/>
+		<text name="AIVE_TURN_MODE"                text="Turn modes (up/down)"/>
+		<text name="AIVE_TURN_MODEC"               text="Turn modes (circle)"/>
 		<text name="AIVE_TURN_MODE_"               text=""/>
 		<text name="AIVE_TURN_MODE_O"              text="O-shape turn"/>
 		<text name="AIVE_TURN_MODE_A"              text="reverse with curve"/>

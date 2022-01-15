@@ -81,6 +81,7 @@ AIVehicleExtension.saveAttributesMapping = {
 			{ name="turnLow"			  , xml = "acTurnLow",      valueType = XMLValueType.BOOL , default = false },
 			{ name="showTrace" 			, xml = "acShowTrace",    valueType = XMLValueType.BOOL , default = false },
 			{ name="maxCircles" 		, xml = "acMaxCircles",		valueType = XMLValueType.INT  , default = 0 }, 
+			{ name="noSprayer" 			, xml = "acNoSprayer",		valueType = XMLValueType.BOOL , default = false }, 
 			{ name="circlesDone" 		, xml = "acCirclesDone",	valueType = XMLValueType.FLOAT, default = -1 }, 
 			{ name="startAngle"			, xml = "acStartAngle", 	valueType = XMLValueType.FLOAT, default = -4 },
 			{ name="fieldCenterX"		, xml = "acFieldCenterX", valueType = XMLValueType.FLOAT, default = 0 },
@@ -449,11 +450,17 @@ function AIVehicleExtension:onAIVEScreen()
 
 	self.aiveUI.headland = { "0.0m", st, bt }
 	self.aiveUI.rightAreaActive = { AIVEHud.getText("AIVE_ACTIVESIDELEFT"),  AIVEHud.getText("AIVE_ACTIVESIDERIGHT") }
-	self.aiveUI.turnModeIndex = {}
-	if type( self.acTurnModes ) == "table" then 
-		for i,v in pairs( self.acTurnModes ) do 
-			self.aiveUI.turnModeIndex[i] = AIVEHud.getText("AIVE_TURN_MODE_"..v)	
-		end 
+
+	local tmi
+	self.aiveUI.turnModeIndex  = {}
+	self.aiveUI.turnModeIndexC = {}
+	tmi = AIVehicleExtension.getAvailableTurnModes( self, true )
+	for i,v in pairs( tmi ) do 
+		self.aiveUI.turnModeIndex[i] = AIVEHud.getText("AIVE_TURN_MODE_"..v)	
+	end
+	tmi = AIVehicleExtension.getAvailableTurnModes( self, false )
+	for i,v in pairs( tmi ) do 
+		self.aiveUI.turnModeIndexC[i] = AIVEHud.getText("AIVE_TURN_MODE_"..v)	
 	end
 	
 	if AIVehicleExtension.Distance == nil then
@@ -575,20 +582,6 @@ function AIVehicleExtension:aiveUISetrightAreaActive( value )
 	end 
 end 
 
-function AIVehicleExtension:aiveUIGetturnModeIndex()
-	if self.acParameters == nil then 
-		return 0
-	end 
-	local turnIndexComp = AIVehicleExtension.getTurnIndexComp( self )
-	return self.acParameters[turnIndexComp]
-end 
-function AIVehicleExtension:aiveUISetturnModeIndex( value )
-	if self.acParameters == nil then 
-		return
-	end 
-	local turnIndexComp = AIVehicleExtension.getTurnIndexComp( self )
-	self.acParameters[turnIndexComp] = value 
-end 
 
 function AIVehicleExtension:aiveUIGetwidthOffset()
 	if self.acParameters == nil then 
@@ -766,7 +759,9 @@ function AIVehicleExtension:setUTurn(enabled)
 end
 
 function AIVehicleExtension:getUTurnImage()
-	if not self.acParameters.upNDown then 
+	if self.acParameters == nil or not self.acParameters.enabled then 
+		return "dds/no_uturn.dds"
+	elseif not self.acParameters.upNDown then 
 		return "dds/no_uturn2.dds"
 	elseif not self.acParameters.straight then 
 		return "dds/uturn.dds"
@@ -777,7 +772,9 @@ function AIVehicleExtension:getUTurnImage()
 end
 
 function AIVehicleExtension:getUTurnText()
-	if not self.acParameters.upNDown then 
+	if self.acParameters == nil or not self.acParameters.enabled then 
+		return ""
+	elseif not self.acParameters.upNDown then 
 		return AIVEHud.getText("AIVE_UTURN_OFF")
 	elseif not self.acParameters.straight then 
 		return AIVEHud.getText("AIVE_UTURN_ON")
@@ -1059,7 +1056,8 @@ function AIVehicleExtension:setTurnMode()
 end
 
 function AIVehicleExtension:setHeadland(old)
-	if self.acParameters ~= nil and self.acParameters.upNDown then
+	if     self.acParameters == nil then 
+	elseif self.acParameters.upNDown then
 		if not self.acParameters.headland then
 			self.acParameters.headland    = true
 			self.acParameters.bigHeadland = false
@@ -1070,11 +1068,29 @@ function AIVehicleExtension:setHeadland(old)
 			self.acParameters.headland    = false
 			self.acParameters.bigHeadland = false
 		end
+	elseif self.acParameters.maxCircles >= 6 then 
+		self.acParameters.maxCircles = 0
+	elseif self.acParameters.maxCircles >= 5 then 
+		self.acParameters.maxCircles = 6
+	elseif self.acParameters.maxCircles >= 4 then 
+		self.acParameters.maxCircles = 5
+	elseif self.acParameters.maxCircles >= 3 then 
+		self.acParameters.maxCircles = 4
+	elseif self.acParameters.maxCircles >= 2 then 
+		self.acParameters.maxCircles = 3
+	elseif self.acParameters.maxCircles >= 1 then 
+		self.acParameters.maxCircles = 2
+	else 
+		self.acParameters.maxCircles = 1
 	end
 end
 
 function AIVehicleExtension:getHeadlandImage()
-	if self.acParameters ~= nil and self.acParameters.upNDown then
+	if self.acParameters == nil then 
+		return "dds/noHeadland.dds"
+	elseif not self.acParameters.enabled then 
+		return "dds/noHeadland.dds"
+	elseif self.acParameters.upNDown then
 		if not self.acParameters.headland then
 			return "dds/noHeadland.dds"
 		elseif not self.acParameters.bigHeadland then
@@ -1082,12 +1098,28 @@ function AIVehicleExtension:getHeadlandImage()
 		else
 			return "dds/big_headland.dds"
 		end
+	elseif self.acParameters.maxCircles >= 6 then 
+		return "dds/no_6.dds"
+	elseif self.acParameters.maxCircles >= 5 then 
+		return "dds/no_5.dds"
+	elseif self.acParameters.maxCircles >= 4 then 
+		return "dds/no_4.dds"
+	elseif self.acParameters.maxCircles >= 3 then 
+		return "dds/no_3.dds"
+	elseif self.acParameters.maxCircles >= 2 then 
+		return "dds/no_2.dds"
+	elseif self.acParameters.maxCircles >= 1 then 
+		return "dds/no_1.dds"
 	end
-	return "dds/noHeadland.dds"
+	return "dds/no_0.dds"
 end
 
 function AIVehicleExtension:getHeadlandText(old)
-	if self.acParameters ~= nil and self.acParameters.upNDown then
+	if self.acParameters == nil then 
+		return ""
+	elseif not self.acParameters.enabled then 
+		return ""
+	elseif self.acParameters.upNDown then
 		local st, bt = " (-)", " (+)"
 		if self.isServer and ( self.acCheckStateTimer ~= nil or self.aiveIsStarted or self.aiveAutoSteer ) then
 			local s, b = AIVehicleExtension.getHeadlandSmallBig( self )
@@ -1101,6 +1133,8 @@ function AIVehicleExtension:getHeadlandText(old)
 		else
 			return AIVEHud.getText("AIVE_HEADLAND")..bt
 		end
+	elseif self.acParameters ~= nil and self.acParameters.maxCircles > 0 then 
+		return AIVEHud.getText("AIVE_MAXCIRCLES").." "..tostring(self.acParameters.maxCircles)
 	end
 	return AIVEHud.getText("AIVE_HEADLAND_ON")
 end
@@ -1251,43 +1285,41 @@ end
 -- AIVehicleExtension.onUpdate
 ------------------------------------------------------------------------
 
-AIVehicleExtension.activeExtendedWorkers   = {}
-AIVehicleExtension.numberOfExtendedWorkers = 0
-AIVehicleExtension.extendedFrequencyDelay  = 1
+function AIVehicleExtension:updateAIFieldWorkerLowFrequency( superFunc, dt )
+	self.aiveUpdate1Called = true 
+	return superFunc( self, dt )
+end
+AIFieldWorker.updateAIFieldWorkerLowFrequency = Utils.overwrittenFunction( AIFieldWorker.updateAIFieldWorkerLowFrequency, AIVehicleExtension.updateAIFieldWorkerLowFrequency )
+
+function AIVehicleExtension:updateAIFieldWorker( superFunc, dt )
+	self.aiveUpdate2Called = true 
+	return superFunc( self, dt )
+end
+AIFieldWorker.updateAIFieldWorker = Utils.overwrittenFunction( AIFieldWorker.updateAIFieldWorker, AIVehicleExtension.updateAIFieldWorker )
+
+function AIVehicleExtension:AIFieldWorkerOnUpdate( superFunc, dt, ... )
+	self.aiveUpdate1Called = false
+	self.aiveUpdate2Called = false 
+	superFunc( self, dt, ... )
+	if self:getIsFieldWorkActive() and self.isServer and self.aiveIsStarted then
+		local spec = self.spec_aiFieldWorker
+		if not self.aiveUpdate1Called then 
+			self:updateAIFieldWorkerLowFrequency(spec.aiUpdateLowFrequencyDt)
+			spec.aiUpdateLowFrequencyDt = 0
+		end 
+		if not self.aiveUpdate2Called then 
+			self:updateAIFieldWorker(spec.aiUpdateDt)
+			spec.aiUpdateDt = 0
+		end
+	end 
+end 
+AIFieldWorker.onUpdate = Utils.overwrittenFunction( AIFieldWorker.onUpdate, AIVehicleExtension.AIFieldWorkerOnUpdate )
+
 function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgnoreSelection, isSelected )
 
 	if self.aiveIsStarted and not ( self:getIsFieldWorkActive() ) then 
 		self.aiveIsStarted = false
 	end 
-	
-	if self.aiveIsStarted then 
-		if not ( AIVehicleExtension.activeExtendedWorkers[self] ) then 
-			AIVehicleExtension.activeExtendedWorkers[self] = true 
-			AIVehicleExtension.numberOfExtendedWorkers     = 0
-			for v,b in pairs( AIVehicleExtension.activeExtendedWorkers ) do 
-				if b then 
-					AIVehicleExtension.numberOfExtendedWorkers = AIVehicleExtension.numberOfExtendedWorkers + 1 
-				end 
-			end 
-		end 
-	else
-		if AIVehicleExtension.activeExtendedWorkers[self] then 
-			AIVehicleExtension.activeExtendedWorkers[self] = nil 
-			AIVehicleExtension.numberOfExtendedWorkers     = 0
-			for v,b in pairs( AIVehicleExtension.activeExtendedWorkers ) do 
-				if b then 
-					AIVehicleExtension.numberOfExtendedWorkers = AIVehicleExtension.numberOfExtendedWorkers + 1 
-				end 
-			end 
-		end
-	end
-
---if self.aiveIsStarted and AIFieldWorker.aiUpdateLowFrequencyDelay ~= AIVehicleExtension.extendedFrequencyDelay then 
---	if AIVehicleExtension.aiUpdateLowFrequencyDelay == nil then 
---		AIVehicleExtension.aiUpdateLowFrequencyDelay = AIFieldWorker.aiUpdateLowFrequencyDelay
---	end 
---	AIFieldWorker.aiUpdateLowFrequencyDelay = AIVehicleExtension.extendedFrequencyDelay 
---end 
 
 	if      self.acParameters ~= nil
 			and self.acParameters.enabled
@@ -1429,6 +1461,7 @@ function AIVehicleExtension:onUpdate( dt, isActiveForInput, isActiveForInputIgno
 				if self.acParameters.circlesDone > self.acParameters.maxCircles + 0.1 then 
 					print("AIVE did some circles: "..tostring(self.acParameters.circlesDone))
 					self.acParameters.upNDown      = true
+					self.acParameters.headland     = false 
 					self.acParameters.straight		 = false
 					self.acParameters.circlesDone  = -1
 					self.acParameters.startAngle	 = -4
@@ -3259,4 +3292,86 @@ function AIVehicleExtension:afterCutterOnEndWorkAreaProcessing(dt, hasProcessed)
 end 
 
 Cutter.onEndWorkAreaProcessing = Utils.appendedFunction( Cutter.onEndWorkAreaProcessing, AIVehicleExtension.afterCutterOnEndWorkAreaProcessing )
+
+function AIVehicleExtension:processFertilizingSowingMachineArea(superFunc1, superFunc2, workArea, dt)
+	local vehicle = self:getRootVehicle()
+	if not ( vehicle ~= nil and vehicle.aiveIsStarted ) then 
+		return superFunc1( superFunc2, workArea, dt )
+	end 
+	if self.acParameters.noSprayer then 
+		return superFunc2( workArea, dt )
+	end 
+	return superFunc1( superFunc2, workArea, dt )
+end 
+
+FertilizingSowingMachine.processSowingMachineArea = Utils.overwrittenFunction( FertilizingSowingMachine.processSowingMachineArea, AIVehicleExtension.processFertilizingSowingMachineArea )
+
+
+function AIVehicleExtension:driveToPoint(superFunc, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer)
+	if not self.aiveIsStarted then 
+		return superFunc( self, dt, acceleration, allowedToDrive, moveForwards, tX, tZ, maxSpeed, doNotSteer )
+	end 
+	
+	if self.finishedFirstUpdate then
+		if allowedToDrive then
+			local tX_2 = tX * 0.5
+			local tZ_2 = tZ * 0.5
+			local d1X = tZ_2
+			local d1Z = -tX_2
+
+			if tX > 0 then
+				d1Z = tX_2
+				d1X = -tZ_2
+			end
+
+			local hit, _, f2 = MathUtil.getLineLineIntersection2D(tX_2, tZ_2, d1X, d1Z, 0, 0, tX, 0)
+
+			if doNotSteer == nil or not doNotSteer then
+				local rotTime = 0
+
+				if hit and math.abs(f2) < 100000 then
+					local radius = tX * f2
+					rotTime = self:getSteeringRotTimeByCurvature(1 / radius)
+
+					if self:getReverserDirection() < 0 then
+						rotTime = -rotTime
+					end
+				end
+
+				local targetRotTime = nil
+
+				if rotTime >= 0 then
+					targetRotTime = math.min(rotTime, self.maxRotTime)
+				else
+					targetRotTime = math.max(rotTime, self.minRotTime)
+				end
+
+				if self.rotatedTime < targetRotTime then
+					self.rotatedTime = math.min(self.rotatedTime + dt * self:getAISteeringSpeed(), targetRotTime)
+				else
+					self.rotatedTime = math.max(self.rotatedTime - dt * self:getAISteeringSpeed(), targetRotTime)
+				end
+			end
+		end
+
+		self:getMotor():setSpeedLimit(math.min(maxSpeed, self:getCruiseControlSpeed()))
+
+		if self:getCruiseControlState() ~= Drivable.CRUISECONTROL_STATE_ACTIVE then
+			self:setCruiseControlState(Drivable.CRUISECONTROL_STATE_ACTIVE)
+		end
+
+		if not allowedToDrive then
+			acceleration = 0
+		end
+
+		if not moveForwards then
+			acceleration = -acceleration
+		end
+
+		WheelsUtil.updateWheelsPhysics(self, dt, self.lastSpeedReal * self.movingDirection, acceleration, not allowedToDrive, true)
+	end
+end
+
+AIVehicleUtil.driveToPoint = Utils.overwrittenFunction( AIVehicleUtil.driveToPoint, AIVehicleExtension.driveToPoint )
+
 

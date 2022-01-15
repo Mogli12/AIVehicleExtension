@@ -74,7 +74,6 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX, vY, vZ)
 	local rootVehicle = self.vehicle.rootVehicle
 	local isTurning = rootVehicle.getAIFieldWorkerIsTurning ~= nil and rootVehicle:getAIFieldWorkerIsTurning()
 	local allowedToDrive = true
-	local waitForStraw = false
 	local maxSpeed = math.huge
 	
 	self.vehicle.aiveCombineUnloading = nil 
@@ -235,16 +234,10 @@ function AIDriveStrategyCombine131:getDriveData(dt, vX, vY, vZ)
 					end
 				end
 			end
-
-			if not trailerInTrigger and combine.spec_combine.isSwathActive and combine.spec_combine.strawPSenabled then
-				waitForStraw = true
-			end
 		end
 	end
 
-	if isTurning and waitForStraw then
-		return 0, 1, true, 0, math.huge
-	elseif not allowedToDrive then
+	if not allowedToDrive then
 		return 0, 1, true, 0, math.huge
 	else
 		return nil, nil, nil, maxSpeed, nil

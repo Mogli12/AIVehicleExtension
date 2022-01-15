@@ -3556,11 +3556,13 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
 	
 --print("dt: "..tostring(dt)..", wantedSpeed: "..tostring(wantedSpeed).."("..tostring(speedLevel).."), acc:"..tostring(acc).."("..tostring(allowedToDrive)..")")
 			
+	local curSpeed = math.abs( vehicle.lastSpeed * 3600 )
+	
 	if vehicle.acLastAcc == nil then
 		vehicle.acLastAcc = 0
 	end
 	if vehicle.acLastWantedSpeed == nil then
-		vehicle.acLastWantedSpeed = math.max( 2, vehicle.lastSpeed * 3600 )
+		vehicle.acLastWantedSpeed = math.max( 2, curSpeed )
 	end
 		
 	if     math.abs( acc ) < 1E-4
@@ -3572,8 +3574,6 @@ function AutoSteeringEngine.getMaxSpeed( vehicle, dt, acceleration, allowedToDri
 	else
 		vehicle.acLastAcc = vehicle.acLastAcc + AIVEUtils.clamp( acc - vehicle.acLastAcc, - dt * 0.0005, dt * 0.0005)
 	end
-	
-	local curSpeed = math.abs( vehicle.lastSpeed * 3600 )
 	
 	if not allowedToDrive or wantedSpeed < 1 then 
 		vehicle.acLastWantedSpeed  = 2 

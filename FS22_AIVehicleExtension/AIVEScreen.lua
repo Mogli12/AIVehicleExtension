@@ -20,3 +20,9 @@ function AIVEScreen:onClickNext()
 		AIVehicleExtension.nextTurnStage( self.vehicle )
 	end
 end
+
+function AIVEScreen:onClickDefaults()
+	if self.vehicle ~= nil then
+		self.vehicle.acParameters = AIVehicleExtension.getParameterDefaults( )
+	end
+end

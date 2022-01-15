@@ -76,6 +76,15 @@
 					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_INVERTED"/>
 				</GuiElement>
 		
+				<GuiElement type="checkedOption" profile="multiTextOptionSettings" id="noSprayer" onCreate="onCreateSubElement">										
+					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
+					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>
+					<GuiElement type="text" profile="multiTextOptionSettingsText" />
+					<GuiElement type="text" profile="multiTextOptionSettingsTitle" text="$mogli_AIVE_NOSPRAYER"/>
+					<GuiElement type="bitmap" profile="multiTextOptionSettingsBg" />
+					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_NOSPRAYER"/>
+				</GuiElement>
+		
 				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="widthOffset" onCreate="onCreateSubElement" onCreateArgs="list">										
 					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
 					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>
@@ -94,6 +103,15 @@
 					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_TURN_MODE"/>
 				</GuiElement>
 
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnModeIndexC" onCreate="onCreateSubElement" onCreateArgs="list">
+					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
+					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>
+					<GuiElement type="text"   profile="multiTextOptionSettingsText" />
+					<GuiElement type="text"   profile="multiTextOptionSettingsTitle" text="$mogli_AIVE_TURN_MODEC"/>
+					<GuiElement type="bitmap" profile="multiTextOptionSettingsBg" />
+					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_TURN_MODEC"/>
+				</GuiElement>
+
 				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="turnOffset" onCreate="onCreateSubElement" onCreateArgs="list">
 					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
 					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>
@@ -103,15 +121,6 @@
 					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_TURN_OFFSET"/>
 				</GuiElement>
 
-				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="maxCircles" onCreate="onCreateSubElement" onCreateArgs="list0">
-					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
-					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>
-					<GuiElement type="text"   profile="multiTextOptionSettingsText" />
-					<GuiElement type="text"   profile="multiTextOptionSettingsTitle" text="$mogli_AIVE_MAXCIRCLES"/>
-					<GuiElement type="bitmap" profile="multiTextOptionSettingsBg" />
-					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_MAXCIRCLES"/>
-				</GuiElement>
-
 				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="headland" onCreate="onCreateSubElement" onCreateArgs="list">
 					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
 					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>
@@ -119,6 +128,15 @@
 					<GuiElement type="text"   profile="multiTextOptionSettingsTitle" text="$mogli_AIVE_HEADLAND"/>
 					<GuiElement type="bitmap" profile="multiTextOptionSettingsBg" />
 					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_HEADLAND"/>
+				</GuiElement>
+
+				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="maxCircles" onCreate="onCreateSubElement" onCreateArgs="list0">
+					<GuiElement type="button" profile="multiTextOptionSettingsLeft" />
+					<GuiElement type="button" profile="multiTextOptionSettingsRight"/>
+					<GuiElement type="text"   profile="multiTextOptionSettingsText" />
+					<GuiElement type="text"   profile="multiTextOptionSettingsTitle" text="$mogli_AIVE_MAXCIRCLES"/>
+					<GuiElement type="bitmap" profile="multiTextOptionSettingsBg" />
+					<GuiElement type="text"   profile="multiTextOptionSettingsTooltip" text="$mogli_AIVE_MAXCIRCLES"/>
 				</GuiElement>
 
 				<GuiElement type="multiTextOption" profile="multiTextOptionSettings" id="angleFactor" onCreate="onCreateSubElement" onCreateArgs="percent5">
@@ -195,7 +213,8 @@
 			</GuiElement>
 
 			<GuiElement type="flowLayout" profile="buttonBoxDialog" id="buttonsPC" >
-				<GuiElement type="button" profile="buttonBack"   text="$l10n_button_back"   onClick="onClickOk"  id="backButton" />
+				<GuiElement type="button" profile="buttonBack"   text="$l10n_button_back"     onClick="onClickOk"       id="backButton" />
+				<GuiElement type="button" profile="buttonExtra1" text="$l10n_button_defaults" onClick="onClickDefaults" id="defaultButton"/>
 			</GuiElement>
 		</GuiElement>
 	</GuiElement>

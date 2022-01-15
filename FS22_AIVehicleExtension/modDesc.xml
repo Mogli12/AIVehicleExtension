@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="63">
 	<author>Mogli</author>
-	<version>0.0.1.4</version>
+	<version>0.0.1.5</version>
 	<l10n filenamePrefix="modDesc_l10n">
 		<text name="AIVE_VERSION">
-			<en>AI Vehicle Extension v0.0.1.4</en>
+			<en>AI Vehicle Extension v0.0.1.5</en>
 		</text>
 	</l10n>
 	<title>
@@ -173,10 +173,10 @@ AIVehicleExtension - Polskie tłumaczenie Dzi4d3k
 			<binding device="KB_MOUSE_DEFAULT" input=""                  axisComponent="+" inputComponent="+" index="1"/>
 		</actionBinding>
 		<actionBinding action="AIVE_PAUSE">
-			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_3"    axisComponent="+" inputComponent="+" index="1"/>
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_3"    axisComponent="+" inputComponent="+" index="1"/>
 		</actionBinding>
 		<actionBinding action="AIVE_RAISE">
-			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_v"    axisComponent="+" inputComponent="+" index="1"/>
+			<binding device="KB_MOUSE_DEFAULT" input=""    axisComponent="+" inputComponent="+" index="1"/>
 		</actionBinding>
 		<actionBinding action="AIVE_HELPPANEL">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_h"  axisComponent="+" inputComponent="+" index="1"/>
