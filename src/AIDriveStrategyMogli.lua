@@ -1054,6 +1054,9 @@ function AIDriveStrategyMogli:getDriveData(dt, vX,vY,vZ)
 			AIVehicleExtension.setStatus( veh, 0 )
 		end
 	elseif detected then
+		if veh.atHud ~= nil then 
+			veh.atHud.InfoText = "" 
+		end 
 		AIVehicleExtension.setStatus( veh, 1 )
 	else
 		AIVehicleExtension.setStatus( veh, 2 )

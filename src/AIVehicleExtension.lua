@@ -3296,12 +3296,12 @@ Cutter.onEndWorkAreaProcessing = Utils.appendedFunction( Cutter.onEndWorkAreaPro
 function AIVehicleExtension:processFertilizingSowingMachineArea(superFunc1, superFunc2, workArea, dt)
 	local vehicle = self:getRootVehicle()
 	if not ( vehicle ~= nil and vehicle.aiveIsStarted ) then 
-		return superFunc1( superFunc2, workArea, dt )
+		return superFunc1( self, superFunc2, workArea, dt )
 	end 
-	if self.acParameters.noSprayer then 
-		return superFunc2( workArea, dt )
+	if vehicle.acParameters.noSprayer then 
+		return superFunc2( self, workArea, dt )
 	end 
-	return superFunc1( superFunc2, workArea, dt )
+	return superFunc1( self, superFunc2, workArea, dt )
 end 
 
 FertilizingSowingMachine.processSowingMachineArea = Utils.overwrittenFunction( FertilizingSowingMachine.processSowingMachineArea, AIVehicleExtension.processFertilizingSowingMachineArea )
