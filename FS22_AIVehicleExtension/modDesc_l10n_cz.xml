@@ -21,6 +21,8 @@
 		<text name="AIVE_STEERING_OFF"             text="Ruční řízení: Vyp."/>
 		<text name="AIVE_CONTINUE"                 text="Pokračovat"/>
 		<text name="AIVE_RAISE"                    text="Zvednout/položit veškeré vybavení"/>
+		<text name="AIVE_MAXCIRCLES"               text="Po kruhovém přepnout na cikcak"/>
+		<text name="AIVE_NOSPRAYER"                text="Potlačit hnojivo u secího stroje"/>	
 
 		<text name="AIVE_WAIT_FOR_PIPE"            text="Zastavit při vysypávání"/>
 		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="Bezpečná vzdálenost: Zap."/>
@@ -62,6 +64,7 @@
 		<text name="AIVE_HIRE_OFF"                 text="Spotřeba osiva: Vyp."/>
 		<text name="AIVE_HEADLAND"                 text="Souvrať"/>
 		<text name="AIVE_TURN_MODE"                text="Módy otáčení"/>
+		<text name="AIVE_TURN_MODEC"               text="Mód otáčení do kruhu"/>		
 		<text name="AIVE_TURN_MODE_"               text=""/>		
 		<text name="AIVE_TURN_MODE_O"              text="Otočit o 180° bez couvání"/>
 		<text name="AIVE_TURN_MODE_A"              text="Malé otočení o 180°"/>
@@ -93,6 +96,7 @@
 		<text name="input_AIVE_UTURN_ON_OFF"       text="AIVE: Kruhový mód Zap./Vyp."/>
 		<text name="input_AIVE_STEERING"           text="AIVE: Ruční řízení"/>
 		<text name="input_AIVE_RAISE"              text="AIVE: Zvednout/Položit všechny nástroje"/>
+		<text name="input_AIVE_PAUSE"              text="AIVE: Pauza"/>		
 		<text name="input_AIVE_START_AIVE"         text="AIVE: Nastavení"/>
 		<text name="input_AIVE_NEXT_WORKER"        text="AIVE: Skok na dalšího pracovníka"/>
 	</texts>
