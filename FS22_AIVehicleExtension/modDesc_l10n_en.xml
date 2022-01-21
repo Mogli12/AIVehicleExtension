@@ -21,7 +21,7 @@
 		<text name="AIVE_STEERING_OFF"             text="manual steering [off]"/>
 		<text name="AIVE_CONTINUE"                 text="continue"/>
 		<text name="AIVE_RAISE"                    text="All tools lift/lower"/>
-		<text name="AIVE_MAXCIRCLES"               text="Swtich from circular to up/down after"/>
+		<text name="AIVE_MAXCIRCLES"               text="Switch from circular to up/down after"/>
 		<text name="AIVE_NOSPRAYER"                text="Suppress fertilizer of sowing machine"/>
 
 		<text name="AIVE_WAIT_FOR_PIPE"            text="wait during unload"/>
