@@ -21,6 +21,8 @@
 		<text name="AIVE_STEERING_OFF"             text="ręczne sterowanie [wył.]"/>
 		<text name="AIVE_CONTINUE"                 text="wznów jazdę"/>
 		<text name="AIVE_RAISE"                    text="podnieś/opuść wszystkie maszyny"/>
+		<text name="AIVE_MAXCIRCLES"               text="Zmień z okrążeń na uwrocia po"/>
+		<text name="AIVE_NOSPRAYER"                text="Blokuj nawóz w siewnikach"/>
 
 		<text name="AIVE_WAIT_FOR_PIPE"            text="postój w trakcie rozładunku"/>
 		<text name="AIVE_COLLISIONTRIGGERMODE_ON"  text="utrzymywanie odległości jest WŁ."/>
@@ -56,10 +58,13 @@
 		<text name="AIVE_FRONT_PACKER_OFF"         text="przedni agregat [wył.]"/>
 		<text name="AIVE_COLLISION_ON"             text="sprawdzanie kolizji [wł.]"/>
 		<text name="AIVE_COLLISION_OFF"            text="sprawdzanie kolizji [wył.]"/>
+		<text name="AIVE_TURNLOW_ON"               text="maszyny opuszczone przy nawracaniu [wł.]"/>
+		<text name="AIVE_TURNLOW_OFF"              text="maszyny opuszczone przy nawracaniu [wył.]"/>
 		<text name="AIVE_HIRE_ON"                  text="zużywanie nasion [wył.]"/> <!-- Shouldn't this be switched with below? -->
 		<text name="AIVE_HIRE_OFF"                 text="zużywanie nasion [wł.]"/> <!-- Shouldn't this be switched with above? -->
 		<text name="AIVE_HEADLAND"                 text="odstęp"/>
-		<text name="AIVE_TURN_MODE"                text="Sposoby nawracania"/>
+		<text name="AIVE_TURN_MODE"                text="Tryby nawracania (tam/z powrotem)"/>
+		<text name="AIVE_TURN_MODEC"               text="Tryby nawracania (na około)"/>
 		<text name="AIVE_TURN_MODE_"               text=""/>
 		<text name="AIVE_TURN_MODE_O"              text="nawrót w kształcie O"/>
 		<text name="AIVE_TURN_MODE_A"              text="cofanie po krzywej"/>
@@ -70,13 +75,13 @@
 		<text name="AIVE_TURN_MODE_7"              text="cofanie po prostej"/>
 		<text name="AIVE_TURN_MODE_K"              text="duży skręt o 90°"/>
 		<text name="AIVE_TURN_MODE_8"              text="nawrót w kształcie 8"/>
-		<text name="AIVE_PAUSE_ON"                 text="Wznów"/>
-		<text name="AIVE_PAUSE_OFF"                text="Wstrzymaj"/>
-		<text name="AIVE_STEER_RAISE"              text="Podnieś maszyny/wył."/>
-		<text name="AIVE_STEER_LOWER"              text="Opuść maszyny/wł."/>
+		<text name="AIVE_PAUSE_ON"                 text="Wstrzymaj"/>
+		<text name="AIVE_PAUSE_OFF"                text="Wznów"/>
+		<text name="AIVE_STEER_RAISE"              text="Podnieś maszyny"/>
+		<text name="AIVE_STEER_LOWER"              text="Opuść maszyny"/>
 		<text name="AIVE_TRACE"                    text="Pokaż ścieżkę"/>
-		<text name="AIVE_MAGIC"                    text="Rozpoznawanie pola"/>
-		<text name="AIVE_USE_AI_FIELD"             text="Tylko połączone pole"/>
+		<text name="AIVE_MAGIC"                    text="Odśwież pole"/>
+		<text name="AIVE_USE_AI_FIELD"             text="Wykryj tylko połączone pole"/>
 		<text name="AIVE_FIELD_W"                  text="Trwa wykrywanie pola"/>
 		<text name="AIVE_FIELD_E"                  text="Wykrywanie pola nieudane"/>
 		<text name="AIVE_PRECISION"                text="Precyzja pomocnika"/>
@@ -91,6 +96,7 @@
 		<text name="input_AIVE_UTURN_ON_OFF"       text="AIVE: Jazda na około wł./wył."/>
 		<text name="input_AIVE_STEERING"           text="AIVE: Sterowanie ręczne"/>
 		<text name="input_AIVE_RAISE"              text="AIVE: Podnieś/opuść wszystkie maszyny"/>
+		<text name="input_AIVE_PAUSE"              text="AIVE: Pauza"/>
 		<text name="input_AIVE_START_AIVE"         text="AIVE: Ustawienia"/>
 		<text name="input_AIVE_NEXT_WORKER"        text="AIVE: Przejdź do następnego pracownika"/>
 	</texts>
