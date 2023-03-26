@@ -1953,7 +1953,7 @@ function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axi
 					AutoSteeringEngine.clearTrace( self )
 					AutoSteeringEngine.saveDirection( self, false, false, true )
 				elseif AutoSteeringEngine.getIsAtEnd( self ) then
-					if self.acParameters.leftAreaActive then
+					if not self.acParameters.leftAreaActive then
 						angle = math.max( angle, 0 )
 					else
 						angle = math.min( angle, 0 )
@@ -1966,7 +1966,7 @@ function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axi
 					AIVehicleExtension.setStatus( self, 3 )
 				else
 					if AutoSteeringEngine.getIsAtEnd( self ) then
-						if self.acParameters.leftAreaActive then
+						if not self.acParameters.leftAreaActive then
 							angle = math.max( angle, 0 )
 						else
 							angle = math.min( angle, 0 )
@@ -1993,9 +1993,11 @@ function AIVehicleExtension:newUpdateVehiclePhysics( superFunc, axisForward, axi
 						
 			if     self.acAxisSideFactor == nil then
 				self.acAxisSideFactor = 0
+			elseif self:getIsEntered() and math.abs( self.acAxisSide ) > 0 then
+				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
 			elseif self.movingDirection < -1E-2 or not self.acImplementsMoveDown then	
 				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
-			elseif self:getIsEntered() and math.abs( self.acAxisSide ) > 0 then
+			elseif not detected then
 				self.acAxisSideFactor = math.max( self.acAxisSideFactor - dt, 0 )
 			elseif border > 0 then 
 				self.acAxisSideFactor = math.min( self.acAxisSideFactor + 10 * dt, 1000 )
